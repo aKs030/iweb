@@ -1,0 +1,143 @@
+@layer components {
+  :root {
+    --overlay-layer-backdrop: calc(
+      var(--z-overlay) - var(--z-base) - var(--z-base)
+    );
+    --overlay-layer-surface: calc(var(--z-overlay) - var(--z-base));
+    --overlay-layer-top-backdrop: var(--z-top-overlay);
+    --overlay-layer-top-surface: calc(var(--z-top-overlay) + var(--z-base));
+    --overlay-backdrop-filter-rest: blur(0px) saturate(100%) brightness(1);
+    --overlay-backdrop-filter-soft: blur(var(--size-14)) saturate(128%)
+      brightness(1.04);
+    --overlay-backdrop-filter-immersive: blur(var(--size-16)) saturate(118%)
+      brightness(0.78);
+    --overlay-backdrop-background-soft: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--component-header-bg) 32%, transparent) 0%,
+      color-mix(in srgb, var(--component-header-bg) 46%, transparent) 100%
+    );
+    --overlay-backdrop-background-immersive: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--component-header-bg) 40%, transparent) 0%,
+      color-mix(in srgb, var(--component-header-bg) 58%, transparent) 100%
+    );
+  }
+
+  .overlay-backdrop {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    touch-action: none;
+    background: var(
+      --overlay-backdrop-background,
+      var(--overlay-backdrop-background-soft)
+    );
+    backdrop-filter: var(--overlay-backdrop-filter-rest);
+    -webkit-backdrop-filter: var(--overlay-backdrop-filter-rest);
+    transition:
+      opacity var(--overlay-backdrop-transition-duration, 160ms)
+        var(--overlay-backdrop-transition-ease, ease),
+      visibility var(--overlay-backdrop-transition-duration, 160ms)
+        var(--overlay-backdrop-transition-ease, ease),
+      backdrop-filter var(--overlay-backdrop-transition-duration, 160ms)
+        var(--overlay-backdrop-transition-ease, ease),
+      -webkit-backdrop-filter var(--overlay-backdrop-transition-duration, 160ms)
+        var(--overlay-backdrop-transition-ease, ease);
+    z-index: var(--overlay-backdrop-layer, var(--overlay-layer-backdrop));
+  }
+
+  .overlay-backdrop:is(.is-open, .open) {
+    visibility: visible;
+  }
+
+  .overlay-backdrop--global {
+    --overlay-backdrop-background: var(--overlay-backdrop-background-soft);
+    --overlay-backdrop-layer: var(--overlay-layer-backdrop);
+  }
+
+  .overlay-backdrop--immersive {
+    --overlay-backdrop-background: var(--overlay-backdrop-background-immersive);
+    --overlay-backdrop-layer: var(--overlay-layer-top-backdrop);
+    --overlay-backdrop-transition-duration: 0.4s;
+    --overlay-backdrop-transition-ease: var(--ease-standard);
+  }
+
+  html[data-active-overlay='search'],
+  html[data-active-overlay='robot-chat'],
+  body[data-active-overlay='search'],
+  body[data-active-overlay='robot-chat'] {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .overlay-backdrop.is-open[data-mode='search'] {
+    opacity: 1;
+    pointer-events: auto;
+    background: var(--overlay-backdrop-background-soft);
+    backdrop-filter: var(--overlay-backdrop-filter-soft);
+    -webkit-backdrop-filter: var(--overlay-backdrop-filter-soft);
+  }
+
+  .overlay-backdrop.is-open[data-mode='robot-chat'] {
+    opacity: 1;
+    pointer-events: auto;
+    background: var(--overlay-backdrop-background-immersive);
+    backdrop-filter: var(--overlay-backdrop-filter-immersive);
+    -webkit-backdrop-filter: var(--overlay-backdrop-filter-immersive);
+    z-index: var(--overlay-layer-top-backdrop);
+  }
+
+  /* Fallback for browsers with partial inert support */
+  [data-overlay-manager-inert='true'],
+  [data-overlay-manager-inert='true'] * {
+    pointer-events: none !important;
+    user-select: none !important;
+    touch-action: none !important;
+  }
+
+  /* Lock background interaction for chat overlay:
+     only chat/backdrop/robot stay interactive. */
+  body[data-active-overlay='robot-chat'] * {
+    pointer-events: none !important;
+  }
+
+  body[data-active-overlay='robot-chat'] #menu-global-backdrop,
+  body[data-active-overlay='robot-chat'] #robot-chat-window,
+  body[data-active-overlay='robot-chat'] #robot-chat-window *,
+  body[data-active-overlay='robot-chat'] #robot-companion-container,
+  body[data-active-overlay='robot-chat'] #robot-companion-container * {
+    pointer-events: auto !important;
+  }
+
+  /* Lock background interaction for search overlay:
+     only header/search surface + backdrop stay interactive. */
+  body[data-active-overlay='search'] * {
+    pointer-events: none !important;
+  }
+
+  body[data-active-overlay='search'] #menu-global-backdrop,
+  body[data-active-overlay='search'] header.site-header,
+  body[data-active-overlay='search'] header.site-header *,
+  body[data-active-overlay='search'] site-menu,
+  body[data-active-overlay='search'] site-menu * {
+    pointer-events: auto !important;
+  }
+
+  body[data-active-overlay='search'] .menu-search__results,
+  body[data-active-overlay='search'] .menu-search__list,
+  body[data-active-overlay='robot-chat'] .chat-messages {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  @media (max-width: 900px) {
+    html[data-active-overlay='menu'],
+    body[data-active-overlay='menu'] {
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+  }
+}

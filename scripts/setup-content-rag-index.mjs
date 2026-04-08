@@ -1,5 +1,13 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { loadLocalEnv } from './load-local-env.mjs';
+import {
+  getFlagValue,
+  isFlagEnabled,
+  parseInteger,
+  resolveUrlValue,
+  sleep,
+} from './script-utils.mjs';
 
 const DEFAULT_INDEX_NAME = 'jules-content-rag';
 const DEFAULT_WAIT_RETRIES = 10;
@@ -8,40 +16,14 @@ const REQUIRED_METADATA_INDEXES = [
   { propertyName: 'sourceType', type: 'string' },
   { propertyName: 'category', type: 'string' },
 ];
+const argv = process.argv.slice(2);
 
-function getFlagValue(name) {
-  const exactIndex = process.argv.findIndex((arg) => arg === name);
-  if (exactIndex !== -1) {
-    const next = process.argv[exactIndex + 1];
-    if (next && !next.startsWith('--')) return next;
-  }
-
-  const prefix = `${name}=`;
-  const arg = process.argv.find((entry) => entry.startsWith(prefix));
-  return arg ? arg.slice(prefix.length) : '';
-}
-
-function isFlagEnabled(name) {
-  return process.argv.includes(name);
-}
-
-function parseInteger(value, fallback, { min = 0, max = 60_000 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ''), 10);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(max, Math.max(min, parsed));
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function resolveSyncUrl() {
-  return String(
-    getFlagValue('--url') ||
-      process.env.RAG_SYNC_BASE_URL ||
-      process.env.SITE_URL ||
-      '',
-  ).trim();
+function resolveUpdateUrl() {
+  return resolveUrlValue({
+    argv,
+    envKeys: ['CONTENT_RAG_UPDATE_BASE_URL', 'PRODUCTION_SITE_URL', 'SITE_URL'],
+    defaultValue: 'https://www.abdulkerimsesli.de',
+  });
 }
 
 async function runCommand(command, args, options = {}) {
@@ -156,13 +138,13 @@ async function waitForMetadataIndexes(indexName, propertyNames) {
   return [];
 }
 
-async function runFullSync(syncUrl) {
-  const syncScriptPath = fileURLToPath(
-    new URL('./sync-content-rag.mjs', import.meta.url),
+async function runFullUpdate(updateUrl) {
+  const updateScriptPath = fileURLToPath(
+    new URL('./content-rag-update.mjs', import.meta.url),
   );
-  const args = [syncScriptPath, `--url=${syncUrl}`, '--full'];
-  const retries = getFlagValue('--sync-retries');
-  const delayMs = getFlagValue('--sync-delay-ms');
+  const args = [updateScriptPath, `--url=${updateUrl}`, '--full'];
+  const retries = getFlagValue('--update-retries');
+  const delayMs = getFlagValue('--update-delay-ms');
   if (retries) args.push(`--retries=${retries}`);
   if (delayMs) args.push(`--delay-ms=${delayMs}`);
 
@@ -174,13 +156,15 @@ async function runFullSync(syncUrl) {
 }
 
 async function main() {
+  await loadLocalEnv();
+
   const indexName = String(
     getFlagValue('--index') ||
       process.env.CONTENT_RAG_INDEX_NAME ||
       DEFAULT_INDEX_NAME,
   ).trim();
-  const skipSync = isFlagEnabled('--skip-sync');
-  const syncUrl = resolveSyncUrl();
+  const skipUpdate = isFlagEnabled('--skip-update');
+  const updateUrl = resolveUpdateUrl();
   const existingIndexes = await listMetadataIndexes(indexName);
   const existingByName = new Map(
     existingIndexes.map((item) => [
@@ -209,28 +193,28 @@ async function main() {
     REQUIRED_METADATA_INDEXES.map((item) => item.propertyName),
   );
 
-  let sync = {
+  let update = {
     attempted: false,
-    reason: 'no sync URL provided',
+    reason: 'no update URL provided',
   };
 
-  if (!skipSync && syncUrl) {
+  if (!skipUpdate && updateUrl) {
     if (!String(process.env.ADMIN_TOKEN || '').trim()) {
-      sync = {
+      update = {
         attempted: false,
         reason: 'ADMIN_TOKEN missing',
       };
     } else {
-      sync = {
+      update = {
         attempted: true,
-        url: syncUrl,
-        result: await runFullSync(syncUrl),
+        url: updateUrl,
+        result: await runFullUpdate(updateUrl),
       };
     }
-  } else if (skipSync) {
-    sync = {
+  } else if (skipUpdate) {
+    update = {
       attempted: false,
-      reason: 'skipped via --skip-sync',
+      reason: 'skipped via --skip-update',
     };
   }
 
@@ -243,7 +227,7 @@ async function main() {
         created,
         reused,
         available: readyIndexes,
-        sync,
+        update,
       },
       null,
       2,

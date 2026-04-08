@@ -1,5 +1,6 @@
-import { observeOnce, getElementById, TimerManager } from '#core/utils.js';
+import { getElementById, observeOnce } from '#core/dom-utils.js';
 import { createLogger } from '#core/logger.js';
+import { TimerManager } from '#core/timer-manager.js';
 import { i18n } from '#core/i18n.js';
 import { ROBOT_EVENTS } from '#components/robot-companion/constants/events.js';
 
@@ -212,7 +213,7 @@ export const initHeroFeatureBundle = (sectionManager) => {
     // [data-footer-trigger] mechanism used elsewhere.
     if (targetId === 'footer') {
       try {
-        const { openFooter } = await import('#components/footer/footer.js');
+        const { openFooter } = await import('#footer/index.js');
         openFooter();
       } catch {
         // fallback: simple scroll
@@ -221,7 +222,7 @@ export const initHeroFeatureBundle = (sectionManager) => {
       return;
     }
 
-    const doScroll = () => {
+    function doScroll() {
       try {
         target.scrollIntoView({ behavior: 'smooth' });
       } catch (err) {
@@ -229,7 +230,7 @@ export const initHeroFeatureBundle = (sectionManager) => {
         const top = target.getBoundingClientRect().top + window.scrollY;
         window.scrollTo({ top, behavior: 'smooth' });
       }
-    };
+    }
 
     if (sectionManager?.loadSection) {
       sectionManager

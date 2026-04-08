@@ -5,7 +5,7 @@
 
 import { createLogger } from './logger.js';
 import { getCache } from './cache.js';
-import { sleep } from './utils.js';
+import { sleep } from './async-utils.js';
 
 const log = createLogger('Fetch');
 
@@ -63,6 +63,7 @@ async function fetchWithRetry(url, config = {}) {
   }
 
   let lastError;
+  /** @type {Function | undefined} */
   let resolveInflight;
   const inflightPromise = new Promise((r) => {
     resolveInflight = r;
@@ -92,7 +93,9 @@ async function fetchWithRetry(url, config = {}) {
           await cacheManager.set(url, response.clone(), { ttl: cacheTTL });
         }
 
-        resolveInflight(response.clone());
+        if (resolveInflight) {
+          resolveInflight(response.clone());
+        }
         return response;
       } catch (error) {
         clearTimeout(timeoutId);

@@ -1,17 +1,12 @@
 import { normalizeUserId } from './_user-identity.js';
+import { normalizeSchemaText } from './_text-utils.js';
 
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const MAX_KV_SCAN_PAGES = 100;
 const NAME_MEMORY_KEY = 'name';
 
-function normalizeText(value) {
-  return String(value || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 export function normalizeRecoveryLookupName(rawName) {
-  return normalizeText(rawName)
+  return normalizeSchemaText(rawName)
     .replace(/[.,;:!?]+$/g, '')
     .toLowerCase()
     .slice(0, 80);
@@ -32,9 +27,10 @@ function buildRecoveryCandidate(raw, source = 'unknown') {
 
   return {
     userId,
-    name: normalizeText(raw?.name || ''),
+    name: normalizeSchemaText(raw?.name || ''),
     status:
-      normalizeText(raw?.status || 'anonymous').toLowerCase() || 'anonymous',
+      normalizeSchemaText(raw?.status || 'anonymous').toLowerCase() ||
+      'anonymous',
     memoryCount,
     latestMemoryAt,
     source,
@@ -110,10 +106,10 @@ function getLatestNameValue(memories = []) {
   let latestTimestamp = 0;
 
   for (const entry of memories) {
-    if (normalizeText(entry?.key || '').toLowerCase() !== NAME_MEMORY_KEY)
+    if (normalizeSchemaText(entry?.key || '').toLowerCase() !== NAME_MEMORY_KEY)
       continue;
 
-    const name = normalizeText(entry?.value || '');
+    const name = normalizeSchemaText(entry?.value || '');
     if (!name) continue;
 
     const timestamp = Math.max(
@@ -134,7 +130,7 @@ function summarizeMemories(memories = []) {
   let latestMemoryAt = 0;
 
   for (const entry of memories) {
-    const value = normalizeText(entry?.value || '');
+    const value = normalizeSchemaText(entry?.value || '');
     if (!value) continue;
     count += 1;
     latestMemoryAt = Math.max(

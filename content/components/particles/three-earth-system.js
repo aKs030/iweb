@@ -6,14 +6,11 @@
  */
 
 import * as THREE from 'three';
-import { createLogger } from '../../core/logger.js';
-import {
-  getElementById,
-  debounce,
-  createObserver,
-  TimerManager,
-} from '../../core/utils.js';
-import { AppLoadManager } from '../../core/load-manager.js';
+import { debounce } from '#core/async-utils.js';
+import { createObserver, getElementById } from '#core/dom-utils.js';
+import { createLogger } from '#core/logger.js';
+import { AppLoadManager } from '#core/load-manager.js';
+import { TimerManager } from '#core/timer-manager.js';
 import {
   getSharedState,
   registerParticleSystem,
@@ -494,42 +491,57 @@ class ThreeEarthSystem {
   _getCardData() {
     return [
       {
-        title: 'Über mich',
-        subtitle: 'ÜBER MICH',
-        text: 'Kurz & knapp: Wer ich bin, was mich antreibt und meine Vision.',
+        title: 'Profil',
+        subtitle: 'PROFIL',
+        text: 'Fokus, Arbeitsweise, Hintergrund.',
         link: '/about/',
+        cta: 'Oeffnen',
+        meta: 'Profil',
+        routeLabel: 'Profil',
         iconChar: '👨‍💻',
         color: '#07a1ff',
       },
       {
         title: 'Projekte',
         subtitle: 'PROJEKTE',
-        text: 'Auswahl an Projekten — Konzept, Umsetzung und Ergebnis.',
+        text: 'Arbeiten, Cases und Experimente.',
         link: '/projekte/',
+        cta: 'Oeffnen',
+        meta: 'Cases',
+        routeLabel: 'Projekte',
         iconChar: '🚀',
         color: '#a107ff',
       },
       {
         title: 'Fotos',
         subtitle: 'FOTOS',
-        text: 'Ausschnitte aus meiner Sicht der Welt.',
+        text: 'Serien, Stills und Beobachtungen.',
         link: '/gallery/',
+        cta: 'Oeffnen',
+        meta: 'Archiv',
+        routeLabel: 'Fotos',
         iconChar: '📸',
         color: '#ff07a1',
       },
       {
         title: 'Videos',
         subtitle: 'VIDEOS',
-        text: 'Meine Videosammlung — Technik, Making-of und Stories.',
+        text: 'Clips und Motion-Studien.',
         link: '/videos/',
+        cta: 'Oeffnen',
+        meta: 'Motion',
+        routeLabel: 'Videos',
         iconChar: '🎬',
         color: '#07ffbc',
       },
       {
-        title: 'Blog',
-        subtitle: 'BLOG',
-        text: 'Aktuelle Gedanken, Learnings und Updates rund um meine Arbeit.',
+        title: 'Journal',
+        subtitle: 'JOURNAL',
+        text: 'Notizen aus laufenden Projekten.',
         link: '/blog/',
+        cta: 'Oeffnen',
+        meta: 'Notes',
+        routeLabel: 'Journal',
         iconChar: '📝',
         color: '#ffb807',
       },
@@ -818,7 +830,11 @@ class ThreeEarthSystem {
    * @param {any} entry
    */
   _handleSectionChange(entry) {
-    if (entry.target.id === 'features' && this.cardManager) {
+    if (
+      entry.target.id === 'features' &&
+      this.cardManager &&
+      this.currentSection !== 'features'
+    ) {
       this.cardManager.setProgress(entry.intersectionRatio || 0);
     }
 
@@ -1260,8 +1276,8 @@ function _getSectionConfig(sectionName) {
       mode: 'day',
     },
     features: {
-      earth: { pos: { x: -7, y: -2, z: -4 }, scale: 0.7, rotation: 0 },
-      moon: { pos: { x: 1, y: 2, z: -5 }, scale: 1.1 },
+      earth: { pos: { x: -8.8, y: -2.8, z: -8.8 }, scale: 0.44, rotation: 0 },
+      moon: { pos: { x: 2.6, y: 1.7, z: -11.8 }, scale: 0.84 },
       mode: 'day',
     },
     section3: {

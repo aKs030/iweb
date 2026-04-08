@@ -1,7 +1,5 @@
-import {
-  getMenuShellMarkup,
-  getFooterShellMarkup,
-} from '../../content/core/html-shells.js';
+import { getFooterShellMarkup } from '../../content/components/footer/shell.js';
+import { getMenuShellMarkup } from '../../content/components/menu/shell.js';
 /**
  * Edge Side Includes (ESI) - Shell Injector
  *
@@ -50,7 +48,7 @@ export class HeaderInjector {
 export class FooterInjector {
   constructor() {
     this.markup = `
-<site-footer src="/content/components/footer/footer" data-shell="true" data-injected-by="edge-middleware">
+<site-footer data-shell="true" data-injected-by="edge-middleware">
   ${getFooterShellMarkup()}
 </site-footer>
 `;

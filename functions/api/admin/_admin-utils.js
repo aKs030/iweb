@@ -1,27 +1,126 @@
-const JSON_HEADERS = {
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
+import { jsonResponse as buildJsonResponse } from '../_response.js';
+import { getRequestClientIp } from '../_request-utils.js';
 
 const ADMIN_SESSION_COOKIE_NAME = 'admin_session';
 const DEFAULT_ADMIN_SESSION_MAX_AGE = 60 * 60 * 12;
 
 export function jsonResponse(payload, status = 200, headers = undefined) {
-  const responseHeaders = new Headers(JSON_HEADERS);
-  if (headers instanceof Headers) {
-    headers.forEach((value, key) => {
-      responseHeaders.append(key, value);
-    });
-  } else if (headers && typeof headers === 'object') {
-    Object.entries(headers).forEach(([key, value]) => {
-      responseHeaders.append(key, String(value));
-    });
-  }
-
-  return new Response(JSON.stringify(payload), {
+  return buildJsonResponse(payload, {
     status,
-    headers: responseHeaders,
+    headers: {
+      'Cache-Control': 'no-store',
+      ...(headers instanceof Headers
+        ? Object.fromEntries(headers.entries())
+        : headers),
+    },
   });
+}
+
+export function createValidationErrorResponse(text) {
+  return jsonResponse(
+    {
+      success: false,
+      text,
+    },
+    400,
+  );
+}
+
+function getRequestHeaderValue(request, headerName) {
+  return String(request.headers.get(headerName) || '').trim();
+}
+
+function getAdminSourceIp(request) {
+  return getRequestClientIp(request);
+}
+
+function getExpectedAdminToken(env) {
+  return String(env?.ADMIN_TOKEN || '').trim();
+}
+
+function createAdminAuthResult({
+  ok,
+  sourceIp,
+  response = null,
+  actor = 'admin',
+  authType = undefined,
+}) {
+  return {
+    ok,
+    actor,
+    authType,
+    sourceIp,
+    response,
+  };
+}
+
+function createAdminConfigErrorResponse() {
+  return jsonResponse(
+    {
+      error: 'Admin configuration error: ADMIN_TOKEN is missing',
+      code: 'admin_token_missing',
+    },
+    500,
+  );
+}
+
+function createUnauthorizedAdminResponse() {
+  return jsonResponse(
+    {
+      error: 'Unauthorized',
+      code: 'unauthorized',
+    },
+    401,
+  );
+}
+
+function createUnauthorizedAdminResult(sourceIp) {
+  return createAdminAuthResult({
+    ok: false,
+    sourceIp,
+    response: createUnauthorizedAdminResponse(),
+  });
+}
+
+function createAdminConfigErrorResult(sourceIp) {
+  return createAdminAuthResult({
+    ok: false,
+    sourceIp,
+    response: createAdminConfigErrorResponse(),
+  });
+}
+
+function createAuthorizedAdminResult(sourceIp, authType, actor = 'admin') {
+  return createAdminAuthResult({
+    ok: true,
+    actor,
+    authType,
+    sourceIp,
+  });
+}
+
+function hasBearerAdminAuth(request, expectedToken) {
+  return (
+    getRequestHeaderValue(request, 'Authorization') ===
+    `Bearer ${expectedToken}`
+  );
+}
+
+async function authorizeAdminSession(request, env, sourceIp) {
+  const sessionToken = readCookieValue(
+    request.headers.get('Cookie'),
+    ADMIN_SESSION_COOKIE_NAME,
+  );
+  if (!sessionToken) return null;
+
+  const session = await verifyAdminSessionToken(env, sessionToken);
+  if (!session.ok) return null;
+
+  return createAuthorizedAdminResult(
+    sourceIp,
+    'session',
+    String(session.payload?.actor || 'admin'),
+  );
 }
 
 export function getErrorMessage(error) {
@@ -211,63 +310,16 @@ export function buildAdminSessionClearCookie(request) {
 }
 
 export async function authorizeAdmin(request, env) {
-  const expectedToken = String(env?.ADMIN_TOKEN || '').trim();
-  if (!expectedToken) {
-    return {
-      ok: false,
-      actor: 'admin',
-      sourceIp: String(request.headers.get('CF-Connecting-IP') || '').trim(),
-      response: jsonResponse(
-        {
-          error: 'Admin configuration error: ADMIN_TOKEN is missing',
-          code: 'admin_token_missing',
-        },
-        500,
-      ),
-    };
+  const sourceIp = getAdminSourceIp(request);
+  const expectedToken = getExpectedAdminToken(env);
+  if (!expectedToken) return createAdminConfigErrorResult(sourceIp);
+
+  if (hasBearerAdminAuth(request, expectedToken)) {
+    return createAuthorizedAdminResult(sourceIp, 'bearer');
   }
 
-  const sourceIp = String(request.headers.get('CF-Connecting-IP') || '').trim();
-  const authHeader = String(request.headers.get('Authorization') || '').trim();
-  if (authHeader === `Bearer ${expectedToken}`) {
-    return {
-      ok: true,
-      actor: 'admin',
-      authType: 'bearer',
-      sourceIp,
-      response: null,
-    };
-  }
-
-  const sessionToken = readCookieValue(
-    request.headers.get('Cookie'),
-    ADMIN_SESSION_COOKIE_NAME,
-  );
-  if (sessionToken) {
-    const session = await verifyAdminSessionToken(env, sessionToken);
-    if (session.ok) {
-      return {
-        ok: true,
-        actor: String(session.payload?.actor || 'admin'),
-        authType: 'session',
-        sourceIp,
-        response: null,
-      };
-    }
-  }
-
-  return {
-    ok: false,
-    actor: 'admin',
-    sourceIp,
-    response: jsonResponse(
-      {
-        error: 'Unauthorized',
-        code: 'unauthorized',
-      },
-      401,
-    ),
-  };
+  const sessionAuth = await authorizeAdminSession(request, env, sourceIp);
+  return sessionAuth || createUnauthorizedAdminResult(sourceIp);
 }
 
 export function parsePaginationParams(
@@ -326,58 +378,107 @@ export function includesSearch(values, search) {
   return values.some((value) => normalizeSearch(value).includes(needle));
 }
 
+const ADMIN_AUDIT_INSERT_SQL = `
+  INSERT INTO admin_audit_log (
+    action,
+    target_user_id,
+    memory_key,
+    status,
+    summary,
+    details_json,
+    actor,
+    source_ip,
+    before_json,
+    after_json
+  )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
+
+function getAdminAuditDb(env) {
+  return env?.DB_LIKES?.prepare ? env.DB_LIKES : null;
+}
+
+function createAuditLogMissingBindingResult() {
+  return {
+    ok: false,
+    skipped: true,
+    code: 'missing_binding',
+  };
+}
+
+function createAuditLogSuccessResult() {
+  return { ok: true, skipped: false };
+}
+
+function stringifyAuditString(value, fallback = '') {
+  return String(value || fallback);
+}
+
+function stringifyAuditJson(value, fallback = {}) {
+  return JSON.stringify(value || fallback);
+}
+
+function stringifyOptionalAuditJson(value) {
+  return value ? JSON.stringify(value) : null;
+}
+
+function createAuditLogIdentityBindings(entry) {
+  return [
+    stringifyAuditString(entry?.action, 'unknown'),
+    stringifyAuditString(entry?.targetUserId),
+    stringifyAuditString(entry?.memoryKey),
+    stringifyAuditString(entry?.status, 'success'),
+  ];
+}
+
+function createAuditLogMetadataBindings(entry) {
+  return [
+    stringifyAuditString(entry?.summary),
+    stringifyAuditJson(entry?.details),
+    stringifyAuditString(entry?.actor, 'admin'),
+    stringifyAuditString(entry?.sourceIp),
+  ];
+}
+
+function createAuditLogSnapshotBindings(entry) {
+  return [
+    stringifyOptionalAuditJson(entry?.before),
+    stringifyOptionalAuditJson(entry?.after),
+  ];
+}
+
+function createAuditLogBindings(entry) {
+  return [
+    ...createAuditLogIdentityBindings(entry),
+    ...createAuditLogMetadataBindings(entry),
+    ...createAuditLogSnapshotBindings(entry),
+  ];
+}
+
+function isMissingAuditTableError(error) {
+  return /no such table|no such column/i.test(getErrorMessage(error));
+}
+
+function createAuditLogFailureResult(error) {
+  return {
+    ok: false,
+    skipped: false,
+    code: isMissingAuditTableError(error) ? 'missing_table' : 'write_failed',
+    error,
+  };
+}
+
 export async function writeAdminAuditLog(env, entry) {
-  const db = env?.DB_LIKES;
-  if (!db?.prepare) {
-    return {
-      ok: false,
-      skipped: true,
-      code: 'missing_binding',
-    };
-  }
+  const db = getAdminAuditDb(env);
+  if (!db) return createAuditLogMissingBindingResult();
 
   try {
     await db
-      .prepare(
-        `
-          INSERT INTO admin_audit_log (
-            action,
-            target_user_id,
-            memory_key,
-            status,
-            summary,
-            details_json,
-            actor,
-            source_ip,
-            before_json,
-            after_json
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `,
-      )
-      .bind(
-        String(entry?.action || 'unknown'),
-        String(entry?.targetUserId || ''),
-        String(entry?.memoryKey || ''),
-        String(entry?.status || 'success'),
-        String(entry?.summary || ''),
-        JSON.stringify(entry?.details || {}),
-        String(entry?.actor || 'admin'),
-        String(entry?.sourceIp || ''),
-        entry?.before ? JSON.stringify(entry.before) : null,
-        entry?.after ? JSON.stringify(entry.after) : null,
-      )
+      .prepare(ADMIN_AUDIT_INSERT_SQL)
+      .bind(...createAuditLogBindings(entry))
       .run();
-
-    return { ok: true, skipped: false };
+    return createAuditLogSuccessResult();
   } catch (error) {
-    return {
-      ok: false,
-      skipped: false,
-      code: /no such table|no such column/i.test(getErrorMessage(error))
-        ? 'missing_table'
-        : 'write_failed',
-      error,
-    };
+    return createAuditLogFailureResult(error);
   }
 }

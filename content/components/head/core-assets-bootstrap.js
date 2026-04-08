@@ -1,7 +1,8 @@
-import { scheduleIdleTask } from '../../core/idle.js';
-import { createLogger } from '../../core/logger.js';
-import { resourceHints } from '../../core/resource-hints.js';
-import { upsertHeadLink } from '../../core/utils.js';
+import { scheduleIdleTask } from '#core/async-utils.js';
+import { upsertHeadLink } from '#core/dom-utils.js';
+import { createLogger } from '#core/logger.js';
+import { resourceHints } from '#core/resource-hints.js';
+import { EARTH_CRITICAL_TEXTURE_URL } from '#components/particles/earth/texture-paths.js';
 
 const log = createLogger('head-assets');
 
@@ -39,7 +40,7 @@ function injectHomeLcpHints() {
 
   upsertHeadLink({
     rel: 'prefetch',
-    href: '/content/assets/img/earth/textures/earth_day.webp',
+    href: EARTH_CRITICAL_TEXTURE_URL,
     as: 'image',
     dataset: { injectedBy: 'head-inline', lcp: 'hero-earth' },
   });
@@ -51,6 +52,7 @@ function getStylesForPath() {
   if (getNormalizedPathname() === '/') {
     pageSpecific.push(
       '/pages/home/hero.css',
+      '/pages/home/features.css',
       '/content/components/typewriter/typewriter.css',
       '/pages/home/section3.css',
     );
@@ -99,7 +101,7 @@ export function injectCoreAssets({
 
       injectHomeLcpHints();
       upsertScript({
-        src: '/content/components/menu/SiteMenu.js',
+        src: '/content/components/menu/index.js',
         module: true,
       });
       deferNonCriticalAssets();
@@ -115,7 +117,7 @@ export function addLazyLoadingDefaults({ runWhenDomReady }) {
       document.querySelectorAll('img:not([loading])').forEach((img) => {
         const isLcpCandidate =
           img.getAttribute('fetchpriority') === 'high' ||
-          img.dataset?.lcp === 'true';
+          /** @type {any} */ (img).dataset?.lcp === 'true';
         img.setAttribute('loading', isLcpCandidate ? 'eager' : 'lazy');
       });
 
@@ -138,9 +140,9 @@ export function ensureFontDisplaySwap({ runWhenDomReady }) {
         .querySelectorAll('link[href*="fonts.googleapis.com"]')
         .forEach((link) => {
           try {
-            if (!link.href.includes('display=swap')) {
-              link.href +=
-                (link.href.includes('?') ? '&' : '?') + 'display=swap';
+            const el = /** @type {HTMLLinkElement} */ (link);
+            if (!el.href.includes('display=swap')) {
+              el.href += (el.href.includes('?') ? '&' : '?') + 'display=swap';
             }
           } catch {
             /* ignore */
@@ -165,8 +167,8 @@ export function injectHeroCriticalCSS() {
     if (document.head.querySelector('#hero-critical-css')) return;
 
     const css = `
-  .hero{display:flex;align-items:center;justify-content:center;min-height:var(--viewport-height,100dvh);padding:0 .5rem;box-sizing:border-box}
-  .hero__title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
+  .hero{display:flex;align-items:flex-end;justify-content:flex-start;min-height:var(--viewport-height,100dvh);padding:clamp(5rem,10vw,7rem) clamp(1.25rem,4vw,3rem) clamp(4rem,8vw,6rem);box-sizing:border-box}
+  .hero__title{font:700 clamp(3rem,8vw,7rem)/.93 'Space Grotesk',var(--font-inter);margin:0;max-width:11ch;color:var(--color-text-main,#fff);text-align:left;letter-spacing:-.05em}
   `;
 
     const style = document.createElement('style');

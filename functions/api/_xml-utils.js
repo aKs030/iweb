@@ -1,34 +1,12 @@
 /**
  * XML Utilities - Shared functions for sitemap generation
- * @version 1.0.0
+ * @version 2.0.0
  */
 
-/**
- * Escape special XML characters
- * @param {string} value - Text to escape
- * @returns {string} XML-safe text
- */
-export function escapeXml(value) {
-  return String(value ?? '').replace(/[<>&'"]/g, (char) => {
-    switch (char) {
-      case '<':
-        return '&lt;';
-      case '>':
-        return '&gt;';
-      case '&':
-        return '&amp;';
-      case "'":
-        return '&apos;';
-      case '"':
-        return '&quot;';
-      default:
-        return char;
-    }
-  });
-}
+export { escapeXml } from '../../content/core/text-utils.js';
 
 /**
- * Normalize URL path
+ * Normalize URL path for sitemaps (adds trailing slash)
  * @param {string} path - URL path to normalize
  * @returns {string} Normalized path
  */
@@ -84,12 +62,12 @@ export function toAbsoluteUrl(origin, value) {
 }
 
 /**
- * Load JSON asset through Cloudflare Pages ASSETS binding
+ * Load JSON file through Cloudflare Pages ASSETS binding
  * @param {Object} context - Function context
- * @param {string} path - Asset path
+ * @param {string} path - File path
  * @returns {Promise<any|null>} Parsed JSON or null
  */
-export async function loadJsonAsset(context, path) {
+export async function loadJsonFile(context, path) {
   if (!context.env?.ASSETS) return null;
 
   try {

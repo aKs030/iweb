@@ -1,5 +1,5 @@
 import { ENV } from '../../config/env.config.js';
-import { createLogger } from '../../core/logger.js';
+import { createLogger } from '#core/logger.js';
 
 const log = createLogger('head-analytics');
 
@@ -18,6 +18,29 @@ function gtag(...args) {
   dataLayer.push(args);
 }
 
+function readCookie(name) {
+  try {
+    const escapedName = String(name || '').replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&',
+    );
+    const match = document.cookie.match(
+      new RegExp(`(?:^|;\\s*)${escapedName}=([^;]+)`),
+    );
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveConsentDecision(payloadValue, cookieName, legacyAccepted) {
+  if (typeof payloadValue === 'boolean') return payloadValue;
+  const cookieValue = readCookie(cookieName);
+  if (cookieValue === 'accepted') return true;
+  if (cookieValue === 'rejected') return false;
+  return legacyAccepted;
+}
+
 function setupDataLayerProxy() {
   try {
     const originalPush = dataLayer.push.bind(dataLayer);
@@ -26,11 +49,23 @@ function setupDataLayerProxy() {
         args.forEach((arg) => {
           if (arg?.event === 'consentGranted') {
             try {
+              const legacyAccepted =
+                readCookie('cookie_consent') === 'accepted';
+              const analyticsGranted = resolveConsentDecision(
+                arg.analyticsGranted ?? arg.analytics,
+                'cookie_analytics_consent',
+                legacyAccepted,
+              );
+              const adsGranted = resolveConsentDecision(
+                arg.adsGranted ?? arg.ads,
+                'cookie_ads_consent',
+                legacyAccepted,
+              );
               gtag('consent', 'update', {
-                ad_storage: 'granted',
-                analytics_storage: 'granted',
-                ad_user_data: 'granted',
-                ad_personalization: 'granted',
+                ad_storage: adsGranted ? 'granted' : 'denied',
+                analytics_storage: analyticsGranted ? 'granted' : 'denied',
+                ad_user_data: adsGranted ? 'granted' : 'denied',
+                ad_personalization: adsGranted ? 'granted' : 'denied',
               });
             } catch {
               /* ignore */

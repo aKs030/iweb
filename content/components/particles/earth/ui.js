@@ -1,8 +1,9 @@
 import { CONFIG } from './config.js';
-import { createLogger } from '../../../core/logger.js';
-import { throttle } from '../../../core/utils.js';
-import { AppLoadManager } from '../../../core/load-manager.js';
-import { i18n } from '../../../core/i18n.js';
+import { createLogger } from '#core/logger.js';
+import { throttle } from '#core/async-utils.js';
+import { AppLoadManager } from '#core/load-manager.js';
+import { i18n } from '#core/i18n.js';
+import { EARTH_FALLBACK_BACKGROUND_URL } from './texture-paths.js';
 
 import {
   calculateQualityLevel,
@@ -15,7 +16,7 @@ const log = createLogger('EarthUI');
   Earth loading UI
   - Publishes loading progress through AppLoadManager events.
   - Maintains aria-busy state on the Earth container.
-  - Does not depend on legacy loader overlay DOM.
+  - Stays independent from route-specific loader DOM.
 */
 
 export function showLoadingState(container, progress) {
@@ -23,7 +24,10 @@ export function showLoadingState(container, progress) {
 
   if (typeof progress === 'number') {
     const pct = Math.round(progress * 100);
-    AppLoadManager.updateLoader(progress, i18n.t('loader.loading_3d', { pct }));
+    AppLoadManager.updateLoader(
+      progress,
+      i18n.t('loader.loading_3d', /** @type {any} */ ({ pct })),
+    );
   } else {
     AppLoadManager.updateLoader(0, i18n.t('loader.init_3d_engine'));
   }
@@ -60,8 +64,7 @@ export function showErrorState(container, error, retryCallback) {
 
     // Optional: Add static Earth image background to container
     try {
-      container.style.backgroundImage =
-        'url(/content/assets/img/earth/textures/earth_day.webp)';
+      container.style.backgroundImage = `url(${EARTH_FALLBACK_BACKGROUND_URL})`;
       container.style.backgroundSize = 'cover';
       container.style.backgroundPosition = 'center';
       container.style.backgroundAttachment = 'fixed';

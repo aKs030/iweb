@@ -1,17 +1,17 @@
-import {
-  getMenuShellMarkup,
-  getFooterShellMarkup,
-} from '../../core/html-shells.js';
-import { whenFooterReady } from '../../core/footer-state.js';
-import { cancelIdleTask, scheduleIdleTask } from '../../core/idle.js';
-import { createLogger } from '../../core/logger.js';
-import { resourceHints } from '../../core/resource-hints.js';
-import { upsertHeadLink } from '../../core/utils.js';
+import { getFooterShellMarkup } from '#footer/shell.js';
+import { whenFooterReady } from '#footer/state.js';
+import { getMenuShellMarkup } from '#menu/shell.js';
+import { cancelIdleTask, scheduleIdleTask } from '#core/async-utils.js';
+import { upsertHeadLink } from '#core/dom-utils.js';
+import { createLogger } from '#core/logger.js';
+import { resourceHints } from '#core/resource-hints.js';
 
 const log = createLogger('head-footer');
 
-const FOOTER_MODULE_HREF = '/content/components/footer/footer.js';
+const FOOTER_MODULE_HREF = '/content/components/footer/index.js';
 const FOOTER_TRIGGER_SELECTOR = '[data-footer-trigger], a[href="#footer"]';
+const FOOTER_COOKIE_TRIGGER_SELECTOR = '[data-cookie-trigger]';
+const FOOTER_CONSENT_ACTION_SELECTOR = '#accept-cookies, #reject-cookies';
 const FOOTER_IDLE_HYDRATION_TIMEOUT_MS = 4000;
 
 let footerModulePromise = null;
@@ -20,6 +20,16 @@ let footerHydrationAttached = false;
 const getFooterTrigger = (target) => {
   if (!(target instanceof Element)) return null;
   return target.closest(FOOTER_TRIGGER_SELECTOR);
+};
+
+const getCookieTrigger = (target) => {
+  if (!(target instanceof Element)) return null;
+  return target.closest(FOOTER_COOKIE_TRIGGER_SELECTOR);
+};
+
+const getConsentActionTrigger = (target) => {
+  if (!(target instanceof Element)) return null;
+  return target.closest(FOOTER_CONSENT_ACTION_SELECTOR);
 };
 
 const preloadFooterModule = () => {
@@ -31,26 +41,28 @@ const loadFooterModule = async () => {
   if (footerModulePromise) return footerModulePromise;
 
   preloadFooterModule();
-  footerModulePromise = import('#components/footer/footer.js').catch(
-    (error) => {
-      footerModulePromise = null;
-      log.warn('failed to load footer module', error);
-      return null;
-    },
-  );
+  footerModulePromise = import('#footer/index.js').catch((error) => {
+    footerModulePromise = null;
+    log.warn('failed to load footer module', error);
+    return null;
+  });
 
   return footerModulePromise;
 };
 
+const isFooterReady = () => {
+  const footer = document.querySelector('site-footer');
+  return Boolean(
+    footer &&
+    typeof (/** @type {any} */ (footer).open) === 'function' &&
+    footer.querySelector('footer.site-footer'),
+  );
+};
+
 const waitForFooterReady = () =>
   new Promise((resolve) => {
-    const footer = document.querySelector('site-footer');
-    if (
-      footer &&
-      typeof (/** @type {any} */ (footer).open) === 'function' &&
-      footer.querySelector('footer.site-footer')
-    ) {
-      resolve(footer);
+    if (isFooterReady()) {
+      resolve(document.querySelector('site-footer'));
       return;
     }
 
@@ -90,19 +102,30 @@ const setupFooterModuleHydration = (siteFooter) => {
   };
 
   const hydrateFooterModule = async () => {
-    cleanup();
-    await loadFooterModule();
+    try {
+      await loadFooterModule();
+    } finally {
+      cleanup();
+    }
   };
 
   const handleTriggerIntent = (event) => {
-    if (!getFooterTrigger(event.target)) return;
+    if (
+      !getFooterTrigger(event.target) &&
+      !getCookieTrigger(event.target) &&
+      !getConsentActionTrigger(event.target)
+    ) {
+      return;
+    }
     preloadFooterModule();
   };
 
   const handleTriggerClick = async (event) => {
-    if (customElements.get('site-footer')) return;
-    const trigger = getFooterTrigger(event.target);
-    if (!trigger) return;
+    if (customElements.get('site-footer') && isFooterReady()) return;
+    const footerTrigger = getFooterTrigger(event.target);
+    const cookieTrigger = getCookieTrigger(event.target);
+    const consentActionTrigger = getConsentActionTrigger(event.target);
+    if (!footerTrigger && !cookieTrigger && !consentActionTrigger) return;
 
     event.preventDefault();
 
@@ -110,6 +133,32 @@ const setupFooterModuleHydration = (siteFooter) => {
     const footer = await waitForFooterReady();
 
     try {
+      if (
+        consentActionTrigger instanceof HTMLElement &&
+        consentActionTrigger.id
+      ) {
+        const hydratedConsentTrigger = footer?.querySelector?.(
+          `#${consentActionTrigger.id}`,
+        );
+        if (hydratedConsentTrigger instanceof HTMLButtonElement) {
+          hydratedConsentTrigger.click();
+          return;
+        }
+      }
+
+      if (cookieTrigger) {
+        const hydratedCookieTrigger = footer?.querySelector?.(
+          FOOTER_COOKIE_TRIGGER_SELECTOR,
+        );
+        if (
+          hydratedCookieTrigger instanceof HTMLButtonElement ||
+          hydratedCookieTrigger instanceof HTMLAnchorElement
+        ) {
+          hydratedCookieTrigger.click();
+          return;
+        }
+      }
+
       footerModule?.openFooter?.();
       /** @type {any} */ (footer)?.open?.();
     } catch (error) {
@@ -174,8 +223,8 @@ export function ensureFooterAndTrigger() {
         } catch {
           /* ignore */
         }
-        siteMenu.dataset.injectedBy = 'head-inline';
-        siteMenu.dataset.shell = 'true';
+        /** @type {any} */ (siteMenu).dataset.injectedBy = 'head-inline';
+        /** @type {any} */ (siteMenu).dataset.shell = 'true';
         siteMenu.innerHTML = getMenuShellMarkup();
         headerEl.appendChild(siteMenu);
       }
@@ -189,8 +238,7 @@ export function ensureFooterAndTrigger() {
         });
 
         siteFooter = document.createElement('site-footer');
-        siteFooter.setAttribute('src', '/content/components/footer/footer');
-        siteFooter.dataset.shell = 'true';
+        /** @type {any} */ (siteFooter).dataset.shell = 'true';
         siteFooter.innerHTML = getFooterShellMarkup();
         document.body.appendChild(siteFooter);
       }

@@ -3,13 +3,12 @@ import {
   readContentRagManifest,
   syncSiteContentRag,
 } from '../_content-rag.js';
+import { errorJsonResponse, jsonResponse } from '../_response.js';
+import { CACHE_CONTROL_NO_STORE } from '../../_shared/http-headers.js';
 
-function getJsonHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store',
-  };
-}
+const NO_STORE_HEADERS = {
+  'Cache-Control': CACHE_CONTROL_NO_STORE,
+};
 
 function getRuntimeInfo(env) {
   return {
@@ -31,13 +30,13 @@ function authorize(request, env) {
   if (!expectedToken) {
     return {
       ok: false,
-      response: new Response(
-        JSON.stringify({
+      response: errorJsonResponse(
+        {
           error: 'Admin configuration error: ADMIN_TOKEN is missing',
-        }),
+        },
         {
           status: 500,
-          headers: getJsonHeaders(),
+          headers: NO_STORE_HEADERS,
         },
       ),
     };
@@ -47,10 +46,13 @@ function authorize(request, env) {
   if (authHeader !== `Bearer ${expectedToken}`) {
     return {
       ok: false,
-      response: new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: getJsonHeaders(),
-      }),
+      response: errorJsonResponse(
+        { error: 'Unauthorized' },
+        {
+          status: 401,
+          headers: NO_STORE_HEADERS,
+        },
+      ),
     };
   }
 
@@ -68,28 +70,26 @@ export async function onRequestGet(context) {
   if (query) {
     try {
       const retrieval = await getSiteContentRagContext(query, context.env);
-      return new Response(
-        JSON.stringify({
+      return jsonResponse(
+        {
           ok: true,
           query,
           retrieval,
           runtime: getRuntimeInfo(context.env),
           checkedAt: new Date().toISOString(),
-        }),
-        {
-          headers: getJsonHeaders(),
         },
+        { headers: NO_STORE_HEADERS },
       );
     } catch (error) {
-      return new Response(
-        JSON.stringify({
+      return errorJsonResponse(
+        {
           ok: false,
           query,
           error: error?.message || 'content_rag_query_failed',
-        }),
+        },
         {
           status: 500,
-          headers: getJsonHeaders(),
+          headers: NO_STORE_HEADERS,
         },
       );
     }
@@ -108,18 +108,16 @@ export async function onRequestGet(context) {
 
   const manifest = await readContentRagManifest(context.env);
 
-  return new Response(
-    JSON.stringify({
+  return jsonResponse(
+    {
       ok: true,
       configured: Boolean(context.env?.AI && context.env?.ROBOT_CONTENT_RAG),
       manifest,
       indexInfo,
       runtime: getRuntimeInfo(context.env),
       checkedAt: new Date().toISOString(),
-    }),
-    {
-      headers: getJsonHeaders(),
     },
+    { headers: NO_STORE_HEADERS },
   );
 }
 
@@ -136,25 +134,23 @@ export async function onRequestPost(context) {
     const result = await syncSiteContentRag(context, {
       forceReindex,
     });
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         ...result,
         forceReindex,
         runtime: getRuntimeInfo(context.env),
-      }),
-      {
-        headers: getJsonHeaders(),
       },
+      { headers: NO_STORE_HEADERS },
     );
   } catch (error) {
-    return new Response(
-      JSON.stringify({
+    return errorJsonResponse(
+      {
         ok: false,
         error: error?.message || 'content_rag_sync_failed',
-      }),
+      },
       {
         status: 500,
-        headers: getJsonHeaders(),
+        headers: NO_STORE_HEADERS,
       },
     );
   }

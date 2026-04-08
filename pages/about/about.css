@@ -14,7 +14,6 @@ body.about-page {
       transparent 25%
     );
 }
-
 .about-main h1 {
   font-size: clamp(var(--size-r-2-5), 5vw, var(--size-r-4));
   margin-bottom: var(--size-r-1);
@@ -48,12 +47,7 @@ main.about-main.container {
   padding: var(--size-r-0-75) var(--size-r-1-5);
   border-radius: var(--radius-full);
   font-weight: 600;
-  transition:
-    background-color 0.3s,
-    color 0.3s,
-    border-color 0.3s,
-    transform 0.3s,
-    box-shadow 0.3s;
+  transition: all 0.3s;
   font-size: var(--size-r-0-95);
 }
 .about-main .btn-primary {
@@ -81,7 +75,6 @@ main.about-main.container {
   background: color-mix(in srgb, var(--clr-white) 5%, transparent);
   border: var(--size-1) solid var(--card-border);
   color: var(--text-main);
-  -webkit-backdrop-filter: blur(var(--card-blur-base));
   backdrop-filter: blur(var(--card-blur-base));
 }
 .about-main .btn-outline:hover {
@@ -103,7 +96,6 @@ main.about-main.container {
   border: var(--size-1) solid var(--card-border);
   border-radius: var(--radius-xl);
   padding: var(--space-8);
-  -webkit-backdrop-filter: blur(var(--size-12));
   backdrop-filter: blur(var(--size-12));
   transition:
     transform 0.3s,
@@ -169,10 +161,7 @@ main.about-main.container {
   background: color-mix(in srgb, var(--clr-white) 3%, transparent);
   border-radius: var(--size-r-1);
   border: var(--size-1) solid transparent;
-  transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    transform 0.2s;
+  transition: all 0.2s;
 }
 .social-item:hover {
   background: color-mix(in srgb, var(--clr-white) 8%, transparent);
@@ -188,11 +177,7 @@ main.about-main.container {
   font-size: var(--size-r-0-9);
   color: var(--text-main);
   border: var(--size-1) solid var(--card-border);
-  transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    color 0.2s,
-    transform 0.2s;
+  transition: all 0.2s;
 }
 .stack-tag:hover {
   background: color-mix(in srgb, var(--clr-white) 10%, transparent);
@@ -246,11 +231,7 @@ main.about-main.container {
   padding: var(--size-r-1-25);
   border-radius: var(--size-r-1);
   border: var(--size-1) solid var(--card-border);
-  transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    transform 0.2s,
-    box-shadow 0.2s;
+  transition: all 0.2s;
 }
 .mini-card:hover {
   background: color-mix(in srgb, var(--clr-white) 6%, transparent);
@@ -376,6 +357,6 @@ main.about-main.container {
 }
 @media (width <= 900px) {
   body.about-page {
-    min-height: calc(var(--viewport-height) - var(--menu-height));
+    min-height: calc(100vh - var(--menu-height));
   }
 }

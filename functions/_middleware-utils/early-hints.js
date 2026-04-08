@@ -8,6 +8,8 @@
  * @version 1.0.0
  */
 
+import { R2_PUBLIC_ORIGIN } from '../../content/config/media-urls.js';
+
 // ---------------------------------------------------------------------------
 // Critical resources to signal via Link headers
 // ---------------------------------------------------------------------------
@@ -17,34 +19,31 @@
  * Order matters — CSS first (render-blocking), then modulepreload (parser hint).
  */
 const CRITICAL_RESOURCES = [
-  // Critical CSS — blocks first paint
-  { href: '/content/styles/tokens.css', rel: 'preload', as: 'style' },
-  { href: '/content/styles/root.css', rel: 'preload', as: 'style' },
+  // Critical CSS — foundation.css is already streamed inline by middleware
   { href: '/content/styles/main.css', rel: 'preload', as: 'style' },
   { href: '/content/styles/animations.css', rel: 'preload', as: 'style' },
 
   // Critical JS modules — start parsing before HTML fully loaded
   { href: '/content/main.js', rel: 'modulepreload' },
   { href: '/content/components/head/head-inline.js', rel: 'modulepreload' },
-  { href: '/content/components/menu/SiteMenu.js', rel: 'modulepreload' },
+  { href: '/content/components/menu/index.js', rel: 'modulepreload' },
 
   // Third-party preconnect — start DNS + TLS handshake early
   { href: 'https://cdn.jsdelivr.net', rel: 'preconnect', crossorigin: true },
   { href: 'https://esm.sh', rel: 'preconnect', crossorigin: true },
   {
-    href: 'https://img.abdulkerimsesli.de',
+    href: R2_PUBLIC_ORIGIN,
     rel: 'preconnect',
     crossorigin: true,
   },
 ];
 
 const STANDALONE_SHELL_EXCLUSIONS = new Set([
-  '/content/styles/root.css',
   '/content/styles/main.css',
   '/content/styles/animations.css',
   '/content/main.js',
   '/content/components/head/head-inline.js',
-  '/content/components/menu/SiteMenu.js',
+  '/content/components/menu/index.js',
 ]);
 
 function normalizePathname(pathname = '/') {

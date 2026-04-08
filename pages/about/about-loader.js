@@ -59,9 +59,9 @@ async function initAboutPage() {
  */
 async function initializeLucideIcons() {
   // Already available
-  if (typeof window !== 'undefined' && window.lucide) {
+  if (typeof window !== 'undefined' && /** @type {any} */ (window).lucide) {
     try {
-      window.lucide.createIcons();
+      /** @type {any} */ (window).lucide.createIcons();
       log.debug('Lucide icons initialized (immediate)');
     } catch (error) {
       log.warn('Failed to initialize Lucide icons:', error);
@@ -78,10 +78,10 @@ async function initializeLucideIcons() {
 
     // Check periodically via rAF (lighter than setInterval)
     const check = () => {
-      if (window.lucide) {
+      if (/** @type {any} */ (window).lucide) {
         clearTimeout(timeout);
         try {
-          window.lucide.createIcons();
+          /** @type {any} */ (window).lucide.createIcons();
           log.debug('Lucide icons initialized');
         } catch (error) {
           log.warn('Failed to initialize Lucide icons:', error);
@@ -136,10 +136,10 @@ function setupInteractions() {
   const cards = document.querySelectorAll('.card');
   cards.forEach((card) => {
     card.addEventListener('mouseenter', () => {
-      card.style.transform = 'translateY(-4px)';
+      /** @type {any} */ (card).style.transform = 'translateY(-4px)';
     });
     card.addEventListener('mouseleave', () => {
-      card.style.transform = 'translateY(0)';
+      /** @type {any} */ (card).style.transform = 'translateY(0)';
     });
   });
 

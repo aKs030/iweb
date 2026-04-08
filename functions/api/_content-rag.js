@@ -4,110 +4,13 @@ const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const PROJECTS_INDEX_PATH = '/pages/projekte/apps-config.json';
 const ABOUT_PAGE_PATH = '/pages/about/index.html';
 const CONTENT_RAG_MANIFEST_KEY = 'robot-content-rag:manifest:v1';
-const CONTENT_RAG_SEARCH_INDEX_KEY = 'robot-content-rag:search-index:v1';
-const DEFAULT_TOP_K = 4;
-const DEFAULT_SCORE_THRESHOLD = 0.25;
 const DEFAULT_CHUNK_MAX_CHARS = 900;
 const DEFAULT_CHUNK_MIN_CHARS = 240;
-const DEFAULT_HYBRID_CANDIDATE_K = 6;
-const DEFAULT_LEXICAL_SCORE_THRESHOLD = 0.18;
 const EMBEDDING_BATCH_SIZE = 20;
 const VECTORIZE_BATCH_SIZE = 500;
 const VECTORIZE_DELETE_BATCH_SIZE = 1000;
-const MAX_CHUNKS_PER_DOCUMENT = 2;
-const MAX_RERANKED_MATCHES = 12;
-const MAX_SOURCE_LINKS = 2;
 const CONTENT_RAG_MANIFEST_VERSION = 3;
-const QUERY_STOP_WORDS = new Set([
-  'aber',
-  'abdulkerim',
-  'about',
-  'agent',
-  'ai',
-  'als',
-  'am',
-  'an',
-  'and',
-  'antwort',
-  'antwortet',
-  'auf',
-  'aus',
-  'bei',
-  'beim',
-  'ber',
-  'bitte',
-  'blog',
-  'companion',
-  'das',
-  'dein',
-  'deine',
-  'dem',
-  'den',
-  'der',
-  'des',
-  'die',
-  'du',
-  'ein',
-  'eine',
-  'einer',
-  'eines',
-  'er',
-  'es',
-  'for',
-  'fragt',
-  'frage',
-  'geht',
-  'hat',
-  'how',
-  'ich',
-  'im',
-  'in',
-  'ist',
-  'kerim',
-  'mein',
-  'meint',
-  'mit',
-  'oder',
-  'portfolio',
-  'robot',
-  'seine',
-  'seinen',
-  'sesli',
-  'sie',
-  'sieht',
-  'site',
-  'the',
-  'uber',
-  'ueber',
-  'und',
-  'von',
-  'was',
-  'website',
-  'wie',
-  'wir',
-  'wo',
-  'zu',
-  'zum',
-  'zur',
-]);
-
-function parseInteger(value, fallback, { min = 1, max = 100 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ''), 10);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(max, Math.max(min, parsed));
-}
-
-function parseDecimal(
-  value,
-  fallback,
-  { min = 0, max = 1, precision = 2 } = {},
-) {
-  const parsed = Number.parseFloat(String(value ?? ''));
-  if (!Number.isFinite(parsed)) return fallback;
-  const clamped = Math.min(max, Math.max(min, parsed));
-  const factor = 10 ** precision;
-  return Math.round(clamped * factor) / factor;
-}
+const DEFAULT_RAG_QUERY_TOP_K = 6;
 
 function normalizeWhitespace(value) {
   return String(value || '')
@@ -119,342 +22,6 @@ function trimToLength(value, maxLength) {
   const text = normalizeWhitespace(value);
   if (!text || text.length <= maxLength) return text;
   return `${text.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
-}
-
-function normalizeSearchText(value) {
-  return String(value || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/ß/g, 'ss')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-}
-
-function extractSearchTerms(value) {
-  return [
-    ...new Set(
-      normalizeSearchText(value)
-        .split(/\s+/)
-        .filter((term) => term.length >= 3 && !QUERY_STOP_WORDS.has(term)),
-    ),
-  ];
-}
-
-function scoreTermCoverage(terms, ...texts) {
-  if (!Array.isArray(terms) || terms.length === 0) return 0;
-  const haystack = normalizeSearchText(texts.filter(Boolean).join(' '));
-  if (!haystack) return 0;
-
-  let hits = 0;
-  for (const term of terms) {
-    if (haystack.includes(term)) hits += 1;
-  }
-  return hits / terms.length;
-}
-
-function resolveQueryIntent(query) {
-  const normalizedQuery = normalizeSearchText(query);
-  return {
-    normalizedQuery,
-    terms: extractSearchTerms(query),
-    prefersBlog:
-      /\b(blog|artikel|beitrag|post|posts|geschrieben|schreibt)\b/.test(
-        normalizedQuery,
-      ),
-    prefersProject:
-      /\b(projekt|projekte|app|apps|case study|case studies|referenz|gebaut|umgesetzt)\b/.test(
-        normalizedQuery,
-      ),
-    prefersVideo:
-      /\b(video|videos|youtube|kanal|motion design|animation|shorts)\b/.test(
-        normalizedQuery,
-      ),
-    prefersAbout:
-      /\b(about|ueber mich|über mich|wer ist|wer bist|lebenslauf|werdegang|skills|tech stack|leistungen|zusammenarbeit|berlin)\b/.test(
-        normalizedQuery,
-      ),
-    seeksOpinion:
-      /\b(denkt|meinung|sicht|ansicht|haltung|philosophie|findet|bewertet|einschatzung|einschaetzung)\b/.test(
-        normalizedQuery,
-      ),
-  };
-}
-
-function getSourceIntentBoost(intent, sourceType) {
-  let boost = 0;
-  if (intent.prefersBlog && sourceType === 'blog') boost += 0.08;
-  if (intent.prefersProject && sourceType === 'project') boost += 0.08;
-  if (intent.prefersVideo && sourceType === 'video') boost += 0.08;
-  if (intent.prefersAbout && sourceType === 'about') boost += 0.08;
-  if (intent.seeksOpinion && sourceType === 'blog') boost += 0.05;
-  return boost;
-}
-
-function rerankMatch(match, intent) {
-  const titleCoverage = scoreTermCoverage(
-    intent.terms,
-    match.title,
-    match.section,
-  );
-  const contentCoverage = scoreTermCoverage(
-    intent.terms,
-    match.content,
-    match.snippet,
-    match.category,
-    match.tagsText,
-  );
-  const normalizedTitle = normalizeSearchText(
-    `${match.title} ${match.section}`,
-  );
-  const normalizedContent = normalizeSearchText(
-    [match.content, match.snippet, match.category, match.tagsText].join(' '),
-  );
-  const phrase = intent.normalizedQuery;
-  const exactTitleHit =
-    phrase.length >= 6 && normalizedTitle.includes(phrase) ? 0.08 : 0;
-  const exactContentHit =
-    phrase.length >= 6 && normalizedContent.includes(phrase) ? 0.04 : 0;
-  const sourceBoost = getSourceIntentBoost(intent, match.sourceType);
-  const keywordScore = Number(match.keywordScore) || 0;
-  const semanticScore = Number(match.score) || 0;
-
-  return Number(
-    (
-      semanticScore * 0.5 +
-      keywordScore * 0.14 +
-      titleCoverage * 0.18 +
-      contentCoverage * 0.1 +
-      exactTitleHit +
-      exactContentHit +
-      sourceBoost
-    ).toFixed(4),
-  );
-}
-
-function buildSourceLinks(matches) {
-  const sources = [];
-  const seenUrls = new Set();
-
-  for (const match of matches) {
-    if (!match.url || seenUrls.has(match.url)) continue;
-    seenUrls.add(match.url);
-    sources.push({
-      title: match.title,
-      url: match.url,
-      sourceType: match.sourceType,
-      date: match.date,
-    });
-    if (sources.length >= MAX_SOURCE_LINKS) break;
-  }
-
-  return sources;
-}
-
-function buildIntentMetadataFilter(intent) {
-  if (!intent) return null;
-
-  if (
-    intent.prefersProject &&
-    !intent.prefersBlog &&
-    !intent.prefersVideo &&
-    !intent.prefersAbout &&
-    !intent.seeksOpinion
-  ) {
-    return { sourceType: 'project' };
-  }
-
-  if (
-    intent.prefersBlog &&
-    !intent.prefersProject &&
-    !intent.prefersVideo &&
-    !intent.prefersAbout
-  ) {
-    return { sourceType: 'blog' };
-  }
-
-  if (intent.prefersVideo && !intent.prefersProject && !intent.prefersAbout) {
-    return { sourceType: 'video' };
-  }
-
-  if (intent.prefersAbout && !intent.prefersProject && !intent.prefersVideo) {
-    return { sourceType: 'about' };
-  }
-
-  if (
-    intent.seeksOpinion &&
-    !intent.prefersProject &&
-    !intent.prefersVideo &&
-    !intent.prefersAbout
-  ) {
-    return { sourceType: 'blog' };
-  }
-
-  return null;
-}
-
-function buildSearchRecordText(record) {
-  return normalizeWhitespace(
-    [
-      record.sourceType,
-      record.title,
-      record.section,
-      record.category,
-      record.tagsText,
-      record.snippet,
-      record.content,
-      record.url,
-    ]
-      .filter(Boolean)
-      .join(' '),
-  );
-}
-
-function scoreLexicalRecord(record, intent) {
-  if (!intent?.terms?.length) return 0;
-
-  const titleCoverage = scoreTermCoverage(
-    intent.terms,
-    record.title,
-    record.section,
-  );
-  const detailCoverage = scoreTermCoverage(
-    intent.terms,
-    record.category,
-    record.tagsText,
-    record.snippet,
-    record.content,
-    record.url,
-  );
-  const normalizedTitle = normalizeSearchText(
-    `${record.title} ${record.section || ''}`,
-  );
-  const normalizedText = normalizeSearchText(record.searchText);
-  const exactTitleHit =
-    intent.normalizedQuery.length >= 6 &&
-    normalizedTitle.includes(intent.normalizedQuery)
-      ? 0.14
-      : 0;
-  const exactTextHit =
-    intent.normalizedQuery.length >= 6 &&
-    normalizedText.includes(intent.normalizedQuery)
-      ? 0.1
-      : 0;
-  const sourceBoost = getSourceIntentBoost(intent, record.sourceType);
-
-  return Number(
-    (
-      titleCoverage * 0.42 +
-      detailCoverage * 0.28 +
-      exactTitleHit +
-      exactTextHit +
-      sourceBoost
-    ).toFixed(4),
-  );
-}
-
-function selectLexicalMatches(
-  searchRecords,
-  intent,
-  config,
-  metadataFilter = null,
-) {
-  if (!Array.isArray(searchRecords) || searchRecords.length === 0) return [];
-  if (!intent?.terms?.length) return [];
-
-  const filteredRecords = metadataFilter?.sourceType
-    ? searchRecords.filter(
-        (record) => record.sourceType === metadataFilter.sourceType,
-      )
-    : searchRecords;
-
-  return filteredRecords
-    .map((record) => ({
-      ...record,
-      keywordScore: scoreLexicalRecord(record, intent),
-    }))
-    .filter((record) => record.keywordScore >= config.lexicalScoreThreshold)
-    .sort((left, right) => {
-      if (right.keywordScore !== left.keywordScore) {
-        return right.keywordScore - left.keywordScore;
-      }
-      return left.title.localeCompare(right.title, 'de');
-    })
-    .slice(0, config.hybridCandidateK);
-}
-
-function mergeHybridMatches(vectorMatches, lexicalMatches) {
-  const merged = new Map();
-
-  for (const match of vectorMatches) {
-    merged.set(match.id, {
-      ...match,
-      keywordScore: Number(match.keywordScore) || 0,
-    });
-  }
-
-  for (const match of lexicalMatches) {
-    const existing = merged.get(match.id);
-    if (existing) {
-      merged.set(match.id, {
-        ...existing,
-        keywordScore: Math.max(
-          Number(existing.keywordScore) || 0,
-          Number(match.keywordScore) || 0,
-        ),
-      });
-      continue;
-    }
-
-    merged.set(match.id, {
-      ...match,
-      score: 0,
-      keywordScore: Number(match.keywordScore) || 0,
-    });
-  }
-
-  return [...merged.values()];
-}
-
-async function queryContentRagIndex(index, vector, options, filter) {
-  if (!filter || Object.keys(filter).length === 0) {
-    return {
-      result: await index.query(vector, options),
-      appliedFilter: null,
-      usedFallback: false,
-    };
-  }
-
-  try {
-    const filteredResult = await index.query(vector, {
-      ...options,
-      filter,
-    });
-
-    if (
-      Array.isArray(filteredResult?.matches) &&
-      filteredResult.matches.length
-    ) {
-      return {
-        result: filteredResult,
-        appliedFilter: filter,
-        usedFallback: false,
-      };
-    }
-  } catch (error) {
-    if (!error?.remote) {
-      console.warn(
-        'Content RAG metadata filter fallback:',
-        error?.message || error,
-      );
-    }
-  }
-
-  return {
-    result: await index.query(vector, options),
-    appliedFilter: null,
-    usedFallback: true,
-  };
 }
 
 async function hashText(value) {
@@ -747,14 +314,14 @@ function buildProjectMarkdown(project) {
   return sections.filter(Boolean).join('\n\n');
 }
 
-async function loadJsonAsset(env, requestUrl, path) {
+async function loadJsonFile(env, requestUrl, path) {
   if (!env?.ASSETS) return null;
   const response = await env.ASSETS.fetch(new URL(path, requestUrl));
   if (!response.ok) return null;
   return await response.json();
 }
 
-async function loadTextAsset(env, requestUrl, path) {
+async function loadTextFile(env, requestUrl, path) {
   if (!env?.ASSETS) return '';
   const response = await env.ASSETS.fetch(new URL(path, requestUrl));
   if (!response.ok) return '';
@@ -773,7 +340,7 @@ function buildVideoMarkdown(video) {
 }
 
 async function loadAboutDocuments(context) {
-  const html = await loadTextAsset(
+  const html = await loadTextFile(
     context.env,
     context.request.url,
     ABOUT_PAGE_PATH,
@@ -801,14 +368,14 @@ async function loadAboutDocuments(context) {
       summary: normalizeWhitespace(descriptionMatch?.[1]),
       category: 'profil',
       date: normalizeWhitespace(dateMatch?.[1]),
-      tagsText: 'about, profil, tech stack, services, career, berlin',
+      tagsText: 'about, profil, tech stack, projects, career, berlin',
       rawText,
     },
   ];
 }
 
 async function loadBlogDocuments(context) {
-  const entries = await loadJsonAsset(
+  const entries = await loadJsonFile(
     context.env,
     context.request.url,
     BLOG_INDEX_PATH,
@@ -819,7 +386,7 @@ async function loadBlogDocuments(context) {
     entries.map(async (entry) => {
       if (!entry?.id || !entry?.file) return null;
 
-      const markdown = await loadTextAsset(
+      const markdown = await loadTextFile(
         context.env,
         context.request.url,
         entry.file,
@@ -854,7 +421,7 @@ async function loadBlogDocuments(context) {
 }
 
 async function loadProjectDocuments(context) {
-  const projectConfig = await loadJsonAsset(
+  const projectConfig = await loadJsonFile(
     context.env,
     context.request.url,
     PROJECTS_INDEX_PATH,
@@ -912,31 +479,6 @@ async function loadVideoDocuments(context) {
       };
     })
     .filter(Boolean);
-}
-
-export function resolveContentRagConfig(env = {}) {
-  return {
-    topK: parseInteger(env.ROBOT_CONTENT_RAG_TOP_K, DEFAULT_TOP_K, {
-      min: 1,
-      max: 8,
-    }),
-    hybridCandidateK: parseInteger(
-      env.ROBOT_CONTENT_RAG_HYBRID_TOP_K,
-      DEFAULT_HYBRID_CANDIDATE_K,
-      {
-        min: 1,
-        max: 12,
-      },
-    ),
-    scoreThreshold: parseDecimal(
-      env.ROBOT_CONTENT_RAG_SCORE_THRESHOLD,
-      DEFAULT_SCORE_THRESHOLD,
-    ),
-    lexicalScoreThreshold: parseDecimal(
-      env.ROBOT_CONTENT_RAG_LEXICAL_SCORE_THRESHOLD,
-      DEFAULT_LEXICAL_SCORE_THRESHOLD,
-    ),
-  };
 }
 
 export async function buildSiteContentCorpus(context) {
@@ -1020,24 +562,6 @@ async function writeContentRagManifest(env, manifest) {
   return true;
 }
 
-async function readContentRagSearchIndex(env) {
-  if (!env?.SITEMAP_CACHE_KV) return null;
-  try {
-    return await env.SITEMAP_CACHE_KV.get(CONTENT_RAG_SEARCH_INDEX_KEY, 'json');
-  } catch {
-    return null;
-  }
-}
-
-async function writeContentRagSearchIndex(env, searchIndex) {
-  if (!env?.SITEMAP_CACHE_KV) return false;
-  await env.SITEMAP_CACHE_KV.put(
-    CONTENT_RAG_SEARCH_INDEX_KEY,
-    JSON.stringify(searchIndex),
-  );
-  return true;
-}
-
 function chunkArray(items, size) {
   const chunks = [];
   for (let index = 0; index < items.length; index += size) {
@@ -1059,29 +583,6 @@ function indexChunksByDocument(chunks) {
   }
 
   return byDocument;
-}
-
-function buildSearchRecords(chunks) {
-  return chunks.map((chunk) => {
-    const record = {
-      id: chunk.id,
-      documentId: chunk.documentId,
-      sourceType: chunk.sourceType,
-      title: chunk.title,
-      url: chunk.url,
-      section: chunk.section,
-      snippet: chunk.snippet,
-      content: trimToLength(chunk.content, DEFAULT_CHUNK_MAX_CHARS),
-      category: chunk.category || '',
-      tagsText: chunk.tagsText || '',
-      date: chunk.date || '',
-    };
-
-    return {
-      ...record,
-      searchText: buildSearchRecordText(record),
-    };
-  });
 }
 
 function buildManifestDocuments(
@@ -1185,6 +686,65 @@ async function deleteStaleVectors(index, ids) {
   return deleted;
 }
 
+export async function getSiteContentRagContext(query, env, options = {}) {
+  const normalizedQuery = normalizeWhitespace(query);
+  if (!normalizedQuery) {
+    return {
+      query: '',
+      count: 0,
+      matches: [],
+    };
+  }
+
+  if (!env?.AI) {
+    throw new Error('AI binding is missing');
+  }
+  if (
+    !env?.ROBOT_CONTENT_RAG ||
+    typeof env.ROBOT_CONTENT_RAG.query !== 'function'
+  ) {
+    throw new Error('ROBOT_CONTENT_RAG query is unavailable');
+  }
+
+  const embeddingModel =
+    env.ROBOT_EMBEDDING_MODEL || '@cf/baai/bge-base-en-v1.5';
+  const embeddingResult = await env.AI.run(embeddingModel, {
+    text: [normalizedQuery],
+  });
+  const vector = Array.isArray(embeddingResult?.data)
+    ? embeddingResult.data[0]
+    : null;
+
+  if (!Array.isArray(vector) || vector.length === 0) {
+    throw new Error('Failed to create query embedding');
+  }
+
+  const topK = Math.max(
+    1,
+    Math.min(20, Number(options.topK || DEFAULT_RAG_QUERY_TOP_K)),
+  );
+  const queryResult = await env.ROBOT_CONTENT_RAG.query(vector, {
+    topK,
+    returnMetadata: 'all',
+  });
+  const rawMatches = Array.isArray(queryResult?.matches)
+    ? queryResult.matches
+    : [];
+
+  return {
+    query: normalizedQuery,
+    count: rawMatches.length,
+    matches: rawMatches.map((match) => ({
+      id: String(match?.id || ''),
+      score: Number(match?.score || 0),
+      metadata:
+        match?.metadata && typeof match.metadata === 'object'
+          ? match.metadata
+          : {},
+    })),
+  };
+}
+
 export async function syncSiteContentRag(context, options = {}) {
   const { env } = context;
   if (!env?.AI) {
@@ -1253,13 +813,6 @@ export async function syncSiteContentRag(context, options = {}) {
     previousManifest,
     syncedAt,
   );
-  const searchRecords = buildSearchRecords(corpus.chunks);
-  const searchIndex = {
-    version: CONTENT_RAG_MANIFEST_VERSION,
-    syncedAt,
-    recordCount: searchRecords.length,
-    records: searchRecords,
-  };
 
   const manifest = {
     version: CONTENT_RAG_MANIFEST_VERSION,
@@ -1280,7 +833,6 @@ export async function syncSiteContentRag(context, options = {}) {
   };
 
   await writeContentRagManifest(env, manifest);
-  await writeContentRagSearchIndex(env, searchIndex);
 
   const indexInfo = await env.ROBOT_CONTENT_RAG.describe().catch(() => null);
 
@@ -1289,175 +841,4 @@ export async function syncSiteContentRag(context, options = {}) {
     ...manifest,
     indexInfo,
   };
-}
-
-export async function getSiteContentRagContext(query, env) {
-  const trimmedQuery = normalizeWhitespace(query);
-  if (!trimmedQuery || !env?.AI || !env?.ROBOT_CONTENT_RAG) {
-    return null;
-  }
-
-  const config = resolveContentRagConfig(env);
-
-  try {
-    const embeddingModel =
-      env.ROBOT_EMBEDDING_MODEL || '@cf/baai/bge-base-en-v1.5';
-    const response = await env.AI.run(embeddingModel, {
-      text: [trimmedQuery],
-    });
-    const vector = Array.isArray(response?.data) ? response.data[0] : null;
-    if (!Array.isArray(vector) || vector.length === 0) return null;
-
-    const rawTopK = Math.min(
-      Math.max(config.topK * 3, config.topK + 4),
-      MAX_RERANKED_MATCHES,
-    );
-    const intent = resolveQueryIntent(trimmedQuery);
-    const metadataFilter = buildIntentMetadataFilter(intent);
-    const {
-      result: results,
-      appliedFilter,
-      usedFallback,
-    } = await queryContentRagIndex(
-      env.ROBOT_CONTENT_RAG,
-      vector,
-      {
-        topK: rawTopK,
-        returnMetadata: 'all',
-      },
-      metadataFilter,
-    );
-    const retrievalMode =
-      appliedFilter?.sourceType && !usedFallback
-        ? `metadata-filter:${appliedFilter.sourceType}`
-        : usedFallback && metadataFilter?.sourceType
-          ? `fallback-unfiltered:${metadataFilter.sourceType}`
-          : 'unfiltered';
-    const searchIndex = await readContentRagSearchIndex(env);
-
-    const vectorMatches = [];
-    for (const match of results?.matches || []) {
-      if (
-        !Number.isFinite(match?.score) ||
-        match.score < config.scoreThreshold
-      ) {
-        continue;
-      }
-
-      const metadata =
-        match?.metadata && typeof match.metadata === 'object'
-          ? match.metadata
-          : {};
-      const content = trimToLength(metadata.content, DEFAULT_CHUNK_MAX_CHARS);
-      const title = normalizeWhitespace(metadata.title);
-      const url = normalizeWhitespace(metadata.url);
-      if (!content || !title || !url) continue;
-
-      vectorMatches.push({
-        id: normalizeWhitespace(match.id),
-        documentId: normalizeWhitespace(metadata.documentId || match.id),
-        score: Number(match.score.toFixed(3)),
-        sourceType: normalizeWhitespace(metadata.sourceType || 'content'),
-        title,
-        url,
-        section: normalizeWhitespace(metadata.section),
-        date: normalizeWhitespace(metadata.date),
-        snippet: trimToLength(metadata.snippet, 240),
-        category: normalizeWhitespace(metadata.category),
-        tagsText: normalizeWhitespace(metadata.tags),
-        content,
-      });
-    }
-
-    const lexicalMatches = selectLexicalMatches(
-      searchIndex?.records || [],
-      intent,
-      config,
-      metadataFilter,
-    );
-    const rerankedMatches = mergeHybridMatches(vectorMatches, lexicalMatches);
-    if (!rerankedMatches.length) return null;
-
-    const rankedMatches = rerankedMatches
-      .map((item) => ({
-        ...item,
-        rerankScore: rerankMatch(item, intent),
-      }))
-      .sort((left, right) => {
-        if (right.rerankScore !== left.rerankScore) {
-          return right.rerankScore - left.rerankScore;
-        }
-        if (right.keywordScore !== left.keywordScore) {
-          return right.keywordScore - left.keywordScore;
-        }
-        return right.score - left.score;
-      });
-
-    const documentUsage = new Map();
-    const matches = [];
-    for (const item of rankedMatches) {
-      const usageCount = documentUsage.get(item.documentId) || 0;
-      if (usageCount >= MAX_CHUNKS_PER_DOCUMENT) continue;
-      matches.push(item);
-      documentUsage.set(item.documentId, usageCount + 1);
-      if (matches.length >= config.topK) break;
-    }
-
-    if (!matches.length) return null;
-
-    const sources = buildSourceLinks(matches);
-    const hybridSignals = {
-      vectorMatchCount: vectorMatches.length,
-      lexicalMatchCount: lexicalMatches.length,
-      usedLexicalMatch: matches.some((item) => Number(item.keywordScore) > 0),
-    };
-    const prompt = [
-      'Nutze die folgenden Primärquellen aus Abdulkerims eigenem Website-Content als bevorzugte Grundlage für Antworten über seine Sichtweisen, Projekte und technischen Entscheidungen.',
-      sources.length > 0
-        ? [
-            'Wenn du dich inhaltlich auf diesen Kontext stützt, nenne am Ende unter "Quellen:" 1-2 passende Markdown-Links aus dieser Liste und erfinde keine zusätzlichen URLs.',
-            ...sources.map((item) => `- [${item.title}](${item.url})`),
-          ].join('\n')
-        : '',
-      ...matches.map((item, index) =>
-        [
-          `[Quelle ${index + 1}]`,
-          `Typ: ${item.sourceType}`,
-          `Titel: ${item.title}`,
-          item.date ? `Datum: ${item.date}` : '',
-          item.section ? `Abschnitt: ${item.section}` : '',
-          `Retrieval: ${retrievalMode}`,
-          item.keywordScore ? `Lexical: ${item.keywordScore}` : '',
-          `Rerank: ${item.rerankScore}`,
-          `URL: ${item.url}`,
-          `Inhalt: ${item.content}`,
-        ]
-          .filter(Boolean)
-          .join('\n'),
-      ),
-    ]
-      .filter(Boolean)
-      .join('\n\n');
-
-    return {
-      prompt,
-      sources,
-      retrievalMode,
-      hybridSignals,
-      matches: matches.map(
-        ({
-          documentId: _documentId,
-          snippet: _snippet,
-          category: _category,
-          tagsText: _tagsText,
-          ...item
-        }) => item,
-      ),
-    };
-  } catch (error) {
-    if (!error?.remote) {
-      console.warn('getSiteContentRagContext error:', error?.message || error);
-    }
-    return null;
-  }
 }

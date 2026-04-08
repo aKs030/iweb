@@ -53,7 +53,7 @@ export function upsertVideosSchema(videoNodes) {
   let script = existing;
   if (!script) {
     script = document.createElement('script');
-    script.type = 'application/ld+json';
+    /** @type {any} */ (script).type = 'application/ld+json';
     script.id = VIDEOS_SCHEMA_SCRIPT_ID;
     document.head.appendChild(script);
   }

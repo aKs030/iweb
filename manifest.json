@@ -38,12 +38,6 @@
       "purpose": "any"
     },
     {
-      "src": "https://img.abdulkerimsesli.de/icons/favicon.svg?v=20260221",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
       "src": "https://img.abdulkerimsesli.de/icons/favicon.ico?v=20260221",
       "sizes": "48x48",
       "type": "image/x-icon",

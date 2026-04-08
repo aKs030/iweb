@@ -45,7 +45,7 @@ export class RobotContextReactions {
   stopMonitoring() {
     this.isMonitoring = false;
     this._listeners.forEach(({ target, event, handler }) => {
-      target.removeEventListener(event, handler);
+      target.removeEventListener(event, /** @type {EventListener} */ (handler));
     });
     this._listeners = [];
   }
@@ -58,7 +58,11 @@ export class RobotContextReactions {
    * @param {Object} [options]
    */
   _addEventListener(target, event, handler, options) {
-    target.addEventListener(event, handler, options);
+    target.addEventListener(
+      event,
+      /** @type {EventListener} */ (handler),
+      options,
+    );
     this._listeners.push({ target, event, handler });
   }
 

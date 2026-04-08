@@ -2,19 +2,42 @@
  * Menu Events Management
  * Handles all user interactions, URL changes, and scroll events.
  */
-import { i18n } from '../../../core/i18n.js';
-import { footerSignals } from '../../../core/footer-state.js';
-import { TimerManager } from '../../../core/utils.js';
-import { createLogger } from '../../../core/logger.js';
-import { resolvedTheme, setTheme } from '../../../core/theme-state.js';
-import { withViewTransition } from '../../../core/view-transitions.js';
+import { i18n } from '#core/i18n.js';
+import { footerSignals } from '#footer/state.js';
+import { createLogger } from '#core/logger.js';
+import { TimerManager } from '#core/timer-manager.js';
+import { resolvedTheme, setTheme } from '#core/theme-state.js';
+import { withViewTransition } from '#core/view-transitions.js';
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
-} from '../../../core/view-transition-types.js';
-import { VIEW_TRANSITION_TIMINGS_MS } from '../../../core/view-transition-timings.js';
+  VIEW_TRANSITION_TIMINGS_MS,
+} from '#core/view-transition-constants.js';
+import {
+  OVERLAY_MODES,
+  prepareOverlayFocusChange,
+} from '#core/overlay-manager.js';
+import { isConnectedHTMLElement, resolveMenuHost } from './menu-dom-helpers.js';
+import { selectActiveMenuHref } from './menu-active-link.js';
 
 const log = createLogger('MenuEvents');
+
+/**
+ * @typedef {typeof import('./MenuConfig.js').MenuConfig} MenuComponentConfig
+ */
+/**
+ * @typedef {Partial<MenuComponentConfig>} MenuComponentConfigInput
+ */
+
+function isVisibleElement(element) {
+  if (!(element instanceof HTMLElement) || !element.isConnected) return false;
+  const style = window.getComputedStyle(element);
+  return (
+    style.display !== 'none' &&
+    style.visibility !== 'hidden' &&
+    element.getClientRects().length > 0
+  );
+}
 
 export class MenuEvents {
   /**
@@ -22,7 +45,7 @@ export class MenuEvents {
    * @param {import('./MenuState.js').MenuState} state
    * @param {import('./MenuRenderer.js').MenuRenderer} renderer
    * @param {import('./MenuSearch.js').MenuSearch} menuSearch
-   * @param {Object} config
+   * @param {MenuComponentConfigInput} [config]
    * @param {HTMLElement|null} [host]
    */
   constructor(
@@ -34,8 +57,7 @@ export class MenuEvents {
     host = null,
   ) {
     this.container = container;
-    this.host =
-      host || (container instanceof ShadowRoot ? container.host : container);
+    this.host = resolveMenuHost(container, host);
     this.state = state;
     this.renderer = renderer;
     this.menuSearch = menuSearch;
@@ -138,7 +160,7 @@ export class MenuEvents {
       const isOpen = !this.state.isOpen;
       if (isOpen) {
         // ensure footer is collapsed when main nav opens
-        import('#components/footer/footer.js').then(({ closeFooter }) => {
+        import('#footer/index.js').then(({ closeFooter }) => {
           try {
             closeFooter();
           } catch {}
@@ -159,11 +181,42 @@ export class MenuEvents {
   }
 
   getHeaderElement() {
-    return this.host?.closest?.('.site-header') || null;
+    const header = this.host?.closest?.('.site-header');
+    return isConnectedHTMLElement(header) ? header : null;
   }
 
   getToggleElement() {
-    return this.container.querySelector('.site-menu__toggle');
+    const toggle = this.container.querySelector('.site-menu__toggle');
+    return isConnectedHTMLElement(toggle) ? toggle : null;
+  }
+
+  getPrimaryFocusTarget() {
+    return (
+      this.container.querySelector('.site-menu a[href]') ||
+      this.container.querySelector('.site-menu button:not([disabled])') ||
+      this.getToggleElement()
+    );
+  }
+
+  getFocusTrapRoots() {
+    return [
+      this.container.querySelector('.site-menu'),
+      this.getToggleElement(),
+    ].filter(isConnectedHTMLElement);
+  }
+
+  getRestoreFocusTarget() {
+    const toggle = this.getToggleElement();
+    if (isVisibleElement(toggle)) {
+      return toggle;
+    }
+
+    const searchTrigger = this.container.querySelector('.search-trigger');
+    if (isVisibleElement(searchTrigger)) {
+      return searchTrigger;
+    }
+
+    return this.getPrimaryFocusTarget();
   }
 
   setupNavigation() {
@@ -179,7 +232,7 @@ export class MenuEvents {
         // Contact button: close the menu first, then open the footer panel.
         if (href === '#footer') {
           this.closeMenu();
-          import('#components/footer/footer.js')
+          import('#footer/index.js')
             .then(({ openFooter }) => openFooter())
             .catch(() => {});
           return;
@@ -238,26 +291,10 @@ export class MenuEvents {
       }
     };
 
-    const handleEscape = (e) => {
-      if (e.key !== 'Escape') return;
-
-      if (this.menuSearch.isSearchOpen()) {
-        this.menuSearch.closeSearchMode();
-        return;
-      }
-
-      if (this.state.isOpen) {
-        this.closeMenu();
-        const toggle = this.getToggleElement();
-        toggle?.focus();
-      }
-    };
-
     const onUrlChange = () => this.handleUrlChange();
 
     this.cleanupFns.push(
       this.addListener(document, 'click', handleDocClick),
-      this.addListener(document, 'keydown', handleEscape),
       this.addListener(window, 'hashchange', onUrlChange),
       this.addListener(window, 'popstate', onUrlChange),
       footerSignals.loaded.subscribe((isLoaded) => {
@@ -356,55 +393,15 @@ export class MenuEvents {
     const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
     const currentHash = window.location.hash;
 
-    const links = Array.from(
+    const hrefs = Array.from(
       this.container.querySelectorAll('.site-menu a[href]'),
+      (link) => link.getAttribute('href'),
     );
-
-    let bestMatch = null;
-    let matchScore = 0; // 3=Hash, 2=ExactPath, 1=Prefix
-
-    links.forEach((link) => {
-      const rawHref = link.getAttribute('href');
-      if (!rawHref) return;
-
-      // Normalize link href
-      // e.g. "/projekte/" -> "/projekte", "/#contact" -> "/#contact"
-      const linkPath = rawHref.split('#')[0].replace(/\/$/, '') || '/';
-      const linkHash = rawHref.includes('#') ? '#' + rawHref.split('#')[1] : '';
-
-      // Check 1: Exact Hash Match (Highest Priority)
-      // Must match path AND hash
-      if (linkHash && linkHash === currentHash && linkPath === currentPath) {
-        if (matchScore < 3) {
-          bestMatch = rawHref;
-          matchScore = 3;
-        }
-        return;
-      }
-
-      // Check 2: Exact Path Match (ignoring hash on current page if link has no hash)
-      if (!linkHash && linkPath === currentPath) {
-        if (matchScore < 2) {
-          bestMatch = rawHref;
-          matchScore = 2;
-        }
-        return;
-      }
-
-      // Check 3: Prefix Match (Subpages)
-      // e.g. current=/blog/post-1, link=/blog/
-      // Only if we haven't found a better match
-      if (matchScore < 1 && !linkHash && currentPath.startsWith(linkPath)) {
-        // Verify it's a real segment match (/blog matches /blog/x, but /b does not match /blog)
-        const nextChar = currentPath[linkPath.length];
-        if (linkPath === '/' || nextChar === '/') {
-          bestMatch = rawHref;
-          matchScore = 1;
-        }
-      }
+    const activeHref = selectActiveMenuHref(hrefs, {
+      currentPath,
+      currentHash,
     });
-
-    this.state.setActiveLink(bestMatch);
+    this.state.setActiveLink(activeHref);
   }
 
   updateTitleFromPathOrSection() {
@@ -474,7 +471,11 @@ export class MenuEvents {
     return null;
   }
 
-  closeMenu() {
+  closeMenu(options = {}) {
+    const { restoreFocus = false } = options;
+    prepareOverlayFocusChange(this.state.isOpen ? OVERLAY_MODES.MENU : null, {
+      restoreFocus,
+    });
     this.setMenuOpenWithTransition(false);
   }
 

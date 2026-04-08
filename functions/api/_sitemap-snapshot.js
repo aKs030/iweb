@@ -1,3 +1,5 @@
+import { CACHE_CONTROL_NO_STORE } from '../_shared/http-headers.js';
+
 /**
  * Sitemap snapshot utilities (stale-if-error)
  *
@@ -132,7 +134,7 @@ export async function respondWithSnapshotOr503({ env, name, cacheControl }) {
     status: 503,
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'no-store',
+      'Cache-Control': CACHE_CONTROL_NO_STORE,
       'Retry-After': String(RETRY_AFTER_SECONDS),
     },
   });

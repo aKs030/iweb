@@ -22,7 +22,7 @@ const DEV_HOSTNAMES = new Set(['localhost', '127.0.0.1']);
 const PREVIEW_SUFFIXES = ['.pages.dev', '.netlify.app'];
 
 function getRuntimeWindow() {
-  return typeof window !== 'undefined' ? window : null;
+  return typeof window !== 'undefined' ? /** @type {any} */ (window) : null;
 }
 
 function getHostname() {

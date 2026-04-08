@@ -1,13 +1,27 @@
-import { i18n } from '../../../core/i18n.js';
-import { createLogger } from '../../../core/logger.js';
-import { sanitizeInternalNavigationUrl } from '../../../core/url-utils.js';
+import { i18n } from '#core/i18n.js';
+import { sanitizeInternalNavigationUrl } from '#core/url-utils.js';
 
-const log = createLogger('MenuSearchApi');
 const SEARCH_ENDPOINT = '/api/search';
-const AI_AGENT_ENDPOINT = '/api/ai-agent';
 const MARK_HIGHLIGHT_PATTERN = /<mark>[\s\S]*?<\/mark>/i;
+const SEARCH_FACETS = Object.freeze([
+  'all',
+  'blog',
+  'projects',
+  'videos',
+  'pages',
+]);
+
+/**
+ * @typedef {typeof import('./MenuConfig.js').MenuConfig} MenuComponentConfig
+ */
+/**
+ * @typedef {Partial<MenuComponentConfig>} MenuComponentConfigInput
+ */
 
 export class MenuSearchApi {
+  /**
+   * @param {MenuComponentConfigInput} [config]
+   */
   constructor(config = {}) {
     this.config = config;
   }
@@ -33,10 +47,63 @@ export class MenuSearchApi {
     return MARK_HIGHLIGHT_PATTERN.test(String(value || '').trim());
   }
 
-  filterHighlightedResults(items) {
-    return (Array.isArray(items) ? items : []).filter((item) =>
-      this.hasMarkedHighlight(item?.highlightedDescription),
+  normalizeSearchFacet(rawFacet) {
+    const value = String(rawFacet || '')
+      .trim()
+      .toLowerCase();
+    if (value === 'project' || value === 'projekte') return 'projects';
+    if (value === 'video') return 'videos';
+    if (value === 'page' || value === 'seiten') return 'pages';
+    return SEARCH_FACETS.includes(value) ? value : 'all';
+  }
+
+  normalizeFacetCounts(facets) {
+    const countsByKey = new Map(
+      (Array.isArray(facets) ? facets : []).map((entry) => [
+        this.normalizeSearchFacet(entry?.key),
+        Math.max(0, Number.parseInt(String(entry?.count || 0), 10) || 0),
+      ]),
     );
+
+    return SEARCH_FACETS.map((key) => ({
+      key,
+      count: countsByKey.get(key) || 0,
+    }));
+  }
+
+  filterResultsByFacet(items, rawFacet) {
+    const facet = this.normalizeSearchFacet(rawFacet);
+    const list = Array.isArray(items) ? items : [];
+
+    if (facet === 'all') return list;
+
+    return list.filter((item) => {
+      const category = String(item?.category || '')
+        .trim()
+        .toLowerCase();
+      const url = String(item?.url || '')
+        .trim()
+        .toLowerCase();
+
+      if (facet === 'blog')
+        return category === 'blog' || url.startsWith('/blog/');
+      if (facet === 'projects') {
+        return (
+          category === 'projekte' ||
+          url === '/projekte/' ||
+          url.startsWith('/projekte/')
+        );
+      }
+      if (facet === 'videos') {
+        return (
+          category === 'videos' ||
+          url === '/videos/' ||
+          url.startsWith('/videos/')
+        );
+      }
+
+      return !['blog', 'projekte', 'videos'].includes(category);
+    });
   }
 
   normalizeSearchChatMessage(value) {
@@ -73,46 +140,36 @@ export class MenuSearchApi {
     const message = this.normalizeSearchChatMessage(
       payload.message || fallbackSummary || '',
     );
-    return { message };
-  }
-
-  buildSearchAiAgentPrompt(query, items = []) {
-    const compactQuery = String(query || '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    const context = (Array.isArray(items) ? items : [])
-      .slice(0, 4)
-      .map((item, index) => {
-        const title = String(item?.title || '').trim();
-        const url = sanitizeInternalNavigationUrl(item?.url || '');
-        const desc = String(item?.description || '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (!title || !url) return '';
-        return `${index + 1}. ${title} (${url})${desc ? ` - ${desc}` : ''}`;
-      })
-      .filter(Boolean)
-      .join('\n');
-
-    return [
-      `Nutzer sucht im Menü nach: "${compactQuery}".`,
-      'Formuliere eine kurze Antwort auf Deutsch (maximal 2 Sätze).',
-      'Nutze nur relative interne Links im Markdown-Format, z. B. [Blog](/blog/).',
-      'Keine Listen, keine Tool-Aktionen, keine externen Links.',
-      '',
-      'Verfügbare Suchtreffer:',
-      context || 'Keine Treffer.',
-    ].join('\n');
+    const suggestions = Array.isArray(payload.suggestions)
+      ? payload.suggestions
+          .map((suggestion) => {
+            const title = String(
+              suggestion?.title || suggestion?.label || '',
+            ).trim();
+            const safeUrl = sanitizeInternalNavigationUrl(
+              suggestion?.url || '',
+            );
+            if (!title || !safeUrl) return null;
+            return { title, url: safeUrl };
+          })
+          .filter(Boolean)
+          .slice(0, 6)
+      : [];
+    return { message, suggestions };
   }
 
   async fetchSearchResults(query, options = {}) {
-    const { topK = 12, signal = null } = options;
+    const { topK = 12, facet = 'all', signal = null } = options;
     const response = await fetch(SEARCH_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ query, topK }),
+      body: JSON.stringify({
+        query,
+        topK,
+        facet: this.normalizeSearchFacet(facet),
+      }),
       signal,
     });
 
@@ -133,43 +190,51 @@ export class MenuSearchApi {
 
     return {
       items,
+      facet: this.normalizeSearchFacet(data?.facet),
+      facets: this.normalizeFacetCounts(data?.facets),
       aiChatMessage: fallbackAiChat.message,
+      aiChatSuggestions: fallbackAiChat.suggestions || [],
     };
   }
 
-  async fetchSearchAiAgentMessage(query, items = [], options = {}) {
-    if (!query) return '';
-    if (navigator.onLine === false) return '';
+  normalizeSuggestions(suggestions) {
+    const seen = new Set();
+    return (Array.isArray(suggestions) ? suggestions : [])
+      .map((entry) => {
+        const title = String(entry?.title || '').trim();
+        const safeUrl = sanitizeInternalNavigationUrl(entry?.url || '');
+        if (!title || !safeUrl) return null;
+        const key = `${title}|${safeUrl}`.toLowerCase();
+        if (seen.has(key)) return null;
+        seen.add(key);
+        return { title, url: safeUrl };
+      })
+      .filter(Boolean);
+  }
 
-    const timeoutMs = Number(options.timeoutMs || 0);
-    const controller = new AbortController();
-    const timeoutId =
-      timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
-
-    try {
-      const response = await fetch(AI_AGENT_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: this.buildSearchAiAgentPrompt(query, items),
-          stream: false,
-        }),
-        credentials: 'omit',
-        signal: controller.signal,
-      });
-
-      if (!response.ok) return '';
-
-      const body = await response.json().catch(() => ({}));
-      return this.normalizeSearchChatMessage(body?.text || '');
-    } catch (error) {
-      if (!this.isAbortLikeError(error)) {
-        log.debug('Menu search AI agent request failed:', error);
-      }
-      return '';
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
+  pickSearchSuggestions(query, suggestions = [], maxCount = 6) {
+    const normalizedQuery = String(query || '')
+      .trim()
+      .toLowerCase();
+    const unique = this.normalizeSuggestions(suggestions);
+    if (!normalizedQuery) {
+      return unique.slice(0, maxCount);
     }
+    const ranked = unique.sort((a, b) => {
+      const aTitle = a.title.toLowerCase();
+      const bTitle = b.title.toLowerCase();
+      const aUrl = a.url.toLowerCase();
+      const bUrl = b.url.toLowerCase();
+      const aScore =
+        (aTitle.includes(normalizedQuery) ? 2 : 0) +
+        (aUrl.includes(normalizedQuery) ? 1 : 0);
+      const bScore =
+        (bTitle.includes(normalizedQuery) ? 2 : 0) +
+        (bUrl.includes(normalizedQuery) ? 1 : 0);
+      if (bScore !== aScore) return bScore - aScore;
+      return aTitle.localeCompare(bTitle, 'de');
+    });
+    return ranked.slice(0, maxCount);
   }
 
   getFallbackSuggestions() {
@@ -226,6 +291,16 @@ export class MenuSearchApi {
         highlightedDescription: `<mark>${i18n.tOrFallback('menu.search_offline_match', 'Lokaler Treffer')}</mark>`,
         category: i18n.tOrFallback('menu.search_offline_category', 'Offline'),
       }));
+  }
+
+  buildOfflineFacetCounts(query) {
+    const items = this.buildOfflineSearchResults(query);
+    return this.normalizeFacetCounts(
+      SEARCH_FACETS.map((key) => ({
+        key,
+        count: this.filterResultsByFacet(items, key).length,
+      })),
+    );
   }
 
   isAbortLikeError(error) {

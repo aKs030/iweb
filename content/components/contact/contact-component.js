@@ -1,7 +1,7 @@
 import React from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { i18n } from '../../core/i18n.js';
-import { createLogger } from '../../core/logger.js';
+import { i18n } from '#core/i18n.js';
+import { createLogger } from '#core/logger.js';
 
 const log = createLogger('ContactForm');
 

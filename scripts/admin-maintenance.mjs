@@ -1,33 +1,37 @@
-function parseArgs(argv) {
-  const args = {};
+import { loadLocalEnv } from './load-local-env.mjs';
+import {
+  fetchJson,
+  getFlagValue,
+  parseInteger,
+  resolveUrlValue,
+} from './script-utils.mjs';
 
-  for (const rawArg of argv) {
-    if (!rawArg.startsWith('--')) continue;
-    const [rawKey, ...rawValue] = rawArg.slice(2).split('=');
-    const key = String(rawKey || '').trim();
-    if (!key) continue;
-    args[key] = rawValue.length > 0 ? rawValue.join('=').trim() : 'true';
-  }
-
-  return args;
-}
+const argv = process.argv.slice(2);
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
-  const siteUrl = String(
-    args.url ||
-      process.env.PRODUCTION_SITE_URL ||
-      'https://www.abdulkerimsesli.de',
+  await loadLocalEnv();
+
+  const siteUrl = resolveUrlValue({
+    argv,
+    envKeys: ['PRODUCTION_SITE_URL'],
+    defaultValue: 'https://www.abdulkerimsesli.de',
+  });
+  const adminToken = String(
+    getFlagValue('--token', argv) || process.env.ADMIN_TOKEN || '',
   ).trim();
-  const adminToken = String(args.token || process.env.ADMIN_TOKEN || '').trim();
-  const limit = Math.max(1, Math.min(500, Number(args.limit) || 100));
+  const limit = parseInteger(getFlagValue('--limit', argv), 100, {
+    min: 1,
+    max: 500,
+  });
 
   if (!adminToken) {
-    throw new Error('ADMIN_TOKEN fehlt fuer admin-maintenance.');
+    throw new Error(
+      'ADMIN_TOKEN fehlt fuer admin-maintenance (.dev.vars/.env.local/.env geprueft).',
+    );
   }
 
   const endpoint = new URL('/api/admin/users', siteUrl).toString();
-  const response = await fetch(endpoint, {
+  const { response, payload } = await fetchJson(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -38,8 +42,6 @@ async function main() {
       limit,
     }),
   });
-
-  const payload = await response.json().catch(() => null);
   if (!response.ok || payload?.success === false) {
     throw new Error(
       payload?.text ||

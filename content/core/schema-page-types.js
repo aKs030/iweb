@@ -1,4 +1,4 @@
-import { normalizeSchemaText, uniqueSchemaList } from './schema-shared.js';
+import { normalizeSchemaText, uniqueSchemaList } from './text-utils.js';
 
 const SCHEMA_HOMEPAGE_DISCOVERY_TEXT =
   'Die Startseite bündelt Portfolio, Bildgalerie, Videoinhalte, Blogartikel und technische Schwerpunkte in einem zentralen Einstiegspunkt. Suchmaschinen und KI-Suchen erhalten dadurch einen klaren Überblick über Bilder, Videos und redaktionelle Inhalte auf dieser Domain.';

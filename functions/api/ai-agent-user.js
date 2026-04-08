@@ -4,6 +4,7 @@
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
+import { jsonResponse } from './_response.js';
 import {
   deleteAdminNameMapping,
   deleteAdminUserIndex,
@@ -12,13 +13,13 @@ import {
 } from './admin/_admin-index.js';
 import {
   USER_ID_HEADER_NAME,
-  appendSetCookie,
-  buildUserIdClearCookie,
-  buildUserIdCookie,
   normalizeUserId as normalizeSharedUserId,
-  readUserIdFromCookieHeader,
 } from './_user-identity.js';
 import { findRecoveryCandidates } from './_profile-recovery.js';
+import {
+  CACHE_CONTROL_NO_STORE,
+  mergeHeaders,
+} from '../_shared/http-headers.js';
 
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const DEFAULT_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
@@ -55,6 +56,10 @@ const SINGLETON_MEMORY_KEYS = new Set([
 ]);
 const USERNAME_LOOKUP_PREFIX = 'username:';
 const USERNAME_LOOKUP_CONFLICT = '__conflict__';
+
+function jsonWithHeaders(payload, options = {}) {
+  return jsonResponse(payload, options);
+}
 
 function parseInteger(value, fallback, { min = 1, max = 3650 } = {}) {
   const parsed = Number.parseInt(String(value ?? ''), 10);
@@ -424,6 +429,7 @@ function normalizeAction(raw) {
     .toLowerCase()
     .trim();
   if (value === 'list') return 'list';
+  if (value === 'resolve') return 'resolve';
   if (value === 'activate') return 'activate';
   if (value === 'disconnect') return 'disconnect';
   if (value === 'update-memory' || value === 'updatememory') {
@@ -736,7 +742,11 @@ export async function forgetSingleMemory(kv, env, userId, body) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const baseHeaders = new Headers(getCorsHeaders(request, env));
+  const baseHeaders = new Headers(
+    mergeHeaders(getCorsHeaders(request, env), {
+      'Cache-Control': CACHE_CONTROL_NO_STORE,
+    }),
+  );
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -744,18 +754,13 @@ export async function onRequestPost(context) {
     const headerUserId = normalizeUserId(
       request.headers.get(USER_ID_HEADER_NAME),
     );
-    const cookieUserId = readUserIdFromCookieHeader(
-      request.headers.get('Cookie'),
-    );
     const bodyUserId = normalizeUserId(body?.userId);
-    const userId =
-      action === 'disconnect'
-        ? headerUserId || cookieUserId || bodyUserId
-        : headerUserId || cookieUserId;
+    const trustedUserId = headerUserId;
+    const userId = trustedUserId || bodyUserId;
 
     const kv = getMemoryKV(env);
     if (!kv) {
-      return Response.json(
+      return jsonWithHeaders(
         {
           success: false,
           text: 'Cloudflare KV für Memory ist nicht verfügbar.',
@@ -766,6 +771,56 @@ export async function onRequestPost(context) {
 
     const responseHeaders = new Headers(baseHeaders);
 
+    if (trustedUserId && bodyUserId && bodyUserId !== trustedUserId) {
+      return jsonWithHeaders(
+        {
+          success: false,
+          text: 'User-ID-Mismatch: Zugriff nur auf die angemeldete ID erlaubt.',
+        },
+        { status: 403, headers: baseHeaders },
+      );
+    }
+
+    if (action === 'resolve') {
+      const recoveryName = normalizeMemoryText(
+        body?.name || body?.recoveryName || '',
+      );
+      if (!recoveryName) {
+        return jsonWithHeaders(
+          {
+            success: false,
+            text: 'Bitte gib einen Namen für die Profilsuche ein.',
+          },
+          { status: 400, headers: baseHeaders },
+        );
+      }
+
+      const candidates = await findRecoveryCandidates(env, kv, recoveryName);
+      const recoveryStatus =
+        candidates.length === 0
+          ? 'none'
+          : candidates.length === 1
+            ? 'needs_confirmation'
+            : 'conflict';
+
+      return jsonWithHeaders(
+        {
+          success: true,
+          recovery: {
+            status: recoveryStatus,
+            name: recoveryName,
+            candidateUserId: candidates[0]?.userId || '',
+            candidates,
+          },
+          text:
+            candidates.length > 0
+              ? 'Profile gefunden.'
+              : 'Kein Profil für diesen Namen gefunden.',
+        },
+        { headers: responseHeaders },
+      );
+    }
+
     if (action === 'activate') {
       const targetUserId = normalizeUserId(
         body?.targetUserId || body?.candidateUserId,
@@ -775,7 +830,7 @@ export async function onRequestPost(context) {
       );
 
       if (!targetUserId || !recoveryName) {
-        return Response.json(
+        return jsonWithHeaders(
           {
             success: false,
             text: 'Profil-Aktivierung erfordert Name und Zielprofil.',
@@ -786,7 +841,7 @@ export async function onRequestPost(context) {
 
       const candidates = await findRecoveryCandidates(env, kv, recoveryName);
       if (!candidates.some((candidate) => candidate.userId === targetUserId)) {
-        return Response.json(
+        return jsonWithHeaders(
           {
             success: false,
             text: 'Das gewaehlte Profil passt nicht zum angefragten Namen.',
@@ -803,12 +858,7 @@ export async function onRequestPost(context) {
         DEFAULT_MEMORY_RETENTION_DAYS,
       );
       const ordered = orderMemories(memories);
-
-      appendSetCookie(
-        responseHeaders,
-        buildUserIdCookie(request, targetUserId),
-      );
-      return Response.json(
+      return jsonWithHeaders(
         {
           success: true,
           userId: targetUserId,
@@ -826,8 +876,7 @@ export async function onRequestPost(context) {
     }
 
     if (action === 'disconnect') {
-      appendSetCookie(responseHeaders, buildUserIdClearCookie(request));
-      return Response.json(
+      return jsonWithHeaders(
         {
           success: true,
           userId: '',
@@ -844,28 +893,13 @@ export async function onRequestPost(context) {
     }
 
     if (!userId) {
-      return Response.json(
+      return jsonWithHeaders(
         {
           success: false,
           text: 'Keine aktive User-ID im Request vorhanden.',
         },
         { status: 401, headers: baseHeaders },
       );
-    }
-
-    if (bodyUserId && bodyUserId !== userId) {
-      return Response.json(
-        {
-          success: false,
-          text: 'User-ID-Mismatch: Zugriff nur auf die angemeldete ID erlaubt.',
-        },
-        { status: 403, headers: baseHeaders },
-      );
-    }
-    if (action === 'delete') {
-      appendSetCookie(responseHeaders, buildUserIdClearCookie(request));
-    } else {
-      appendSetCookie(responseHeaders, buildUserIdCookie(request, userId));
     }
 
     if (action === 'list') {
@@ -878,7 +912,7 @@ export async function onRequestPost(context) {
       );
       const ordered = orderMemories(memories);
 
-      return Response.json(
+      return jsonWithHeaders(
         {
           success: true,
           userId,
@@ -897,7 +931,7 @@ export async function onRequestPost(context) {
 
     if (action === 'update-memory') {
       const result = await updateSingleMemory(kv, env, userId, body);
-      return Response.json(
+      return jsonWithHeaders(
         {
           success: result.success,
           userId,
@@ -915,7 +949,7 @@ export async function onRequestPost(context) {
 
     if (action === 'forget-memory') {
       const result = await forgetSingleMemory(kv, env, userId, body);
-      return Response.json(
+      return jsonWithHeaders(
         {
           success: result.success,
           userId,
@@ -933,7 +967,7 @@ export async function onRequestPost(context) {
 
     const deleted = await deleteUserProfile(kv, env, userId);
 
-    return Response.json(
+    return jsonWithHeaders(
       {
         success: true,
         userId,
@@ -944,7 +978,7 @@ export async function onRequestPost(context) {
     );
   } catch (error) {
     console.error('[ai-agent-user] Delete failed:', error?.message || error);
-    return Response.json(
+    return jsonWithHeaders(
       {
         success: false,
         text: 'Cloudflare-Löschung fehlgeschlagen.',

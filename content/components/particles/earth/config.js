@@ -1,3 +1,5 @@
+import { EARTH_TEXTURES } from './texture-paths.js';
+
 export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
@@ -83,10 +85,10 @@ export const CONFIG = {
       },
       // OPTIMIZED: Wide angle shot to fit 5 curved cards perfectly
       features: {
-        x: 7.5,
-        y: 6.0,
-        z: 8.5,
-        lookAt: { x: 0, y: 0.0, z: 0 },
+        x: 6.75,
+        y: 5.15,
+        z: 8.1,
+        lookAt: { x: 1.05, y: 0.12, z: 0.95 },
       },
       about: {
         x: -3.2,
@@ -142,13 +144,7 @@ export const CONFIG = {
   },
   PATHS: {
     TEXTURES: {
-      DAY: '/content/assets/img/earth/textures/earth_day.webp',
-      NIGHT: '/content/assets/img/earth/textures/earth_night.webp',
-      NORMAL: '/content/assets/img/earth/textures/earth_normal.webp',
-      BUMP: '/content/assets/img/earth/textures/earth_bump.webp',
-      CLOUDS: '/content/assets/img/earth/textures/earth_clouds_1024.webp',
-      MOON: '/content/assets/img/earth/textures/moon_texture.webp',
-      MOON_BUMP: '/content/assets/img/earth/textures/moon_bump.webp',
+      ...EARTH_TEXTURES,
     },
   },
 };

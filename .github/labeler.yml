@@ -32,11 +32,6 @@ scripts:
   - changed-files:
       - any-glob-to-any-file: ['scripts/**/*']
 
-# Tests
-tests:
-  - changed-files:
-      - any-glob-to-any-file: ['**/*.test.js', '**/*.spec.js', 'tests/**/*']
-
 # CI/CD
 ci-cd:
   - changed-files:

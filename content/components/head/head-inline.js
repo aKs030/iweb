@@ -1,11 +1,9 @@
-import { createLogger } from '../../core/logger.js';
+import { createLogger } from '#core/logger.js';
 import {
   buildProjectDetailPath,
-  extractProjectSlugFromPath,
-  isProjectIndexPath,
-  normalizeProjectSlug,
-} from '../../core/project-paths.js';
-import { stripBranding } from '../../core/utils.js';
+  extractProjectSlug,
+} from '#core/project-paths.js';
+import { stripBranding } from '#core/text-utils.js';
 import { headState } from './head-state.js';
 import {
   getAnalyticsBootstrapState,
@@ -53,15 +51,13 @@ const setEarlyCanonical = () => {
   try {
     const pathname = globalThis.location.pathname || '/';
     const canonicalBase = globalThis.location.href.split('#')[0].split('?')[0];
-    const detailSlug = extractProjectSlugFromPath(pathname);
-    const legacyQuery = new URLSearchParams(globalThis.location.search || '');
-    const legacySlug = isProjectIndexPath(pathname)
-      ? normalizeProjectSlug(legacyQuery.get('app'))
+    const projectSlug = extractProjectSlug(
+      pathname,
+      globalThis.location.search || '',
+    );
+    const projectCanonicalPath = projectSlug
+      ? buildProjectDetailPath(projectSlug)
       : '';
-    const projectCanonicalPath =
-      detailSlug || legacySlug
-        ? buildProjectDetailPath(detailSlug || legacySlug)
-        : '';
     const canonicalUrl = projectCanonicalPath
       ? `${globalThis.location.origin}${projectCanonicalPath}`
       : canonicalBase;
@@ -99,7 +95,7 @@ const hideBrandingFromUsers = () => {
         ua,
       );
 
-    // Branding removal is handled centrally via `stripBranding()` in `content/core/utils.js`
+    // Branding removal is handled centrally via `stripBranding()` in `content/core/text-utils.js`
     const sanitize = (s) => stripBranding(s);
 
     const SHORT_MAP = {
@@ -152,7 +148,7 @@ const hideBrandingFromUsers = () => {
     }
 
     try {
-      const titleEl = document.querySelector('title');
+      const titleEl = /** @type {any} */ (document.querySelector)('title');
       if (titleEl && !isBot) {
         new MutationObserver(() => {
           const t = document.title;
@@ -218,7 +214,7 @@ const hideBrandingFromUsers = () => {
         // Fast path for added nodes
         else if (mutation.addedNodes) {
           for (let j = 0; j < mutation.addedNodes.length; j++) {
-            const node = mutation.addedNodes[j];
+            const node = /** @type {HTMLElement} */ (mutation.addedNodes[j]);
             if (node.nodeType === Node.ELEMENT_NODE) {
               // Ignore typewriter animation nodes which change ~60 times a second
               if (node.classList && node.classList.contains('typed-line'))
@@ -262,7 +258,9 @@ function setupThemeObservers() {
     if (typeof MutationObserver === 'function') {
       new MutationObserver(() => {
         const t = root.getAttribute('data-theme') || 'dark';
-        const metas = document.querySelectorAll('meta[name="theme-color"]');
+        const metas = /** @type {any} */ (document.querySelectorAll)(
+          'meta[name="theme-color"]',
+        );
         for (let i = 0; i < metas.length; i++) {
           const meta = metas[i];
           const content = (meta.getAttribute('content') || '').toLowerCase();
@@ -304,7 +302,7 @@ function setupThemeObservers() {
             break;
           }
         }
-      } else if (navigator.standalone) {
+      } else if (/** @type {any} */ (navigator).standalone) {
         mode = 'standalone';
       }
 

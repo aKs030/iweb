@@ -9,7 +9,7 @@ import {
   extractMainVideoTitles,
 } from './content-extractors.js';
 import { createLogger } from './logger.js';
-import { scheduleIdleTask } from './idle.js';
+import { scheduleIdleTask } from './async-utils.js';
 import { ENV } from '../config/env.config.js';
 import {
   DEFAULT_IMAGE_DIMENSIONS,
@@ -30,7 +30,7 @@ import {
 import {
   normalizeSchemaText as normalizeText,
   uniqueSchemaList as uniqueList,
-} from './schema-shared.js';
+} from './text-utils.js';
 
 const log = createLogger('Schema');
 const CRAWLER_UA_PATTERN =
@@ -155,13 +155,13 @@ function extractSchemaNodesFromScript(script) {
 
 /**
  * Generate Schema.org @graph
- * @param {PageData} pageData
+ * @param {import('./types.js').PageData} pageData
  * @param {string} pageUrl
- * @param {BrandData} brandData
- * @param {Object} options - Additional options
- * @param {Document} options.doc - Document object (for DOM queries)
- * @param {boolean} options.forceProdCanonical - Force production canonical
- * @returns {SchemaNode[]}
+ * @param {import('./types.js').BrandData} brandData
+ * @param {Object} [options={}] - Additional options
+ * @param {Document} [options.doc] - Document object (for DOM queries)
+ * @param {boolean} [options.forceProdCanonical] - Force production canonical
+ * @returns {import('./types.js').SchemaNode[]}
  */
 export function generateSchemaGraph(
   pageData,
@@ -293,9 +293,11 @@ export function generateSchemaGraph(
     publisher: { '@id': ID.org },
     inLanguage: 'de-DE',
     dateModified:
-      doc.querySelector('meta[name="dateModified"]')?.content ||
-      doc.querySelector('meta[property="article:modified_time"]')?.content ||
-      doc.querySelector('meta[name="dateCreated"]')?.content ||
+      doc.querySelector('meta[name="dateModified"]')?.getAttribute('content') ||
+      doc
+        .querySelector('meta[property="article:modified_time"]')
+        ?.getAttribute('content') ||
+      doc.querySelector('meta[name="dateCreated"]')?.getAttribute('content') ||
       now.toISOString(),
   };
 
@@ -441,6 +443,7 @@ function createImageObject(
   canonicalOrigin = ENV.BASE_URL,
 ) {
   return buildImageObject({
+    id: toAbsoluteUrl(url, canonicalOrigin),
     imageUrl: toAbsoluteUrl(url, canonicalOrigin),
     name: `${name} Logo`,
     caption: `${name} Logo`,
@@ -540,7 +543,7 @@ function enrichPersonNode(personNode, brandData, doc) {
       const imgs = Array.from(
         doc?.querySelectorAll?.('main img, .profile-photo, .avatar') || [],
       )
-        .map((i) => i.src)
+        .map((i) => i.getAttribute('src'))
         .filter(Boolean);
       if (imgs.length > 1) {
         personNode.image = imgs.slice(0, 3);
@@ -674,7 +677,7 @@ function extractPageContent(doc) {
       doc?.body;
     if (!contentNode) return '';
 
-    const clone = contentNode.cloneNode(true);
+    const clone = /** @type {HTMLElement} */ (contentNode.cloneNode(true));
     const noiseSelectors = [
       'nav',
       'footer',
@@ -813,31 +816,40 @@ function extractFAQs(pageUrl, pageData, doc) {
 
 /**
  * Inject schema into document
- * @param {SchemaNode[]} graph
- * @param {string} scriptId - ID for the script tag
+ * @param {import('./types.js').SchemaNode[]} graph
+ * @param {Object} options
+ * @param {Document} [options.doc=document]
+ * @param {string} [options.scriptId='schema-ldjson']
  */
-export function injectSchema(graph, scriptId = 'schema-ldjson') {
-  if (!document?.head) return;
+export function injectSchema(graph, options = {}) {
+  const { doc = document, scriptId = 'schema-ldjson' } = options;
+  if (!doc?.head || !Array.isArray(graph) || graph.length === 0) return;
 
   try {
-    const edgeScript = document.getElementById('edge-route-schema');
+    const edgeScript = doc.getElementById('edge-route-schema');
     const edgeNodes = extractSchemaNodesFromScript(edgeScript);
     const finalGraph = dedupeSchemaGraph([
       ...(edgeNodes || []),
       ...(graph || []),
     ]);
 
-    let script = document.getElementById(scriptId);
+    let script = /** @type {HTMLScriptElement} */ (
+      doc.getElementById(scriptId)
+    );
 
-    const payload = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': finalGraph,
-    });
+    const payload = JSON.stringify(
+      {
+        '@context': 'https://schema.org',
+        '@graph': finalGraph,
+      },
+      null,
+      2,
+    );
 
     if (script) {
       script.textContent = payload;
     } else {
-      script = document.createElement('script');
+      script = /** @type {HTMLScriptElement} */ (doc.createElement('script'));
       script.type = 'application/ld+json';
       script.id = scriptId;
       script.textContent = payload;

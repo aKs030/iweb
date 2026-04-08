@@ -23,8 +23,8 @@ const SYNC_TAG = 'sync-analytics';
  * and a Background Sync is registered. If online, the event is sent
  * immediately (with IndexedDB as backup).
  *
- * @param {string} eventName — e.g. 'page_view', 'chat_message', 'click'
- * @param {Record<string, any>} [params={}] — Additional event parameters
+ * @param {string} eventName - e.g. 'page_view', 'chat_message', 'click'
+ * @param {Record<string, any>} [params] - Additional event parameters
  */
 export async function trackEvent(eventName, params = {}) {
   try {
@@ -51,14 +51,14 @@ export async function trackEvent(eventName, params = {}) {
  * Register a Background Sync so the Service Worker flushes
  * analytics events when the device comes back online.
  */
-async function registerBackgroundSync() {
+export async function registerBackgroundSync() {
   if (!('serviceWorker' in navigator)) return;
 
   try {
     const registration = await navigator.serviceWorker.ready;
 
     if ('sync' in registration) {
-      await registration.sync.register(SYNC_TAG);
+      await /** @type {any} */ (registration.sync).register(SYNC_TAG);
     }
   } catch {
     // Background Sync not supported — will flush on next online event

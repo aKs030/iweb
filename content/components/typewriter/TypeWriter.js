@@ -4,9 +4,10 @@
  * Animated text typing effect with multi-line support
  * @version 2.0.0
  */
-import { subscribeFooterState } from '../../core/footer-state.js';
-import { createLogger } from '../../core/logger.js';
-import { getElementById, TimerManager } from '../../core/utils.js';
+import { subscribeFooterState } from '#footer/state.js';
+import { createLogger } from '#core/logger.js';
+import { getElementById } from '#core/dom-utils.js';
+import { TimerManager } from '#core/timer-manager.js';
 
 const log = createLogger('TypeWriter');
 
@@ -109,9 +110,18 @@ function makeLineMeasurer(subtitleEl) {
     let currentLine = [];
 
     const rect = subtitleEl.getBoundingClientRect();
-    const available = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
     const cap = Math.min(window.innerWidth * 0.92, 820);
-    measurer.style.width = Math.max(1, Math.min(available || cap, cap)) + 'px';
+    const measuredMaxWidth = parseFloat(cs.maxWidth);
+    const fallbackAvailable = Math.max(
+      0,
+      window.innerWidth - (rect.left || 0) - 12,
+    );
+    const preferredWidth =
+      Number.isFinite(measuredMaxWidth) && measuredMaxWidth > 0
+        ? measuredMaxWidth
+        : fallbackAvailable;
+    measurer.style.width =
+      Math.max(1, Math.min(preferredWidth || cap, cap)) + 'px';
 
     const lh = getLineHeight();
     if (!lh) return [text];
@@ -456,11 +466,17 @@ export async function initHeroSubtitle(options = {}) {
           ? computedBottom
           : fallbackBase;
 
-        // Prefer the actual fixed footer element rendered inside <site-footer>
+        const siteFooterHost = /** @type {HTMLElement | null} */ (
+          document.querySelector('site-footer')
+        );
+        const shadowFooter =
+          siteFooterHost?.shadowRoot?.querySelector('.site-footer');
+
         const footer = /** @type {HTMLElement | null} */ (
-          document.querySelector('site-footer .site-footer') ||
+          shadowFooter ||
+            document.querySelector('site-footer .site-footer') ||
             document.querySelector('footer.site-footer') ||
-            document.querySelector('site-footer')
+            siteFooterHost
         );
         if (!footer) {
           setCSSVars(el, { bottom: `${Math.round(baseBottom)}px` });

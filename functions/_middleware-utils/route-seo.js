@@ -1,5 +1,5 @@
 import {
-  loadJsonAsset,
+  loadJsonFile,
   resolveOrigin,
   toAbsoluteUrl,
 } from '../api/_xml-utils.js';
@@ -10,23 +10,22 @@ import {
 } from '../api/_text-utils.js';
 import {
   buildProjectCanonicalUrl,
-  extractProjectSlugFromPath,
-  isProjectDetailPath,
-  isProjectIndexPath,
-  normalizeProjectSlug,
+  extractProjectSlug,
 } from '../../content/core/project-paths.js';
+import {
+  buildProjectPreviewUrl,
+  OG_HOME_IMAGE_URL,
+  OG_PROJECTS_IMAGE_URL,
+  OG_VIDEOS_IMAGE_URL,
+} from '../../content/config/media-urls.js';
 
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
 const INDEX_ROBOTS = 'index, follow, max-image-preview:large';
 const NOINDEX_ROBOTS = 'noindex, follow';
-const DEFAULT_BLOG_IMAGE =
-  'https://img.abdulkerimsesli.de/blog/og-home-800.png';
-const DEFAULT_APP_IMAGE =
-  'https://img.abdulkerimsesli.de/blog/og-projekte-800.png';
-const DEFAULT_VIDEO_IMAGE =
-  'https://img.abdulkerimsesli.de/blog/og-videos-800.png';
-const APP_PREVIEW_VERSION = '20260221';
+const DEFAULT_BLOG_IMAGE = OG_HOME_IMAGE_URL;
+const DEFAULT_APP_IMAGE = OG_PROJECTS_IMAGE_URL;
+const DEFAULT_VIDEO_IMAGE = OG_VIDEOS_IMAGE_URL;
 const JSON_CACHE_TTL_MS = 5 * 60 * 1000;
 const VIDEO_CACHE_TTL_MS = 30 * 60 * 1000;
 const jsonCache = new Map();
@@ -99,7 +98,7 @@ async function loadJsonCached(context, path, ttlMs = JSON_CACHE_TTL_MS) {
     return cached.value;
   }
 
-  const payload = await loadJsonAsset(context, path);
+  const payload = await loadJsonFile(context, path);
   if (payload != null) {
     jsonCache.set(path, { value: payload, updatedAt: now });
     return payload;
@@ -336,7 +335,10 @@ async function buildProjectAppMeta(context, requestUrl, appSlug) {
     ),
     220,
   );
-  const image = `https://img.abdulkerimsesli.de/app/${encodeURIComponent(appName)}.svg?v=${APP_PREVIEW_VERSION}`;
+  const image =
+    normalizeText(app?.previewUrl) ||
+    buildProjectPreviewUrl(app) ||
+    DEFAULT_APP_IMAGE;
   const tags = Array.isArray(app.tags)
     ? app.tags.map((entry) => normalizeText(entry)).filter(Boolean)
     : [];
@@ -489,20 +491,9 @@ export async function buildRouteMeta(context, requestUrl) {
     return buildBlogMeta(context, requestUrl, postId);
   }
 
-  if (isProjectDetailPath(pathname)) {
-    const appSlug = extractProjectSlugFromPath(pathname);
-    if (appSlug) {
-      return buildProjectAppMeta(context, requestUrl, appSlug);
-    }
-    return null;
-  }
-
-  if (isProjectIndexPath(pathname)) {
-    const appSlug = normalizeProjectSlug(requestUrl.searchParams.get('app'));
-    if (appSlug) {
-      return buildProjectAppMeta(context, requestUrl, appSlug);
-    }
-    return null;
+  const appSlug = extractProjectSlug(pathname, requestUrl.search);
+  if (appSlug) {
+    return buildProjectAppMeta(context, requestUrl, appSlug);
   }
 
   if (isVideoDetailPath(pathname)) {

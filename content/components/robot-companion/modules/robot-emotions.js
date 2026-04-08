@@ -33,20 +33,6 @@ export class RobotEmotions {
   }
 
   /**
-   * Animate talking
-   * @param {number} duration - Duration in ms
-   */
-  startTalking(duration = 2000) {
-    if (!this.robot.dom.mouth) return;
-
-    this.robot.dom.mouth.classList.add('talking');
-
-    this.robot._setTimeout(() => {
-      this.robot.dom.mouth?.classList.remove('talking');
-    }, duration);
-  }
-
-  /**
    * Show thumbs up gesture
    * @param {number} duration - Duration in ms
    */
@@ -61,24 +47,6 @@ export class RobotEmotions {
     this.robot._setTimeout(() => {
       rightHand.classList.remove('thumbs-up');
       this.setMouthExpression('neutral');
-    }, duration);
-  }
-
-  /**
-   * Animate gripping motion
-   * @param {'left'|'right'} hand
-   * @param {number} duration
-   */
-  grip(hand = 'left', duration = 500) {
-    const handEl = this.robot.dom.container?.querySelector(
-      `.robot-hand.${hand}`,
-    );
-    if (!handEl) return;
-
-    handEl.classList.add('gripping');
-
-    this.robot._setTimeout(() => {
-      handEl.classList.remove('gripping');
     }, duration);
   }
 
@@ -155,21 +123,6 @@ export class RobotEmotions {
     this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('sleeping');
     }, duration);
-  }
-
-  /**
-   * Scared reaction
-   */
-  showScared() {
-    if (!this.robot.dom.avatar) return;
-
-    this.robot.dom.avatar.classList.add('scared');
-    this.setMouthExpression('surprised');
-
-    this.robot._setTimeout(() => {
-      this.robot.dom.avatar?.classList.remove('scared');
-      this.setMouthExpression('neutral');
-    }, 300);
   }
 
   /**
@@ -311,14 +264,5 @@ export class RobotEmotions {
     this.setMouthExpression('happy');
     this.spawnStars(6);
     this.dance(2000);
-  }
-
-  /**
-   * Show love/appreciation
-   */
-  showLove() {
-    this.setMouthExpression('happy');
-    this.spawnHearts(4);
-    this.showThumbsUp(2000);
   }
 }

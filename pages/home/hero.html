@@ -1,82 +1,44 @@
 <!-- partial: true; parent: index.html -->
-<div class="container hero__content u-stack">
-  <div class="hero__visual">
-    <div class="hero__image-container u-center">
-      <div class="hero__spotlight-bg" data-collision-ignore>
-        <div class="hero__title" id="greetingText" data-text="Willkommen">
-          Willkommen
-        </div>
-      </div>
-      <svg class="hero__icon-sprite" aria-hidden="true" focusable="false">
-        <symbol id="hero-icon-code" viewBox="0 0 24 24">
-          <polyline points="16 18 22 12 16 6"></polyline>
-          <polyline points="8 6 2 12 8 18"></polyline>
-        </symbol>
-        <symbol id="hero-icon-terminal" viewBox="0 0 24 24">
-          <polyline points="4 17 10 11 4 5"></polyline>
-          <line x1="12" y1="19" x2="20" y2="19"></line>
-        </symbol>
-        <symbol id="hero-icon-hex" viewBox="0 0 24 24">
-          <path
-            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-          ></path>
-        </symbol>
-        <symbol id="hero-icon-chip" viewBox="0 0 24 24">
-          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
-          <rect x="9" y="9" width="6" height="6"></rect>
-          <line x1="9" y1="1" x2="9" y2="4"></line>
-          <line x1="15" y1="1" x2="15" y2="4"></line>
-          <line x1="9" y1="20" x2="9" y2="23"></line>
-          <line x1="15" y1="20" x2="15" y2="23"></line>
-          <line x1="20" y1="9" x2="23" y2="9"></line>
-          <line x1="20" y1="14" x2="23" y2="14"></line>
-          <line x1="1" y1="9" x2="4" y2="9"></line>
-          <line x1="1" y1="14" x2="4" y2="14"></line>
-        </symbol>
-      </svg>
-      <div class="hero__floating-icons" data-collision-ignore>
-        <div class="hero__floating-icon hero__floating-icon--delay-0">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <use href="#hero-icon-code"></use>
-          </svg>
-        </div>
-        <div class="hero__floating-icon hero__floating-icon--delay-1">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <use href="#hero-icon-terminal"></use>
-          </svg>
-        </div>
-        <div class="hero__floating-icon hero__floating-icon--delay-2">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <use href="#hero-icon-hex"></use>
-          </svg>
-        </div>
-        <div class="hero__floating-icon hero__floating-icon--delay-3">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <use href="#hero-icon-chip"></use>
-          </svg>
-        </div>
-      </div>
+<div class="container hero__content">
+  <div class="hero__poster">
+    <p id="greetingText" class="hero__eyebrow" data-text="Willkommen">
+      Willkommen
+    </p>
+    <p class="hero__brand">Abdulkerim Sesli</p>
+    <h1 class="hero__title" data-i18n-html="home.hero_title">
+      Code, 3D, AI und <em>digitale Experimente.</em>
+    </h1>
+    <p class="hero__lede" data-i18n="home.hero_lede">
+      Öffentliche Sammlung von Interfaces, Web-Experimenten, Fotografie, Videos
+      und Build Notes aus Berlin.
+    </p>
+
+    <ul class="hero__meta" aria-label="Schwerpunkte">
+      <li data-i18n="home.hero_meta_code">JavaScript ES2023+</li>
+      <li data-i18n="home.hero_meta_3d">Three.js / WebGL</li>
+      <li data-i18n="home.hero_meta_ai">AI Search & Chat</li>
+      <li data-i18n="home.hero_meta_media">Photo / Motion / Journal</li>
+    </ul>
+
+    <div class="hero__buttons" data-stagger-group="hero-btns">
+      <a
+        href="#features"
+        class="btn btn-primary hero__button hero__button--primary"
+        aria-label="Zur Selected-Work-Sektion scrollen"
+        data-i18n="hero.btn_next"
+        data-i18n-attrs="aria-label:hero.aria_next"
+      >
+        Selected Work
+      </a>
+      <a
+        href="/about/"
+        class="btn btn-secondary hero__button hero__button--secondary"
+        aria-label="Zur Profilseite"
+        data-i18n="home.hero_profile"
+        data-i18n-attrs="aria-label:home.hero_profile_aria"
+      >
+        Profil
+      </a>
     </div>
   </div>
-</div>
-
-<div class="hero__buttons u-row" data-stagger-group="hero-btns">
-  <a
-    href="#features"
-    class="btn btn-primary hero__button--crt"
-    aria-label="Zu Features-Sektion scrollen"
-    data-i18n="hero.btn_next"
-    data-i18n-attrs="aria-label:hero.aria_next"
-  >
-    Weiter
-  </a>
-  <a
-    href="#footer"
-    class="btn btn-secondary hero__button--crt"
-    data-footer-trigger
-    aria-expanded="false"
-    data-i18n="hero.btn_contact"
-  >
-    Kontakt
-  </a>
 </div>

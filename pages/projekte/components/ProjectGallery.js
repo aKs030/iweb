@@ -1,8 +1,5 @@
 import * as THREE from 'three';
 
-const R2_APP_PREVIEWS_BASE_URL = 'https://img.abdulkerimsesli.de/app';
-const APP_PREVIEWS_VERSION = '20260221';
-
 const LAYOUT_BREAKPOINTS = {
   mobile: 640,
   tablet: 1024,
@@ -98,27 +95,25 @@ export class ProjectGallery {
 
       // 1. Image Screen
       const material = defaultMaterial;
-      const projectName = project.dirName || project.name || project.id;
-      const encodedProjectName = encodeURIComponent(String(projectName || ''))
-        .replace(/%2F/g, '/')
-        .trim();
-      const imageUrl = `${R2_APP_PREVIEWS_BASE_URL}/${encodedProjectName}.svg?v=${APP_PREVIEWS_VERSION}`;
+      const imageUrl = String(project?.previewUrl || '').trim();
 
       // Attempt to load texture
-      textureLoader.load(
-        imageUrl,
-        (texture) => {
-          const screen = projectGroup.getObjectByName('screen');
-          if (screen && 'material' in screen) {
-            screen.material = new THREE.MeshBasicMaterial({ map: texture });
-          }
-        },
-        undefined,
-        () => {
-          // On error, maybe show a "code" pattern or text
-          // For now, stick to default dark grey
-        },
-      );
+      if (imageUrl) {
+        textureLoader.load(
+          imageUrl,
+          (texture) => {
+            const screen = projectGroup.getObjectByName('screen');
+            if (screen && 'material' in screen) {
+              screen.material = new THREE.MeshBasicMaterial({ map: texture });
+            }
+          },
+          undefined,
+          () => {
+            // On error, maybe show a "code" pattern or text
+            // For now, stick to default dark grey
+          },
+        );
+      }
 
       const screen = new THREE.Mesh(geometry, material);
       screen.name = 'screen';

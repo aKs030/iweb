@@ -1,8 +1,7 @@
-// Memory cache for R2 objects to reduce costs and latency
-let cachedObjects = null;
-let cacheExpiresAt = 0;
-let pendingLoadPromise = null;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+import { isLocalDevRuntime } from '../../content/core/runtime-env.js';
+import { jsonResponse, errorJsonResponse } from './_response.js';
+import { listGalleryObjectsWithMetadata } from './_gallery-service.js';
+import { buildGalleryItemPayload } from '../_shared/gallery-media.js';
 
 export async function onRequest(context) {
   const { env, request } = context;
@@ -10,18 +9,14 @@ export async function onRequest(context) {
 
   const BUCKET = env.GALLERY_BUCKET;
   if (!BUCKET) {
-    return new Response(
-      JSON.stringify({ error: 'Gallery Bucket not configured' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
+    return errorJsonResponse('Gallery Bucket not configured', {
+      status: 500,
+    });
   }
 
   // Optimize: Use Cloudflare Cache API for persistent caching across worker restarts
   const cache = caches.default;
-  const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  const isLocal = isLocalDevRuntime(url);
 
   // Try fetching from cache first (skip for local dev to avoid confusion)
   if (!isLocal) {
@@ -35,82 +30,19 @@ export async function onRequest(context) {
   }
 
   try {
-    let objects = [];
-    const now = Date.now();
+    const objects = await listGalleryObjectsWithMetadata(BUCKET);
+    const items = objects.map((obj) => buildGalleryItemPayload(obj, url));
 
-    // Secondary layer: In-memory cache for ultra-fast same-isolate hits
-    if (cachedObjects && now < cacheExpiresAt) {
-      objects = cachedObjects;
-    } else {
-      // De-duplication: Check if another request is already fetching from R2
-      if (pendingLoadPromise) {
-        objects = await pendingLoadPromise;
-      } else {
-        // Fetch from R2 and update in-memory cache
-        pendingLoadPromise = (async () => {
-          try {
-            const listResults = [];
-            let cursor;
-
-            do {
-              const list = await BUCKET.list({ prefix: 'Gallery/', cursor });
-              if (list.objects) {
-                listResults.push(...list.objects);
-              }
-              cursor = list.truncated ? list.cursor : undefined;
-            } while (cursor);
-
-            const filtered = listResults
-              .filter((obj) =>
-                /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i.test(obj.key),
-              )
-              .map((obj) => ({
-                ...obj,
-                uploadedTime: new Date(obj.uploaded).getTime(),
-              }));
-
-            filtered.sort((a, b) => b.uploadedTime - a.uploadedTime);
-
-            cachedObjects = filtered;
-            cacheExpiresAt = Date.now() + CACHE_TTL_MS;
-            return filtered;
-          } finally {
-            pendingLoadPromise = null;
-          }
-        })();
-
-        objects = await pendingLoadPromise;
-      }
-    }
-
-    const R2_BASE = isLocal ? '/r2-proxy' : 'https://img.abdulkerimsesli.de';
-
-    const items = objects.map((obj) => {
-      const key = obj.key;
-      const filename = key.split('/').pop();
-      const type = /\.(mp4|webm)$/i.test(filename) ? 'video' : 'image';
-      const title = filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-
-      return {
-        id: key,
-        type: type,
-        url: `${R2_BASE}/${encodeURIComponent(key).replace(/%2F/g, '/')}`,
-        title: title,
-        description: `Taken by Abdulkerim Sesli`,
-        size: obj.size,
-        uploaded: obj.uploaded,
-      };
-    });
-
-    const responseContent = JSON.stringify({ items });
-    const responseView = new Response(responseContent, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
-        'Access-Control-Allow-Origin': 'https://www.abdulkerimsesli.de',
-        'X-Cache': 'MISS',
+    const responseView = jsonResponse(
+      { items },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+          'Access-Control-Allow-Origin': 'https://www.abdulkerimsesli.de',
+          'X-Cache': 'MISS',
+        },
       },
-    });
+    );
 
     // Store in Cache API if not local
     if (!isLocal) {
@@ -120,9 +52,8 @@ export async function onRequest(context) {
     return responseView;
   } catch (err) {
     console.error('Gallery API error:', err);
-    return new Response(JSON.stringify({ error: 'Gallery request failed' }), {
+    return errorJsonResponse('Gallery request failed', {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

@@ -1,17 +1,12 @@
+/// <reference lib="webworker" />
 /**
- * Service Worker v9 — Offline-First mit Background Sync & IndexedDB
+ * Service Worker v10 - Modern Minimal Zero-Build Sync
  *
- * Navigation: Network-only mit Offline-Fallback
- * Bilder/Fonts/3D: Cache-first mit Size-Limits
- * First-party JS/CSS: stale-while-revalidate
- * API/Externe: Ignoriert
- * Background Sync für Analytics-Events & Chat-Daten
- * IndexedDB-basierte Analytics-Queue wird bei Reconnect geflusht
- * Deploy-Version Sync: Purge stale cache when edge deploys new version
+ * @module sw
  */
 
 // Cache-Name mit Version — bei Deployments hochzählen
-const CACHE = 'static-v5';
+const CACHE = 'static-v6';
 const OFFLINE = '/offline.html';
 const MAX_CACHE_ITEMS = 160; // Cached assets incl. images/fonts/models/first-party code
 
@@ -46,7 +41,7 @@ function openIDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(IDB_NAME, IDB_VERSION);
     req.onupgradeneeded = (event) => {
-      const db = event.target.result;
+      const db = /** @type {IDBOpenDBRequest} */ (event.target).result;
       if (!db.objectStoreNames.contains('chat-history')) {
         const cs = db.createObjectStore('chat-history', {
           keyPath: 'id',
@@ -163,139 +158,159 @@ function isFirstPartyCodeAsset(request, url) {
   return /\.(?:m?js|css)$/.test(url.pathname);
 }
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.add(OFFLINE)));
-  // KEIN skipWaiting() — verhindert Mid-Session-SW-Übernahme, die Reloads auslöst.
-  // Neuer SW wartet, bis alle Tabs der alten Version geschlossen sind.
-});
+self.addEventListener(
+  'install',
+  /** @param {ExtendableEvent} e */ (e) => {
+    e.waitUntil(caches.open(CACHE).then((c) => c.add(OFFLINE)));
+    // KEIN skipWaiting() — verhindert Mid-Session-SW-Übernahme, die Reloads auslöst.
+    // Neuer SW wartet, bis alle Tabs der alten Version geschlossen sind.
+  },
+);
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+self.addEventListener(
+  'activate',
+  /** @param {ExtendableEvent} e */ (e) => {
+    e.waitUntil(
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+          ),
         ),
-      ),
-    // clients.claim() NICHT aufrufen — verhindert, dass der neue SW
-    // laufende Seiten mitten in der Session übernimmt und dabei
-    // ausstehende Requests abbricht oder Reloads auslöst.
-  );
-});
+      // clients.claim() NICHT aufrufen — verhindert, dass der neue SW
+      // laufende Seiten mitten in der Session übernimmt und dabei
+      // ausstehende Requests abbricht oder Reloads auslöst.
+    );
+  },
+);
 
 // Notify clients when a new SW version is waiting
-self.addEventListener('message', (e) => {
-  if (e.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  // Allow main thread to trigger analytics flush
-  if (e.data?.type === 'FLUSH_ANALYTICS') {
-    e.waitUntil(flushAnalyticsFromIDB());
-  }
-});
+self.addEventListener(
+  'message',
+  /** @param {ExtendableMessageEvent} e */ (e) => {
+    if (e.data?.type === 'SKIP_WAITING') {
+      /** @type {ServiceWorkerGlobalScope} */ (
+        /** @type {any} */ (self)
+      ).skipWaiting();
+    }
+    // Allow main thread to trigger analytics flush
+    if (e.data?.type === 'FLUSH_ANALYTICS') {
+      e.waitUntil(flushAnalyticsFromIDB());
+    }
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Background Sync — flush queued analytics when connectivity is restored
 // ---------------------------------------------------------------------------
 
-self.addEventListener('sync', (e) => {
-  if (e.tag === SYNC_ANALYTICS) {
-    e.waitUntil(flushAnalyticsFromIDB());
-  }
-});
+self.addEventListener(
+  'sync',
+  /** @param {ExtendableEvent & {tag: string}} e */ (e) => {
+    if (e.tag === SYNC_ANALYTICS) {
+      e.waitUntil(flushAnalyticsFromIDB());
+    }
+  },
+);
 
-self.addEventListener('fetch', (e) => {
-  const { request } = e;
-  if (request.method !== 'GET') return;
+let __deployVersion = null;
 
-  const url = new URL(request.url);
-  if (!url.protocol.startsWith('http')) return;
-  if (SKIP.some((h) => url.hostname.includes(h))) return;
-  if (url.pathname.startsWith('/api/')) return;
+self.addEventListener(
+  'fetch',
+  /** @param {FetchEvent} e */ (e) => {
+    const { request } = e;
+    if (request.method !== 'GET') return;
 
-  // HTML-Navigation: Netzwerk, Offline-Fallback bei Fehler
-  // Detect deploy-version changes and purge stale cache
-  if (request.mode === 'navigate') {
-    e.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Check if the edge has a newer deploy version
-          const edgeVersion = response.headers.get('X-Deploy-Version');
-          if (
-            edgeVersion &&
-            self.__deployVersion &&
-            edgeVersion !== self.__deployVersion
-          ) {
-            // New deploy detected — purge old cache in background
-            e.waitUntil(
-              caches.delete(CACHE).then(() => {
-                return caches.open(CACHE).then((c) => c.add(OFFLINE));
-              }),
-            );
-          }
-          if (edgeVersion) {
-            self.__deployVersion = edgeVersion;
-          }
-          return response;
-        })
-        .catch(async () => {
-          const c = await caches.open(CACHE);
-          return (
-            (await c.match(OFFLINE)) || new Response('Offline', { status: 503 })
-          );
-        }),
-    );
-    return;
-  }
+    const url = new URL(request.url);
+    if (!url.protocol.startsWith('http')) return;
+    if (SKIP.some((h) => url.hostname.includes(h))) return;
+    if (url.pathname.startsWith('/api/')) return;
 
-  // First-party JS/CSS: stale-while-revalidate
-  if (isFirstPartyCodeAsset(request, url)) {
-    e.respondWith(
-      caches.open(CACHE).then(async (c) => {
-        const cached = await c.match(request);
-
-        const networkPromise = fetch(request)
-          .then((res) => {
-            if (res.ok) {
-              c.put(request, res.clone());
-              trimCache(CACHE);
+    // HTML-Navigation: Netzwerk, Offline-Fallback bei Fehler
+    // Detect deploy-version changes and purge stale cache
+    if (request.mode === 'navigate') {
+      e.respondWith(
+        fetch(request)
+          .then((response) => {
+            // Check if the edge has a newer deploy version
+            const edgeVersion = response.headers.get('X-Deploy-Version');
+            if (
+              edgeVersion &&
+              __deployVersion &&
+              edgeVersion !== __deployVersion
+            ) {
+              // New deploy detected — purge old cache in background
+              e.waitUntil(
+                caches.delete(CACHE).then(() => {
+                  return caches.open(CACHE).then((c) => c.add(OFFLINE));
+                }),
+              );
             }
-            return res;
+            if (edgeVersion) {
+              __deployVersion = edgeVersion;
+            }
+            return response;
           })
-          .catch(() => null);
+          .catch(async () => {
+            const c = await caches.open(CACHE);
+            return (
+              (await c.match(OFFLINE)) ||
+              new Response('Offline', { status: 503 })
+            );
+          }),
+      );
+      return;
+    }
 
-        if (cached) {
-          e.waitUntil(networkPromise);
-          return cached;
-        }
+    // First-party JS/CSS: stale-while-revalidate
+    if (isFirstPartyCodeAsset(request, url)) {
+      e.respondWith(
+        caches.open(CACHE).then(async (c) => {
+          const cached = await c.match(request);
 
-        const network = await networkPromise;
-        if (network) return network;
+          const networkPromise = fetch(request)
+            .then((res) => {
+              if (res.ok) {
+                c.put(request, res.clone());
+                trimCache(CACHE);
+              }
+              return res;
+            })
+            .catch(() => null);
 
-        return new Response('Offline', { status: 503 });
-      }),
-    );
-    return;
-  }
+          if (cached) {
+            e.waitUntil(networkPromise);
+            return cached;
+          }
 
-  // Statische Assets (Bilder, Fonts, 3D-Modelle): Cache-first mit Limits
-  if (
-    ['image', 'font'].includes(request.destination) ||
-    /\.(glb|gltf)$/.test(url.pathname)
-  ) {
-    e.respondWith(
-      caches.open(CACHE).then(async (c) => {
-        const cached = await c.match(request);
-        if (cached) return cached;
-        const res = await fetch(request);
-        if (res.ok) {
-          c.put(request, res.clone());
-          // Trim cache in background to respect size limits
-          trimCache(CACHE);
-        }
-        return res;
-      }),
-    );
-  }
-});
+          const network = await networkPromise;
+          if (network) return network;
+
+          return new Response('Offline', { status: 503 });
+        }),
+      );
+      return;
+    }
+
+    // Statische Assets (Bilder, Fonts, 3D-Modelle): Cache-first mit Limits
+    if (
+      ['image', 'font'].includes(request.destination) ||
+      /\.(glb|gltf)$/.test(url.pathname)
+    ) {
+      e.respondWith(
+        caches.open(CACHE).then(async (c) => {
+          const cached = await c.match(request);
+          if (cached) return cached;
+          const res = await fetch(request);
+          if (res.ok) {
+            c.put(request, res.clone());
+            // Trim cache in background to respect size limits
+            trimCache(CACHE);
+          }
+          return res;
+        }),
+      );
+    }
+  },
+);

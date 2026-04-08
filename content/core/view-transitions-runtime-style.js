@@ -1,10 +1,9 @@
 import {
   VIEW_TRANSITION_TIMINGS_MS,
   toCssMs,
-} from './view-transition-timings.js';
+} from './view-transition-constants.js';
 
-export const VIEW_TRANSITION_RUNTIME_STYLE_ID =
-  'core-view-transition-runtime-style';
+const VIEW_TRANSITION_RUNTIME_STYLE_ID = 'core-view-transition-runtime-style';
 
 /**
  * @param {boolean} enableCrossDocument

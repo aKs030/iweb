@@ -29,7 +29,7 @@ export const GlobalEventHandlers = {
     this._initialized = true;
     document.addEventListener('click', async (event) => {
       // Retry handling
-      if (event.target?.closest('.retry-btn')) {
+      if (/** @type {any} */ (event.target)?.closest('.retry-btn')) {
         event.preventDefault();
         try {
           globalThis.location.reload();
@@ -40,7 +40,7 @@ export const GlobalEventHandlers = {
       }
 
       // Share handling
-      const share = event.target?.closest('.btn-share');
+      const share = /** @type {any} */ (event.target)?.closest('.btn-share');
       if (share) {
         event.preventDefault();
         const shareUrl =

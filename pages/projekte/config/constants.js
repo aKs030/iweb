@@ -3,13 +3,14 @@
  * @version 5.0.0 - Cleaned up
  */
 
+import { OG_PROJECTS_IMAGE_URL } from '#config/constants.js';
+
 // Cache Configuration
 export const CACHE_PREFIX = 'github_contents_';
 export const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
 // Default OG Image
-export const DEFAULT_OG_IMAGE =
-  'https://img.abdulkerimsesli.de/blog/og-projekte-800.png';
+export const DEFAULT_OG_IMAGE = OG_PROJECTS_IMAGE_URL;
 
 // Theme Colors for consistent design system
 export const THEME_COLORS = {

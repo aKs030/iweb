@@ -1,5 +1,5 @@
-import { createLogger } from '../../../core/logger.js';
-import { createObserver } from '../../../core/utils.js';
+import { createLogger } from '#core/logger.js';
+import { createObserver } from '#core/dom-utils.js';
 const log = createLogger('RobotCollision');
 
 const OBSTACLE_SELECTOR =
@@ -311,8 +311,8 @@ export class RobotCollision {
         );
         dizzyGroup.classList.add('dizzy-eyes-temp');
         dizzyGroup.innerHTML = `
-            <path d="M35,38 L45,46 M45,38 L35,46" stroke="#40e0d0" stroke-width="3" />
-            <path d="M55,38 L65,46 M65,38 L55,46" stroke="#40e0d0" stroke-width="3" />
+            <path d="M35,38 L45,46 M45,38 L35,46" stroke="var(--robot-svg-stroke)" stroke-width="3" />
+            <path d="M55,38 L65,46 M65,38 L55,46" stroke="var(--robot-svg-stroke)" stroke-width="3" />
         `;
         this.robot.dom.eyes.appendChild(dizzyGroup);
 

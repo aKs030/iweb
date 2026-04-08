@@ -22,6 +22,8 @@
  * @property {string} legalName - Legal entity name
  * @property {string[]} alternateName - Alternative names
  * @property {string} logo - Logo URL
+ * @property {any} [image] - Image object
+ * @property {Array<{name: string, alternateName?: string}>} [knowsLanguage] - Known languages
  * @property {string[]} jobTitle - Job titles
  * @property {string} email - Contact email
  * @property {string} areaServed - Service area
@@ -47,12 +49,7 @@
  */
 
 /**
- * @typedef {Object} SchemaNode
- * @property {string} @type - Schema.org type
- * @property {string} @id - Unique identifier
- * @property {string} [name] - Name
- * @property {string} [url] - URL
- * @property {string} [description] - Description
+ * @typedef {{ '@type': string, '@id': string, name?: string, url?: string, description?: string, [key: string]: any }} SchemaNode
  */
 
 /**
@@ -93,20 +90,59 @@
  */
 
 /**
- * Component Configuration Types
+ * Shared Style Types
  */
 
 /**
- * @typedef {Object} ComponentConfig
- * @property {string} [CSS_URL] - CSS file URL
- * @property {number} [DEBOUNCE_MS] - Debounce delay in milliseconds
- * @property {number} [DEBOUNCE_DELAY] - Generic debounce delay in milliseconds
- * @property {number} [ANNOUNCEMENT_DELAY] - A11y live-region announce delay
- * @property {number} [ICON_CHECK_DELAY] - Icon check delay
- * @property {number} [SEARCH_DEBOUNCE] - Header search debounce delay in milliseconds
- * @property {number} [SEARCH_TOP_K] - Number of search results to request
- * @property {number} [MOBILE_BREAKPOINT] - Mobile/menu breakpoint (px)
- * @property {number} [TABLET_BREAKPOINT] - Tablet breakpoint fallback (px)
+ * Overlay Types
+ */
+
+/**
+ * @typedef {'none'|'menu'|'search'|'robot-chat'} OverlayMode
+ */
+
+/**
+ * @typedef {Object} OverlayCloseOptions
+ * @property {OverlayMode} [mode] - Overlay mode requesting the close action
+ * @property {string} [reason] - Close trigger such as `escape` or `programmatic`
+ * @property {boolean} [restoreFocus] - Whether focus should be restored after close
+ */
+
+/**
+ * @callback OverlayCloseHandler
+ * @param {OverlayCloseOptions} [options]
+ * @returns {void|Promise<void>}
+ */
+
+/**
+ * @callback OverlayElementListResolver
+ * @returns {HTMLElement[]}
+ */
+
+/**
+ * @callback OverlayElementResolver
+ * @returns {HTMLElement|null}
+ */
+
+/**
+ * @typedef {'getInteractiveRoots'|'getFocusTrapRoots'} OverlayRootResolverName
+ */
+
+/**
+ * @typedef {'getPrimaryFocusTarget'|'getRestoreFocusTarget'} OverlayFocusResolverName
+ */
+
+/**
+ * @typedef {Object} OverlayController
+ * @property {OverlayCloseHandler} [close] - Close handler for the active overlay
+ * @property {OverlayElementListResolver} [getInteractiveRoots] - Elements that remain interactive while the overlay is active
+ * @property {OverlayElementListResolver} [getFocusTrapRoots] - Elements that participate in focus trapping
+ * @property {OverlayElementResolver} [getPrimaryFocusTarget] - Preferred initial focus target
+ * @property {OverlayElementResolver} [getRestoreFocusTarget] - Preferred focus target after close
+ */
+
+/**
+ * @typedef {string[]} CssUrlList
  */
 
 /**
@@ -118,26 +154,9 @@
  */
 
 /**
- * @typedef {Object} RobotState
- * @property {boolean} isOpen - Chat window open state
- * @property {string} mood - Current mood state
- * @property {number} interactions - Total interactions count
- * @property {number} sessions - Total sessions count
- * @property {string[]} sectionsVisited - Visited sections
- * @property {Set<string>} easterEggFound - Found easter eggs
- */
-
-/**
- * @typedef {Object} RobotAnalytics
- * @property {number} sessions - Total sessions
- * @property {string[]} sectionsVisited - Visited sections
- * @property {number} interactions - Total interactions
- * @property {string} lastVisit - Last visit timestamp
- */
-
-/**
  * @typedef {Object} DOMCache
  * @property {HTMLElement} [container] - Container element
+ * @property {HTMLElement} [backdrop] - Chat backdrop element
  * @property {HTMLElement} [window] - Chat window element
  * @property {HTMLElement} [floatWrapper] - Float wrapper element
  * @property {HTMLElement} [bubble] - Bubble element
@@ -160,13 +179,18 @@
  * @property {HTMLElement} [thinking] - Thinking indicator element
  * @property {SVGElement} [magnifyingGlass] - Magnifying glass element
  * @property {HTMLElement} [mouth] - Mouth element
- * @property {HTMLElement} [closeBtn] - Close button element
- * @property {HTMLElement} [profileStatus] - Profile status element in chat header
- * @property {HTMLButtonElement} [memoriesBtn] - Header action: show Cloudflare memories
- * @property {HTMLButtonElement|null} [editMemoryBtn] - Header action: edit current profile data
- * @property {HTMLButtonElement|null} [switchProfileBtn] - Header action: switch active profile
- * @property {HTMLButtonElement|null} [disconnectProfileBtn] - Header action: disconnect active profile
- * @property {HTMLButtonElement} [deleteUserBtn] - Header action: delete Cloudflare user ID
+ * @property {HTMLElement} [closeBtn] - Chat close button element
+ * @property {HTMLButtonElement|null} [memoryBtn] - Header action: open user settings + memories
+ * @property {HTMLButtonElement|null} [stopBtn] - Composer action: stop active AI response
+ * @property {HTMLElement|null} [namePrompt] - Inline name prompt inside chat stream
+ * @property {HTMLElement|null} [namePromptTitle] - Name prompt title element
+ * @property {HTMLElement|null} [namePromptCopy] - Name prompt copy element
+ * @property {HTMLElement|null} [namePromptFeedback] - Name prompt feedback element
+ * @property {HTMLButtonElement|null} [nameDismissBtn] - Name prompt dismiss button
+ * @property {HTMLButtonElement|null} [nameSaveBtn] - Name prompt save button
+ * @property {HTMLInputElement|null} [nameInput] - Name prompt input field
+ * @property {HTMLInputElement|null} [imageUploadInput] - Hidden image upload input
+ * @property {HTMLButtonElement|null} [imageBtn] - Composer image picker button
  * @property {Element} [footer] - Footer element
  */
 
@@ -180,13 +204,6 @@
  * @property {{target: EventTarget, handler: EventListenerOrEventListenerObject}|null} [inputBlur] - Input blur listener
  * @property {{target: EventTarget, handler: EventListenerOrEventListenerObject}|null} [heroTypingEnd] - Hero typing end listener
  * @property {Array<{target: EventTarget, event: string, handler: EventListenerOrEventListenerObject}>} dom - DOM listeners
- */
-
-/**
- * @typedef {Object} TimerRegistry
- * @property {Set<ReturnType<typeof setTimeout>>} timeouts - Active timeouts
- * @property {Set<ReturnType<typeof setInterval>>} intervals - Active intervals
- * @property {ReturnType<typeof setTimeout>|null} scrollTimeout - Scroll debounce timeout
  */
 
 /**
@@ -250,17 +267,6 @@
  */
 
 /**
- * @typedef {Object} TimerManager
- * @property {Set<TimerID>} timers - Active setTimeout IDs
- * @property {Set<TimerID>} intervals - Active setInterval IDs
- * @property {function(Function, number): TimerID} setTimeout - Set timeout
- * @property {function(Function, number): TimerID} setInterval - Set interval
- * @property {function(TimerID): void} clearTimeout - Clear timeout
- * @property {function(TimerID): void} clearInterval - Clear interval
- * @property {function(): void} clearAll - Clear all timers
- */
-
-/**
  * DOM Types
  */
 
@@ -299,12 +305,6 @@
  */
 
 /**
- * @typedef {Object} GlobalThisExtended
- * @property {any} [__ENV__] - Environment variables
- * @deprecated Use threeEarthState module instead of global variables
- */
-
-/**
  * Three.js Types (minimal definitions)
  */
 
@@ -327,28 +327,6 @@
  * @property {boolean} isLowEnd - Is low-end device
  * @property {number} pixelRatio - Device pixel ratio
  * @property {boolean} supportsWebGL - Supports WebGL
- */
-
-/**
- * Footer Types
- */
-
-/**
- * @typedef {Object} FooterElements
- * @property {HTMLElement|null} footer - Footer element
- * @property {HTMLElement|null} footerMin - Footer minimized view
- * @property {HTMLElement|null} footerMax - Footer expanded view
- * @property {HTMLElement|null} cookieBanner - Cookie banner
- * @property {HTMLElement|null} cookieSettings - Cookie settings
- * @property {HTMLElement|null} footerContent - Footer content
- * @property {HTMLButtonElement|null} acceptBtn - Accept button
- * @property {HTMLButtonElement|null} rejectBtn - Reject button
- * @property {HTMLButtonElement|null} closeBtn - Close button
- * @property {HTMLInputElement|null} analyticsToggle - Analytics toggle
- * @property {HTMLInputElement|null} adsToggle - Ads toggle
- * @property {HTMLButtonElement|null} rejectAll - Reject all button
- * @property {HTMLButtonElement|null} acceptSelected - Accept selected button
- * @property {HTMLButtonElement|null} acceptAll - Accept all button
  */
 
 // This file contains JSDoc type definitions only

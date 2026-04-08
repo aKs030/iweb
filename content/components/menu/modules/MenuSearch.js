@@ -1,67 +1,67 @@
 /**
  * Menu Search Module
- * Handles menu search interaction and rendering.
+ * Orchestrates search state, keyboard interaction, and navigation.
  */
-import { i18n } from '../../../core/i18n.js';
-import { SEARCH_PRELOAD_URLS } from '../../../config/import-map.generated.js';
-import { TimerManager } from '../../../core/utils.js';
-import { resourceHints } from '../../../core/resource-hints.js';
-import { searchOpen, uiStore } from '../../../core/ui-store.js';
-import { formatCompactUrlPath } from '../../../core/url-utils.js';
-import { withViewTransition } from '../../../core/view-transitions.js';
+import { i18n } from '#core/i18n.js';
+import { TimerManager } from '#core/timer-manager.js';
 import {
-  VIEW_TRANSITION_ROOT_CLASSES,
-  VIEW_TRANSITION_TYPES,
-} from '../../../core/view-transition-types.js';
-import { VIEW_TRANSITION_TIMINGS_MS } from '../../../core/view-transition-timings.js';
-import { setMenuOverlayState } from './MenuOverlayState.js';
+  prepareOverlayFocusChange,
+  OVERLAY_MODES,
+} from '#core/overlay-manager.js';
+import {
+  activeOverlay,
+  clearActiveOverlayMode,
+  setActiveOverlayMode,
+} from '#core/ui-store.js';
+import { formatCompactUrlPath } from '#core/url-utils.js';
 import { MenuSearchKeyboardController } from './search-keyboard-controller.js';
 import { MenuSearchRenderer } from './search-renderer.js';
 import { MenuSearchStore } from './MenuSearchStore.js';
+import { MenuSearchViewController } from './search-view-controller.js';
+import { MenuSearchPreloadController } from './search-preload-controller.js';
+import { resolveMenuHost } from './menu-dom-helpers.js';
 
-const SEARCH_VIEW_TRANSITION_OPTIONS = Object.freeze({
-  rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.MENU],
-  timeoutMs: VIEW_TRANSITION_TIMINGS_MS.SEARCH_TIMEOUT,
-  preserveLiveBackdropOnMobile: true,
-});
+/**
+ * @typedef {typeof import('./MenuConfig.js').MenuConfig} MenuComponentConfig
+ */
+/**
+ * @typedef {Partial<MenuComponentConfig>} MenuComponentConfigInput
+ */
 
 export class MenuSearch {
   /**
    * @param {HTMLElement|ShadowRoot} container
    * @param {import('./MenuState.js').MenuState} state
-   * @param {Object} config
+   * @param {MenuComponentConfigInput} [config]
    * @param {HTMLElement|null} [host]
    */
   constructor(container, state, config = {}, host = null) {
     this.container = container;
-    this.host =
-      host || (container instanceof ShadowRoot ? container.host : container);
+    this.host = resolveMenuHost(container, host);
     this.state = state;
     this.config = config;
     this.cleanupFns = [];
     this.timers = new TimerManager('MenuSearch');
+    this.view = new MenuSearchViewController(this.container, this.host);
+    this.preloadController = new MenuSearchPreloadController({
+      container: this.container,
+      timers: this.timers,
+      addListener: (...args) => this.addListener(...args),
+    });
 
-    this.isOpen = false;
-    this.trigger = null;
-    this.panel = null;
-    this.bar = null;
-    this.input = null;
-    this.results = null;
-    this.clearBtn = null;
     this.items = [];
     this.debounceTimer = null;
-    this.searchDepsPreloaded = false;
-    this.searchDepsIntentTimer = null;
-    this._pendingCloseOptions = { restoreFocus: false };
     this.keyboardController = new MenuSearchKeyboardController();
     this.searchStore = new MenuSearchStore(config);
     this.renderer = new MenuSearchRenderer({
       translate: (key, fallback) => i18n.tOrFallback(key, fallback),
       getCategoryLabel: (category) => this.getCategoryLabel(category),
+      getFacetLabel: (facet) => this.getFacetLabel(facet),
       formatSearchResultUrl: (rawUrl) => formatCompactUrlPath(rawUrl),
       getFallbackSuggestions: () => this.searchStore.getFallbackSuggestions(),
       hasMarkedHighlight: (value) => this.searchStore.hasMarkedHighlight(value),
-      setPopupExpanded: (isExpanded) => this.setSearchPopupExpanded(isExpanded),
+      setPopupExpanded: (isExpanded) =>
+        this.view.setSearchPopupExpanded(isExpanded),
     });
   }
 
@@ -73,29 +73,9 @@ export class MenuSearch {
   }
 
   setupSearch() {
-    const searchTrigger = this.container.querySelector('.search-trigger');
-    const searchPanel = this.container.querySelector('.menu-search');
-    const searchBar = this.container.querySelector('.menu-search__bar');
-    const searchInput = this.container.querySelector('.menu-search__input');
-    const searchResults = this.container.querySelector('.menu-search__results');
-    const clearBtn = this.container.querySelector('.menu-search__clear');
-
-    if (
-      !searchTrigger ||
-      !searchPanel ||
-      !searchBar ||
-      !searchInput ||
-      !searchResults
-    ) {
+    if (!this.view.bindElementsFromContainer()) {
       return;
     }
-
-    this.trigger = searchTrigger;
-    this.panel = searchPanel;
-    this.bar = searchBar;
-    this.input = searchInput;
-    this.results = searchResults;
-    this.clearBtn = clearBtn;
 
     const handleSearchTrigger = (e) => {
       e.preventDefault();
@@ -107,18 +87,12 @@ export class MenuSearch {
     };
 
     const handleSearchInput = () => {
-      const query = this.input ? this.input.value : '';
-      this.updateClearButtonVisibility(query);
+      const query = this.view.input ? this.view.input.value : '';
+      this.view.updateClearButtonVisibility(query);
       this.scheduleSearch(query);
     };
 
     const handleSearchKeydown = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        this.closeSearchMode();
-        return;
-      }
-
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         if (this.keyboardController.moveSelection(1)) {
@@ -142,6 +116,12 @@ export class MenuSearch {
     };
 
     const handleResultsClick = (e) => {
+      const facetBtn = e.target?.closest?.('[data-search-facet]');
+      if (facetBtn instanceof HTMLButtonElement) {
+        void this.searchStore.setFacet(facetBtn.dataset.searchFacet);
+        return;
+      }
+
       const suggestionBtn = e.target?.closest?.('[data-search-suggestion-url]');
       if (suggestionBtn) {
         const url = suggestionBtn.getAttribute('data-search-suggestion-url');
@@ -166,45 +146,51 @@ export class MenuSearch {
     };
 
     const handleClearClick = () => {
-      if (this.input) {
-        this.input.value = '';
+      if (this.view.input) {
+        this.view.input.value = '';
         this.keyboardController.clear();
         this.searchStore.clear({ query: '' });
-        this.input.focus();
+        this.view.input.focus();
       }
     };
 
     this.cleanupFns.push(
-      this.addListener(searchTrigger, 'click', handleSearchTrigger),
-      this.addListener(searchInput, 'input', handleSearchInput),
-      this.addListener(searchInput, 'keydown', handleSearchKeydown),
-      this.addListener(searchResults, 'click', handleResultsClick),
-      this.addListener(searchResults, 'pointerover', handleResultsPointerOver),
+      this.addListener(this.view.trigger, 'click', handleSearchTrigger),
+      this.addListener(this.view.input, 'input', handleSearchInput),
+      this.addListener(this.view.input, 'keydown', handleSearchKeydown),
+      this.addListener(this.view.results, 'click', handleResultsClick),
+      this.addListener(
+        this.view.results,
+        'pointerover',
+        handleResultsPointerOver,
+      ),
+      ...this.preloadController.setupIntent({
+        trigger: this.view.trigger,
+        bar: this.view.bar,
+      }),
     );
 
-    if (clearBtn) {
+    if (this.view.clearBtn) {
       this.cleanupFns.push(
-        this.addListener(clearBtn, 'click', handleClearClick),
+        this.addListener(this.view.clearBtn, 'click', handleClearClick),
       );
     }
-
-    this.setupSearchDependencyPreloadIntent();
   }
 
   setupI18nSync() {
     this.cleanupFns.push(
       i18n.subscribe(() => {
         const isSearchOpen = this.isSearchOpen();
-        this.syncSearchTriggerState(isSearchOpen);
-        this.syncToggleSearchState(isSearchOpen);
+        this.view.syncSearchTriggerState(isSearchOpen);
+        this.view.syncToggleSearchState(isSearchOpen);
       }),
     );
   }
 
   setupSearchStateSync() {
     this.cleanupFns.push(
-      searchOpen.subscribe((isOpen) => {
-        this.syncSearchModeState(isOpen);
+      activeOverlay.subscribe((mode) => {
+        this.syncSearchModeState(mode === OVERLAY_MODES.SEARCH);
       }),
     );
   }
@@ -214,21 +200,25 @@ export class MenuSearch {
       this.searchStore.subscribe((state) => {
         this.items = [...state.items];
         this.keyboardController.setItems(this.items);
-        this.updateClearButtonVisibility(state.query);
-        this.renderer.renderState(this.results, {
+        this.view.updateClearButtonVisibility(state.query);
+        this.renderer.renderState(this.view.results, {
           hidden:
             !state.loading &&
             !state.message &&
             !state.aiChatMessage &&
+            state.aiChatSuggestions.length === 0 &&
             state.items.length === 0 &&
             !state.query,
           loading: state.loading,
           message: state.message,
           items: state.items,
+          facet: state.facet,
+          facets: state.facets,
           aiChatMessage: state.aiChatMessage,
+          aiChatSuggestions: state.aiChatSuggestions,
           query: state.query,
           selectedIndex: this.keyboardController.getSelectedIndex(),
-          optionIdBuilder: (index) => this.buildSearchOptionId(index),
+          optionIdBuilder: (index) => this.view.buildSearchOptionId(index),
         });
       }),
     );
@@ -245,16 +235,20 @@ export class MenuSearch {
     return Number.isFinite(index) ? index : -1;
   }
 
-  getHeaderElement() {
-    return this.host?.closest?.('.site-header') || null;
+  getPrimaryFocusTarget() {
+    return this.view.getPrimaryFocusTarget();
   }
 
-  getToggleElement() {
-    return this.container.querySelector('.site-menu__toggle');
+  getRestoreFocusTarget() {
+    return this.view.getRestoreFocusTarget();
+  }
+
+  getFocusTrapRoots() {
+    return this.view.getFocusTrapRoots();
   }
 
   isSearchOpen() {
-    return Boolean(searchOpen.value);
+    return activeOverlay.value === OVERLAY_MODES.SEARCH;
   }
 
   closeSearchModeSilently() {
@@ -263,148 +257,32 @@ export class MenuSearch {
 
   syncSearchModeState(isOpen) {
     if (isOpen) {
-      this.applySearchOpenState();
+      this.view.applySearchOpenState();
       return;
     }
 
-    const options = this._pendingCloseOptions || { restoreFocus: false };
-    this._pendingCloseOptions = { restoreFocus: false };
-    this.applySearchClosedState(options);
-  }
-
-  syncSearchTriggerState(isOpen) {
-    const trigger = this.trigger;
-    if (!trigger) return;
-
-    if (isOpen) {
-      const closeLabel = i18n.tOrFallback(
-        'menu.search_close',
-        'Suche schließen',
-      );
-      trigger.setAttribute('aria-label', closeLabel);
-      trigger.setAttribute('title', closeLabel);
-      trigger.setAttribute('aria-expanded', 'true');
-      return;
-    }
-
-    trigger.setAttribute(
-      'aria-label',
-      i18n.tOrFallback('menu.search_label', 'Suche'),
-    );
-    trigger.setAttribute(
-      'title',
-      i18n.tOrFallback('menu.search_tooltip', 'Website durchsuchen'),
-    );
-    trigger.setAttribute('aria-expanded', 'false');
-  }
-
-  syncToggleSearchState(isOpen) {
-    const toggle = this.getToggleElement();
-    if (!toggle) return;
-
-    toggle.classList.toggle('active', isOpen);
-    if (isOpen) {
-      toggle.setAttribute(
-        'aria-label',
-        i18n.tOrFallback('menu.search_close', 'Suche schließen'),
-      );
-      return;
-    }
-
-    toggle.setAttribute('aria-label', i18n.tOrFallback('menu.toggle', 'Menü'));
+    this.view.applySearchClosedState({
+      keyboardController: this.keyboardController,
+      searchStore: this.searchStore,
+      renderer: this.renderer,
+    });
   }
 
   openSearchMode() {
     if (this.isSearchOpen()) return;
 
+    if (this.state.isOpen) {
+      prepareOverlayFocusChange(OVERLAY_MODES.MENU, { restoreFocus: false });
+    }
     this.state.setOpen(false);
-    uiStore.setState({ searchOpen: true });
-  }
-
-  applySearchOpenState() {
-    const header = this.getHeaderElement();
-    const panel = this.panel;
-    const input = this.input;
-
-    if (!header || !panel || !input) return;
-    if (this.isOpen) return;
-
-    this.isOpen = true;
-    void withViewTransition(
-      () => {
-        setMenuOverlayState('search');
-
-        header.classList.add('search-mode');
-        panel.setAttribute('aria-hidden', 'false');
-        this.syncSearchTriggerState(true);
-        this.syncToggleSearchState(true);
-        this.setSearchPopupExpanded(false);
-
-        requestAnimationFrame(() => {
-          try {
-            input.focus({ preventScroll: true });
-          } catch {
-            input.focus();
-          }
-          input.select();
-        });
-      },
-      {
-        ...SEARCH_VIEW_TRANSITION_OPTIONS,
-        types: [VIEW_TRANSITION_TYPES.SEARCH_OPEN],
-      },
-    );
+    setActiveOverlayMode(OVERLAY_MODES.SEARCH);
   }
 
   closeSearchMode(options = {}) {
     const { restoreFocus = true } = options;
     if (!this.isSearchOpen()) return;
-    this._pendingCloseOptions = { restoreFocus };
-    uiStore.setState({ searchOpen: false });
-  }
-
-  applySearchClosedState(options = {}) {
-    const { restoreFocus = false } = options;
-    const wasOpen = this.isOpen;
-    const header = this.getHeaderElement();
-    this.isOpen = false;
-    this.keyboardController.clear();
-
-    const applyClosedState = () => {
-      setMenuOverlayState(null);
-
-      if (header) {
-        header.classList.remove('search-mode');
-      }
-
-      if (this.panel) {
-        this.panel.setAttribute('aria-hidden', 'true');
-      }
-
-      this.syncSearchTriggerState(false);
-      this.syncToggleSearchState(false);
-
-      if (this.input) {
-        this.input.value = '';
-      }
-
-      this.searchStore.clear({ query: '' });
-      this.renderer.renderState(this.results, { hidden: true });
-
-      if (restoreFocus) {
-        this.trigger?.focus();
-      }
-    };
-
-    if (!wasOpen) {
-      applyClosedState();
-      return;
-    }
-
-    void withViewTransition(applyClosedState, {
-      ...SEARCH_VIEW_TRANSITION_OPTIONS,
-      types: [VIEW_TRANSITION_TYPES.SEARCH_CLOSE],
-    });
+    prepareOverlayFocusChange(OVERLAY_MODES.SEARCH, { restoreFocus });
+    clearActiveOverlayMode(OVERLAY_MODES.SEARCH);
   }
 
   clearSearchDebounce() {
@@ -455,96 +333,26 @@ export class MenuSearch {
     return labels[key] || category || 'Seite';
   }
 
-  setupSearchDependencyPreloadIntent() {
-    const trigger = this.trigger;
-    const bar = this.bar;
-    if (!trigger || !bar) return;
+  getFacetLabel(facet) {
+    const key = String(facet || '')
+      .trim()
+      .toLowerCase();
 
-    const preload = () => this.preloadSearchDependencies();
-    const scheduleIntent = () => {
-      if (this.searchDepsPreloaded || this.searchDepsIntentTimer) return;
-      this.searchDepsIntentTimer = this.timers.setTimeout(() => {
-        this.searchDepsIntentTimer = null;
-        preload();
-      }, 80);
+    const labels = {
+      all: 'Alle',
+      blog: 'Blog',
+      projects: 'Projekte',
+      videos: 'Videos',
+      pages: 'Seiten',
     };
 
-    const clearIntentTimer = () => {
-      if (!this.searchDepsIntentTimer) return;
-      this.timers.clearTimeout(this.searchDepsIntentTimer);
-      this.searchDepsIntentTimer = null;
-    };
-
-    const isPointerNearSearchControl = (event) => {
-      const pointerX = Number(event?.clientX);
-      const pointerY = Number(event?.clientY);
-      if (!Number.isFinite(pointerX) || !Number.isFinite(pointerY)) {
-        return false;
-      }
-
-      const rects = [trigger, bar]
-        .map((element) => element?.getBoundingClientRect?.())
-        .filter(Boolean);
-      if (!rects.length) return false;
-
-      return rects.some((rect) => {
-        const dx =
-          pointerX < rect.left
-            ? rect.left - pointerX
-            : pointerX > rect.right
-              ? pointerX - rect.right
-              : 0;
-        const dy =
-          pointerY < rect.top
-            ? rect.top - pointerY
-            : pointerY > rect.bottom
-              ? pointerY - rect.bottom
-              : 0;
-        return Math.hypot(dx, dy) <= 120;
-      });
-    };
-
-    const handlePointerMove = (event) => {
-      if (this.searchDepsPreloaded) return;
-      if (!isPointerNearSearchControl(event)) return;
-      scheduleIntent();
-    };
-
-    const canHover = window.matchMedia?.('(hover: hover)').matches;
-    if (canHover) {
-      this.cleanupFns.push(
-        this.addListener(this.container, 'pointermove', handlePointerMove, {
-          passive: true,
-        }),
-        this.addListener(trigger, 'pointerenter', scheduleIntent),
-        this.addListener(bar, 'pointerenter', scheduleIntent),
-      );
-    }
-
-    this.cleanupFns.push(
-      this.addListener(trigger, 'focus', preload),
-      this.addListener(bar, 'focusin', preload),
-      this.addListener(trigger, 'click', preload),
-      clearIntentTimer,
-    );
-  }
-
-  preloadSearchDependencies() {
-    if (this.searchDepsPreloaded) return;
-    this.searchDepsPreloaded = true;
-
-    const deps = this.resolveSearchDependencyUrls();
-    deps.forEach((href) => resourceHints.modulePreload(href));
-  }
-
-  resolveSearchDependencyUrls() {
-    return [...SEARCH_PRELOAD_URLS];
+    return labels[key] || facet || 'Alle';
   }
 
   updateSearchSelectionUI() {
     this.renderer.updateSelectionUI(
-      this.results,
-      this.input,
+      this.view.results,
+      this.view.input,
       this.keyboardController.getSelectedIndex(),
     );
   }
@@ -564,32 +372,6 @@ export class MenuSearch {
     window.location.href = item.url;
   }
 
-  // ── Clear button visibility ──
-  updateClearButtonVisibility(query) {
-    if (!this.clearBtn) return;
-    this.clearBtn.classList.toggle('visible', Boolean(query && query.trim()));
-  }
-
-  setSearchPopupExpanded(isExpanded) {
-    const expanded = String(Boolean(isExpanded));
-
-    if (this.bar) {
-      this.bar.setAttribute('aria-expanded', expanded);
-    }
-
-    if (this.input) {
-      this.input.setAttribute('aria-expanded', expanded);
-      if (!isExpanded) {
-        this.input.removeAttribute('aria-activedescendant');
-      }
-    }
-  }
-
-  buildSearchOptionId(index) {
-    const resultsId = this.results?.id || 'menu-search-results';
-    return `${resultsId}-option-${index}`;
-  }
-
   /**
    * Helper to add event listener and return cleanup function
    */
@@ -603,9 +385,7 @@ export class MenuSearch {
   }
 
   destroy() {
-    this._pendingCloseOptions = { restoreFocus: false };
-    uiStore.setState({ searchOpen: false });
-    setMenuOverlayState(null);
+    clearActiveOverlayMode(OVERLAY_MODES.SEARCH);
     this.clearSearchDebounce();
     this.abortSearchRequest();
     this.searchStore.destroy();

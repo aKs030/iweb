@@ -4,16 +4,16 @@
     "projects": "Projekte",
     "gallery": "Fotos",
     "videos": "Videos",
-    "blog": "Blog",
+    "blog": "Journal",
     "about": "Über mich",
     "contact": "Kontakt",
     "home_sub": "Start",
     "projects_sub": "Portfolio",
     "gallery_sub": "Eindrücke",
     "videos_sub": "Motion",
-    "blog_sub": "Wissen",
+    "blog_sub": "Notes",
     "about_sub": "Profil",
-    "contact_sub": "Anfrage",
+    "contact_sub": "Austausch",
     "toggle": "Menü öffnen",
     "main_nav": "Hauptnavigation",
     "skip_main": "Zum Inhalt springen",
@@ -32,14 +32,14 @@
   },
   "footer": {
     "about": {
-      "title": "About",
-      "text": "Kreative Web-Lösungen mit modernen Technologien. Fokus auf JavaScript, Three.js, AI-Integration und Performance-Optimierung."
+      "title": "Profil",
+      "text": "Portfolio für Code, 3D, AI und visuelle Experimente mit Fokus auf Tempo, Klarheit und Atmosphäre."
     },
     "work": {
       "title": "Work",
       "portfolio": "Portfolio",
       "projects": "Projekte",
-      "blog": "Blog",
+      "blog": "Journal",
       "github": "GitHub"
     },
     "skills": {
@@ -49,7 +49,7 @@
       "title": "Quick Links",
       "gallery": "Galerie",
       "videos": "Videos",
-      "about": "About",
+      "about": "Profil",
       "sitemap": "Sitemap"
     },
     "legal": {
@@ -105,7 +105,7 @@
   },
   "projects": {
     "hero": {
-      "text": "Entdecke meine interaktiven Web-Projekte – von experimentellen Prototypen bis zu vollständigen Anwendungen. Alle Projekte werden dynamisch aus meinem GitHub Repository geladen.",
+      "text": "Entdecke meine interaktiven Web-Projekte – von experimentellen Prototypen bis zu vollständigen Anwendungen. Der Projektkatalog wird zentral aus einer gepflegten App-Konfiguration bereitgestellt.",
       "loading": "Lade Projekte...",
       "stats_projects": "Projekte",
       "stats_project": "Projekt",
@@ -130,14 +130,46 @@
     "launch": {
       "badge": "3D Projekt Galerie",
       "title": "Projektansicht wird gestartet",
-      "subtitle": "Apps werden aus dem GitHub Repository geladen und für die 3D-Navigation vorbereitet.",
+      "subtitle": "Apps werden aus dem gepflegten Projektkatalog geladen und für die 3D-Navigation vorbereitet.",
       "loading": "Lade Projekte und bereite die Szene vor...",
       "scene": "Initialisiere 3D-Szene...",
       "hint": "Danach kannst du per Scrollen durch die Apps navigieren.",
       "scroll_hint": "SCROLLEN ZUM ENTDECKEN",
-      "source": "Live aus GitHub",
+      "source": "Kuratiert aus App-Katalog",
       "error_title": "Projekte konnten nicht geladen werden",
       "retry": "Seite neu laden"
+    },
+    "discovery": {
+      "eyebrow": "Produkt-Katalog",
+      "title": "Projekte filtern und vergleichen",
+      "subtitle": "Suche nach Use Cases, Tags und Stack-Signalen, sortiere den Katalog und springe direkt in passende App-Sammlungen.",
+      "search_label": "Projekte durchsuchen",
+      "search_placeholder": "Nach Projektname, Tag oder Stack suchen...",
+      "sort_label": "Sortierung",
+      "sort_featured": "Empfohlen",
+      "sort_latest": "Neueste zuerst",
+      "sort_alpha": "A bis Z",
+      "sort_category": "Nach Kategorie",
+      "clear": "Filter zurücksetzen",
+      "showing": "{{visible}} von {{total}} Apps sichtbar",
+      "category_all": "Alle Kategorien",
+      "case_studies_only": "Nur Case Studies",
+      "live_only": "Nur Live-Demos",
+      "tags_label": "Beliebte Tags",
+      "stack_label": "Stack-Fokus",
+      "active_filters": "Aktive Filter",
+      "empty_title": "Keine Projekte passen zu dieser Auswahl",
+      "empty_text": "Passe Suche oder Filter an, um wieder Ergebnisse zu sehen.",
+      "back_to_collection": "Zur Sammlung",
+      "results_count": "{{count}} Ergebnisse",
+      "stats_total": "Apps",
+      "stats_live": "Live-Demos",
+      "stats_case": "Case Studies",
+      "stats_source": "Code-Links",
+      "match_stack": "Gemeinsamer Stack: {{value}}",
+      "match_tag": "Gemeinsames Tag: {{value}}",
+      "match_category": "Gleiche Kategorie",
+      "open_detail": "Produktprofil öffnen"
     }
   },
   "gallery": {
@@ -204,24 +236,27 @@
     "open_landing": "Öffne Landing-Page für dieses Video"
   },
   "blog": {
-    "title": "Blog",
-    "subtitle": "Tipps & Anleitungen zu Webdesign, SEO, Performance und Online-Marketing",
-    "headline": "Wissen & Einblicke",
-    "subline": "In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing – verständlich erklärt und direkt umsetzbar.",
+    "title": "Journal",
+    "subtitle": "Notizen zu Frontend, 3D, AI und Web-Experimenten",
+    "headline": "Build Notes & Journal",
+    "subline": "Kurze Einblicke in Frontend-Architektur, 3D-Interfaces, AI-Features und Dinge, die unterwegs gelernt wurden.",
     "read_more": "Weiterlesen",
     "back": "Zurück",
     "back_to_overview": "Zurück zur Übersicht",
     "render_error": "Fehler beim Rendern des Artikels",
     "related_title": "Das könnte dich auch interessieren",
-    "cta_title": "Unterstützung bei deinem Projekt?",
-    "cta_text": "Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.",
-    "cta_btn": "Jetzt Kontakt aufnehmen",
+    "cta_title": "Mehr entdecken?",
+    "cta_text": "Weitere Projekte, visuelle Arbeiten und laufende Experimente findest du im Portfolio und im Archiv.",
+    "cta_btn": "Zum Portfolio",
     "filter_all": "Alle",
     "not_found": "Artikel nicht gefunden."
   },
   "common": {
     "loading": "Lade...",
-    "error": "Fehler"
+    "error": "Fehler",
+    "share_text": "Schau dir diesen Kanal an",
+    "link_copied": "Link kopiert",
+    "copy_link": "Link kopieren"
   },
   "loader": {
     "init": "Initialisiere Projekte...",
@@ -230,11 +265,8 @@
     "almost_ready": "Fast fertig...",
     "ready": "Projekte bereit!",
     "failed": "Fehler beim Laden",
-    "connect_github": "Verbinde mit GitHub...",
-    "found_projects": "{{count}} Projekte gefunden...",
-    "loading_project": "Lade Projekt {{current}}/{{total}}...",
     "processing": "Verarbeite Projektdaten...",
-    "fallback_local": "Lade lokale Projekte...",
+    "fallback_local": "Lade Projektkatalog...",
     "projects_ready": "{{count}} Projekte bereit",
     "logo": "AKS | WEB",
     "status_init": "Initialisiere System...",
@@ -272,24 +304,53 @@
     "details": "Details",
     "time": "Zeitpunkt",
     "unknown": "Unbekannter Fehler",
-    "no_content": "Keine Inhalte auf GitHub gefunden"
+    "no_content": "Keine Projektinhalte verfügbar"
   },
   "app": {
     "no_url": "Keine URL gefunden",
     "opened": "{{title}} geöffnet",
-    "closed": "{{title}} geschlossen",
-    "opened_github": "{{title}} auf GitHub geöffnet",
-    "loading_github": "Lade Projekte aus GitHub Repository..."
+    "closed": "{{title}} geschlossen"
   },
   "meta": {
-    "title": "Abdulkerim Sesli — Full-Stack Web Developer Portfolio",
-    "description": "Abdulkerim Sesli — Full-Stack Web Developer. Spezialisiert auf moderne JavaScript-Architektur, Three.js, AI-Integration und Performance-Optimierung."
+    "title": "Abdulkerim Sesli — Portfolio für Code, 3D, AI & digitale Experimente",
+    "description": "Persönliches Portfolio von Abdulkerim Sesli mit Web-Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes."
   },
   "hero": {
     "greeting": "Willkommen",
-    "btn_next": "Weiter",
-    "aria_next": "Zu Features-Sektion scrollen",
+    "btn_next": "Selected Work",
+    "aria_next": "Zur Selected-Work-Sektion scrollen",
     "btn_contact": "Kontakt"
+  },
+  "home": {
+    "hero_title": "Code, 3D, AI und <em>digitale Experimente.</em>",
+    "hero_lede": "Öffentliche Sammlung von Interfaces, Web-Experimenten, Fotografie, Videos und Build Notes aus Berlin.",
+    "hero_meta_code": "JavaScript ES2023+",
+    "hero_meta_3d": "Three.js / WebGL",
+    "hero_meta_ai": "AI Search & Chat",
+    "hero_meta_media": "Foto / Motion / Journal",
+    "hero_profile": "Profil",
+    "hero_profile_aria": "Zur Profilseite",
+    "features_kicker": "Direkte Wege",
+    "features_title": "Fünf Bereiche. Ein Einstieg.",
+    "features_summary": "Profil, Projekte, Fotos, Videos und Journal öffnen direkt aus der Szene den passenden Bereich.",
+    "features_hint": "Direkt öffnen",
+    "features_link": "Alle Bereiche",
+    "closing_eyebrow": "Portfolio Notes",
+    "closing_title": "Kein Pitch. Eher ein offenes Archiv.",
+    "closing_p1": "Diese Seite ist mein öffentliches Arbeitsfeld zwischen Engineering, Bildsprache und AI. Manche Dinge sind fertig, andere bewusst im Fluss.",
+    "closing_p2": "Wenn dich etwas genauer interessiert, findest du mehr in den Projekten, im Journal oder direkt über die einzelnen Kanäle.",
+    "closing_focus_label": "Jetzt im Fokus",
+    "closing_focus_1": "Three.js Interfaces",
+    "closing_focus_2": "AI-Suche und Chat",
+    "closing_focus_3": "Performance-first Frontends",
+    "closing_inside_label": "Im Portfolio",
+    "closing_inside_1": "Selected Work und Experimente",
+    "closing_inside_2": "Fotografie und Motion",
+    "closing_inside_3": "Build Notes und Journal",
+    "closing_nav_aria": "Weitere Wege durch das Portfolio",
+    "closing_cta_projects": "Alle Projekte",
+    "closing_cta_blog": "Journal",
+    "closing_cta_contact": "Kontakt"
   },
   "farewell": {
     "heading": "Auf Wiedersehen!",
@@ -305,17 +366,17 @@
     "aria_about": "Zu About gehen"
   },
   "contact": {
-    "title": "Lass uns sprechen",
-    "subtitle": "Haben Sie eine Projektidee oder möchten Sie zusammenarbeiten? Füllen Sie das Formular aus und ich melde mich bei Ihnen.",
+    "title": "Schreib mir",
+    "subtitle": "Fragen, Feedback oder einfach Lust auf Austausch? Sende mir eine Nachricht und ich melde mich zurück.",
     "form": {
       "name": "Name",
       "name_placeholder": "Max Mustermann",
       "email": "E-Mail",
       "email_placeholder": "max@beispiel.de",
       "subject": "Betreff",
-      "subject_placeholder": "Projektanfrage...",
+      "subject_placeholder": "Kurzes Thema...",
       "message": "Nachricht",
-      "message_placeholder": "Erzählen Sie mir von Ihrem Projekt...",
+      "message_placeholder": "Worum geht es?",
       "submit": "Nachricht senden",
       "submitting": "Wird gesendet..."
     },
@@ -332,9 +393,26 @@
       "server_format": "Server antwortete mit ungültigem Format."
     }
   },
-  "common": {
-    "share_text": "Schau dir diesen Kanal an",
-    "link_copied": "Link kopiert",
-    "copy_link": "Link kopieren"
+
+  "enhancements": {
+    "theme_toggle": "Design wechseln",
+    "theme_light": "Helles Design",
+    "theme_dark": "Dunkles Design",
+    "scroll_progress": "Scroll-Fortschritt",
+    "skill_radar": "Tech Skills",
+    "skill_frontend": "Frontend",
+    "skill_backend": "Backend",
+    "voice_start": "Spracheingabe starten",
+    "voice_stop": "Spracheingabe stoppen",
+    "voice_listening": "Hört zu…",
+    "tts_read": "Antwort vorlesen",
+    "tts_stop": "Vorlesen stoppen",
+    "search_filter_all": "Alle",
+    "search_filter_projects": "Projekte",
+    "search_filter_blog": "Blog",
+    "search_filter_pages": "Seiten",
+    "toc_title": "Inhalt",
+    "reading_time": "{{min}} min Lesezeit",
+    "easter_egg_activated": "Easter Egg aktiviert! 🐰"
   }
 }

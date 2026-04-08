@@ -3,12 +3,16 @@
   "@type": "Person",
   "@id": "https://www.abdulkerimsesli.de/#person",
   "name": "Abdulkerim Sesli",
-  "alternateName": ["Abdul Sesli", "AKS", "aKs030"],
+  "alternateName": [
+    "Abdul Sesli",
+    "AKS",
+    "aKs030"
+  ],
   "givenName": "Abdulkerim",
   "familyName": "Sesli",
   "url": "https://www.abdulkerimsesli.de",
   "mainEntityOfPage": "https://www.abdulkerimsesli.de/about/",
-  "image": "https://www.abdulkerimsesli.de/favicon.svg",
+  "image": "https://img.abdulkerimsesli.de/icons/favicon.ico?v=20260221",
   "jobTitle": [
     "Full-Stack Web Developer",
     "Performance Engineer",
@@ -60,7 +64,7 @@
   },
   "contactPoint": {
     "@type": "ContactPoint",
-    "contactType": "Professional",
+    "contactType": "General Inquiries",
     "email": "kontakt@abdulkerimsesli.de"
   },
   "sameAs": [
@@ -74,21 +78,33 @@
       "@type": "CreativeWork",
       "name": "3D Earth Visualization",
       "url": "https://www.abdulkerimsesli.de/",
-      "keywords": ["Three.js", "WebGL", "3D"],
+      "keywords": [
+        "Three.js",
+        "WebGL",
+        "3D"
+      ],
       "programmingLanguage": "JavaScript"
     },
     {
       "@type": "CreativeWork",
       "name": "AI Robot Companion",
       "url": "https://www.abdulkerimsesli.de/",
-      "keywords": ["AI", "Groq", "LLM"],
+      "keywords": [
+        "AI",
+        "Groq",
+        "LLM"
+      ],
       "programmingLanguage": "JavaScript"
     },
     {
       "@type": "CreativeWork",
       "name": "RAG Search System",
       "url": "https://www.abdulkerimsesli.de/",
-      "keywords": ["RAG", "AI Search", "Cloudflare AI"],
+      "keywords": [
+        "RAG",
+        "AI Search",
+        "Cloudflare AI"
+      ],
       "programmingLanguage": "JavaScript"
     }
   ],
@@ -96,9 +112,5 @@
     "100/100 Code Quality Score",
     "95+ Lighthouse Performance Score",
     "Zero-Build Architecture Pioneer"
-  ],
-  "seeks": {
-    "@type": "Demand",
-    "name": "Freelance Projects & Collaborations"
-  }
+  ]
 }

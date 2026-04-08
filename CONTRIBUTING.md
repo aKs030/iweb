@@ -49,10 +49,10 @@ npm run dev
 npm run qa
 
 # Automatisch fixen
-npm run qa:fix
+npm run fix
 ```
 
-`npm run qa` enthält: ESLint, Prettier, Stylelint, AI-Index-Check, Struktur-Gate und eine Suche nach `TODO`/`FIXME`-Hinweisen (siehe `check:todos`).
+`npm run qa` führt `fix` und `lint` in einem Lauf aus. Damit werden Formatierung und Linting gemeinsam bereinigt und geprüft.
 
 ### 4. Commit erstellen
 
@@ -168,6 +168,7 @@ function fetchData() {
 ### Lokal testen
 
 ```bash
+npm run qa
 npm run dev
 ```
 
@@ -188,38 +189,40 @@ Siehe [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md) für vollständige Projek
 ## 🔧 Nützliche Commands
 
 > ⚠️ **Environment variables**
-> Viele Entwickler‑Skripte (z. B. `cf:redirect:audit`) benötigen Cloudflare‑Zugangsdaten.
+> Einige Wartungs- und Admin-Skripte benötigen Cloudflare- oder Admin-Zugangsdaten.
 > Lege lokal eine `.env`-Datei an oder exportiere die folgenden Variablen:
 >
 > ```bash
-> # Cloudflare (optional für redirect-audit etc.)
+> # Cloudflare (optional für Wartungs-/Setup-Skripte)
 > CF_ACCOUNT_ID=your_account_id
 > CF_API_TOKEN=your_api_token
+>
+> # Admin API / Content-RAG
+> ADMIN_TOKEN=your_admin_token
 >
 > # CORS whitelist (kommasepariert)
 > ALLOWED_ORIGINS=https://abdulkerimsesli.de,https://www.abdulkerimsesli.de
 > ```
 >
-> Siehe auch `.env.example` für ein Template.
+> Siehe Projekt-Doku und vorhandene lokale `.dev.vars`-Beispiele für die genaue Nutzung.
 
 ```bash
 # Development
-npm run dev           # Einziger Dev-Workflow (preflight + token watch + app)
+npm run dev           # Lokalen Cloudflare-Pages-Server starten
 
 # Code Quality
 npm run qa            # Empfohlen: kompletter Qualitäts-Run (alles prüfen)
-npm run qa:fix        # Empfohlen: auto-fix für ESLint + Stylelint + Prettier
-npm run qa:all        # Fix + kompletter Check in einem Lauf
+npm run fix           # Auto-fix für ESLint + Stylelint + Prettier
 
 # Maintenance
 npm run clean         # lokale Cache/Artifacts löschen
+npm run clean:full    # zusätzlich .wrangler / lokale D1-Daten löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
-npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
-npm run styles:generate # Tokens + Utilities in einem Run erzeugen
-npm run ai-index:sync # AI-Index manuell synchronisieren
-npm run cf:redirect:audit # Redirects analysieren
-npm run cf:redirect:prune # Redirects bereinigen
+npm run content-rag:update # Jules Content-RAG aktualisieren
+npm run content-rag:status # Jules Content-RAG Status prüfen
 ```
+
+Admin-/RAG-Skripte laden lokale Variablen automatisch aus `.dev.vars`, `.env.local` oder `.env`, solange die Werte nicht schon in der Shell gesetzt sind.
 
 Optionaler Port:
 
@@ -291,7 +294,7 @@ Bevor du einen PR öffnest:
 
 ## 🎯 Code Review Process
 
-1. **Automatische Checks:** ESLint, Prettier, Stylelint, Struktur-Gate
+1. **Automatische Checks:** ESLint, Prettier, Stylelint, Repo-Checks
 2. **Manual Review:** Code-Qualität, Best Practices
 3. **Testing:** Funktionalität testen
 4. **Merge:** Nach Approval

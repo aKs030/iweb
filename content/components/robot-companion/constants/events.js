@@ -27,4 +27,5 @@ export const ROBOT_ACTIONS = {
   SWITCH_PROFILE: 'switchProfile',
   DISCONNECT_PROFILE: 'disconnectProfile',
   CLEAR_CHAT: 'clearChat',
+  EXPORT_CHAT: 'exportChat',
 };

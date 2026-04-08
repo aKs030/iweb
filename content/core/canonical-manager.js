@@ -1,22 +1,13 @@
+import { isLocalDevHost } from '#core/runtime-env.js';
 import { createLogger } from './logger.js';
-import {
-  buildProjectDetailPath,
-  extractProjectSlugFromPath,
-  isProjectIndexPath,
-  normalizeProjectSlug,
-} from './project-paths.js';
-import { upsertHeadLink } from './utils.js';
+import { upsertHeadLink } from './dom-utils.js';
+import { buildProjectDetailPath, extractProjectSlug } from './project-paths.js';
 
 const log = createLogger('CanonicalManager');
 const BASE_URL = 'https://www.abdulkerimsesli.de';
 
 function isLocalDevelopment() {
-  const hostname = globalThis.location?.hostname?.toLowerCase() || '';
-  return (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname.startsWith('192.168.')
-  );
+  return isLocalDevHost();
 }
 
 function isPreviewEnvironment() {
@@ -38,17 +29,11 @@ function computeCleanPath() {
 }
 
 function computeProjectCanonicalPath() {
-  const pathname = globalThis.location.pathname || '/';
-  const detailSlug = extractProjectSlugFromPath(pathname);
-  if (detailSlug) {
-    return buildProjectDetailPath(detailSlug);
-  }
-
-  if (!isProjectIndexPath(pathname)) return '';
-
-  const params = new URLSearchParams(globalThis.location.search || '');
-  const legacySlug = normalizeProjectSlug(params.get('app'));
-  return legacySlug ? buildProjectDetailPath(legacySlug) : '';
+  const projectSlug = extractProjectSlug(
+    globalThis.location.pathname || '/',
+    globalThis.location.search || '',
+  );
+  return projectSlug ? buildProjectDetailPath(projectSlug) : '';
 }
 
 function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {

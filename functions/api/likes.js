@@ -1,15 +1,17 @@
 /**
  * API function to handle rating/likes of portfolio projects using Cloudflare D1
  */
+import { errorJsonResponse, jsonResponse } from './_response.js';
+import { getRequestClientIp } from './_request-utils.js';
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const projectId = url.searchParams.get('project_id');
 
   if (!projectId) {
-    return new Response(JSON.stringify({ error: 'Missing project_id' }), {
+    return errorJsonResponse('Missing project_id', {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -19,13 +21,9 @@ export async function onRequestGet(context) {
     // Fail hard if DB binding is missing so UI can react correctly.
     if (!db) {
       console.warn('DB_LIKES binding is missing. Ensure D1 is configured.');
-      return new Response(
-        JSON.stringify({ error: 'DB_LIKES binding missing' }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return errorJsonResponse('DB_LIKES binding missing', {
+        status: 503,
+      });
     }
 
     const result = await db
@@ -35,20 +33,15 @@ export async function onRequestGet(context) {
 
     const likes = result ? result.likes : 0;
 
-    return new Response(JSON.stringify({ likes }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ likes });
   } catch (error) {
     console.error('Error fetching likes:', error);
-    return new Response(
-      JSON.stringify({
+    return errorJsonResponse(
+      {
         error: 'Internal Server Error',
         details: error.message,
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
       },
+      { status: 500 },
     );
   }
 }
@@ -70,22 +63,14 @@ export async function onRequestPost(context) {
   }
 
   if (!projectId) {
-    return new Response(
-      JSON.stringify({ error: 'Missing project_id in query or body' }),
-      {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
+    return errorJsonResponse('Missing project_id in query or body', {
+      status: 400,
+    });
   }
 
   try {
     const db = env.DB_LIKES;
-    const sourceIp = String(
-      request.headers.get('CF-Connecting-IP') ||
-        request.headers.get('X-Forwarded-For') ||
-        '',
-    ).trim();
+    const sourceIp = getRequestClientIp(request);
     const userAgent = String(request.headers.get('User-Agent') || '').trim();
     const requestId = String(
       request.headers.get('CF-Ray') || crypto.randomUUID(),
@@ -93,13 +78,9 @@ export async function onRequestPost(context) {
 
     if (!db) {
       console.warn('DB_LIKES binding is missing. Ensure D1 is configured.');
-      return new Response(
-        JSON.stringify({ error: 'DB_LIKES binding missing' }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return errorJsonResponse('DB_LIKES binding missing', {
+        status: 503,
+      });
     }
 
     await db.batch([
@@ -131,14 +112,11 @@ export async function onRequestPost(context) {
       .bind(projectId)
       .first();
 
-    return new Response(JSON.stringify({ likes: Number(result?.likes) || 0 }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ likes: Number(result?.likes) || 0 });
   } catch (error) {
     console.error('Error adding like:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    return errorJsonResponse('Internal Server Error', {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

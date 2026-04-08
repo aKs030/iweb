@@ -1,4 +1,5 @@
 /* Accessibility Manager */
+import { closeActiveOverlay } from './overlay-manager.js';
 
 /**
  * Attach a MediaQueryList change listener and return a cleanup function.
@@ -32,29 +33,8 @@ function bindMediaQueryChange(mql, handler) {
   return () => {};
 }
 
-/**
- * Focus an element with a preventScroll-first strategy.
- * @param {Element|null} element
- */
-function focusSafely(element) {
-  if (!element || typeof element.focus !== 'function') return;
-  try {
-    element.focus({ preventScroll: true });
-    return;
-  } catch {
-    // fallback below
-  }
-  try {
-    element.focus();
-  } catch {
-    // ignore focus failures
-  }
-}
-
 class AccessibilityManager {
   constructor() {
-    this.focusTrapStack = [];
-    this.lastFocusedElement = null;
     this.reducedMotionMQL = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     );
@@ -135,10 +115,6 @@ class AccessibilityManager {
       if (e.key === 'Escape') {
         this.handleEscape();
       }
-
-      if (e.key === 'Tab' && this.focusTrapStack.length > 0) {
-        this.handleTabInTrap(e);
-      }
     };
     document.addEventListener('keydown', this._onKeyboardNav);
   }
@@ -151,7 +127,9 @@ class AccessibilityManager {
         e.preventDefault();
         const href = link.getAttribute('href');
         if (!href) return;
-        const target = document.querySelector(href);
+        const target = /** @type {HTMLElement} */ (
+          document.querySelector(href)
+        );
         if (!target) return;
         target.setAttribute('tabindex', '-1');
         target.focus();
@@ -174,63 +152,28 @@ class AccessibilityManager {
     });
   }
 
-  trapFocus(container) {
-    if (!container) return;
-
-    const focusableElements = container.querySelectorAll(
-      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
-    );
-
-    if (!focusableElements || focusableElements.length === 0) return;
-
-    const firstFocusable = focusableElements[0];
-    const lastFocusable = focusableElements[focusableElements.length - 1];
-
-    this.lastFocusedElement = document.activeElement;
-
-    const trap = { container, firstFocusable, lastFocusable };
-    this.focusTrapStack.push(trap);
-
-    // Focus first focusable element
-    focusSafely(firstFocusable);
-  }
-
-  releaseFocus() {
-    const trap = this.focusTrapStack.pop();
-    if (trap && this.lastFocusedElement) {
-      focusSafely(this.lastFocusedElement);
-    }
-  }
-
-  handleTabInTrap(e) {
-    if (this.focusTrapStack.length === 0) return;
-    const trap = this.focusTrapStack[this.focusTrapStack.length - 1];
-
-    if (e.shiftKey) {
-      if (document.activeElement === trap.firstFocusable) {
-        e.preventDefault();
-        trap.lastFocusable.focus();
-      }
-    } else {
-      if (document.activeElement === trap.lastFocusable) {
-        e.preventDefault();
-        trap.firstFocusable.focus();
-      }
-    }
-  }
-
   async handleEscape() {
-    // footer cookie settings use an ID now, not the old `.footer-cookie-settings` class
-    const cookieModal = document.querySelector('#cookie-settings:not(.hidden)');
+    const closedOverlay = await closeActiveOverlay({
+      reason: 'escape',
+      restoreFocus: true,
+    });
+    if (closedOverlay) return;
+
+    const footerSr = document.querySelector('site-footer')?.shadowRoot;
+    const cookieModal = (footerSr || document).querySelector(
+      '#cookie-settings:not(.hidden)',
+    );
     if (cookieModal) {
-      const closeBtn = cookieModal.querySelector('#close-settings');
+      const closeBtn = /** @type {HTMLElement} */ (
+        cookieModal.querySelector('#close-settings')
+      );
       if (closeBtn) closeBtn.click();
       return;
     }
 
     // prefer calling the footer API directly instead of firing events
     try {
-      const { closeFooter } = await import('../components/footer/footer.js');
+      const { closeFooter } = await import('#footer/index.js');
       closeFooter();
     } catch {
       // footer module could not be imported
@@ -290,7 +233,7 @@ class AccessibilityManager {
 
 // Global instance (guard for SSR / non-browser environments)
 const a11y = typeof window !== 'undefined' ? new AccessibilityManager() : null;
-if (typeof window !== 'undefined') window.a11y = a11y;
+if (typeof window !== 'undefined') /** @type {any} */ (window).a11y = a11y;
 export { a11y };
 
 export function createAnnouncer() {

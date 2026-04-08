@@ -7,9 +7,14 @@
 
 import { BASE_URL, FAVICON_512 } from '#config/constants.js';
 import { i18n } from '#core/i18n.js';
-import { escapeHTML, getElementById } from '#core/utils.js';
+import { getElementById } from '#core/dom-utils.js';
+import { escapeHTML } from '#core/text-utils.js';
 
 const VIDEO_PAGE_BASE_URL = `${BASE_URL}/videos/`;
+
+function createVideoPageUrl(videoId) {
+  return `/videos/${videoId}/`;
+}
 
 function cleanTitle(value) {
   if (!value) return value;
@@ -27,6 +32,163 @@ function prependPageMessage(className, message) {
   el.textContent = message;
   container.insertBefore(el, container.firstChild);
   setVideoStatus(message);
+}
+
+function formatVideoDate(value) {
+  const date = new Date(value || Date.now());
+  if (Number.isNaN(date.getTime())) return '';
+  try {
+    return new Intl.DateTimeFormat('de-DE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date);
+  } catch {
+    return date.toISOString().slice(0, 10);
+  }
+}
+
+function formatCompactNumber(value) {
+  const count = Number.parseInt(String(value || 0), 10);
+  if (!Number.isFinite(count) || count <= 0) return '';
+  try {
+    return new Intl.NumberFormat('de-DE', {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(count);
+  } catch {
+    return String(count);
+  }
+}
+
+function parseIsoDurationToLabel(rawDuration) {
+  const value = String(rawDuration || '').trim();
+  if (!value.startsWith('P')) return '';
+
+  const match = value.match(
+    /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/,
+  );
+  if (!match) return value;
+
+  const days = Number.parseInt(match[1] || '0', 10);
+  const hours = Number.parseInt(match[2] || '0', 10);
+  const minutes = Number.parseInt(match[3] || '0', 10);
+  const seconds = Number.parseInt(match[4] || '0', 10);
+  const totalHours = days * 24 + hours;
+  const parts = [];
+
+  if (totalHours > 0) parts.push(String(totalHours));
+  parts.push(String(minutes).padStart(totalHours > 0 ? 2 : 1, '0'));
+  parts.push(String(seconds).padStart(2, '0'));
+  return parts.join(':');
+}
+
+export function extractVideoViewModel(item, detailsMap = {}) {
+  const vid = item?.snippet?.resourceId?.videoId;
+  if (!vid) return null;
+
+  const rawTitle = item.snippet.title;
+  const title = cleanTitle(rawTitle);
+  const description = item.snippet?.description?.trim()
+    ? item.snippet.description
+    : `${title} — Video von Abdulkerim Sesli`;
+  const thumb =
+    item.snippet?.thumbnails?.maxres?.url ||
+    item.snippet?.thumbnails?.high?.url ||
+    item.snippet?.thumbnails?.default?.url ||
+    '';
+  const publishedAt = item.snippet.publishedAt || new Date().toISOString();
+  const videoDetail = detailsMap[vid];
+  const duration = videoDetail?.contentDetails?.duration || '';
+  const viewCount = videoDetail?.statistics?.viewCount
+    ? Number(videoDetail.statistics.viewCount)
+    : undefined;
+
+  return {
+    id: vid,
+    rawTitle,
+    title,
+    description,
+    thumb,
+    publishedAt,
+    publishedLabel: formatVideoDate(publishedAt),
+    duration,
+    durationLabel: parseIsoDurationToLabel(duration),
+    viewCount,
+    viewCountLabel: formatCompactNumber(viewCount),
+    watchUrl: `https://www.youtube.com/watch?v=${vid}`,
+    shortUrl: `https://youtu.be/${vid}`,
+    embedUrl: `https://www.youtube-nocookie.com/embed/${vid}`,
+    landingPageUrl: createVideoPageUrl(vid),
+  };
+}
+
+function createMetaPill(label, value) {
+  if (!value) return '';
+  return `<span class="video-featured__pill"><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></span>`;
+}
+
+export function renderFeaturedVideo(target, videoModel, relatedVideos = []) {
+  if (!(target instanceof HTMLElement)) return;
+
+  if (!videoModel) {
+    target.hidden = true;
+    target.innerHTML = '';
+    return;
+  }
+
+  const metaMarkup = [
+    createMetaPill('Veröffentlicht', videoModel.publishedLabel),
+    createMetaPill('Dauer', videoModel.durationLabel),
+    createMetaPill('Views', videoModel.viewCountLabel),
+  ]
+    .filter(Boolean)
+    .join('');
+
+  const relatedMarkup = relatedVideos.length
+    ? `<div class="video-featured__related">
+        <span class="video-featured__eyebrow">Mehr aus dem Kanal</span>
+        <div class="video-featured__related-list">
+          ${relatedVideos
+            .map(
+              (
+                video,
+              ) => `<a class="video-featured__related-link" href="${video.landingPageUrl}">
+                <span class="video-featured__related-title">${escapeHTML(video.title)}</span>
+                <span class="video-featured__related-meta">${escapeHTML(video.publishedLabel || 'Video')}</span>
+              </a>`,
+            )
+            .join('')}
+        </div>
+      </div>`
+    : '';
+
+  target.hidden = false;
+  target.innerHTML = `
+    <article class="video-featured__panel">
+      <div class="video-featured__media">
+        <iframe
+          src="${videoModel.embedUrl}?rel=0"
+          title="${escapeHTML(videoModel.title)}"
+          loading="eager"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
+        ></iframe>
+      </div>
+      <div class="video-featured__content">
+        <span class="video-featured__eyebrow">Video Landing</span>
+        <h2 class="video-featured__title">${escapeHTML(videoModel.title)}</h2>
+        <p class="video-featured__description">${escapeHTML(videoModel.description)}</p>
+        <div class="video-featured__meta">${metaMarkup}</div>
+        <div class="video-featured__actions">
+          <a href="${videoModel.watchUrl}" target="_blank" rel="noopener" class="btn-subscribe video-featured__action">Auf YouTube ansehen</a>
+          <a href="${videoModel.landingPageUrl}" class="btn-share video-featured__action">Direkter Seitenlink</a>
+        </div>
+        ${relatedMarkup}
+      </div>
+    </article>
+  `;
 }
 
 export function activateThumb(btn) {
@@ -83,23 +245,23 @@ export function bindThumb(btn) {
 }
 
 export function renderVideoCard(container, item, detailsMap, index = 0) {
-  const vid = item.snippet.resourceId.videoId;
-  const rawTitle = item.snippet.title;
-  const title = cleanTitle(rawTitle);
-  const description = item.snippet?.description?.trim()
-    ? item.snippet.description
-    : `${title} — Video von Abdulkerim Sesli`;
-  const thumb =
-    item.snippet?.thumbnails?.maxres?.url ||
-    item.snippet?.thumbnails?.high?.url ||
-    item.snippet?.thumbnails?.default?.url;
-  const publishedAt = item.snippet.publishedAt || new Date().toISOString();
+  const videoModel = extractVideoViewModel(item, detailsMap);
+  if (!videoModel) return null;
 
-  const videoDetail = detailsMap[vid];
-  const duration = videoDetail?.contentDetails?.duration;
-  const viewCount = videoDetail?.statistics?.viewCount
-    ? Number(videoDetail.statistics.viewCount)
-    : undefined;
+  const {
+    id: vid,
+    rawTitle,
+    title,
+    description,
+    thumb,
+    publishedAt,
+    publishedLabel,
+    duration,
+    viewCount,
+    shortUrl,
+    landingPageUrl,
+    embedUrl,
+  } = videoModel;
 
   const article = document.createElement('article');
   article.className = 'video-card';
@@ -136,7 +298,7 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
 
   let currentFallbackIndex = 0;
   thumbImg.onerror = (event) => {
-    event.stopPropagation();
+    /** @type {any} */ (event).stopPropagation();
     currentFallbackIndex += 1;
 
     if (currentFallbackIndex < fallbackUrls.length) {
@@ -161,9 +323,9 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
 
   const meta = document.createElement('div');
   meta.className = 'video-meta';
-  meta.innerHTML = `<div class="video-info"><small class="pub-date">${publishedAt}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">${i18n.t(
+  meta.innerHTML = `<div class="video-info"><small class="pub-date">${publishedLabel || publishedAt}</small></div><div class="video-actions u-row"><a href="${shortUrl}" target="_blank" rel="noopener">${i18n.t(
     'videos.open_youtube',
-  )}</a> <a href="/videos/${vid}/" class="page-link" title="${i18n.t(
+  )}</a> <a href="${landingPageUrl}" class="page-link" title="${i18n.t(
     'videos.open_landing',
   )}" data-video-id="${vid}" data-video-title="${escapeHTML(
     title,
@@ -171,7 +333,7 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
 
   const publisherName = 'Abdulkerim Sesli';
   const canonicalWatchUrl = `https://www.youtube.com/watch?v=${vid}`;
-  const landingPageUrl = `${VIDEO_PAGE_BASE_URL}${vid}/`;
+  const landingPageUrlAbsolute = `${VIDEO_PAGE_BASE_URL}${vid}/`;
   const schemaNode = {
     '@type': 'VideoObject',
     '@id': `${VIDEO_PAGE_BASE_URL}#video-${vid}`,
@@ -181,8 +343,8 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
     uploadDate: publishedAt,
     url: canonicalWatchUrl,
     contentUrl: canonicalWatchUrl,
-    embedUrl: `https://www.youtube-nocookie.com/embed/${vid}`,
-    mainEntityOfPage: { '@type': 'WebPage', '@id': landingPageUrl },
+    embedUrl,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': landingPageUrlAbsolute },
     isFamilyFriendly: true,
     publisher: {
       '@type': 'Organization',
@@ -236,7 +398,7 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
             try {
               win.gtag('event', 'open_video_page_ua', uaPayload);
             } catch {
-              /* ignore legacy analytics errors */
+              /* ignore secondary analytics errors */
             }
           } else if (Array.isArray(win.dataLayer)) {
             win.dataLayer.push({

@@ -282,6 +282,26 @@
   font-size: var(--size-r-1);
 }
 
+.gallery-lightbox__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.gallery-lightbox__meta-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-28);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--clr-white) 10%, transparent);
+  background: color-mix(in srgb, var(--clr-white) 5%, transparent);
+  color: color-mix(in srgb, var(--clr-white) 84%, transparent);
+  font-size: var(--size-r-0-78);
+  text-transform: capitalize;
+}
+
 .gallery-lightbox__actions {
   display: flex;
   gap: var(--space-4);

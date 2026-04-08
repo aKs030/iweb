@@ -2,9 +2,14 @@
  * Menu State Management
  * Handles the reactive state of the menu (open/closed, active link, title).
  */
-import { createLogger } from '../../../core/logger.js';
-import { computed, signal } from '../../../core/signals.js';
-import { uiStore } from '../../../core/ui-store.js';
+import { createLogger } from '#core/logger.js';
+import { computed, signal } from '#core/signals.js';
+import {
+  OVERLAY_MODES,
+  clearActiveOverlayMode,
+  setActiveOverlayMode,
+  uiStore,
+} from '#core/ui-store.js';
 
 const log = createLogger('MenuState');
 
@@ -13,10 +18,13 @@ export class MenuState {
     this._openSignal = signal(false);
     this._activeLinkSignal = signal(null);
     this._titleSignal = signal(
-      Object.freeze({
-        title: 'menu.home',
-        subtitle: '',
-      }),
+      /** @type {{title: string, subtitle: string}} */
+      (
+        Object.freeze({
+          title: 'menu.home',
+          subtitle: '',
+        })
+      ),
     );
 
     this.signals = Object.freeze({
@@ -27,6 +35,11 @@ export class MenuState {
 
     /** @type {Map<string, Map<Function, Function>>} */
     this._subscriptions = new Map();
+    this._overlayCleanup = uiStore.subscribeKey('activeOverlay', (mode) => {
+      const isMenuOverlayOpen = mode === OVERLAY_MODES.MENU;
+      if (this._openSignal.value === isMenuOverlayOpen) return;
+      this._openSignal.value = isMenuOverlayOpen;
+    });
   }
 
   get isOpen() {
@@ -52,7 +65,12 @@ export class MenuState {
   setOpen(value) {
     if (this.isOpen === value) return;
     this._openSignal.value = value;
-    uiStore.setState({ menuOpen: value });
+    if (value) {
+      setActiveOverlayMode(OVERLAY_MODES.MENU);
+      return;
+    }
+
+    clearActiveOverlayMode(OVERLAY_MODES.MENU);
   }
 
   /**
@@ -141,7 +159,7 @@ export class MenuState {
       title: 'menu.home',
       subtitle: '',
     });
-    uiStore.setState({ menuOpen: false });
+    clearActiveOverlayMode(OVERLAY_MODES.MENU);
     this._subscriptions.forEach((subscriptions) => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
     });

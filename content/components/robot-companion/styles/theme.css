@@ -1,0 +1,106 @@
+/* Robot companion theme tokens */
+:root {
+  --robot-text-strong: var(--robot-slate-100);
+  --robot-text-muted: var(--clr-slate-300);
+  --robot-slate-300: var(--clr-slate-300);
+
+  --robot-chat-accent: color-mix(
+    in srgb,
+    var(--robot-cyan) 85%,
+    var(--clr-blue-500)
+  );
+  --robot-chat-border: color-mix(in srgb, var(--robot-cyan) 26%, transparent);
+  --robot-chat-surface-top: color-mix(
+    in srgb,
+    var(--robot-rgb-13-20-36) 88%,
+    transparent
+  );
+  --robot-chat-surface-bottom: color-mix(
+    in srgb,
+    var(--robot-rgb-15-23-42) 90%,
+    transparent
+  );
+
+  --robot-tool-card-surface-top: color-mix(
+    in srgb,
+    var(--robot-rgb-15-23-42) 26%,
+    transparent
+  );
+  --robot-tool-card-surface-bottom: color-mix(
+    in srgb,
+    var(--robot-rgb-13-20-36) 72%,
+    transparent
+  );
+  --robot-tool-card-text: var(--robot-text-strong);
+  --robot-tool-card-text-muted: color-mix(
+    in srgb,
+    var(--robot-text-strong) 82%,
+    transparent
+  );
+  --robot-tool-card-meta-label: color-mix(
+    in srgb,
+    var(--robot-text-strong) 58%,
+    transparent
+  );
+
+  --robot-flame-outer-color: #cc6600;
+  --robot-flame-inner-color: #ffcc00;
+  --robot-flame-particle-color: #ff9900;
+
+  --robot-svg-stroke: var(--robot-cyan);
+  --robot-svg-head-fill: var(--robot-slate-800);
+  --robot-svg-body-fill: #0f172a;
+  --robot-svg-eye-fill: var(--robot-cyan);
+  --robot-svg-core-fill: var(--clr-blue-600);
+  --robot-svg-antenna-idle: var(--robot-red);
+  --robot-svg-antenna-speaking: var(--robot-cyan);
+  --robot-svg-antenna-excited: var(--robot-yellow);
+  --robot-svg-flash-glow: var(--clr-white);
+  --robot-svg-lid-top: #0b1220;
+  --robot-svg-lid-bottom: #0f172a;
+  --robot-svg-shadow-color: rgb(0 0 0 / 35%);
+  --robot-svg-thinking-fill: color-mix(
+    in srgb,
+    var(--robot-cyan) 20%,
+    transparent
+  );
+
+  --robot-svg-magnifier-handle-start: var(--robot-slate-800);
+  --robot-svg-magnifier-handle-mid: var(--robot-slate-600);
+  --robot-svg-magnifier-handle-end: #0f172a;
+  --robot-svg-magnifier-metal-1: #e2e8f0;
+  --robot-svg-magnifier-metal-2: #cbd5e1;
+  --robot-svg-magnifier-metal-3: #64748b;
+  --robot-svg-magnifier-metal-4: #ffffff;
+  --robot-svg-magnifier-metal-5: #94a3b8;
+  --robot-svg-glass-inner: rgb(255 255 255 / 1%);
+  --robot-svg-glass-edge: rgb(200 230 230 / 15%);
+  --robot-svg-glass-stroke: rgb(0 0 0 / 10%);
+  --robot-svg-glass-glare: rgb(255 255 255 / 15%);
+  --robot-svg-glass-highlight: var(--clr-white);
+  --robot-svg-glass-refraction: rgb(255 255 255 / 30%);
+}
+
+:root[data-theme='light'] {
+  --robot-chat-border: color-mix(in srgb, var(--robot-cyan) 18%, transparent);
+  --robot-chat-surface-top: color-mix(
+    in srgb,
+    var(--robot-rgb-13-20-36) 82%,
+    transparent
+  );
+  --robot-chat-surface-bottom: color-mix(
+    in srgb,
+    var(--robot-rgb-15-23-42) 84%,
+    transparent
+  );
+  --robot-tool-card-surface-top: color-mix(
+    in srgb,
+    var(--robot-rgb-15-23-42) 18%,
+    transparent
+  );
+  --robot-tool-card-surface-bottom: color-mix(
+    in srgb,
+    var(--robot-rgb-13-20-36) 62%,
+    transparent
+  );
+}

@@ -3,11 +3,16 @@
  * @version 1.2.0
  */
 
-import { cancelIdleTask, scheduleIdleTask } from './idle.js';
+import { cancelIdleTask, scheduleIdleTask } from './async-utils.js';
+import { getElementById, upsertHeadLink } from './dom-utils.js';
 import { createLogger } from './logger.js';
-import { getElementById, TimerManager, upsertHeadLink } from './utils.js';
 import { AppLoadManager } from './load-manager.js';
+import { TimerManager } from './timer-manager.js';
 import { threeEarthState } from '../components/particles/three-earth-state.js';
+import {
+  EARTH_CRITICAL_TEXTURE_URL,
+  EARTH_SECONDARY_TEXTURE_URLS,
+} from '../components/particles/earth/texture-paths.js';
 
 const log = createLogger('ThreeEarthManager');
 
@@ -95,12 +100,11 @@ export class ThreeEarthManager {
   preloadTextures() {
     // Avoid late-preload console warnings: only preload before window load fires.
     // Three.js image loading uses anonymous CORS, so match that on the hint.
-    const dayTexture = '/content/assets/img/earth/textures/earth_day.webp';
     const canPreloadNow = document.readyState !== 'complete';
     if (canPreloadNow) {
       upsertHeadLink({
         rel: 'preload',
-        href: dayTexture,
+        href: EARTH_CRITICAL_TEXTURE_URL,
         as: 'image',
         crossOrigin: 'anonymous',
         dataset: { injectedBy: 'three-earth' },
@@ -109,11 +113,7 @@ export class ThreeEarthManager {
     }
 
     // Secondary textures are queued as low-priority prefetches.
-    [
-      '/content/assets/img/earth/textures/earth_night.webp',
-      '/content/assets/img/earth/textures/earth_normal.webp',
-      '/content/assets/img/earth/textures/earth_bump.webp',
-    ].forEach((href) => {
+    EARTH_SECONDARY_TEXTURE_URLS.forEach((href) => {
       upsertHeadLink({
         rel: 'prefetch',
         href,

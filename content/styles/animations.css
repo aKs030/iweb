@@ -1,40 +1,228 @@
-/**
+@layer animations {
+  /**
  * Shared Animations
  * Common keyframe animations used across multiple components
  * @author Abdulkerim Sesli
  * @version 1.0.0
  */
 
-/* ===== Fade In Animation ===== */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(var(--size-20));
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===== Pulse Animation ===== */
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* ===== Scroll-Driven Animations (CSS ScrollTimeline) ===== */
-/* Progressive enhancement: only applied in supporting browsers */
-@supports (animation-timeline: view()) {
-  @keyframes scrollFadeIn {
+  /* ===== Fade In Animation ===== */
+  @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(var(--size-40)) scale(0.97);
+      transform: translateY(var(--size-20));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ===== Pulse Animation ===== */
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  /* ===== Scroll-Driven Animations (CSS ScrollTimeline) ===== */
+  /* Progressive enhancement: only applied in supporting browsers */
+  @supports (animation-timeline: view()) {
+    @keyframes scrollFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(var(--size-40)) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Sections animate in when they enter the viewport */
+    .section {
+      animation: scrollFadeIn linear both;
+      animation-timeline: view();
+      animation-range: var(--scroll-fade-range);
+    }
+
+    /* Respect reduced motion preferences */
+    @media (prefers-reduced-motion: reduce) {
+      .section {
+        animation: none;
+      }
+    }
+  }
+
+  /* =======================
+   VIEW TRANSITIONS API
+======================= */
+
+  /* In-Page View Transitions für Chat-Toggle.
+   Cross-Document VT (navigation: auto) ist NICHT aktiviert —
+   Unterseiten haben eigenes CSS/JS und brauchen volle Seitenlade. */
+
+  /* --- Default root: sofort, kein Effekt (verhindert Seiten-Flash) --- */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  /* --- Loader-Overlay: Lift + Fade beim Ausblenden ---
+   Der Loader hebt sich nach oben und verblasst —
+   ein eleganter „Vorhang"-Effekt, der die App darunter freigibt. */
+  ::view-transition-old(loader-overlay) {
+    animation: var(--vt-loader-duration) var(--vt-loader-ease) both
+      vt-loader-out;
+    z-index: var(--z-fixed);
+  }
+
+  /* Kein ::view-transition-new(loader-overlay) nötig — Loader wird entfernt, nicht ersetzt */
+
+  /* --- Chat window: dramatische Slide-Up + Scale Animation ---
+   Absichtlich stark anders als die CSS-Fallback-Transition (opacity+scale),
+   damit der VT-Effekt klar sichtbar ist. */
+  ::view-transition-old(robot-chat) {
+    animation: var(--vt-chat-out-duration) var(--vt-chat-out-ease) both
+      vt-chat-out;
+  }
+
+  ::view-transition-new(robot-chat) {
+    animation: var(--vt-chat-in-duration) var(--vt-chat-in-ease) both vt-chat-in;
+  }
+
+  /* Typed VT: Während Chat-Öffnen/Schließen den Root nicht animieren */
+  :root:active-view-transition-type(chat-open),
+  :root:active-view-transition-type(chat-close) {
+    &::view-transition-old(root),
+    &::view-transition-new(root) {
+      animation: none;
+    }
+  }
+
+  /* Typed VT: Beim Loader-Ausblenden sanften Root-Übergang zeigen */
+  :root:active-view-transition-type(loader-hide) {
+    &::view-transition-new(root) {
+      animation: var(--vt-loader-duration) ease-out both vt-fade-in;
+    }
+  }
+
+  /* Typed VT: Menue-Panel beim Oeffnen/Schliessen */
+  :root:active-view-transition-type(menu-open) {
+    &::view-transition-old(site-menu-panel) {
+      animation: none;
+    }
+    &::view-transition-new(site-menu-panel) {
+      animation: 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-menu-panel-in;
+    }
+  }
+
+  :root:active-view-transition-type(menu-close) {
+    &::view-transition-old(site-menu-panel) {
+      animation: 200ms cubic-bezier(0.4, 0, 1, 1) both vt-menu-panel-out;
+    }
+    &::view-transition-new(site-menu-panel) {
+      animation: none;
+    }
+  }
+
+  /* Typed VT: Search-Panel beim Oeffnen/Schliessen */
+  :root:active-view-transition-type(search-open) {
+    &::view-transition-old(site-menu-search-panel) {
+      animation: none;
+    }
+    &::view-transition-new(site-menu-search-panel) {
+      animation: 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-menu-search-in;
+    }
+  }
+
+  :root:active-view-transition-type(search-close) {
+    &::view-transition-old(site-menu-search-panel) {
+      animation: 180ms cubic-bezier(0.4, 0, 1, 1) both vt-menu-search-out;
+    }
+    &::view-transition-new(site-menu-search-panel) {
+      animation: none;
+    }
+  }
+
+  /* Typed VT: Theme-Wechsel inkl. Root + Toggle-Icon */
+  :root:active-view-transition-type(theme-change) {
+    &::view-transition-old(root) {
+      animation: 180ms ease-out both vt-theme-root-out;
+    }
+    &::view-transition-new(root) {
+      animation: 280ms ease-in both vt-theme-root-in;
+    }
+    &::view-transition-old(theme-toggle-control) {
+      animation: 180ms ease-in both vt-theme-icon-out;
+    }
+    &::view-transition-new(theme-toggle-control) {
+      animation: 260ms ease-out both vt-theme-icon-in;
+    }
+  }
+
+  /* Typed VT: Dynamischer Abschnitts-Swap (SectionManager) */
+  :root:active-view-transition-type(section-swap) {
+    &::view-transition-old(section-swap-target) {
+      animation: 180ms ease-in both vt-section-swap-out;
+    }
+    &::view-transition-new(section-swap-target) {
+      animation: 280ms ease-out both vt-section-swap-in;
+    }
+  }
+
+  /* Keyframes — Chat VT */
+  @keyframes vt-chat-out {
+    from {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.4) translateY(40%);
+    }
+  }
+
+  @keyframes vt-chat-in {
+    from {
+      opacity: 0;
+      transform: scale(0.4) translateY(40%);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* Keyframes — Loader VT */
+  @keyframes vt-loader-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-6%) scale(1.01);
+    }
+  }
+
+  @keyframes vt-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes vt-menu-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.985);
     }
     to {
       opacity: 1;
@@ -42,300 +230,115 @@
     }
   }
 
-  /* Sections animate in when they enter the viewport */
-  .section {
-    animation: scrollFadeIn linear both;
-    animation-timeline: view();
-    animation-range: var(--scroll-fade-range);
-  }
-
-  /* Respect reduced motion preferences */
-  @media (prefers-reduced-motion: reduce) {
-    .section {
-      animation: none;
+  @keyframes vt-menu-panel-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.99);
     }
   }
-}
 
-/* =======================
-   VIEW TRANSITIONS API
-======================= */
+  @keyframes vt-menu-search-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.992);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 
-/* In-Page View Transitions für Chat-Toggle.
-   Cross-Document VT (navigation: auto) ist NICHT aktiviert —
-   Unterseiten haben eigenes CSS/JS und brauchen volle Seitenlade. */
+  @keyframes vt-menu-search-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-3px) scale(0.995);
+    }
+  }
 
-/* --- Default root: sofort, kein Effekt (verhindert Seiten-Flash) --- */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-}
+  @keyframes vt-theme-root-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.94;
+    }
+  }
 
-/* --- Loader-Overlay: Lift + Fade beim Ausblenden ---
-   Der Loader hebt sich nach oben und verblasst —
-   ein eleganter „Vorhang"-Effekt, der die App darunter freigibt. */
-::view-transition-old(loader-overlay) {
-  animation: var(--vt-loader-duration) var(--vt-loader-ease) both vt-loader-out;
-  z-index: var(--z-fixed);
-}
+  @keyframes vt-theme-root-in {
+    from {
+      opacity: 0.75;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 
-/* Kein ::view-transition-new(loader-overlay) nötig — Loader wird entfernt, nicht ersetzt */
+  @keyframes vt-theme-icon-out {
+    from {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.7) rotate(-60deg);
+    }
+  }
 
-/* --- Chat window: dramatische Slide-Up + Scale Animation ---
-   Absichtlich stark anders als die CSS-Fallback-Transition (opacity+scale),
-   damit der VT-Effekt klar sichtbar ist. */
-::view-transition-old(robot-chat) {
-  animation: var(--vt-chat-out-duration) var(--vt-chat-out-ease) both
-    vt-chat-out;
-}
+  @keyframes vt-theme-icon-in {
+    from {
+      opacity: 0;
+      transform: scale(0.7) rotate(60deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
 
-::view-transition-new(robot-chat) {
-  animation: var(--vt-chat-in-duration) var(--vt-chat-in-ease) both vt-chat-in;
-}
+  @keyframes vt-section-swap-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
 
-/* Typed VT: Während Chat-Öffnen/Schließen den Root nicht animieren */
-:root:active-view-transition-type(chat-open),
-:root:active-view-transition-type(chat-close) {
-  &::view-transition-old(root),
-  &::view-transition-new(root) {
-    animation: none;
+  @keyframes vt-section-swap-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-}
 
-/* Typed VT: Beim Loader-Ausblenden sanften Root-Übergang zeigen */
-:root:active-view-transition-type(loader-hide) {
-  &::view-transition-new(root) {
-    animation: var(--vt-loader-duration) ease-out both vt-fade-in;
-  }
-}
-
-/* Typed VT: Menue-Panel beim Oeffnen/Schliessen */
-:root:active-view-transition-type(menu-open) {
-  &::view-transition-old(site-menu-panel) {
-    animation: none;
-  }
-  &::view-transition-new(site-menu-panel) {
-    animation: 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-menu-panel-in;
-  }
-}
-
-:root:active-view-transition-type(menu-close) {
-  &::view-transition-old(site-menu-panel) {
-    animation: 200ms cubic-bezier(0.4, 0, 1, 1) both vt-menu-panel-out;
-  }
-  &::view-transition-new(site-menu-panel) {
-    animation: none;
-  }
-}
-
-/* Typed VT: Search-Panel beim Oeffnen/Schliessen */
-:root:active-view-transition-type(search-open) {
-  &::view-transition-old(site-menu-search-panel) {
-    animation: none;
-  }
-  &::view-transition-new(site-menu-search-panel) {
-    animation: 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-menu-search-in;
-  }
-}
-
-:root:active-view-transition-type(search-close) {
-  &::view-transition-old(site-menu-search-panel) {
-    animation: 180ms cubic-bezier(0.4, 0, 1, 1) both vt-menu-search-out;
-  }
-  &::view-transition-new(site-menu-search-panel) {
-    animation: none;
-  }
-}
-
-/* Typed VT: Theme-Wechsel inkl. Root + Toggle-Icon */
-:root:active-view-transition-type(theme-change) {
-  &::view-transition-old(root) {
-    animation: 180ms ease-out both vt-theme-root-out;
-  }
-  &::view-transition-new(root) {
-    animation: 280ms ease-in both vt-theme-root-in;
-  }
-  &::view-transition-old(theme-toggle-control) {
-    animation: 180ms ease-in both vt-theme-icon-out;
-  }
-  &::view-transition-new(theme-toggle-control) {
-    animation: 260ms ease-out both vt-theme-icon-in;
-  }
-}
-
-/* Typed VT: Dynamischer Abschnitts-Swap (SectionManager) */
-:root:active-view-transition-type(section-swap) {
-  &::view-transition-old(section-swap-target) {
-    animation: 180ms ease-in both vt-section-swap-out;
-  }
-  &::view-transition-new(section-swap-target) {
-    animation: 280ms ease-out both vt-section-swap-in;
-  }
-}
-
-/* Keyframes — Chat VT */
-@keyframes vt-chat-out {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.4) translateY(40%);
-  }
-}
-
-@keyframes vt-chat-in {
-  from {
-    opacity: 0;
-    transform: scale(0.4) translateY(40%);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Keyframes — Loader VT */
-@keyframes vt-loader-out {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-6%) scale(1.01);
-  }
-}
-
-@keyframes vt-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes vt-menu-panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes vt-menu-panel-out {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.99);
-  }
-}
-
-@keyframes vt-menu-search-in {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.992);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes vt-menu-search-out {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-3px) scale(0.995);
-  }
-}
-
-@keyframes vt-theme-root-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0.94;
-  }
-}
-
-@keyframes vt-theme-root-in {
-  from {
-    opacity: 0.75;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes vt-theme-icon-out {
-  from {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.7) rotate(-60deg);
-  }
-}
-
-@keyframes vt-theme-icon-in {
-  from {
-    opacity: 0;
-    transform: scale(0.7) rotate(60deg);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-@keyframes vt-section-swap-out {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-
-@keyframes vt-section-swap-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(robot-chat),
-  ::view-transition-new(robot-chat),
-  ::view-transition-old(loader-overlay),
-  ::view-transition-new(root),
-  ::view-transition-old(site-menu-panel),
-  ::view-transition-new(site-menu-panel),
-  ::view-transition-old(site-menu-search-panel),
-  ::view-transition-new(site-menu-search-panel),
-  ::view-transition-old(theme-toggle-control),
-  ::view-transition-new(theme-toggle-control),
-  ::view-transition-old(section-swap-target),
-  ::view-transition-new(section-swap-target) {
-    animation: none;
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(robot-chat),
+    ::view-transition-new(robot-chat),
+    ::view-transition-old(loader-overlay),
+    ::view-transition-new(root),
+    ::view-transition-old(site-menu-panel),
+    ::view-transition-new(site-menu-panel),
+    ::view-transition-old(site-menu-search-panel),
+    ::view-transition-new(site-menu-search-panel),
+    ::view-transition-old(theme-toggle-control),
+    ::view-transition-new(theme-toggle-control),
+    ::view-transition-old(section-swap-target),
+    ::view-transition-new(section-swap-target) {
+      animation: none;
+    }
   }
 }

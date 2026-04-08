@@ -45,7 +45,7 @@ function getTrustedInternalHosts(
  * @param {{ base?: string }} [options]
  * @returns {URL|null}
  */
-export function parseUrl(rawUrl, options = {}) {
+function parseUrl(rawUrl, options = {}) {
   const value = String(rawUrl || '').trim();
   if (!value) return null;
 

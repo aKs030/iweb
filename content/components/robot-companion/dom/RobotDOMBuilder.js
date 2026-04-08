@@ -50,9 +50,6 @@ export class RobotDOMBuilder {
     const header = document.createElement('div');
     header.className = 'chat-header u-inline-center';
 
-    const titleGroup = document.createElement('div');
-    titleGroup.className = 'chat-title-group';
-
     const title = document.createElement('div');
     title.className = 'chat-title';
 
@@ -63,14 +60,6 @@ export class RobotDOMBuilder {
 
     title.append(statusDot, titleText);
 
-    const profileStatus = document.createElement('div');
-    profileStatus.className =
-      'chat-profile-status chat-profile-status--disconnected';
-    profileStatus.id = 'robot-chat-profile-status';
-    profileStatus.textContent = 'Kein aktives Profil';
-
-    titleGroup.append(title, profileStatus);
-
     const closeBtn = document.createElement('button');
     closeBtn.className = 'chat-close-btn';
     closeBtn.textContent = '×';
@@ -80,42 +69,15 @@ export class RobotDOMBuilder {
     const controls = document.createElement('div');
     controls.className = 'chat-header-controls';
 
-    const memoriesBtn = this.createHeaderActionButton({
-      id: 'robot-chat-memories',
-      label: 'Infos',
-      title: 'Gespeicherte Cloudflare-Erinnerungen anzeigen',
-      ariaLabel: 'Gespeicherte Erinnerungen anzeigen',
+    const settingsBtn = this.createHeaderActionButton({
+      id: 'robot-chat-settings',
+      label: 'Einstellungen',
+      title: 'User und Erinnerungen verwalten',
+      ariaLabel: 'User-Einstellungen und Erinnerungen öffnen',
     });
 
-    const editProfileBtn = this.createHeaderActionButton({
-      id: 'robot-chat-edit-memory',
-      label: 'Bearbeiten',
-      title: 'Profil-Erinnerungen bearbeiten',
-      ariaLabel: 'Profil-Erinnerungen bearbeiten',
-    });
-
-    const switchProfileBtn = this.createHeaderActionButton({
-      id: 'robot-chat-switch-profile',
-      label: 'Wechseln',
-      title: 'Anderes Profil auf diesem Gerät verwenden',
-      ariaLabel: 'Anderes Profil verwenden',
-    });
-
-    const disconnectProfileBtn = this.createHeaderActionButton({
-      id: 'robot-chat-disconnect-profile',
-      label: 'Trennen',
-      title: 'Dieses Gerät vom aktiven Profil trennen',
-      ariaLabel: 'Gerät vom Profil trennen',
-    });
-
-    controls.append(
-      memoriesBtn,
-      editProfileBtn,
-      switchProfileBtn,
-      disconnectProfileBtn,
-      closeBtn,
-    );
-    header.append(titleGroup, controls);
+    controls.append(settingsBtn, closeBtn);
+    header.append(title, controls);
 
     return header;
   }
@@ -187,7 +149,29 @@ export class RobotDOMBuilder {
     sendBtn.disabled = true;
     sendBtn.setAttribute('aria-disabled', 'true');
 
-    inputArea.append(fileInput, uploadBtn, input, sendBtn);
+    const stopBtn = document.createElement('button');
+    stopBtn.id = 'robot-chat-stop';
+    stopBtn.textContent = '■';
+    stopBtn.setAttribute('aria-label', 'Antwort stoppen');
+    stopBtn.title = 'Antwort stoppen';
+    stopBtn.type = 'button';
+    stopBtn.hidden = true;
+    stopBtn.disabled = true;
+    stopBtn.setAttribute('aria-disabled', 'true');
+
+    const composer = document.createElement('div');
+    composer.className = 'chat-composer';
+
+    const inputStack = document.createElement('div');
+    inputStack.className = 'chat-input-stack';
+    inputStack.append(input);
+
+    const sendStack = document.createElement('div');
+    sendStack.className = 'chat-send-stack';
+    sendStack.append(sendBtn, stopBtn);
+
+    composer.append(uploadBtn, inputStack, sendStack);
+    inputArea.append(fileInput, composer);
 
     return inputArea;
   }
@@ -279,11 +263,6 @@ export class RobotDOMBuilder {
       rememberUser: '🧠',
       recallMemory: '💭',
       recommend: '💡',
-      openExternalLink: '🌐',
-      openSocialProfile: '👤',
-      composeEmail: '✉️',
-      createCalendarReminder: '📅',
-      getSiteAnalytics: '📊',
     };
     return icons[toolName] || '⚡';
   }

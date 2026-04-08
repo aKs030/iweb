@@ -7,7 +7,6 @@ dist/
 build/
 .vite/
 .wrangler/
-output/
 
 # Cache
 .cache/
@@ -41,7 +40,6 @@ FINAL_OPTIMIZATION_REPORT.md
 content/styles/minified/
 content/styles/tokens.css
 content/styles/tokens-dark.css
-content/styles/utilities.generated.css
 
 # temporary workaround for Prettier warning
 content/core/signals.js

@@ -59,13 +59,10 @@ export class NonceInjector {
 
   /** @param {Element} el */
   element(el) {
-    // Skip if already has nonce
-    if (el.getAttribute('nonce')) return;
-
     const tag = el.tagName.toLowerCase();
 
     if (tag === 'script') {
-      // Only add nonce to inline scripts (no src attribute)
+      // Keep external script policy host-based; nonce-gate inline scripts.
       if (!el.getAttribute('src')) {
         el.setAttribute('nonce', this.nonce);
       }

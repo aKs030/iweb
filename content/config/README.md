@@ -39,14 +39,40 @@ YOUTUBE_CHANNEL_ID=UCTGRherjM4iuIn86xxubuPg
 
 `brand-data-loader.js` normalizes this payload for JSON-LD usage.
 
+The media-bearing fields in `brand-data.json`, `person.jsonld`,
+`manifest.json`, `content/templates/global-head.html`,
+`pages/about/index.html`, `index.html`, `pages/videos/index.html`,
+`pages/blog/posts/index.json`, `pages/blog/posts/*.md`,
+`pages/projekte/apps-config.json`, and `pages/projekte/index.html` are
+maintained manually from `media-urls.js`.
+
+`pages/projekte/apps-config.json` remains the canonical project-app config for
+`appPath`, `githubPath`, `previewUrl`, and `previewAlt`, and is checked by
+`scripts/validate-apps-config.mjs` during repo linting.
+
 ## Shared Constants
 
-`constants.js` is the source for URLs and reusable asset helpers:
+`media-urls.js` is the canonical source for shared media URLs and local-dev R2
+resolution:
 
 - `BASE_URL`, `BASE_URL_DEV`
-- R2 paths (`R2_PUBLIC_BASE_URL`, `R2_ICONS_BASE_URL`, `R2_BLOG_BASE_URL`)
-- asset URL helpers (`iconUrl`, `ogImageUrl`)
+- public R2 builders (`buildR2Url`, `buildProjectPreviewUrl`)
+- local runtime resolvers (`resolveR2Url`, `resolveProjectPreviewUrl`)
+- direct media URLs (`FAVICON_ICO_URL`, `FAVICON_512_URL`, `OG_HOME_IMAGE_URL`)
 
-## Static Site Assets
+## Static Site Media
 
-Static site-level assets are exported from `constants.js` (for example `FAVICON_512`).
+Static site-level media URLs are exported from `constants.js` (for example `FAVICON_512`).
+
+Project preview media URLs live in `pages/projekte/apps-config.json` as
+`previewUrl` and `previewAlt`, and project links live there as `appPath` and
+`githubPath`. Runtime code should still use the shared helpers in `media-urls.js`,
+so local `/r2-proxy` handling and preview fallbacks stay consistent even when
+config data is incomplete.
+
+Project apps are loaded on the same origin through
+`functions/api/project-apps/[[path]].js`, so the frontend no longer depends on
+third-party app hosting URLs at runtime.
+
+`pages/blog/posts/index.json` is derived from the blog markdown frontmatter,
+while image URLs in the markdown files remain aligned with `media-urls.js`.

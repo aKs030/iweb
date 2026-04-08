@@ -18,12 +18,20 @@
 # 1. Exact Path Redirects (No wildcards — highest performance)
 # ============================================================================
 
+# Internal offline page (needed for middleware/SW)
+/offline.html              /offline.html                  200
+
 # Canonical URL Redirects (Remove index.html)
 /index.html          /              301
 /blog/index.html     /blog/         301
 /projekte/index.html /projekte/     301
 /gallery/index.html  /gallery/      301
 /videos/index.html   /videos/       301
+/impressum/index.html /impressum/   301
+/datenschutz/index.html /datenschutz/ 301
+/cookies/index.html  /cookies/      301
+/abdul-sesli/index.html /abdul-sesli/ 301
+/ai-info/index.html  /ai-info/      301
 /about/index.html    /about/        301
 /contact/index.html  /contact/      301
 
@@ -36,7 +44,9 @@
 /projekte     /projekte/     301
 /videos       /videos/       301
 /datenschutz  /datenschutz/  301
+/cookies      /cookies/      301
 /impressum    /impressum/    301
+/agb          /impressum/    301
 /ai-info      /ai-info/      301
 /ai-info.html /ai-info/      301
 /admin        /pages/admin.html 301
@@ -90,25 +100,27 @@
 /content/components/footer/datenschutz*      /datenschutz/             301
 /content/footer/impressum*                   /impressum/               301
 /content/components/footer/impressum*        /impressum/               301
+/content/footer/cookies*                     /cookies/                 301
+/content/components/footer/cookies*          /cookies/                 301
+/content/footer/agb*                         /impressum/               301
+/content/components/footer/agb*              /impressum/               301
 /content/kontakt*                            /#kontakt                 301
 /content/impressum*                          /impressum/               301
 
 # Root-level legacy
 /album*                                      /gallery/                 301
+/agb/*                                       /impressum/               301
 
 # ============================================================================
-# 4. Generic .html Removal (Must be after specific rules)
+# 4. Internal Asset Paths
 # ============================================================================
-/*.html   /:splat/   301
+# Pages already serves direct /pages/*, /content/templates/* and
+# /content/components/* asset requests natively.
+# Avoid self-rewrites here: they can trigger redirect loops in local dev,
+# especially for internal HTML partials like the footer.
 
 # ============================================================================
-# 5. Dynamic Content Rewrites (200 Status)
-# ============================================================================
-/pages/*                  /pages/:splat                   200
-/content/components/*     /content/components/:splat      200
-
-# ============================================================================
-# 6. Section Rewrites (Map clean URLs to physical files)
+# 5. Section Rewrites (Map clean URLs to physical files)
 # ============================================================================
 /gallery/*      /pages/gallery/:splat     200
 /projekte/*     /pages/projekte/          200
@@ -120,12 +132,13 @@
 /contact/*      /content/components/contact/ 200
 /impressum/*    /pages/impressum/:splat   200
 /datenschutz/*  /pages/datenschutz/:splat 200
+/cookies/*      /pages/cookies/:splat     200
 
 # ============================================================================
 # Notes
 # ============================================================================
 # - Exact redirects come first for maximum performance
-# - Generic .html removal is after specific rules
+# - Public .html canonicalization is handled explicitly per route
 # - 200 rewrites serve content without changing URL
 # - Removed absolute URL redirects (not supported by Cloudflare Pages)
 # - Test after deploy to ensure no redirect loops

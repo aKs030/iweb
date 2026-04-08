@@ -1,7 +1,7 @@
 /* content/components/contact/contact.css */
 /* merged with contact-component.css — 2026-02-15 */
 
-body.contact-page {
+.contact-page-shell {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-inter);
@@ -10,6 +10,17 @@ body.contact-page {
   display: flex;
   flex-direction: column;
   padding-top: calc(var(--menu-height) + var(--space-1));
+  position: relative;
+  isolation: isolate;
+}
+
+.contact-page-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-color: var(--bg-primary);
   background-image:
     radial-gradient(
       circle at 80% 20%,
@@ -21,6 +32,11 @@ body.contact-page {
       color-mix(in srgb, var(--accent-secondary) 22%, transparent) 0%,
       transparent 25%
     );
+}
+
+.contact-page-shell > * {
+  position: relative;
+  z-index: 1;
 }
 
 .contact-header {

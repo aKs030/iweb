@@ -1,3 +1,5 @@
+import { isLocalDevHost } from '../../content/core/runtime-env.js';
+
 /**
  * Development Environment Utilities
  * @version 1.0.0
@@ -9,12 +11,7 @@
  * @returns {boolean} True if localhost
  */
 export function isLocalhost(hostname) {
-  return (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname === '::1' ||
-    hostname === '[::1]'
-  );
+  return isLocalDevHost(hostname);
 }
 
 /**
