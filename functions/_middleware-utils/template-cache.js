@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('template-cache');
 import { isLocalhost } from './dev-utils.js';
 
 const TEMPLATE_TTL_SECONDS = 3600;
@@ -40,7 +43,7 @@ export async function loadTemplateWithCache(env, kvKey, fetchUrl, ctx) {
   try {
     cachedItem = await env.SITEMAP_CACHE_KV.get(kvKey, 'json');
   } catch (err) {
-    console.warn(`KV Error bei Key ${kvKey}:`, err);
+    log.warn(`KV Error bei Key ${kvKey}:`, err);
   }
 
   const now = Date.now();
@@ -67,7 +70,7 @@ async function refreshTemplateInKV(env, kvKey, fetchUrl) {
   try {
     const res = await env.ASSETS.fetch(new URL(fetchUrl));
     if (!res.ok) {
-      console.error(`Template fetch failed: ${fetchUrl} → ${res.status}`);
+      log.error(`Template fetch failed: ${fetchUrl} → ${res.status}`);
       return '';
     }
     const html = await res.text();
@@ -79,7 +82,7 @@ async function refreshTemplateInKV(env, kvKey, fetchUrl) {
 
     return html;
   } catch (err) {
-    console.error(`Template refresh failed for ${kvKey}:`, err);
+    log.error(`Template refresh failed for ${kvKey}:`, err);
     return '';
   }
 }

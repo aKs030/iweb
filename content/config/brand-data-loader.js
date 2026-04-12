@@ -1,5 +1,13 @@
 import { createLogger } from '#core/logger.js';
 import { BASE_URL, CONTACT_PATH, FAVICON_512_URL } from './constants.js';
+import {
+  SITE_CONTACT_EMAIL,
+  SITE_LEGAL_NAME,
+  SITE_OWNER_NAME,
+  SITE_PERSON_ALTERNATE_NAMES,
+  SITE_PERSON_JOB_TITLES,
+  SITE_PERSON_SOCIAL_URLS,
+} from './site-seo.js';
 
 const log = createLogger('BrandDataLoader');
 
@@ -72,19 +80,21 @@ export async function loadBrandData() {
 
 function getFallbackBrandData() {
   return {
-    name: 'Abdulkerim Sesli',
-    legalName: 'Abdulkerim Sesli',
+    name: SITE_OWNER_NAME,
+    legalName: SITE_LEGAL_NAME,
+    alternateName: [...SITE_PERSON_ALTERNATE_NAMES],
     logo: FAVICON_512_URL,
     image: FAVICON_512_URL,
-    email: 'kontakt@abdulkerimsesli.de',
+    jobTitle: [...SITE_PERSON_JOB_TITLES],
+    email: SITE_CONTACT_EMAIL,
     contactPoint: [
       {
         '@type': 'ContactPoint',
         contactType: 'general inquiries',
-        email: 'kontakt@abdulkerimsesli.de',
+        email: SITE_CONTACT_EMAIL,
         url: `${BASE_URL}${CONTACT_PATH}`,
       },
     ],
-    sameAs: [],
+    sameAs: [...SITE_PERSON_SOCIAL_URLS],
   };
 }

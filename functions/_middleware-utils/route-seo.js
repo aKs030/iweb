@@ -12,12 +12,21 @@ import {
   buildProjectCanonicalUrl,
   extractProjectSlug,
 } from '../../content/core/project-paths.js';
+import { ROUTES } from '../../content/config/routes-config.js';
 import {
   buildProjectPreviewUrl,
   OG_HOME_IMAGE_URL,
   OG_PROJECTS_IMAGE_URL,
   OG_VIDEOS_IMAGE_URL,
 } from '../../content/config/media-urls.js';
+import {
+  SITE_NAME,
+  SITE_PERSON_DISCOVERY_ALIASES,
+  SITE_PERSON_JOB_TITLES,
+  SITE_PERSON_KNOWS_ABOUT,
+  SITE_PERSON_SOCIAL_URLS,
+  SITE_WEBSITE_ALT_NAME,
+} from '../../content/config/site-seo.js';
 
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
@@ -26,14 +35,134 @@ const NOINDEX_ROBOTS = 'noindex, follow';
 const DEFAULT_BLOG_IMAGE = OG_HOME_IMAGE_URL;
 const DEFAULT_APP_IMAGE = OG_PROJECTS_IMAGE_URL;
 const DEFAULT_VIDEO_IMAGE = OG_VIDEOS_IMAGE_URL;
+const DEFAULT_SITE_NAME = SITE_NAME;
+const DEFAULT_LOCALE = 'de_DE';
+const DEFAULT_IMAGE_WIDTH = '1200';
+const DEFAULT_IMAGE_HEIGHT = '630';
+const DEFAULT_IMAGE_TYPE = 'image/png';
 const JSON_CACHE_TTL_MS = 5 * 60 * 1000;
 const VIDEO_CACHE_TTL_MS = 30 * 60 * 1000;
 const jsonCache = new Map();
 const videoCache = new Map();
 
+function buildAiInfoSchema({ canonicalUrl, origin }) {
+  const personId = `${origin}/#person`;
+  const websiteId = `${origin}/#website`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Person',
+        '@id': personId,
+        name: 'Abdulkerim Sesli',
+        alternateName: [...SITE_PERSON_DISCOVERY_ALIASES],
+        url: `${origin}/`,
+        jobTitle: [...SITE_PERSON_JOB_TITLES],
+        description:
+          'Full-Stack Web Developer mit Fokus auf moderne JavaScript-Architekturen, Three.js-Erlebnisse, Edge-Deployment und AI-Integration.',
+        sameAs: [...SITE_PERSON_SOCIAL_URLS],
+        knowsAbout: [...SITE_PERSON_KNOWS_ABOUT],
+      },
+      {
+        '@type': 'WebSite',
+        '@id': websiteId,
+        url: `${origin}/`,
+        name: SITE_WEBSITE_ALT_NAME,
+        inLanguage: ['de', 'en'],
+        publisher: { '@id': personId },
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': `${canonicalUrl}#faq`,
+        name: 'AI Discovery FAQ',
+        isPartOf: { '@id': websiteId },
+        mainEntity: [
+          {
+            '@type': 'Question',
+            '@id': `${canonicalUrl}#faq-name`,
+            name: 'Wie lautet die bevorzugte Namensform?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Bevorzugt: Abdulkerim Sesli. Zulaessige Aliase: Abdul Sesli, AKS, aKs030.',
+            },
+          },
+          {
+            '@type': 'Question',
+            '@id': `${canonicalUrl}#faq-topics`,
+            name: 'Welche Themen beschreiben die Website am besten?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Full-Stack-Webentwicklung, JavaScript, Three.js, Web Performance, Edge Deployment, AI-Integration, technische SEO.',
+            },
+          },
+          {
+            '@type': 'Question',
+            '@id': `${canonicalUrl}#faq-profile`,
+            name: 'Wo gibt es die vollstaendige Profil-Information?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Unter /about/, /person.jsonld, /llms-full.txt und /ai-index.json.',
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
+
+const STATIC_ROUTE_SERVER_OVERRIDES = Object.freeze({
+  '/ai-info/': Object.freeze({
+    schema: buildAiInfoSchema,
+  }),
+});
+
+const STATIC_ROUTE_META = Object.freeze(
+  Object.fromEntries([
+    [
+      '/',
+      Object.freeze({
+        title: ROUTES.default.title,
+        appTitle: ROUTES.default.appTitle || ROUTES.default.title,
+        description: ROUTES.default.description,
+        ogType: ROUTES.default.ogType,
+        ogTitle: ROUTES.default.ogTitle,
+        ogDescription: ROUTES.default.ogDescription,
+        twitterTitle: ROUTES.default.twitterTitle,
+        twitterDescription: ROUTES.default.twitterDescription,
+        image: ROUTES.default.image,
+        type: ROUTES.default.type,
+        robots: ROUTES.default.robots,
+        keywords: ROUTES.default.keywords,
+      }),
+    ],
+    ...Object.entries(ROUTES)
+      .filter(([pathname]) => pathname !== 'default' && pathname.startsWith('/'))
+      .map(([pathname, route]) => [
+        pathname,
+        Object.freeze({
+          title: route.title,
+          appTitle: route.appTitle || route.title,
+          description: route.description,
+          ogType: route.ogType,
+          ogTitle: route.ogTitle,
+          ogDescription: route.ogDescription,
+          twitterTitle: route.twitterTitle,
+          twitterDescription: route.twitterDescription,
+          image: route.image,
+          type: route.type,
+          robots: route.robots,
+          keywords: route.keywords,
+          ...STATIC_ROUTE_SERVER_OVERRIDES[pathname],
+        }),
+      ]),
+  ]),
+);
+
 function normalizePathname(pathname) {
   const cleaned = String(pathname || '/').replace(/\/+/g, '/');
-  return cleaned || '/';
+  const withoutIndex = cleaned.replace(/\/index\.html$/i, '/');
+  return withoutIndex || '/';
 }
 
 function normalizeSlug(value) {
@@ -88,6 +217,64 @@ function clampText(value, maxLength = 220) {
     .trim();
   if (normalized.length <= maxLength) return normalized;
   return `${normalized.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
+}
+
+function toStaticRouteKey(pathname) {
+  if (pathname === '/') return '/';
+  return pathname.endsWith('/') ? pathname : `${pathname}/`;
+}
+
+function buildStaticPageMeta(requestUrl, pathname, config) {
+  const origin = resolveOrigin(requestUrl.toString());
+  const description = clampText(config.description, 220);
+  const image = normalizeText(config.image, DEFAULT_BLOG_IMAGE);
+  const title = normalizeText(config.title);
+  const canonicalPath = normalizeText(config.canonicalPath, pathname);
+  const canonicalUrl = `${origin}${canonicalPath}`;
+  const schema =
+    typeof config.schema === 'function'
+      ? config.schema({
+          canonicalUrl,
+          origin,
+          title,
+          description,
+          image,
+        })
+      : config.schema || null;
+  const partialMeta =
+    config.partialMeta && typeof config.partialMeta === 'object'
+      ? { ...config.partialMeta }
+      : null;
+
+  return {
+    title,
+    description,
+    canonicalUrl,
+    robots: normalizeText(config.robots, INDEX_ROBOTS),
+    ogType: normalizeText(config.ogType, 'website'),
+    ogTitle: normalizeText(config.ogTitle, title),
+    ogDescription: normalizeText(config.ogDescription, description),
+    twitterCard: normalizeText(config.twitterCard, 'summary_large_image'),
+    twitterTitle: normalizeText(
+      config.twitterTitle,
+      normalizeText(config.ogTitle, title),
+    ),
+    twitterDescription: normalizeText(
+      config.twitterDescription,
+      normalizeText(config.ogDescription, description),
+    ),
+    appTitle: normalizeText(config.appTitle, title),
+    siteName: DEFAULT_SITE_NAME,
+    locale: DEFAULT_LOCALE,
+    image,
+    imageAlt: normalizeText(config.imageAlt, title),
+    imageWidth: DEFAULT_IMAGE_WIDTH,
+    imageHeight: DEFAULT_IMAGE_HEIGHT,
+    imageType: DEFAULT_IMAGE_TYPE,
+    keywords: normalizeText(config.keywords),
+    partialMeta,
+    schema,
+  };
 }
 
 async function loadJsonCached(context, path, ttlMs = JSON_CACHE_TTL_MS) {
@@ -501,6 +688,15 @@ export async function buildRouteMeta(context, requestUrl) {
     const videoId = normalizeVideoId(rawVideoId);
     if (videoId.length < 6 || videoId.length > 20) return null;
     return buildVideoMeta(context, requestUrl, videoId);
+  }
+
+  const staticRouteKey = toStaticRouteKey(pathname);
+  if (STATIC_ROUTE_META[staticRouteKey]) {
+    return buildStaticPageMeta(
+      requestUrl,
+      staticRouteKey,
+      STATIC_ROUTE_META[staticRouteKey],
+    );
   }
 
   return null;

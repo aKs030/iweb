@@ -1,36 +1,18 @@
-# Development
 node_modules/
 .git/
 .github/
 .vscode/
 .idea/
-.husky/
-.kiro/
-
-# Documentation
 docs/
-*.md
-!README.md
 
-# Config
-.editorconfig
-.prettierrc.json
-.prettierignore
-eslint.config.mjs
-tsconfig.json
-server.js
-
-# Environment
 .env*
 .dev.vars
 
-# Cache
 .cache/
 *.cache
 .wrangler/
 *.log
 
-# OS
 .DS_Store
 .Spotlight-V100
 .Trashes

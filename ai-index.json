@@ -466,14 +466,14 @@
       {
         "endpoint": "/api/search",
         "method": "POST",
-        "description": "AI-powered search with RAG",
-        "technology": "Cloudflare AI Search Beta"
+        "description": "Deterministic search over static content and sitemap data",
+        "technology": "Cloudflare Pages Functions"
       },
       {
-        "endpoint": "/api/ai",
+        "endpoint": "/api/ai-agent",
         "method": "POST",
-        "description": "Groq chat completion",
-        "technology": "llama-3.3-70b-versatile"
+        "description": "Streaming AI assistant with memory and tool-calling",
+        "technology": "Cloudflare Workers AI"
       },
       {
         "endpoint": "/api/contact",
@@ -486,7 +486,7 @@
   "technologies": {
     "frontend": [
       "JavaScript ES2023+",
-      "Three.js 0.183.1",
+      "Three.js 0.183.2",
       "Web Components",
       "CSS3 (Container Queries, Nesting)",
       "Service Workers"
@@ -494,7 +494,6 @@
     "backend": [
       "Cloudflare Pages Functions",
       "Cloudflare Workers AI",
-      "Groq API",
       "Resend API"
     ],
     "infrastructure": [
@@ -504,10 +503,9 @@
       "Edge Computing"
     ],
     "tools": [
-      "ESLint 10+",
-      "Prettier 3.8+",
-      "TypeScript (JSDoc)",
-      "Husky",
+      "npm",
+      "Wrangler",
+      "Chrome DevTools",
       "GitHub Actions"
     ]
   },
@@ -515,15 +513,15 @@
     "ai": {
       "search": {
         "enabled": true,
-        "technology": "Cloudflare AI Search Beta",
-        "type": "RAG",
-        "indexId": "wispy-pond-1055"
+        "technology": "Cloudflare Pages Functions",
+        "type": "deterministic",
+        "source": "static content and sitemaps"
       },
       "chat": {
         "enabled": true,
-        "technology": "Groq API",
-        "model": "llama-3.3-70b-versatile",
-        "features": ["context-aware", "markdown-rendering"]
+        "technology": "Cloudflare Workers AI",
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "features": ["context-aware", "markdown-rendering", "memory", "tool-calling"]
       }
     },
     "3d": {

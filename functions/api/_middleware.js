@@ -37,10 +37,8 @@ export async function onRequest(context) {
     url.hostname === '127.0.0.1' ||
     url.hostname === '::1' ||
     url.hostname === '[::1]';
-  const isAdminSessionRoute = url.pathname === '/api/admin/session';
 
-  // Keep local dev and admin-session bootstrap free from middleware throttling.
-  if (isLocalhostRequest || isAdminSessionRoute) {
+  if (isLocalhostRequest) {
     return next();
   }
 

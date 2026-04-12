@@ -4,6 +4,13 @@
  * @version 1.0.0
  */
 
+import { normalizeUserId } from '#core/user-id.js';
+import {
+  createProfileState,
+  createRecoveryState,
+  resolveProfileStatePayload,
+} from '#core/profile-state.js';
+
 const USER_ID_STORAGE_KEY = 'jules:user-id';
 const MAX_HISTORY = 20;
 
@@ -14,89 +21,7 @@ let runtimeProfileRecovery = null;
 
 // ─── Normalisation Helpers ──────────────────────────────────────────────────────
 
-export function normalizeUserId(raw) {
-  const value = String(raw || '').trim();
-  if (!value || value === 'anonymous') return '';
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
-  return value;
-}
-
-function normalizeProfileStatus(raw) {
-  const value = String(raw || '')
-    .trim()
-    .toLowerCase();
-  return [
-    'identified',
-    'anonymous',
-    'recovery-pending',
-    'conflict',
-    'disconnected',
-  ].includes(value)
-    ? value
-    : 'anonymous';
-}
-
-export function createProfileState(overrides = {}) {
-  const userId = normalizeUserId(overrides.userId);
-  const name = String(overrides.name || '').trim();
-  const status = normalizeProfileStatus(
-    overrides.status ||
-      (name ? 'identified' : userId ? 'anonymous' : 'disconnected'),
-  );
-  const label =
-    String(overrides.label || '').trim() ||
-    (status === 'identified'
-      ? `Profil: ${name}`
-      : status === 'recovery-pending'
-        ? `Profil gefunden: ${name}`
-        : status === 'conflict'
-          ? `Profil unklar: ${name}`
-          : status === 'disconnected'
-            ? 'Kein aktives Profil'
-            : 'Profil: neu');
-
-  return { userId, name, status, label };
-}
-
-export function normalizeRecoveryState(raw) {
-  const status = String(raw?.status || '')
-    .trim()
-    .toLowerCase();
-  if (!['needs_confirmation', 'conflict'].includes(status)) return null;
-
-  const candidates = Array.isArray(raw?.candidates)
-    ? raw.candidates
-        .map((candidate) => {
-          const userId = normalizeUserId(candidate?.userId);
-          if (!userId) return null;
-
-          return {
-            userId,
-            name: String(candidate?.name || '').trim(),
-            status: String(candidate?.status || 'anonymous')
-              .trim()
-              .toLowerCase(),
-            memoryCount: Math.max(
-              0,
-              Number.parseInt(String(candidate?.memoryCount), 10) || 0,
-            ),
-            latestMemoryAt: Math.max(
-              0,
-              Number.parseInt(String(candidate?.latestMemoryAt), 10) || 0,
-            ),
-          };
-        })
-        .filter(Boolean)
-        .slice(0, 5)
-    : [];
-
-  return {
-    status,
-    name: String(raw?.name || '').trim(),
-    candidateUserId: normalizeUserId(raw?.candidateUserId),
-    candidates,
-  };
-}
+export { createProfileState };
 
 // ─── Profile State ──────────────────────────────────────────────────────────────
 
@@ -105,11 +30,6 @@ export function setProfileState(nextState = {}) {
     ...runtimeProfileState,
     ...nextState,
   });
-  return getProfileState();
-}
-
-export function setRecoveryState(nextRecovery = null) {
-  runtimeProfileRecovery = normalizeRecoveryState(nextRecovery);
   return getProfileState();
 }
 
@@ -139,46 +59,14 @@ export function getProfileState() {
 }
 
 export function syncProfileStateFromPayload(payload = {}) {
-  const userId = normalizeUserId(payload?.userId) || getUserId();
-  if (userId) {
-    setProfileState({ userId });
-  } else {
-    resetProfileState({ clearUserId: true });
-  }
-
-  if (payload?.profile) {
-    setProfileState(payload.profile);
-  } else if (userId) {
-    setProfileState({
-      userId,
-      status: runtimeProfileState.name ? 'identified' : 'anonymous',
-    });
-  }
-
-  if (payload?.recovery) {
-    setRecoveryState(payload.recovery);
-    if (runtimeProfileRecovery?.status === 'needs_confirmation') {
-      setProfileState({
-        userId,
-        name: runtimeProfileRecovery.name,
-        status: 'recovery-pending',
-      });
-    } else if (runtimeProfileRecovery?.status === 'conflict') {
-      setProfileState({
-        userId,
-        name: runtimeProfileRecovery.name,
-        status: 'conflict',
-      });
-    }
-  } else {
-    setRecoveryState(null);
-  }
-
+  const { userId, profile, recovery } = resolveProfileStatePayload(payload, {
+    fallbackUserId: getUserId(),
+    currentProfile: runtimeProfileState,
+  });
+  runtimeUserId = userId;
+  runtimeProfileState = profile;
+  runtimeProfileRecovery = recovery;
   return getProfileState();
-}
-
-export function shouldPersistIdentityFromPayload(payload = {}) {
-  return !normalizeRecoveryState(payload?.recovery);
 }
 
 // ─── User ID Persistence ────────────────────────────────────────────────────────

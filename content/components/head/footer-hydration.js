@@ -2,19 +2,21 @@ import { getFooterShellMarkup } from '#footer/shell.js';
 import { whenFooterReady } from '#footer/state.js';
 import { getMenuShellMarkup } from '#menu/shell.js';
 import { cancelIdleTask, scheduleIdleTask } from '#core/async-utils.js';
-import { upsertHeadLink } from '#core/dom-utils.js';
+import { loadHeadStylesheet } from '#core/dom-utils.js';
 import { createLogger } from '#core/logger.js';
 import { resourceHints } from '#core/resource-hints.js';
 
 const log = createLogger('head-footer');
 
 const FOOTER_MODULE_HREF = '/content/components/footer/index.js';
+const FOOTER_STYLES_HREF = '/content/components/footer/footer.css';
 const FOOTER_TRIGGER_SELECTOR = '[data-footer-trigger], a[href="#footer"]';
 const FOOTER_COOKIE_TRIGGER_SELECTOR = '[data-cookie-trigger]';
 const FOOTER_CONSENT_ACTION_SELECTOR = '#accept-cookies, #reject-cookies';
 const FOOTER_IDLE_HYDRATION_TIMEOUT_MS = 4000;
 
 let footerModulePromise = null;
+let footerStylesPromise = null;
 let footerHydrationAttached = false;
 
 const getFooterTrigger = (target) => {
@@ -48,6 +50,19 @@ const loadFooterModule = async () => {
   });
 
   return footerModulePromise;
+};
+
+const loadFooterStyles = () => {
+  if (footerStylesPromise) return footerStylesPromise;
+
+  footerStylesPromise = loadHeadStylesheet(FOOTER_STYLES_HREF, {
+    injectedBy: 'head-inline',
+    dataset: { deferred: 'footer' },
+  }).finally(() => {
+    footerStylesPromise = null;
+  });
+
+  return footerStylesPromise;
 };
 
 const isFooterReady = () => {
@@ -117,6 +132,7 @@ const setupFooterModuleHydration = (siteFooter) => {
     ) {
       return;
     }
+    void loadFooterStyles();
     preloadFooterModule();
   };
 
@@ -129,6 +145,7 @@ const setupFooterModuleHydration = (siteFooter) => {
 
     event.preventDefault();
 
+    await loadFooterStyles();
     const footerModule = await loadFooterModule();
     const footer = await waitForFooterReady();
 
@@ -177,6 +194,7 @@ const setupFooterModuleHydration = (siteFooter) => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
+            void loadFooterStyles();
             void hydrateFooterModule();
           }
         });
@@ -231,12 +249,6 @@ export function ensureFooterAndTrigger() {
 
       let siteFooter = document.querySelector('site-footer');
       if (!siteFooter) {
-        upsertHeadLink({
-          rel: 'stylesheet',
-          href: '/content/components/footer/footer.css',
-          dataset: { injectedBy: 'head-inline' },
-        });
-
         siteFooter = document.createElement('site-footer');
         /** @type {any} */ (siteFooter).dataset.shell = 'true';
         siteFooter.innerHTML = getFooterShellMarkup();

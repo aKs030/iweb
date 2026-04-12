@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('contact');
 /**
  * Handles contact form submissions.
  * POST /api/contact
@@ -188,7 +191,7 @@ export async function onRequestPost({ request, env }) {
           .bind(name, email, subject || 'Kein Betreff', message)
           .run();
       } catch (dbError) {
-        console.error('Failed to save contact message to DB:', dbError);
+        log.error('Failed to save contact message to DB:', dbError);
         // We continue anyway since the email was sent successfully
       }
     }

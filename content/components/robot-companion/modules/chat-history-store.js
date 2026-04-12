@@ -1,5 +1,3 @@
-import { generateMessageId } from '#core/id-generator.js';
-
 const DEFAULT_HISTORY_LIMIT = 40;
 
 const normalizeRole = (role) => {
@@ -11,7 +9,26 @@ const normalizeRole = (role) => {
   return 'system';
 };
 
-const generateId = generateMessageId;
+function generateId() {
+  try {
+    if (globalThis.crypto?.randomUUID) {
+      return `msg_${globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
+    }
+    if (globalThis.crypto?.getRandomValues) {
+      const bytes = new Uint8Array(12);
+      globalThis.crypto.getRandomValues(bytes);
+      const token = Array.from(
+        bytes,
+        (byte) => byte.toString(16).padStart(2, '0'),
+      ).join('');
+      return `msg_${token}`;
+    }
+  } catch {
+    /* ignore crypto access failures */
+  }
+
+  return `msg_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
 
 const normalizeEntry = (entry, fallbackTimestamp) => {
   if (!entry || typeof entry !== 'object') return null;

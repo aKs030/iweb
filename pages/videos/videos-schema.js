@@ -1,4 +1,5 @@
 import { BASE_URL } from '#config/constants.js';
+import { injectSchema } from '#core/schema.js';
 
 const VIDEO_PAGE_BASE_URL = `${BASE_URL}/videos/`;
 const VIDEOS_LIST_ID = `${VIDEO_PAGE_BASE_URL}#videos-list`;
@@ -36,9 +37,8 @@ export function upsertVideosSchema(videoNodes) {
     },
   }));
 
-  const payload = JSON.stringify({
-    '@context': 'https://schema.org',
-    '@graph': [
+  injectSchema(
+    [
       {
         '@type': 'ItemList',
         '@id': VIDEOS_LIST_ID,
@@ -48,14 +48,6 @@ export function upsertVideosSchema(videoNodes) {
       },
       ...videoNodes,
     ],
-  });
-
-  let script = existing;
-  if (!script) {
-    script = document.createElement('script');
-    /** @type {any} */ (script).type = 'application/ld+json';
-    script.id = VIDEOS_SCHEMA_SCRIPT_ID;
-    document.head.appendChild(script);
-  }
-  script.textContent = payload;
+    { scriptId: VIDEOS_SCHEMA_SCRIPT_ID },
+  );
 }

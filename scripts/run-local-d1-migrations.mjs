@@ -1,21 +1,13 @@
-import { spawn } from 'node:child_process';
-import path from 'node:path';
+import { runWrangler } from './run-wrangler.mjs';
 
-const wranglerBin = path.resolve(
-  'node_modules',
-  '.bin',
-  process.platform === 'win32' ? 'wrangler.cmd' : 'wrangler',
-);
-
-const child = spawn(
-  wranglerBin,
+const child = runWrangler(
   ['d1', 'migrations', 'apply', 'DB_LIKES', '--local'],
   {
-    stdio: 'inherit',
     env: {
       ...process.env,
       CI: '1',
     },
+    stdio: 'inherit',
   },
 );
 

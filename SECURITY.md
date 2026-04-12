@@ -33,8 +33,8 @@ This project implements multiple security measures:
 ### Build & Deployment
 
 - ✅ **Dependency Scanning** - Regular security audits
-- ✅ **Automated Updates** - Dependabot for security patches
-- ✅ **Pre-commit Hooks** - Code quality and security checks
+- ✅ **Workflow Checks** - Preview deployments and CI-based verification
+- ✅ **Manual Review** - Focused checks for security-sensitive changes
 - ✅ **Environment Variables** - Sensitive data in `.env` files
 
 ## Reporting a Vulnerability
@@ -153,13 +153,12 @@ All API keys and secrets are stored as environment variables and never exposed t
 
 ## Security Tools
 
-We use the following tools to maintain security:
+We use the following tools and practices to maintain security:
 
 - **npm audit** - Dependency vulnerability scanning
-- **ESLint** - Code quality and security linting
-- **Prettier** - Code formatting consistency
-- **Husky** - Pre-commit security checks
-- **Dependabot** - Automated dependency updates
+- **GitHub Actions** - Preview deployment and workflow enforcement
+- **Cloudflare Pages / Workers** - Edge runtime and platform-level controls
+- **Manual review** - Targeted verification for security-sensitive changes
 
 ## Contact
 

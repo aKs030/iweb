@@ -384,6 +384,20 @@ site-menu {
   );
 }
 
+/* Keep the search shell inert until the richer search stylesheet is loaded. */
+.menu-search {
+  min-width: 0;
+}
+
+.menu-search[aria-hidden='true'] {
+  display: none;
+}
+
+.site-header.search-mode .menu-search[aria-hidden='false'] {
+  display: flex;
+  flex: 1 1 auto;
+}
+
 /* ===== Theme Toggle ===== */
 .site-menu__list button.theme-toggle {
   position: relative;

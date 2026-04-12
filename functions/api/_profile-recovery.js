@@ -1,3 +1,4 @@
+import { normalizeRecoveryCandidate } from '../../content/core/profile-state.js';
 import { normalizeUserId } from './_user-identity.js';
 import { normalizeSchemaText } from './_text-utils.js';
 
@@ -13,28 +14,7 @@ export function normalizeRecoveryLookupName(rawName) {
 }
 
 function buildRecoveryCandidate(raw, source = 'unknown') {
-  const userId = normalizeUserId(raw?.userId);
-  if (!userId) return null;
-
-  const memoryCount = Math.max(
-    0,
-    Number.parseInt(String(raw?.memoryCount), 10) || 0,
-  );
-  const latestMemoryAt = Math.max(
-    0,
-    Number.parseInt(String(raw?.latestMemoryAt), 10) || 0,
-  );
-
-  return {
-    userId,
-    name: normalizeSchemaText(raw?.name || ''),
-    status:
-      normalizeSchemaText(raw?.status || 'anonymous').toLowerCase() ||
-      'anonymous',
-    memoryCount,
-    latestMemoryAt,
-    source,
-  };
+  return normalizeRecoveryCandidate(raw, { source });
 }
 
 function orderRecoveryCandidates(candidates = []) {
@@ -49,56 +29,6 @@ function orderRecoveryCandidates(candidates = []) {
       sensitivity: 'base',
     });
   });
-}
-
-function getAdminDb(env) {
-  return env?.DB_LIKES?.prepare ? env.DB_LIKES : null;
-}
-
-async function loadRecoveryCandidatesFromAdminDb(env, normalizedName, limit) {
-  const db = getAdminDb(env);
-  if (!db || !normalizedName) return [];
-
-  const safeLimit = Math.max(1, Math.min(10, Number(limit) || 5));
-
-  try {
-    const result = await db
-      .prepare(
-        `
-          SELECT
-            p.user_id AS userId,
-            p.display_name AS name,
-            p.status AS status,
-            p.memory_count AS memoryCount,
-            p.latest_memory_at AS latestMemoryAt
-          FROM admin_user_profiles p
-          INNER JOIN admin_memory_entries m
-            ON m.user_id = p.user_id
-          WHERE m.memory_key = ?
-            AND lower(m.memory_value) = ?
-          GROUP BY
-            p.user_id,
-            p.display_name,
-            p.status,
-            p.memory_count,
-            p.latest_memory_at
-          ORDER BY
-            p.memory_count DESC,
-            COALESCE(p.latest_memory_at, 0) DESC,
-            p.user_id ASC
-          LIMIT ${safeLimit}
-        `,
-      )
-      .bind(NAME_MEMORY_KEY, normalizedName)
-      .all();
-
-    const rows = Array.isArray(result?.results) ? result.results : [];
-    return orderRecoveryCandidates(
-      rows.map((row) => buildRecoveryCandidate(row, 'd1')).filter(Boolean),
-    );
-  } catch {
-    return [];
-  }
 }
 
 function getLatestNameValue(memories = []) {
@@ -205,21 +135,9 @@ async function loadRecoveryCandidatesFromKv(
   return orderRecoveryCandidates(matches).slice(0, limit);
 }
 
-export async function findRecoveryCandidates(
-  env,
-  kv,
-  name,
-  { limit = 5 } = {},
-) {
+export async function findRecoveryCandidates(kv, name, { limit = 5 } = {}) {
   const normalizedName = normalizeRecoveryLookupName(name);
   if (!normalizedName) return [];
-
-  const fromDb = await loadRecoveryCandidatesFromAdminDb(
-    env,
-    normalizedName,
-    limit,
-  );
-  if (fromDb.length > 0) return fromDb;
 
   return loadRecoveryCandidatesFromKv(kv, normalizedName, { limit });
 }

@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('feed.xml');
 /**
  * RSS Feed Generator
  * GET /api/feed.xml
@@ -68,7 +71,7 @@ ${items}
       },
     });
   } catch (err) {
-    console.error('RSS feed error:', err);
+    log.error('RSS feed error:', err);
     return new Response('Feed generation failed', { status: 500 });
   }
 }

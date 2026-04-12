@@ -8,9 +8,6 @@ import { escapeHtml } from './text-utils.js';
 
 const log = createLogger('Sanitization');
 
-// Alias for backward compatibility
-export const escapeHTML = escapeHtml;
-
 const DEFAULT_ALLOWED_TAGS = new Set([
   'a',
   'b',

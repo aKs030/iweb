@@ -1,4 +1,3 @@
-/// <reference types="@cloudflare/workers-types" />
 import { buildRouteMeta } from './_middleware-utils/route-seo.js';
 import {
   isLocalhost,
@@ -29,7 +28,7 @@ import {
 /**
  * Middleware entry point — runs on every request.
  *
- * @param {import('@cloudflare/workers-types').EventContext<any, any, any>} context
+ * @param {any} context
  */
 export async function onRequest(context) {
   const url = new URL(context.request.url);

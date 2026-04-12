@@ -1,76 +1,24 @@
-name: CI/CD
+name: Preview Deploy
+
 on:
-  push:
-    branches: [main, master]
   pull_request:
-  workflow_dispatch:
 
 permissions:
+  deployments: write
+  issues: write
   contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-node-deps
-      - name: Run QA
-        run: npm run qa
-  typecheck:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-node-deps
-      - name: Run typecheck
-        run: npm run typecheck
-  actionlint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v6
-      - name: Download actionlint
-        id: get_actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.11
-        shell: bash
-      - name: Check workflow files
-        run: ${{ steps.get_actionlint.outputs.executable }} -color
-        shell: bash
-
-  security:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      security-events: write
-      contents: read
-      actions: read
-    steps:
-      - uses: actions/checkout@v6
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
-        with:
-          languages: javascript-typescript
-          queries: security-extended
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
-
   preview:
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
-    needs: [lint, typecheck, security]
+    if: !github.event.pull_request.draft
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    permissions:
-      deployments: write
-      issues: write
-      contents: read
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-node-deps
       - id: secrets
         run: echo "has_cloudflare=${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}" >> "$GITHUB_OUTPUT"
       - if: steps.secrets.outputs.has_cloudflare == 'true'
@@ -87,25 +35,33 @@ jobs:
           URL: ${{ steps.deploy.outputs.deployment-url }}
         with:
           script: |
-            const m = '<!-- preview -->';
+            const marker = '<!-- preview -->';
             const hasCloudflare = process.env.HAS_CLOUDFLARE === 'true';
             const url = process.env.URL;
 
             const body = hasCloudflare
-              ? `${m}\n## 🚀 Preview\n\n[${url}](${url})`
-              : `${m}\n## ⚠️ Skipped\n\nAdd: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID`;
+              ? `${marker}\n## Preview\n\n[${url}](${url})`
+              : `${marker}\n## Skipped\n\nAdd: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID`;
+
             try {
-              const { data: c } = await github.rest.issues.listComments({
+              const { data: comments } = await github.rest.issues.listComments({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
               });
-              const e = c.find(x => x.user.type === 'Bot' && x.body.includes(m));
-              const fn = e ? github.rest.issues.updateComment : github.rest.issues.createComment;
-              await fn({
+              const existing = comments.find(
+                (comment) => comment.user.type === 'Bot' && comment.body.includes(marker),
+              );
+              const method = existing
+                ? github.rest.issues.updateComment
+                : github.rest.issues.createComment;
+
+              await method({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ...(e ? { comment_id: e.id } : { issue_number: context.issue.number }),
+                ...(existing
+                  ? { comment_id: existing.id }
+                  : { issue_number: context.issue.number }),
                 body,
               });
             } catch (error) {

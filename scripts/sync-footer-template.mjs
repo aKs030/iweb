@@ -1,19 +1,14 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-import prettier from 'prettier';
-
-import { isFlagEnabled } from './script-utils.mjs';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = path.resolve(__dirname, '..');
-const FOOTER_HTML_PATH = path.join(
+import {
   ROOT_DIR,
-  'content/components/footer/footer.html',
-);
-const GENERATED_MODULE_PATH = path.join(
-  ROOT_DIR,
+  resolveRootPath,
+  runGenerator,
+  updateFileIfChanged,
+} from './generator-utils.mjs';
+
+const FOOTER_HTML_PATH = resolveRootPath('content/components/footer/footer.html');
+const GENERATED_MODULE_PATH = resolveRootPath(
   'content/components/footer/footer-template.generated.js',
 );
 
@@ -25,64 +20,14 @@ export const FOOTER_HTML = ${JSON.stringify(footerHtml)};
 `;
 }
 
-async function formatWithRepoPrettier(source, filePath) {
-  const config = (await prettier.resolveConfig(filePath)) || {};
-  return prettier.format(source, {
-    ...config,
-    filepath: filePath,
-  });
-}
-
-async function updateFile(filePath, nextContent, { check }) {
-  let currentContent = '';
-
-  try {
-    currentContent = await readFile(filePath, 'utf8');
-  } catch (error) {
-    if (error?.code !== 'ENOENT') throw error;
-  }
-
-  if (currentContent === nextContent) {
-    return false;
-  }
-
-  if (check) {
-    throw new Error(
-      `Footer template drift detected in ${path.relative(ROOT_DIR, filePath)}`,
-    );
-  }
-
-  await writeFile(filePath, nextContent, 'utf8');
-  return true;
-}
-
 async function main() {
-  const argv = process.argv.slice(2);
-  const check = isFlagEnabled('--check', argv);
-  const write = isFlagEnabled('--write', argv) || !check;
-
-  if (!check && !write) {
-    throw new Error('Use --check or --write');
-  }
-
   const footerHtml = await readFile(FOOTER_HTML_PATH, 'utf8');
-  const generatedModule = await formatWithRepoPrettier(
-    buildGeneratedModule(footerHtml),
+  const generatedModule = buildGeneratedModule(footerHtml);
+
+  const updated = await updateFileIfChanged(
     GENERATED_MODULE_PATH,
+    generatedModule,
   );
-
-  const updated = await updateFile(GENERATED_MODULE_PATH, generatedModule, {
-    check,
-  });
-
-  if (check) {
-    console.log(
-      updated
-        ? 'Footer template artifacts drifted.'
-        : 'Footer template artifacts are in sync.',
-    );
-    return;
-  }
 
   console.log(
     updated
@@ -91,7 +36,4 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+await runGenerator(main);

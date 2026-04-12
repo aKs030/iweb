@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('likes');
 /**
  * API function to handle rating/likes of portfolio projects using Cloudflare D1
  */
@@ -20,7 +23,7 @@ export async function onRequestGet(context) {
 
     // Fail hard if DB binding is missing so UI can react correctly.
     if (!db) {
-      console.warn('DB_LIKES binding is missing. Ensure D1 is configured.');
+      log.warn('DB_LIKES binding is missing. Ensure D1 is configured.');
       return errorJsonResponse('DB_LIKES binding missing', {
         status: 503,
       });
@@ -35,7 +38,7 @@ export async function onRequestGet(context) {
 
     return jsonResponse({ likes });
   } catch (error) {
-    console.error('Error fetching likes:', error);
+    log.error('Error fetching likes:', error);
     return errorJsonResponse(
       {
         error: 'Internal Server Error',
@@ -77,7 +80,7 @@ export async function onRequestPost(context) {
     ).trim();
 
     if (!db) {
-      console.warn('DB_LIKES binding is missing. Ensure D1 is configured.');
+      log.warn('DB_LIKES binding is missing. Ensure D1 is configured.');
       return errorJsonResponse('DB_LIKES binding missing', {
         status: 503,
       });
@@ -114,7 +117,7 @@ export async function onRequestPost(context) {
 
     return jsonResponse({ likes: Number(result?.likes) || 0 });
   } catch (error) {
-    console.error('Error adding like:', error);
+    log.error('Error adding like:', error);
     return errorJsonResponse('Internal Server Error', {
       status: 500,
     });

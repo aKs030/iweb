@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('asset-proxy-route');
 import {
   buildConditionalProxyRequestHeaders,
   buildNotModifiedHeaders,
@@ -289,7 +292,7 @@ export function createAssetProxyHandlers(options) {
 
       return response;
     } catch (error) {
-      console.error(options.errorMessage || 'asset proxy failed', error);
+      log.error(options.errorMessage || 'asset proxy failed', error);
       return buildProxyErrorResponse(
         options.errorMessage || 'Asset proxy failed',
         502,

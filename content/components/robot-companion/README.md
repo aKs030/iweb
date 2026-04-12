@@ -76,11 +76,9 @@ ROBOT_ACTIONS = {
 ## Entwicklung
 
 ```bash
-npx eslint content/components/robot-companion --max-warnings=0
-npm run lint:types
+npm run dev
 ```
 
 ## Verwandte Dateien
 
 - [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
-- [CHANGELOG.md](./CHANGELOG.md)

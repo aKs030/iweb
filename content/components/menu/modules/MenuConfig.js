@@ -29,7 +29,9 @@
 /**
  * @typedef {Object} MenuComponentConfig
  * @property {CssUrlList} CSS_URLS
+ * @property {CssUrlList} DEFERRED_CSS_URLS
  * @property {CssUrlList} SHADOW_CSS_URLS
+ * @property {CssUrlList} DEFERRED_SHADOW_CSS_URLS
  * @property {CssUrlList} GLOBAL_CSS_URLS
  * @property {number} DEBOUNCE_DELAY
  * @property {number} ANNOUNCEMENT_DELAY
@@ -60,17 +62,18 @@ export const MenuConfig = {
   // Paths
   CSS_URLS: [
     '/content/components/menu/menu-base.css',
-    '/content/components/menu/menu-search.css',
     '/content/components/menu/menu-states.css',
     '/content/components/menu/menu-mobile.css',
-    '/content/components/menu/menu-backdrop.css',
+  ],
+  DEFERRED_CSS_URLS: [
+    '/content/components/menu/menu-search.css',
   ],
   SHADOW_CSS_URLS: [
     '/content/components/menu/menu-base.css',
-    '/content/components/menu/menu-search.css',
     '/content/components/menu/menu-states.css',
     '/content/components/menu/menu-mobile.css',
   ],
+  DEFERRED_SHADOW_CSS_URLS: ['/content/components/menu/menu-search.css'],
   GLOBAL_CSS_URLS: ['/content/components/menu/menu-backdrop.css'],
 
   // Timing

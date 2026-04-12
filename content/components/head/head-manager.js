@@ -20,6 +20,7 @@ import {
 import { loadBrandData } from '../../config/brand-data-loader.js';
 import { ROUTES } from '../../config/routes-config.js';
 import { BASE_URL } from '../../config/constants.js';
+import { SITE_NAME } from '../../config/site-seo.js';
 import { headState } from './head-state.js';
 
 const log = createLogger('HeadManager');
@@ -112,6 +113,12 @@ const updateBasicMeta = (pageData, pageUrl) => {
     document.title = pageData.title;
   }
 
+  const appTitle = pageData.appTitle || pageData.title;
+  const ogTitle = pageData.ogTitle || pageData.title;
+  const ogDescription = pageData.ogDescription || pageData.description;
+  const twitterTitle = pageData.twitterTitle || ogTitle || pageData.title;
+  const twitterDescription =
+    pageData.twitterDescription || ogDescription || pageData.description;
   const pathname = new URL(pageUrl).pathname;
   const keywordList = buildSeoKeywordList(
     pageData,
@@ -129,11 +136,12 @@ const updateBasicMeta = (pageData, pageUrl) => {
     ['robots', pageData.robots || 'index, follow, max-image-preview:large'],
     ['language', pageData.pageLang || 'de-DE'],
     ['author', 'Abdulkerim Sesli'],
+    ['apple-mobile-web-app-title', appTitle],
     ['twitter:card', 'summary_large_image'],
     ['twitter:site', '@abdulkerimsesli'],
     ['twitter:creator', '@abdulkerimsesli'],
-    ['twitter:title', pageData.title],
-    ['twitter:description', pageData.description],
+    ['twitter:title', twitterTitle],
+    ['twitter:description', twitterDescription],
     ['twitter:url', pageUrl],
   ];
 
@@ -141,9 +149,9 @@ const updateBasicMeta = (pageData, pageUrl) => {
 
   const ogUpdates = [
     ['og:type', getOpenGraphType(pageData)],
-    ['og:title', pageData.title],
-    ['og:site_name', 'Abdulkerim Sesli — Digital Creator Portfolio'],
-    ['og:description', pageData.description],
+    ['og:title', ogTitle],
+    ['og:site_name', SITE_NAME],
+    ['og:description', ogDescription],
     ['og:locale', pageData.ogLocale || 'de_DE'],
     ['og:url', pageUrl],
   ];

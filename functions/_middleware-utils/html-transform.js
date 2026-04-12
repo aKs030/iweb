@@ -91,7 +91,7 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
 }
 
 /**
- * @param {import('@cloudflare/workers-types').EventContext<any, any, any>} context
+ * @param {any} context
  * @param {URL} url
  * @param {{
  *   criticalCssMap: Map<string, string>,
@@ -99,7 +99,7 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
  *   resolvedGlobalHeadTemplate: string,
  *   routeMeta: any,
  * }} options
- * @returns {{ cspHeader: string, nonce: string | null, rewriter: HTMLRewriter }}
+ * @returns {{ cspHeader: string, nonce: string | null, rewriter: any }}
  */
 export function createHtmlRewriter(context, url, options) {
   const rewriter = new HTMLRewriter();

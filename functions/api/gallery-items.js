@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('gallery-items');
 import { isLocalDevRuntime } from '../../content/core/runtime-env.js';
 import { jsonResponse, errorJsonResponse } from './_response.js';
 import { listGalleryObjectsWithMetadata } from './_gallery-service.js';
@@ -51,7 +54,7 @@ export async function onRequest(context) {
 
     return responseView;
   } catch (err) {
-    console.error('Gallery API error:', err);
+    log.error('Gallery API error:', err);
     return errorJsonResponse('Gallery request failed', {
       status: 500,
     });

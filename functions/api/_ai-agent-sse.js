@@ -1,3 +1,5 @@
+import { buildAgentResponsePayload } from '../../content/core/ai-agent-contracts.js';
+
 export const sseEvent = (event, data) =>
   `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
@@ -8,16 +10,14 @@ export function buildAgentMessagePayload(
   ctx,
   config,
 ) {
-  return {
+  return buildAgentResponsePayload({
     text,
     toolCalls: clientToolCalls,
     model: config.chatModel,
     hasMemory: !!ctx.memoryContext,
     hasImage: !!ctx.imageAnalysis,
-    ...(serverToolResults.length && {
-      toolResults: serverToolResults.map((r) => r.name),
-    }),
-  };
+    toolResults: serverToolResults.map((result) => result.name),
+  });
 }
 
 export function hasMeaningfulAgentText(text, minLength = 4) {

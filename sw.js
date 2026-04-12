@@ -5,8 +5,9 @@
  * @module sw
  */
 
-// Cache-Name mit Version — bei Deployments hochzählen
-const CACHE = 'static-v6';
+// Wir nutzen den X-Deploy-Version Header direkt im Fetch-Event zur Invalidierung
+const CACHE_PREFIX = 'iweb-static-';
+let CACHE = CACHE_PREFIX + 'current';
 const OFFLINE = '/offline.html';
 const MAX_CACHE_ITEMS = 160; // Cached assets incl. images/fonts/models/first-party code
 
@@ -175,7 +176,9 @@ self.addEventListener(
         .keys()
         .then((keys) =>
           Promise.all(
-            keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+            keys
+              .filter((k) => k.startsWith('static-v') || (k.startsWith(CACHE_PREFIX) && k !== CACHE))
+              .map((k) => caches.delete(k)),
           ),
         ),
       // clients.claim() NICHT aufrufen — verhindert, dass der neue SW
@@ -240,12 +243,19 @@ self.addEventListener(
               __deployVersion &&
               edgeVersion !== __deployVersion
             ) {
+              const oldCache = CACHE;
+              __deployVersion = edgeVersion;
+              CACHE = CACHE_PREFIX + edgeVersion;
               // New deploy detected — purge old cache in background
               e.waitUntil(
-                caches.delete(CACHE).then(() => {
+                caches.delete(oldCache).then(() => {
                   return caches.open(CACHE).then((c) => c.add(OFFLINE));
                 }),
               );
+            } else if (edgeVersion && !__deployVersion) {
+              // Update CACHE name to edge version on first hit without clear
+              __deployVersion = edgeVersion;
+              CACHE = CACHE_PREFIX + edgeVersion;
             }
             if (edgeVersion) {
               __deployVersion = edgeVersion;

@@ -9,6 +9,7 @@
  */
 
 import { createLogger } from './logger.js';
+import { waitForReadyState } from './async-utils.js';
 import {
   batch,
   computed,
@@ -57,69 +58,14 @@ export function subscribeLoadState(listener, options = {}) {
 
 export function whenAppReady(options = {}) {
   const { timeout = 0, abortSignal = null } = options;
-  const snapshot = getLoadSnapshot();
-
-  if (!snapshot.blocked && snapshot.done) {
-    return Promise.resolve(snapshot);
-  }
-
-  if (abortSignal?.aborted) {
-    return Promise.reject(
-      new DOMException('App readiness wait aborted', 'AbortError'),
-    );
-  }
-
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    let timeoutId = null;
-    let unsubscribe = () => {};
-
-    const cleanup = () => {
-      unsubscribe();
-      unsubscribe = () => {};
-
-      if (timeoutId !== null) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-
-      abortSignal?.removeEventListener?.('abort', handleAbort);
-    };
-
-    const resolveReady = () => {
-      if (settled) return;
-      settled = true;
-      const readySnapshot = getLoadSnapshot();
-      cleanup();
-      resolve(readySnapshot);
-    };
-
-    const rejectWait = (error) => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      reject(error);
-    };
-
-    const handleAbort = () => {
-      rejectWait(new DOMException('App readiness wait aborted', 'AbortError'));
-    };
-
-    unsubscribe = subscribeLoadState((state) => {
-      if (!state.blocked && state.done) {
-        resolveReady();
-      }
-    });
-
-    if (timeout > 0) {
-      timeoutId = setTimeout(() => {
-        rejectWait(
-          new Error(`Timed out waiting for app readiness after ${timeout}ms`),
-        );
-      }, timeout);
-    }
-
-    abortSignal?.addEventListener?.('abort', handleAbort, { once: true });
+  return waitForReadyState({
+    getSnapshot: getLoadSnapshot,
+    isReady: (snapshot) => !snapshot.blocked && snapshot.done,
+    subscribe: (listener) => subscribeLoadState(listener),
+    timeout,
+    abortSignal,
+    abortMessage: 'App readiness wait aborted',
+    timeoutMessage: `Timed out waiting for app readiness after ${timeout}ms`,
   });
 }
 

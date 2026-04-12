@@ -1,22 +1,15 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-import prettier from 'prettier';
-
-import { isFlagEnabled } from './script-utils.mjs';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = path.resolve(__dirname, '..');
-const PACKAGE_JSON_PATH = path.join(ROOT_DIR, 'package.json');
-const IMPORT_MAP_JS_PATH = path.join(
+import {
   ROOT_DIR,
-  'content/config/import-map.generated.js',
-);
-const GLOBAL_HEAD_PATH = path.join(
-  ROOT_DIR,
-  'content/templates/global-head.html',
-);
+  resolveRootPath,
+  runGenerator,
+  updateFileIfChanged,
+} from './generator-utils.mjs';
+
+const PACKAGE_JSON_PATH = resolveRootPath('package.json');
+const IMPORT_MAP_JS_PATH = resolveRootPath('content/config/import-map.generated.js');
+const GLOBAL_HEAD_PATH = resolveRootPath('content/templates/global-head.html');
 
 const GLOBAL_HEAD_IMPORT_MAP_PATTERN =
   /<!-- BEGIN GENERATED IMPORT MAP -->[\s\S]*?<!-- END GENERATED IMPORT MAP -->/;
@@ -143,47 +136,12 @@ ${json}
 <!-- END GENERATED IMPORT MAP -->`;
 }
 
-async function formatWithRepoPrettier(source, filePath) {
-  const config = (await prettier.resolveConfig(filePath)) || {};
-  return prettier.format(source, {
-    ...config,
-    filepath: filePath,
-  });
-}
-
-async function updateFile(filePath, nextContent, { check }) {
-  const currentContent = await readFile(filePath, 'utf8');
-  if (currentContent === nextContent) {
-    return false;
-  }
-
-  if (check) {
-    throw new Error(
-      `Import map drift detected in ${path.relative(ROOT_DIR, filePath)}`,
-    );
-  }
-
-  await writeFile(filePath, nextContent, 'utf8');
-  return true;
-}
-
 async function main() {
-  const argv = process.argv.slice(2);
-  const check = isFlagEnabled('--check', argv);
-  const write = isFlagEnabled('--write', argv) || !check;
-
-  if (!check && !write) {
-    throw new Error('Use --check or --write');
-  }
-
   const pkg = await readPackageJson();
   const versions = resolveVersions(pkg);
   const importMap = buildImportMap(versions);
 
-  const generatedModule = await formatWithRepoPrettier(
-    buildGeneratedModule(versions, importMap),
-    IMPORT_MAP_JS_PATH,
-  );
+  const generatedModule = buildGeneratedModule(versions, importMap);
   const globalHead = await readFile(GLOBAL_HEAD_PATH, 'utf8');
 
   if (!GLOBAL_HEAD_IMPORT_MAP_PATTERN.test(globalHead)) {
@@ -199,29 +157,12 @@ async function main() {
 
   const updatedFiles = [];
 
-  if (
-    await updateFile(IMPORT_MAP_JS_PATH, generatedModule, {
-      check,
-    })
-  ) {
+  if (await updateFileIfChanged(IMPORT_MAP_JS_PATH, generatedModule)) {
     updatedFiles.push(path.relative(ROOT_DIR, IMPORT_MAP_JS_PATH));
   }
 
-  if (
-    await updateFile(GLOBAL_HEAD_PATH, nextGlobalHead, {
-      check,
-    })
-  ) {
+  if (await updateFileIfChanged(GLOBAL_HEAD_PATH, nextGlobalHead)) {
     updatedFiles.push(path.relative(ROOT_DIR, GLOBAL_HEAD_PATH));
-  }
-
-  if (check) {
-    console.log(
-      updatedFiles.length === 0
-        ? 'Import map artifacts are in sync.'
-        : 'Import map artifacts drifted.',
-    );
-    return;
   }
 
   console.log(
@@ -231,4 +172,4 @@ async function main() {
   );
 }
 
-await main();
+await runGenerator(main);

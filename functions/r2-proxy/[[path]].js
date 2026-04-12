@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('[[path]]');
 import {
   buildR2Url,
   R2_PROXY_BASE_PATH,
@@ -25,7 +28,7 @@ async function getBucketMedia(bucket, key) {
   try {
     return await bucket.get(key);
   } catch (error) {
-    console.warn('r2-proxy local bucket lookup failed:', error);
+    log.warn('r2-proxy local bucket lookup failed:', error);
     return null;
   }
 }
@@ -36,7 +39,7 @@ async function getBucketMediaHead(bucket, key) {
   try {
     return await bucket.head(key);
   } catch (error) {
-    console.warn('r2-proxy local bucket head lookup failed:', error);
+    log.warn('r2-proxy local bucket head lookup failed:', error);
     return null;
   }
 }

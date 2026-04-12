@@ -16,13 +16,13 @@
 
 ## Short Bio
 
-Abdulkerim Sesli builds modern, high-performance web products with JavaScript ES2023+, Three.js, Web Components, and edge-first deployment. Core focus areas are interactive UI systems, AI-powered search/chat integration, and production-grade performance optimization.
+Abdulkerim Sesli builds modern, high-performance web products with JavaScript ES2023+, Three.js, Web Components, and edge-first deployment. Core focus areas are interactive UI systems, AI-assisted search/chat integration, and production-grade performance optimization.
 
 ## Core Topics
 
 - Modern JavaScript architecture (zero-build, native ES modules)
 - Three.js / WebGL interactive experiences
-- AI integration (RAG search, LLM workflows, API orchestration)
+- AI integration (deterministic site search, assistant workflows, API orchestration)
 - Cloudflare Pages + Functions + edge runtime patterns
 - Technical SEO and machine-readable discovery setup
 - PWA, accessibility, and Core Web Vitals

@@ -10,6 +10,7 @@ import { createRoot } from 'react-dom/client';
 import { createLogger } from '#core/logger.js';
 import { AppLoadManager } from '#core/load-manager.js';
 import { createUseTranslation } from '#core/react-utils.js';
+import { injectSchema } from '#core/schema.js';
 import { createErrorBoundary } from '#components/ErrorBoundary.js';
 import { i18n } from '#core/i18n.js';
 
@@ -157,17 +158,12 @@ const GalleryApp = () => {
 
   // Helper to inject Schema.org JSON-LD
   const updateGallerySchema = (galleryItems) => {
-    const scriptId = 'gallery-schema-json-ld';
-    let script = document.getElementById(scriptId);
-    if (!script) {
-      script = document.createElement('script');
-      script.id = scriptId;
-      /** @type {any} */ (script).type = 'application/ld+json';
-      document.head.appendChild(script);
+    if (!Array.isArray(galleryItems) || galleryItems.length === 0) {
+      document.getElementById('gallery-schema-json-ld')?.remove();
+      return;
     }
 
     const schema = {
-      '@context': 'https://schema.org',
       '@type': 'ImageGallery',
       name: 'Fotografie Portfolio | Abdulkerim Sesli',
       description:
@@ -198,7 +194,7 @@ const GalleryApp = () => {
       })),
     };
 
-    script.textContent = JSON.stringify(schema);
+    injectSchema([schema], { scriptId: 'gallery-schema-json-ld' });
   };
 
   if (!isReady) return null;

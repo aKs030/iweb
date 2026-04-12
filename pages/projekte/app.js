@@ -26,6 +26,7 @@ import {
   extractProjectSlugFromLocation,
   normalizeProjectSlug,
 } from '#core/project-paths.js';
+import { injectSchema } from '#core/schema.js';
 import { createErrorBoundary } from '#components/ErrorBoundary.js';
 
 const ErrorBoundary = createErrorBoundary(React);
@@ -546,18 +547,9 @@ const App = () => {
 
   useEffect(() => {
     if (projects.length === 0) {
+      document.getElementById('projects-schema-ldjson')?.remove();
       setIsSceneReady(false);
       return;
-    }
-
-    // Inject SoftwareApplication Schema.org JSON-LD
-    const scriptId = 'projects-schema-ldjson';
-    let script = document.getElementById(scriptId);
-    if (!script) {
-      script = document.createElement('script');
-      script.id = scriptId;
-      /** @type {any} */ (script).type = 'application/ld+json';
-      document.head.appendChild(script);
     }
 
     const CATEGORY_MAP = {
@@ -629,9 +621,8 @@ const App = () => {
       })),
     };
 
-    script.textContent = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [listNode, ...projectNodes],
+    injectSchema([listNode, ...projectNodes], {
+      scriptId: 'projects-schema-ldjson',
     });
   }, [projects]);
 

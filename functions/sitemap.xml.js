@@ -23,17 +23,16 @@ const ROUTE_META = {
   '/ai-info/': { priority: 0.65, changefreq: 'weekly' },
 };
 
-const NOINDEX_PATHS = new Set(['/datenschutz/', '/impressum/']);
-const EXTRA_INDEXABLE_PATHS = ['/ai-info/'];
-
 function buildStaticEntries(today) {
   const staticPaths = [
     '/',
-    ...Object.keys(ROUTES)
-      .filter((path) => path.startsWith('/'))
-      .map(normalizePath)
-      .filter((path) => !NOINDEX_PATHS.has(path)),
-    ...EXTRA_INDEXABLE_PATHS,
+    ...Object.entries(ROUTES)
+      .filter(([path, route]) => {
+        if (!path.startsWith('/')) return false;
+        const robots = String(route?.robots || '').toLowerCase();
+        return !robots.startsWith('noindex');
+      })
+      .map(([path]) => normalizePath(path)),
   ];
 
   const uniquePaths = [...new Set(staticPaths)];

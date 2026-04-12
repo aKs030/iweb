@@ -15,6 +15,92 @@
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
+ * Wait until a subscribed state snapshot satisfies `isReady`.
+ *
+ * @template T
+ * @param {{
+ *   getSnapshot: () => T,
+ *   isReady: (snapshot: T) => boolean,
+ *   subscribe: (listener: (snapshot: T) => void) => (() => void) | (() => boolean),
+ *   timeout?: number,
+ *   abortSignal?: AbortSignal | null,
+ *   abortMessage?: string,
+ *   timeoutMessage?: string,
+ * }} options
+ * @returns {Promise<T>}
+ */
+export function waitForReadyState(options) {
+  const {
+    getSnapshot,
+    isReady,
+    subscribe,
+    timeout = 0,
+    abortSignal = null,
+    abortMessage = 'Readiness wait aborted',
+    timeoutMessage = `Timed out waiting for readiness after ${timeout}ms`,
+  } = options;
+
+  const snapshot = getSnapshot();
+  if (isReady(snapshot)) {
+    return Promise.resolve(snapshot);
+  }
+
+  if (abortSignal?.aborted) {
+    return Promise.reject(new DOMException(abortMessage, 'AbortError'));
+  }
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let timeoutId = null;
+    let unsubscribe = () => {};
+
+    const cleanup = () => {
+      unsubscribe();
+      unsubscribe = () => {};
+
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
+      abortSignal?.removeEventListener?.('abort', handleAbort);
+    };
+
+    const resolveReady = (readySnapshot) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(readySnapshot);
+    };
+
+    const rejectWait = (error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
+
+    const handleAbort = () => {
+      rejectWait(new DOMException(abortMessage, 'AbortError'));
+    };
+
+    unsubscribe = subscribe((nextSnapshot) => {
+      if (isReady(nextSnapshot)) {
+        resolveReady(nextSnapshot);
+      }
+    });
+
+    if (timeout > 0) {
+      timeoutId = setTimeout(() => {
+        rejectWait(new Error(timeoutMessage));
+      }, timeout);
+    }
+
+    abortSignal?.addEventListener?.('abort', handleAbort, { once: true });
+  });
+}
+
+/**
  * Debounce a synchronous function
  * @param {Function} fn - Function to debounce
  * @param {number} delay - Delay in milliseconds
