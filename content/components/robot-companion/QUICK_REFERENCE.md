@@ -59,9 +59,8 @@ console.log(robot.stateManager.signals.isChatOpen.value);
 console.log(robot.dom);
 ```
 
-## Checks
+## Start
 
 ```bash
-npx eslint content/components/robot-companion --max-warnings=0
-npm run qa
+npm run dev
 ```

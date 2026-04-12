@@ -1,3 +1,6 @@
+import { createLogger } from '../../../content/core/logger.js';
+
+const log = createLogger('[[path]]');
 /**
  * YouTube Data API v3 Proxy (hardened)
  * - Allows only required endpoints/params for the videos page
@@ -271,7 +274,7 @@ export async function onRequestGet(context) {
         : CACHE_CONTROL_NO_STORE,
     });
   } catch (error) {
-    console.error('YouTube API proxy error:', error);
+    log.error('YouTube API proxy error:', error);
     return buildJsonResponse(
       request,
       env,

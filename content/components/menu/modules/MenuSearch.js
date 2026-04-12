@@ -13,6 +13,7 @@ import {
   clearActiveOverlayMode,
   setActiveOverlayMode,
 } from '#core/ui-store.js';
+import { addManagedEventListener } from '#core/dom-utils.js';
 import { formatCompactUrlPath } from '#core/url-utils.js';
 import { MenuSearchKeyboardController } from './search-keyboard-controller.js';
 import { MenuSearchRenderer } from './search-renderer.js';
@@ -77,13 +78,17 @@ export class MenuSearch {
       return;
     }
 
+    const prepareSearchStyles = () => {
+      void this.ensureSearchStyles();
+    };
+
     const handleSearchTrigger = (e) => {
       e.preventDefault();
       if (this.isSearchOpen()) {
         this.closeSearchModeSilently();
         return;
       }
-      this.openSearchMode();
+      void this.openSearchMode();
     };
 
     const handleSearchInput = () => {
@@ -156,6 +161,8 @@ export class MenuSearch {
 
     this.cleanupFns.push(
       this.addListener(this.view.trigger, 'click', handleSearchTrigger),
+      this.addListener(this.view.trigger, 'pointerenter', prepareSearchStyles),
+      this.addListener(this.view.trigger, 'focus', prepareSearchStyles),
       this.addListener(this.view.input, 'input', handleSearchInput),
       this.addListener(this.view.input, 'keydown', handleSearchKeydown),
       this.addListener(this.view.results, 'click', handleResultsClick),
@@ -251,6 +258,17 @@ export class MenuSearch {
     return activeOverlay.value === OVERLAY_MODES.SEARCH;
   }
 
+  ensureSearchStyles() {
+    if (
+      this.host &&
+      typeof /** @type {any} */ (this.host).ensureDeferredStyles === 'function'
+    ) {
+      return /** @type {any} */ (this.host).ensureDeferredStyles();
+    }
+
+    return Promise.resolve();
+  }
+
   closeSearchModeSilently() {
     this.closeSearchMode({ restoreFocus: false });
   }
@@ -268,8 +286,10 @@ export class MenuSearch {
     });
   }
 
-  openSearchMode() {
+  async openSearchMode() {
     if (this.isSearchOpen()) return;
+
+    await this.ensureSearchStyles();
 
     if (this.state.isOpen) {
       prepareOverlayFocusChange(OVERLAY_MODES.MENU, { restoreFocus: false });
@@ -376,12 +396,7 @@ export class MenuSearch {
    * Helper to add event listener and return cleanup function
    */
   addListener(target, event, handler, options = {}) {
-    if (!target) return () => {};
-    const passiveByDefault =
-      event === 'touchstart' || event === 'touchmove' || event === 'wheel';
-    const opts = { passive: passiveByDefault, ...options };
-    target.addEventListener(event, handler, opts);
-    return () => target.removeEventListener(event, handler, opts);
+    return addManagedEventListener(target, event, handler, options);
   }
 
   destroy() {

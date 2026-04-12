@@ -4,6 +4,7 @@
  */
 
 import { FAVICON_512_URL } from '#config/constants.js';
+import { injectSchema } from '#core/schema.js';
 import {
   BLOG_BASE_URL,
   BLOG_HOME_URL,
@@ -144,7 +145,6 @@ const createStructuredData = (post, url, image, desc, keywords, body) => {
   const { title, category, date, updated } = post;
 
   return {
-    '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     '@id': `${url}#article`,
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },
@@ -175,16 +175,7 @@ const createStructuredData = (post, url, image, desc, keywords, body) => {
 };
 
 const setStructuredData = (data) => {
-  let script = document.getElementById('blog-post-ldjson');
-
-  if (!script) {
-    script = document.createElement('script');
-    /** @type {any} */ (script).type = 'application/ld+json';
-    script.id = 'blog-post-ldjson';
-    document.head.appendChild(script);
-  }
-
-  script.textContent = JSON.stringify(data);
+  injectSchema([data], { scriptId: 'blog-post-ldjson' });
 };
 
 export const updatePostMeta = (post) => {

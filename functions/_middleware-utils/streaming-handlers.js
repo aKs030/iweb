@@ -140,18 +140,7 @@ export class SeoMetaHandler {
 
   /** @private */
   _handleMetaName(el, name) {
-    const m = this.meta;
-    const map = {
-      description: m.description,
-      robots: m.robots || 'index, follow, max-image-preview:large',
-      keywords: m.keywords,
-      'twitter:card': m.twitterCard || 'summary_large_image',
-      'twitter:title': m.title,
-      'twitter:description': m.description,
-      'twitter:url': m.canonicalUrl,
-      'twitter:image': m.image,
-      'twitter:image:alt': m.imageAlt,
-    };
+    const map = buildSeoMetaNameMap(this.meta);
 
     if (name in map && map[name]) {
       el.setAttribute('content', map[name]);
@@ -161,17 +150,7 @@ export class SeoMetaHandler {
 
   /** @private */
   _handleMetaProp(el, prop) {
-    const m = this.meta;
-    const map = {
-      'og:type': m.ogType || 'website',
-      'og:title': m.title,
-      'og:description': m.description,
-      'og:url': m.canonicalUrl,
-      'og:image': m.image,
-      'og:image:alt': m.imageAlt,
-      'article:published_time': m.publishedTime,
-      'article:modified_time': m.modifiedTime,
-    };
+    const map = buildSeoMetaPropertyMap(this.meta);
 
     if (prop in map && map[prop]) {
       el.setAttribute('content', map[prop]);
@@ -194,17 +173,7 @@ export class SeoMetaHandler {
     }
 
     // Meta name tags
-    const nameDefaults = {
-      description: m.description,
-      robots: m.robots || 'index, follow, max-image-preview:large',
-      'twitter:card': m.twitterCard || 'summary_large_image',
-      'twitter:title': m.title,
-      'twitter:description': m.description,
-      'twitter:url': m.canonicalUrl,
-      'twitter:image': m.image,
-      'twitter:image:alt': m.imageAlt,
-    };
-    if (m.keywords) nameDefaults.keywords = m.keywords;
+    const nameDefaults = buildSeoMetaNameMap(m);
 
     for (const [name, content] of Object.entries(nameDefaults)) {
       if (content && !this._handledKeys.has(`name:${name}`)) {
@@ -215,20 +184,7 @@ export class SeoMetaHandler {
     }
 
     // Meta property tags
-    const propDefaults = {
-      'og:type': m.ogType || 'website',
-      'og:title': m.title,
-      'og:description': m.description,
-      'og:url': m.canonicalUrl,
-      'og:image': m.image,
-      'og:image:alt': m.imageAlt,
-    };
-    if (m.publishedTime) {
-      propDefaults['article:published_time'] = m.publishedTime;
-    }
-    if (m.modifiedTime) {
-      propDefaults['article:modified_time'] = m.modifiedTime;
-    }
+    const propDefaults = buildSeoMetaPropertyMap(m);
 
     for (const [prop, content] of Object.entries(propDefaults)) {
       if (content && !this._handledKeys.has(`prop:${prop}`)) {
@@ -268,6 +224,59 @@ function escapeForHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+function buildSeoMetaNameMap(meta) {
+  const m = meta || {};
+  const map = {
+    description: m.description,
+    robots: m.robots || 'index, follow, max-image-preview:large',
+    keywords: m.keywords,
+    'apple-mobile-web-app-title': m.appTitle || m.title,
+    'twitter:card': m.twitterCard || 'summary_large_image',
+    'twitter:title': m.twitterTitle || m.title,
+    'twitter:description': m.twitterDescription || m.description,
+    'twitter:url': m.canonicalUrl,
+    'twitter:image': m.image,
+    'twitter:image:width': m.imageWidth,
+    'twitter:image:height': m.imageHeight,
+    'twitter:image:type': m.imageType,
+    'twitter:image:alt': m.imageAlt,
+  };
+
+  if (!m.keywords) {
+    delete map.keywords;
+  }
+
+  return map;
+}
+
+function buildSeoMetaPropertyMap(meta) {
+  const m = meta || {};
+  const map = {
+    'og:type': m.ogType || 'website',
+    'og:title': m.ogTitle || m.title,
+    'og:description': m.ogDescription || m.description,
+    'og:url': m.canonicalUrl,
+    'og:image': m.image,
+    'og:image:width': m.imageWidth,
+    'og:image:height': m.imageHeight,
+    'og:image:type': m.imageType,
+    'og:image:alt': m.imageAlt,
+    'og:site_name': m.siteName,
+    'og:locale': m.locale,
+    'article:published_time': m.publishedTime,
+    'article:modified_time': m.modifiedTime,
+  };
+
+  if (!m.publishedTime) {
+    delete map['article:published_time'];
+  }
+  if (!m.modifiedTime) {
+    delete map['article:modified_time'];
+  }
+
+  return map;
+}
+
 function parseTemplateComment(value = '') {
   const text = String(value || '').trim();
   const [name = '', ...rest] = text.split(/\s+/);
@@ -286,6 +295,8 @@ function parseTemplateComment(value = '') {
 function renderGlobalHeadTemplate(template, payload) {
   const attrs = payload?.attrs || {};
   const mode = attrs.mode === 'standalone' ? 'standalone' : 'base';
+  const useRouteTitle = attrs['title-source'] === 'route';
+  const useRouteAppTitle = attrs['app-title-source'] === 'route';
   const replacements = {
     TITLE: attrs.title || 'Standalone',
     THEME_COLOR: attrs['theme-color'] || '#030303',
@@ -305,8 +316,21 @@ function renderGlobalHeadTemplate(template, payload) {
       /<!-- GLOBAL-HEAD:STANDALONE-ONLY:BEGIN -->([\s\S]*?)<!-- GLOBAL-HEAD:STANDALONE-ONLY:END -->/g,
       (_match, block) => (mode === 'standalone' ? block : ''),
     );
+  let routeManagedTemplate = nextTemplate;
+  if (useRouteAppTitle) {
+    routeManagedTemplate = routeManagedTemplate.replace(
+      /\s*<meta name="apple-mobile-web-app-title" content="\{\{APP_TITLE\}\}" \/>\s*/g,
+      '\n',
+    );
+  }
+  if (useRouteTitle) {
+    routeManagedTemplate = routeManagedTemplate.replace(
+      /\s*<title>\{\{TITLE\}\}<\/title>\s*/g,
+      '\n',
+    );
+  }
 
-  return nextTemplate.replace(/\{\{([A-Z_]+)\}\}/g, (_match, key) =>
+  return routeManagedTemplate.replace(/\{\{([A-Z_]+)\}\}/g, (_match, key) =>
     escapeForHtml(replacements[key] || ''),
   );
 }

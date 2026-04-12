@@ -16,12 +16,8 @@
  * }} RobotWindow
  */
 
-import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
-import { RobotIntelligence } from './modules/robot-intelligence.js';
-import { RobotEmotions } from './modules/robot-emotions.js';
-import { RobotContextReactions } from './modules/robot-context-reactions.js';
 import { createLogger } from '../../core/logger.js';
 import { createObserver } from '../../core/dom-utils.js';
 import { TimerManager } from '../../core/timer-manager.js';
@@ -34,6 +30,12 @@ import {
 import { ROBOT_EVENTS } from './constants/events.js';
 import { RobotStateManager } from './state/RobotStateManager.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
+import {
+  clearRobotUserName,
+  getRobotUserName,
+  hydrateRobotUserNameFromUrl,
+  writeRobotUserName,
+} from './modules/name-identity.js';
 
 const log = createLogger('RobotCompanion');
 
@@ -58,18 +60,28 @@ export class RobotCompanion {
 
     /** @type {any} */
     this._agentService = null;
+    /** @type {Promise<any>|null} */
+    this._agentFeaturesPromise = null;
+    /** @type {Promise<any>|null} */
+    this._intelligenceModulePromise = null;
+    /** @type {Promise<void>|null} */
+    this._interactiveModulesPromise = null;
+    /** @type {string} */
+    this._agentIdentitySyncedFor = '';
+    /** @type {boolean} */
+    this._imageUploadHydrated = false;
     /** @type {RobotAnimation} */
     this.animationModule = new RobotAnimation(this);
-    /** @type {RobotCollision} */
-    this.collisionModule = new RobotCollision(this);
+    /** @type {import('./modules/robot-collision.js').RobotCollision|null} */
+    this.collisionModule = null;
     /** @type {RobotChat} */
     this.chatModule = new RobotChat(this);
-    /** @type {RobotIntelligence|null} */
+    /** @type {import('./modules/robot-intelligence.js').RobotIntelligence|null} */
     this.intelligenceModule = null;
-    /** @type {RobotEmotions} */
-    this.emotionsModule = new RobotEmotions(this);
-    /** @type {RobotContextReactions} */
-    this.contextReactionsModule = new RobotContextReactions(this);
+    /** @type {import('./modules/robot-emotions.js').RobotEmotions|null} */
+    this.emotionsModule = null;
+    /** @type {import('./modules/robot-context-reactions.js').RobotContextReactions|null} */
+    this.contextReactionsModule = null;
 
     /** @type {boolean} Flag to prevent footer overlap check from overriding keyboard adjustment */
     this.isKeyboardAdjustmentActive = false;
@@ -125,9 +137,9 @@ export class RobotCompanion {
     const mood = this.calculateMood();
     this.stateManager.setState({ mood });
 
-    // ensure we have a name-based identity before any chat interaction
-    // this will prompt or read from URL if necessary
-    this.ensureName().catch(() => {});
+    // Only hydrate identity from the URL here. Agent/network sync is deferred
+    // until the first real AI interaction.
+    this.hydrateNameFromUrl();
 
     // Legacy properties for backward compatibility (deprecated)
     /** @type {import('/content/core/types.js').RobotAnalytics} */
@@ -211,63 +223,147 @@ export class RobotCompanion {
     return this._agentService;
   }
 
+  hydrateNameFromUrl() {
+    return hydrateRobotUserNameFromUrl().name;
+  }
+
+  async syncIdentityToAgentService(agentService = null) {
+    const currentName = getRobotUserName();
+    if (!currentName || this._agentIdentitySyncedFor === currentName) {
+      return currentName;
+    }
+
+    try {
+      const service = agentService || (await this.getAgentService());
+      service?.setUserName?.(currentName);
+      const rememberPromise = service?.remember?.('name', currentName);
+      if (rememberPromise && typeof rememberPromise.catch === 'function') {
+        await rememberPromise.catch(() => {});
+      }
+      this._agentIdentitySyncedFor = currentName;
+      return currentName;
+    } catch {
+      return currentName;
+    }
+  }
+
+  async ensureIntelligenceModule() {
+    if (this.intelligenceModule) {
+      return this.intelligenceModule;
+    }
+
+    if (!this._intelligenceModulePromise) {
+      this._intelligenceModulePromise = import(
+        './modules/robot-intelligence.js'
+      )
+        .then(({ RobotIntelligence }) => {
+          this.intelligenceModule = new RobotIntelligence(this);
+          return this.intelligenceModule;
+        })
+        .catch((error) => {
+          this._intelligenceModulePromise = null;
+          throw error;
+        });
+    }
+
+    return this._intelligenceModulePromise;
+  }
+
+  async ensureInteractiveModules() {
+    if (this._interactiveModulesPromise) {
+      return this._interactiveModulesPromise;
+    }
+
+    this._interactiveModulesPromise = Promise.all([
+      this.collisionModule
+        ? Promise.resolve(this.collisionModule)
+        : import('./modules/robot-collision.js').then(({ RobotCollision }) => {
+            this.collisionModule = new RobotCollision(this);
+            return this.collisionModule;
+          }),
+      this.emotionsModule
+        ? Promise.resolve(this.emotionsModule)
+        : import('./modules/robot-emotions.js').then(({ RobotEmotions }) => {
+            this.emotionsModule = new RobotEmotions(this);
+            return this.emotionsModule;
+          }),
+      this.contextReactionsModule
+        ? Promise.resolve(this.contextReactionsModule)
+        : import('./modules/robot-context-reactions.js').then(
+            ({ RobotContextReactions }) => {
+              this.contextReactionsModule = new RobotContextReactions(this);
+              return this.contextReactionsModule;
+            },
+          ),
+    ])
+      .then(() => {})
+      .catch((error) => {
+        this._interactiveModulesPromise = null;
+        throw error;
+      });
+
+    return this._interactiveModulesPromise;
+  }
+
+  async prepareAgentFeatures() {
+    if (!this._agentFeaturesPromise) {
+      this._agentFeaturesPromise = Promise.all([
+        this.ensureIntelligenceModule(),
+        this.getAgentService(),
+      ])
+        .then(([, agentService]) => agentService)
+        .catch((error) => {
+          this._agentFeaturesPromise = null;
+          throw error;
+        });
+    }
+
+    const agentService = await this._agentFeaturesPromise;
+    await this.syncIdentityToAgentService(agentService);
+    return agentService;
+  }
+
   /**
    * Ensure a user name is present, falling back to URL parameter and
    * prompting if necessary.  If a new name is chosen we'll also update
    * the query string so the link can be shared between browsers.
    */
-  async setUserName(name) {
-    if (typeof window === 'undefined') return '';
-    const norm = String(name || '')
-      .trim()
-      .replace(/[^A-Za-z0-9_-]/g, '')
-      .slice(0, 120);
+  async setUserName(name, options = {}) {
+    const { persist = true } = options;
+    const { name: norm } = writeRobotUserName(name, { syncUrl: true });
     if (!norm) return '';
 
-    window.ROBOT_USER_NAME = norm;
-    window.ROBOT_NO_COOKIES = true;
+    this._agentIdentitySyncedFor = '';
 
-    try {
-      const svc = await this.getAgentService();
-      svc.setUserName(norm);
-      await svc.remember('name', norm).catch(() => {});
-    } catch {
-      /* ignore */
-    }
-
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set('name', norm);
-      window.history.replaceState(null, '', url);
-    } catch {
-      /* ignore */
+    if (persist) {
+      try {
+        await this.prepareAgentFeatures();
+      } catch {
+        /* ignore */
+      }
     }
 
     return norm;
   }
 
-  async ensureName() {
-    if (typeof window === 'undefined') return '';
-    const existing = window.ROBOT_USER_NAME;
-    if (existing) return existing;
+  async clearUserName(options = {}) {
+    const { clearUrl = true } = options;
+    clearRobotUserName({ clearUrl });
+    this._agentIdentitySyncedFor = '';
 
-    // check URL param ?name=
     try {
-      const url = new URL(window.location.href);
-      const param = url.searchParams.get('name') || '';
-      const norm = param
-        .trim()
-        .replace(/[^A-Za-z0-9_-]/g, '')
-        .slice(0, 120);
-      if (norm) {
-        return this.setUserName(norm);
-      }
+      this._agentService?.clearUserIdentity?.({ clearUrl: false });
     } catch {
       /* ignore */
     }
 
-    // Name wird jetzt als Inline-Eingabe im Chat gesetzt
     return '';
+  }
+
+  async ensureName() {
+    const existing = getRobotUserName();
+    if (existing) return existing;
+    return this.hydrateNameFromUrl();
   }
 
   getFooterElement() {
@@ -294,7 +390,7 @@ export class RobotCompanion {
 
   checkTypewriterCollision() {
     const typeWriter = this.getTypewriterElement();
-    if (!typeWriter || !this.dom?.container) return;
+    if (!typeWriter || !this.dom?.container || !this.collisionModule) return;
 
     const twRect = typeWriter.getBoundingClientRect();
     const robotWidth = 80;
@@ -422,7 +518,7 @@ export class RobotCompanion {
 
       this.dom.container.style.bottom = `${Math.round(anchoredBottom)}px`;
 
-      if (!this.chatModule.isOpen) {
+      if (!this.chatModule.isOpen && this.collisionModule) {
         this.collisionModule.scanForCollisions();
       }
       ticking = false;
@@ -670,7 +766,7 @@ export class RobotCompanion {
         this._clearTimeout(this._hydrationFallbackTimer);
         this._hydrationFallbackTimer = null;
       }
-      this.hydrateInteractiveFeatures();
+      void this.hydrateInteractiveFeatures();
     };
 
     if (
@@ -700,17 +796,21 @@ export class RobotCompanion {
     hydrateNow();
   }
 
-  hydrateInteractiveFeatures() {
+  async hydrateInteractiveFeatures() {
     if (this.isHydrated || !this.dom.container) return;
     this.isHydrated = true;
     this.dom.container.dataset.hydrated = 'true';
 
-    if (!this.intelligenceModule) {
-      this.intelligenceModule = new RobotIntelligence(this);
+    try {
+      await this.ensureInteractiveModules();
+    } catch (error) {
+      log.warn('RobotCompanion: interactive module hydration failed', error);
     }
 
     this.attachEvents();
-    this.setupFooterOverlapCheck();
+    if (this.collisionModule) {
+      this.setupFooterOverlapCheck();
+    }
     this.setupMobileViewportHandler();
 
     this._setTimeout(() => {
@@ -725,13 +825,15 @@ export class RobotCompanion {
 
     // Start context-aware reactions monitoring
     this._setTimeout(() => {
-      this.contextReactionsModule.startMonitoring();
-      this.contextReactionsModule.setupIdleReaction(60000);
+      this.contextReactionsModule?.startMonitoring?.();
+      this.contextReactionsModule?.setupIdleReaction?.(60000);
     }, 3000);
 
-    this._setTimeout(() => {
-      this.animationModule.startTypeWriterKnockbackAnimation();
-    }, 50);
+    if (this.collisionModule) {
+      this._setTimeout(() => {
+        this.animationModule.startTypeWriterKnockbackAnimation();
+      }, 50);
+    }
 
     this._onHeroTypingEnd = () => {
       try {
@@ -881,7 +983,7 @@ export class RobotCompanion {
 
         // When returning to home via SPA navigation, re-trigger entry animation.
         // Skip initial load (prev === undefined) — the hydration callback handles that.
-        if (mapped === 'home' && prev !== undefined) {
+        if (mapped === 'home' && prev !== undefined && this.collisionModule) {
           this._setTimeout(() => {
             this.animationModule.startTypeWriterKnockbackAnimation();
           }, 300);
@@ -906,6 +1008,11 @@ export class RobotCompanion {
     this.collisionModule?.destroy();
     this.contextReactionsModule?.destroy();
     if (this.emotionsModule?.destroy) this.emotionsModule.destroy();
+    this._imageUploadHydrated = false;
+    this._agentFeaturesPromise = null;
+    this._intelligenceModulePromise = null;
+    this._interactiveModulesPromise = null;
+    this._agentIdentitySyncedFor = '';
 
     if (this._uiUnsubscribe) {
       this._uiUnsubscribe();
@@ -1177,6 +1284,43 @@ export class RobotCompanion {
     this.setupChatInputViewportHandlers();
   }
 
+  async ensureImageUploadHydrated() {
+    if (this._imageUploadHydrated) return true;
+
+    const imageUploadInput = /** @type {HTMLInputElement|null} */ (
+      document.getElementById('robot-image-upload')
+    );
+    if (!imageUploadInput) return false;
+
+    const _onImageChange = (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        this.chatModule.handleImageUpload(file);
+        imageUploadInput.value = '';
+      }
+    };
+
+    imageUploadInput.addEventListener('change', _onImageChange);
+    this._eventListeners.dom.push({
+      target: imageUploadInput,
+      event: 'change',
+      handler: _onImageChange,
+    });
+
+    this._imageUploadHydrated = true;
+    return true;
+  }
+
+  async openImageUploadPicker() {
+    const isReady = await this.ensureImageUploadHydrated();
+    if (!isReady) return;
+
+    const imageUploadInput = /** @type {HTMLInputElement|null} */ (
+      document.getElementById('robot-image-upload')
+    );
+    imageUploadInput?.click();
+  }
+
   attachEvents() {
     const _onAvatarClick = () => this.handleAvatarClick();
     this.dom.avatar.addEventListener('click', _onAvatarClick);
@@ -1293,31 +1437,17 @@ export class RobotCompanion {
       });
     }
 
-    // Image upload handling
-    const imageUploadInput = document.getElementById('robot-image-upload');
     const imageBtn = document.getElementById('robot-image-btn');
 
-    if (imageBtn && imageUploadInput) {
-      const _onImageBtnClick = () => imageUploadInput.click();
+    if (imageBtn) {
+      const _onImageBtnClick = () => {
+        void this.openImageUploadPicker();
+      };
       imageBtn.addEventListener('click', _onImageBtnClick);
       this._eventListeners.dom.push({
         target: imageBtn,
         event: 'click',
         handler: _onImageBtnClick,
-      });
-
-      const _onImageChange = (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          this.chatModule.handleImageUpload(file);
-          /** @type {HTMLInputElement} */ (imageUploadInput).value = ''; // Reset for re-upload
-        }
-      };
-      imageUploadInput.addEventListener('change', _onImageChange);
-      this._eventListeners.dom.push({
-        target: imageUploadInput,
-        event: 'change',
-        handler: _onImageChange,
       });
     }
 

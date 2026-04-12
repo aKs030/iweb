@@ -30,7 +30,6 @@ export function createErrorBoundary(ReactInstance) {
         })
         .catch(() => {
           // Fallback if logger fails to load
-          /* eslint-disable-next-line no-console */
           console.error('[ErrorBoundary] Caught error:', error, errorInfo);
         });
     }

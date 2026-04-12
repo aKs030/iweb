@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('template-injector');
 /**
  * Template Injection Utilities — Edge-Cached Section Streaming
  *
@@ -69,7 +72,7 @@ async function loadSectionCached(context, sectionPath) {
   try {
     cachedItem = await kv.get(kvKey, 'json');
   } catch (err) {
-    console.warn(`Section KV error for ${kvKey}:`, err);
+    log.warn(`Section KV error for ${kvKey}:`, err);
   }
 
   const now = Date.now();
@@ -105,7 +108,7 @@ async function refreshSectionInKV(context, kvKey, fetchUrl) {
     }
     return html;
   } catch (err) {
-    console.error(`Section cache refresh failed for ${kvKey}:`, err);
+    log.error(`Section cache refresh failed for ${kvKey}:`, err);
     return '';
   }
 }

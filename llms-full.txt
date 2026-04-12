@@ -29,7 +29,7 @@ Abdulkerim Sesli builds modern web experiences that combine visual quality, real
 - Fast, stable interfaces with measurable performance targets
 - Production-ready architecture over prototype-only patterns
 - Maintainability through clear module boundaries
-- Practical AI integration (search, assistant flows, retrieval support)
+- Practical AI integration (search, assistant flows, memory-backed UX)
 - Accessibility and progressive enhancement
 
 ### 3.2 Core technology profile
@@ -43,20 +43,20 @@ Abdulkerim Sesli builds modern web experiences that combine visual quality, real
   - Cloudflare Pages Functions
   - Worker-compatible API route design
 - AI integration:
-  - Retrieval-augmented search patterns
+  - Deterministic site search patterns
   - LLM-backed assistant/chat capabilities
   - Structured machine-readable index artifacts
 - Quality tooling:
-  - ESLint + Prettier
-  - GitHub-based workflow
-  - Static analysis and content indexing checks
+  - npm-based workflow
+  - GitHub-based preview deployment
+  - Static asset and content indexing checks
 
 ## 4) Services Offered
 
 - Full-stack web application delivery
 - Interactive 3D and visual web experiences
 - Performance optimization (Core Web Vitals, rendering, payload strategy)
-- AI feature integration (RAG search, assistant UX, endpoint orchestration)
+- AI feature integration (site search, assistant UX, endpoint orchestration)
 - Technical SEO and discoverability hardening
 - Architecture advisory and implementation support
 

@@ -10,13 +10,12 @@
 - `foundation.css`: globale CSS-Variablen, Theme-Overrides, Safe-Area/Layout-Grundlagen und Runtime-Defaults.
 - `utilities.css`: kleine handgepflegte Utility-Sammlung fuer wiederkehrende Layout-Helfer.
 - `main.css`: globale Komponenten-, Utility- und Basis-Styles fuer die App-Shell.
-- `admin.css`: standalone Admin-Shell in der `overrides`-Layer.
 - `overlays.css`: globale Overlay-Regeln in der `components`-Layer.
 
 ## Workflow
 
 - `npm run dev` -> starts the local Cloudflare Pages development server
-- `npm run qa` -> validates formatting and linting
+- `npm run sync` -> refreshes generated frontend artifacts when dependencies or templates change
 - Global CSS now uses native cascade layers (`foundation`, `base`, `utilities`, `components`, `animations`) instead of generation or selector-order coupling.
 
 ## Theme switching
@@ -29,10 +28,6 @@
 
 - Keep utilities intentionally small and only for repeated layout patterns.
 - Prefer semantic component classes first; add utility classes only when reuse is obvious.
-
-## Quality gates
-
-- `npm run qa`
 
 ## Team rule
 

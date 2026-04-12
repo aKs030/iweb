@@ -4,6 +4,8 @@
  * @version 1.0.0
  */
 
+import { SITE_NAME, SITE_OWNER_NAME } from '../config/site-seo.js';
+
 // ============================================================================
 // TEXT NORMALIZATION
 // ============================================================================
@@ -117,8 +119,12 @@ export function sanitizeDiscoveryText(value, fallback = '') {
  * @returns {string} Text without branding
  */
 export function stripBranding(input) {
-  const BRAND_REGEX =
-    /\s*(?:[—–-]\s*Abdulkerim Sesli|\|\s*Abdulkerim Sesli|Abdulkerim\s*—\s*Digital Creator Portfolio)\s*$/i;
+  const BRAND_REGEX = new RegExp(
+    `\\s*(?:[—–-]\\s*${escapeRegExp(SITE_OWNER_NAME)}|\\|\\s*${escapeRegExp(
+      SITE_OWNER_NAME,
+    )}|${escapeRegExp(SITE_NAME)})\\s*$`,
+    'i',
+  );
   return String(input || '')
     .replace(BRAND_REGEX, '')
     .trim();

@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('_search-service');
 import {
   buildBlogPath,
   buildProjectAppPath,
@@ -18,12 +21,7 @@ import {
   normalizeForMatch,
 } from '../../content/core/text-utils.js';
 
-export const SEARCH_TIMEOUT_MS = 30000;
 export const SEARCH_RESPONSE_CACHE_CONTROL = 'public, max-age=300';
-export const SYSTEM_PROMPT = `Du bist der Such-Assistent auf der Website von Abdulkerim Sesli.
-Antworte auf Deutsch, professionell, präzise und lösungsorientiert in 2-4 Sätzen.
-Binde Links als relative Pfade (z. B. [Galerie](/gallery/)) direkt im Fließtext per Markdown ein.
-Verzichte auf Aufzählungslisten, Linkblöcke und Wiederholungen. Formuliere einladend.`;
 
 const TECHNICAL_RESULT_PATHS = new Set([
   '/llms.txt',
@@ -200,15 +198,6 @@ function getSearchableKeywordText(item) {
     .join(' ');
 }
 
-export function withSearchTimeout(promise, ms = SEARCH_TIMEOUT_MS) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout')), ms),
-    ),
-  ]);
-}
-
 function cleanSnippetText(rawText) {
   let text = String(rawText || '');
   if (!text) return '';
@@ -278,53 +267,6 @@ function extractSnippet(item, maxLength = RESULT_DESCRIPTION_MAX_LENGTH) {
 
   const raw = cleanSnippetText(mergedContent || fallbackText || '');
   return trimSnippetLength(raw, maxLength);
-}
-
-export function extractAiResult(item) {
-  const rawPath =
-    typeof item?.filename === 'string'
-      ? item.filename
-      : typeof item?.metadata?.filename === 'string'
-        ? item.metadata.filename
-        : typeof item?.url === 'string'
-          ? item.url
-          : '';
-
-  const attrs =
-    item?.attributes && typeof item.attributes === 'object'
-      ? item.attributes
-      : {};
-
-  const url = normalizeUrl(rawPath);
-  const fallbackTitle = extractTitle(rawPath, url);
-  const title = chooseBestTitle(
-    { title: attrs.title || item?.title },
-    fallbackTitle,
-    url,
-  );
-  const category =
-    typeof attrs.category === 'string' && attrs.category.trim()
-      ? attrs.category.trim()
-      : detectCategory(url);
-  const attrsDescription = trimSnippetLength(
-    cleanSnippetText(
-      typeof attrs.description === 'string' ? attrs.description : '',
-    ),
-    RESULT_DESCRIPTION_MAX_LENGTH,
-  );
-  const description =
-    attrsDescription ||
-    extractSnippet(item) ||
-    buildFallbackDescription(url, title, category);
-  const score = Number.isFinite(item?.score) ? Number(item.score) : 0;
-
-  return {
-    title,
-    url,
-    description,
-    category,
-    score,
-  };
 }
 
 function hasMarkHighlight(value) {
@@ -722,6 +664,21 @@ function buildGroundedSummary(query, results) {
 }
 
 export async function loadDeterministicSearchDataset(context) {
+  const kv = context.env && context.env.SITEMAP_CACHE_KV;
+  const CACHE_KEY = 'search-dataset-v1';
+
+  if (kv) {
+    try {
+      const cached = await kv.get(CACHE_KEY, 'json');
+      if (cached && Array.isArray(cached) && cached.length > 0) {
+        return cached;
+      }
+    } catch (err) {
+      log.warn('Failed to read search dataset from KV:', err);
+    }
+  }
+
+  // Fallback to memory cache pattern for local dev or single request deduplication
   const now = Date.now();
   if (deterministicSearchCache && now < deterministicSearchCacheExpiresAt) {
     return deterministicSearchCache;
@@ -763,6 +720,14 @@ export async function loadDeterministicSearchDataset(context) {
     deterministicSearchCache = dataset;
     deterministicSearchCacheExpiresAt =
       Date.now() + DETERMINISTIC_SEARCH_CACHE_TTL_MS;
+
+    if (kv && context.waitUntil) {
+      context.waitUntil(
+        kv.put(CACHE_KEY, JSON.stringify(dataset), {
+          expirationTtl: Math.floor(DETERMINISTIC_SEARCH_CACHE_TTL_MS / 1000),
+        }).catch(err => log.warn('Failed to write search dataset to KV:', err))
+      );
+    }
 
     return dataset;
   })().finally(() => {

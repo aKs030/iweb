@@ -6,7 +6,21 @@
  */
 
 import { createLogger } from '../../core/logger.js';
+import {
+  buildAgentResponsePayload,
+  normalizeAgentResponsePayload,
+} from '../../core/ai-agent-contracts.js';
+import { createUserId, normalizeUserId } from '#core/user-id.js';
 import { executeTool } from './modules/tool-executor.js';
+import {
+  clearRobotUserName,
+  getRobotUserName,
+  isNameBasedUserId,
+  toNameBasedUserId,
+  writeRobotUserName,
+  syncRobotUserNameFromUserId,
+  hydrateRobotUserNameFromUrl,
+} from './modules/name-identity.js';
 
 const log = createLogger('AIAgentService');
 
@@ -36,92 +50,46 @@ function consumeUrlUpdatedFlag() {
 
 // ─── User ID & History ──────────────────────────────────────────────────────────
 
-function normalizeUserId(raw) {
-  const value = String(raw || '').trim();
-  if (!value || value === 'anonymous') return '';
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
-  return value;
-}
-
-function createUserId(prefix = 'anon') {
-  if (
-    typeof crypto !== 'undefined' &&
-    typeof crypto.randomUUID === 'function'
-  ) {
-    return `${prefix}_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
-  }
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
 function persistUserId(id, { syncUrl = true } = {}) {
   const value = normalizeUserId(id);
   if (!value) return '';
   runtimeUserId = value;
 
-  // Name-basierte Sessions werden nur per URL (name=...) geteilt.
-  // Es wird absichtlich NICHT in localStorage/cookies persistiert.
-  if (syncUrl && typeof window !== 'undefined' && value.startsWith('name_')) {
-    try {
-      const nameValue = value.slice(5);
-      if (!nameValue) return value;
-      const url = new URL(window.location.href);
-      if (url.searchParams.get('name') !== nameValue) {
-        url.searchParams.set('name', nameValue);
-        window.history.replaceState(null, '', url.toString());
-        log.debug('name-based identity written to URL', nameValue);
-        urlUpdatedFlag = true;
-      }
-    } catch {
-      /* ignore */
+  if (syncUrl && isNameBasedUserId(value)) {
+    const { name, urlUpdated } = syncRobotUserNameFromUserId(value, {
+      syncUrl: true,
+    });
+    if (name && urlUpdated) {
+      log.debug('name-based identity written to URL', name);
+      urlUpdatedFlag = true;
     }
   }
 
   return value;
 }
 
-// Parse and normalize a `?name=` query parameter from the current URL.
-function extractNameFromUrl() {
-  if (typeof window === 'undefined') return '';
-  try {
-    const url = new URL(window.location.href);
-    const param = url.searchParams.get('name') || '';
-    return normalizeUserId(param.trim());
-  } catch {
-    return '';
+function syncNameIdentity(rawName, { syncUrl = true } = {}) {
+  const { name, urlUpdated } = writeRobotUserName(rawName, { syncUrl });
+  if (!name) return '';
+  if (urlUpdated) {
+    log.debug('name-based identity written to URL', name);
+    urlUpdatedFlag = true;
   }
+  return persistUserId(toNameBasedUserId(name), { syncUrl: false });
 }
 
 function getUserId() {
   // reset flag at start of lookup
   urlUpdatedFlag = false;
-  // if a global name is supplied, it takes absolute precedence
-  if (typeof window !== 'undefined') {
-    let globalName = window.ROBOT_USER_NAME;
 
-    // fall back to URL parameter if no global set yet; useful when the page
-    // is opened with ?name=foo and the constructor hasn't run ensureName yet
-    if (!globalName) {
-      const urlName = extractNameFromUrl();
-      if (urlName) {
-        log.debug('got name from URL parameter', urlName);
-        globalName = urlName;
-        window.ROBOT_USER_NAME = urlName;
-        window.ROBOT_NO_COOKIES = true;
-      }
-    }
-
-    if (globalName) {
-      const norm = normalizeUserId(globalName);
-      if (norm) {
-        // don't double-prefix if the string already looks like a full id
-        const id = /^(?:name_|jwt_|u_|anon_)/.test(norm)
-          ? norm
-          : `name_${norm}`;
-        return persistUserId(id, { syncUrl: true });
-      }
-    }
+  const globalName = getRobotUserName() || hydrateRobotUserNameFromUrl().name;
+  if (globalName) {
+    return syncNameIdentity(globalName, { syncUrl: true });
   }
 
+  if (isNameBasedUserId(runtimeUserId)) {
+    runtimeUserId = '';
+  }
   if (normalizeUserId(runtimeUserId)) return runtimeUserId;
 
   return persistUserId(createUserId('anon'), { syncUrl: false });
@@ -195,16 +163,7 @@ async function parseSSEStream(response, callbacks = {}) {
           data.arguments?.key === 'name' &&
           data.arguments?.value
         ) {
-          const norm = normalizeUserId(data.arguments.value);
-          if (norm && typeof window !== 'undefined') {
-            /** @type {any} */ (window).ROBOT_USER_NAME = norm;
-            /** @type {any} */ (window).ROBOT_NO_COOKIES = true;
-            try {
-              const url = new URL(window.location.href);
-              url.searchParams.set('name', norm);
-              window.history.replaceState(null, '', url);
-            } catch {}
-          }
+          syncNameIdentity(data.arguments.value, { syncUrl: true });
         }
         break;
       case 'status':
@@ -245,14 +204,11 @@ async function parseSSEStream(response, callbacks = {}) {
 
 // ─── Core API Call ──────────────────────────────────────────────────────────────
 
-const mkResult = (text, extra = {}) => ({
-  text,
-  toolCalls: [],
-  hasMemory: false,
-  hasImage: false,
-  toolResults: [],
-  ...extra,
-});
+const mkResult = (text, extra = {}) =>
+  buildAgentResponsePayload({
+    text,
+    ...extra,
+  });
 
 const pickBestText = (finalText, streamedText) => {
   const a = String(finalText || '').trim();
@@ -418,10 +374,10 @@ async function callAgent(
         stream: false,
         signal,
       });
-      return {
+      return buildAgentResponsePayload({
         ...fallback,
         urlUpdated: Boolean(fallback?.urlUpdated || urlWasUpdated),
-      };
+      });
     }
 
     const text =
@@ -431,20 +387,18 @@ async function callAgent(
     addToHistory('user', payload.prompt);
     if (text) addToHistory('assistant', text);
 
-    return {
+    return buildAgentResponsePayload({
+      ...finalMessage,
       text,
-      toolCalls: finalMessage?.toolCalls || [],
-      hasMemory: finalMessage?.hasMemory || false,
-      hasImage: finalMessage?.hasImage || false,
       toolResults,
       urlUpdated: urlWasUpdated,
-    };
+    });
   }
 
   // ── JSON response ──
   let result;
   try {
-    result = await response.json();
+    result = normalizeAgentResponsePayload(await response.json());
   } catch (err) {
     const txt = await response.text().catch(() => '');
     log.error('[AIAgent] JSON parse failed on non-SSE response', err, txt);
@@ -469,28 +423,16 @@ async function callAgent(
         tc.arguments?.key === 'name' &&
         tc.arguments?.value
       ) {
-        const norm = normalizeUserId(tc.arguments.value);
-        if (norm) {
-          window.ROBOT_USER_NAME = norm;
-          window.ROBOT_NO_COOKIES = true;
-          try {
-            const url = new URL(window.location.href);
-            url.searchParams.set('name', norm);
-            window.history.replaceState(null, '', url);
-          } catch {}
-        }
+        syncNameIdentity(tc.arguments.value, { syncUrl: true });
       }
     }
   }
 
-  return {
-    text: result.text || '',
-    toolCalls: result.toolCalls || [],
-    hasMemory: result.hasMemory || false,
-    hasImage: result.hasImage || false,
+  return buildAgentResponsePayload({
+    ...result,
     toolResults,
     urlUpdated: urlWasUpdated,
-  };
+  });
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────────
@@ -504,11 +446,15 @@ async function callAgent(
  * @returns {string} normalized user id or empty string if invalid
  */
 export function setUserName(name) {
-  const normalized = normalizeUserId(name);
-  if (!normalized) return '';
-  const userId = `name_${normalized}`;
-  persistUserId(userId, { syncUrl: true });
-  return userId;
+  return syncNameIdentity(name, { syncUrl: true });
+}
+
+export function clearUserIdentity({ clearUrl = true } = {}) {
+  runtimeUserId = '';
+  if (clearUrl) {
+    clearRobotUserName({ clearUrl: true });
+  }
+  return '';
 }
 
 export { getUserId };
@@ -529,6 +475,10 @@ export class AIAgentService {
    */
   setUserName(name, opts) {
     return setUserName(name, opts);
+  }
+
+  clearUserIdentity(options) {
+    return clearUserIdentity(options);
   }
 
   /**

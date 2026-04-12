@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('comments');
 /**
  * API function to handle blog comments using Cloudflare D1
  */
@@ -31,7 +34,7 @@ export async function onRequestGet(context) {
 
     return jsonResponse({ comments: results });
   } catch (error) {
-    console.error('Error fetching comments:', error);
+    log.error('Error fetching comments:', error);
     return errorJsonResponse('Internal Server Error', {
       status: 500,
     });
@@ -87,7 +90,7 @@ export async function onRequestPost(context) {
       { status: 201 },
     );
   } catch (error) {
-    console.error('Error adding comment:', error);
+    log.error('Error adding comment:', error);
     return errorJsonResponse('Internal Server Error', {
       status: 500,
     });

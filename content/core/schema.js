@@ -12,6 +12,12 @@ import { createLogger } from './logger.js';
 import { scheduleIdleTask } from './async-utils.js';
 import { ENV } from '../config/env.config.js';
 import {
+  SITE_PERSON_DISAMBIGUATING_DESCRIPTION,
+  SITE_WEBSITE_ALT_NAME,
+  SITE_WEBSITE_DESCRIPTION,
+  SITE_OWNER_NAME,
+} from '../config/site-seo.js';
+import {
   DEFAULT_IMAGE_DIMENSIONS,
   PERSON_FALLBACK_ICON,
   buildImageObject,
@@ -234,8 +240,7 @@ export function generateSchemaGraph(
       copyrightNotice: `© ${currentYear} ${brandData.name}`,
     },
     description: pageData.description,
-    disambiguatingDescription:
-      'Persönliche Website von Abdulkerim Sesli (auch bekannt als Abdul Sesli, Webentwickler und Fotograf); nicht identisch mit dem Fußballspieler Abdülkerim Bardakcı und nicht mit Sesli-Kitap-Portalen.',
+    disambiguatingDescription: SITE_PERSON_DISAMBIGUATING_DESCRIPTION,
     sameAs: brandData.sameAs,
     knowsLanguage: brandData.knowsLanguage?.map((lang) => ({
       '@type': 'Language',
@@ -311,10 +316,9 @@ export function generateSchemaGraph(
     '@type': 'WebSite',
     '@id': ID.website,
     url: ENV.BASE_URL,
-    name: 'Abdulkerim Sesli',
-    alternateName: 'Abdulkerim Sesli Portfolio',
-    description:
-      'Portfolio-Website mit technischen Artikeln, Bildern, Videos und Projektinhalten von Abdulkerim Sesli.',
+    name: SITE_OWNER_NAME,
+    alternateName: SITE_WEBSITE_ALT_NAME,
+    description: SITE_WEBSITE_DESCRIPTION,
     keywords: pageKeywords.join(', '),
     inLanguage: 'de-DE',
     publisher: { '@id': ID.org },

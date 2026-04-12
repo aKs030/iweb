@@ -178,6 +178,6 @@ Ziele:
 
 ## Weitere Ressourcen
 
-- [Projekt-Dokumentation](../../../docs/DOCUMENTATION.md)
+- [Projekt-Dokumentation](../../../README.md)
 - [Web.dev: Optimize Images](https://web.dev/fast/#optimize-your-images)
 - [Squoosh Documentation](https://github.com/GoogleChromeLabs/squoosh)

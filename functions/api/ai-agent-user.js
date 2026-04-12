@@ -1,3 +1,11 @@
+import { createLogger } from '../../content/core/logger.js';
+import {
+  createProfileState,
+  createRecoveryState,
+} from '../../content/core/profile-state.js';
+import { getRobotMemoryRank } from '../../content/core/robot-memory-schema.js';
+
+const log = createLogger('ai-agent-user');
 /**
  * Cloudflare Pages Function – POST /api/ai-agent-user
  * Profile and memory operations for the robot companion.
@@ -5,97 +13,49 @@
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
 import { jsonResponse } from './_response.js';
-import {
-  deleteAdminNameMapping,
-  deleteAdminUserIndex,
-  syncAdminUserIndex,
-  upsertAdminNameMapping,
-} from './admin/_admin-index.js';
+import { parseInteger } from '../_shared/number-utils.js';
 import {
   USER_ID_HEADER_NAME,
-  normalizeUserId as normalizeSharedUserId,
+  normalizeUserId,
 } from './_user-identity.js';
 import { findRecoveryCandidates } from './_profile-recovery.js';
+import { pickAutoRecoveryCandidate } from './_profile-recovery.js';
 import {
   CACHE_CONTROL_NO_STORE,
   mergeHeaders,
 } from '../_shared/http-headers.js';
 
-const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
-const DEFAULT_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
-const DEFAULT_MEMORY_RETENTION_DAYS = 180;
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
-const MEMORY_KEY_METADATA = {
-  name: { category: 'identity', priority: 100 },
-  preference: { category: 'preference', priority: 90 },
-  occupation: { category: 'profile', priority: 88 },
-  company: { category: 'profile', priority: 86 },
-  location: { category: 'profile', priority: 84 },
-  language: { category: 'profile', priority: 82 },
-  interest: { category: 'interest', priority: 80 },
-  skill: { category: 'ability', priority: 78 },
-  goal: { category: 'goal', priority: 76 },
-  project: { category: 'project', priority: 74 },
-  birthday: { category: 'identity', priority: 72 },
-  dislike: { category: 'preference', priority: 70 },
-  availability: { category: 'availability', priority: 68 },
-  timezone: { category: 'availability', priority: 66 },
-  note: { category: 'note', priority: 40 },
-};
-const DEFAULT_MEMORY_CATEGORY = 'note';
-const DEFAULT_MEMORY_PRIORITY = 20;
-const SINGLETON_MEMORY_KEYS = new Set([
-  'name',
-  'location',
-  'occupation',
-  'company',
-  'language',
-  'birthday',
-  'timezone',
-  'availability',
-]);
+import {
+  FALLBACK_MEMORY_PREFIX,
+  DEFAULT_MEMORY_RETENTION_DAYS,
+  DAY_IN_MS,
+  MEMORY_KEY_METADATA,
+  DEFAULT_MEMORY_CATEGORY,
+  DEFAULT_MEMORY_PRIORITY,
+  SINGLETON_MEMORY_KEYS,
+  getMemoryRetentionMs,
+  getMemoryKey,
+  getMemoryKV,
+  normalizeMemoryText,
+  normalizeMemoryKey,
+  resolveMemoryMetadata,
+  normalizeMemoryEntry,
+  compactMemories,
+  compactMemoryEntries,
+  loadFallbackMemories,
+  saveFallbackMemories,
+  scoreFallbackMemoryEntry,
+} from './_ai-agent-memory-store.js';
 const USERNAME_LOOKUP_PREFIX = 'username:';
 const USERNAME_LOOKUP_CONFLICT = '__conflict__';
+const VECTORIZE_METADATA_DELETE_METHODS = Object.freeze([
+  'deleteByMetadata',
+  'deleteByFilter',
+  'deleteByMetadataFilter',
+]);
 
 function jsonWithHeaders(payload, options = {}) {
   return jsonResponse(payload, options);
-}
-
-function parseInteger(value, fallback, { min = 1, max = 3650 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ''), 10);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(max, Math.max(min, parsed));
-}
-
-function normalizeUserId(raw) {
-  return normalizeSharedUserId(raw);
-}
-
-export function getMemoryKV(env) {
-  if (env?.JULES_MEMORY_KV?.get && env?.JULES_MEMORY_KV?.delete) {
-    return env.JULES_MEMORY_KV;
-  }
-  if (env?.RATE_LIMIT_KV?.get && env?.RATE_LIMIT_KV?.delete) {
-    return env.RATE_LIMIT_KV;
-  }
-  if (env?.SITEMAP_CACHE_KV?.get && env?.SITEMAP_CACHE_KV?.delete) {
-    return env.SITEMAP_CACHE_KV;
-  }
-  return null;
-}
-
-function normalizeMemoryText(value) {
-  return String(value || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function normalizeMemoryKey(rawKey) {
-  return String(rawKey || 'note')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9_-]/g, '')
-    .slice(0, 30);
 }
 
 function normalizeLookupName(rawName) {
@@ -110,17 +70,7 @@ function getUserNameLookupKey(name) {
   return normalized ? `${USERNAME_LOOKUP_PREFIX}${normalized}` : '';
 }
 
-function getMemoryRetentionMs(env) {
-  const days = parseInteger(
-    env?.ROBOT_MEMORY_RETENTION_DAYS,
-    DEFAULT_MEMORY_RETENTION_DAYS,
-  );
-  return days * DAY_IN_MS;
-}
 
-function getMemoryKey(userId) {
-  return `${FALLBACK_MEMORY_PREFIX}${userId}`;
-}
 
 function getLatestMemoryEntry(entries, key) {
   const normalizedKey = normalizeMemoryKey(key);
@@ -145,146 +95,73 @@ export function buildProfileInfo(userId, memories = []) {
   const name = normalizeMemoryText(
     getLatestMemoryEntry(memories, 'name')?.value,
   );
-  return {
+  return createProfileState({
     userId: normalizeUserId(userId),
     name,
-    status: name ? 'identified' : 'anonymous',
-    label: name ? `Profil: ${name}` : 'Profil: neu',
-  };
+  });
 }
 
-function resolveMemoryMetadata(key, category, priority) {
-  const normalizedKey = normalizeMemoryKey(key) || 'note';
-  const fallback = MEMORY_KEY_METADATA[normalizedKey] || {
-    category: DEFAULT_MEMORY_CATEGORY,
-    priority: DEFAULT_MEMORY_PRIORITY,
-  };
-  const normalizedCategory =
-    normalizeMemoryText(category || fallback.category).toLowerCase() ||
-    fallback.category;
-  const numericPriority = Number.parseInt(String(priority ?? ''), 10);
-  const normalizedPriority = Number.isFinite(numericPriority)
-    ? Math.min(100, Math.max(0, numericPriority))
-    : fallback.priority;
 
+
+
+
+function buildDeferredVectorizeStats(env) {
   return {
-    key: normalizedKey,
-    category: normalizedCategory,
-    priority: normalizedPriority,
+    available: Boolean(env?.JULES_MEMORY),
+    attempted: false,
+    deleted: null,
+    mode: env?.JULES_MEMORY ? 'deferred' : 'not-configured',
+    pending: Boolean(env?.JULES_MEMORY),
   };
 }
 
-function normalizeMemoryEntry(entry, now, retentionMs) {
-  const ts = Number(entry?.timestamp);
-  const timestamp = Number.isFinite(ts) && ts > 0 ? ts : now;
-  const metadata = resolveMemoryMetadata(
-    entry?.key,
-    entry?.category,
-    entry?.priority,
+function scheduleVectorizeProfileDelete(executionContext, env, userId) {
+  if (!executionContext?.waitUntil || !env?.JULES_MEMORY) return false;
+
+  executionContext.waitUntil(
+    deleteVectorizeMemoriesForUser(env, userId).catch((error) => {
+      log.warn(
+        '[ai-agent-user] Deferred vectorize profile delete failed:',
+        error?.message || error,
+      );
+      return null;
+    }),
   );
-
-  return {
-    ...metadata,
-    value: normalizeMemoryText(entry?.value || ''),
-    timestamp,
-    expiresAt: timestamp + retentionMs,
-  };
+  return true;
 }
 
-function compactMemories(entries, now, retentionMs) {
-  const unique = new Map();
-  for (const rawEntry of entries) {
-    const entry = normalizeMemoryEntry(rawEntry, now, retentionMs);
-    if (!entry.value) continue;
-    if (now - entry.timestamp > retentionMs) continue;
-
-    const hash = SINGLETON_MEMORY_KEYS.has(entry.key)
-      ? entry.key
-      : `${entry.key}:${entry.value.toLowerCase()}`;
-    const existing = unique.get(hash);
-    if (
-      !existing ||
-      entry.timestamp > existing.timestamp ||
-      (entry.timestamp === existing.timestamp &&
-        entry.priority > existing.priority)
-    ) {
-      unique.set(hash, entry);
-    }
-  }
-  return [...unique.values()].sort((a, b) => a.timestamp - b.timestamp);
-}
-
-export function compactMemoryEntries(entries = [], env, now = Date.now()) {
-  return compactMemories(entries, now, getMemoryRetentionMs(env));
-}
-
-export async function loadFallbackMemories(
+export async function deleteUserProfile(
   kv,
-  userId,
   env,
-  { persistPruned = false } = {},
+  userId,
+  { deferVectorize = false, executionContext = null } = {},
 ) {
-  if (!kv?.get) return [];
-
-  try {
-    const raw = await kv.get(getMemoryKey(userId));
-    const parsed = JSON.parse(raw || '[]');
-    if (!Array.isArray(parsed)) return [];
-
-    const now = Date.now();
-    const retentionMs = getMemoryRetentionMs(env);
-    const compacted = compactMemories(parsed, now, retentionMs);
-
-    if (persistPruned && kv?.put) {
-      const compactedJson = JSON.stringify(compacted);
-      if ((raw || '[]') !== compactedJson) {
-        await kv.put(getMemoryKey(userId), compactedJson);
-      }
-    }
-
-    return compacted;
-  } catch {
-    return [];
-  }
-}
-
-async function saveFallbackMemories(kv, userId, memories, env) {
-  if (!kv?.put) return false;
-
-  try {
-    const now = Date.now();
-    const retentionMs = getMemoryRetentionMs(env);
-    const compacted = compactMemories(memories, now, retentionMs);
-    await kv.put(getMemoryKey(userId), JSON.stringify(compacted));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export async function deleteUserProfile(kv, env, userId) {
   const memoryKey = getMemoryKey(userId);
   await kv.delete(memoryKey);
-  const usernameStats = await deleteUsernameMappingsForUser(kv, userId);
-  const vectorizeStats = await deleteVectorizeMemoriesForUser(env, userId);
-  const indexStats = await deleteAdminUserIndex(env, userId);
+
+  const usernameStatsPromise = deleteUsernameMappingsForUser(kv, userId);
+  const shouldDeferVectorize =
+    deferVectorize && scheduleVectorizeProfileDelete(executionContext, env, userId);
+
+  const [usernameStats, vectorizeStats] = shouldDeferVectorize
+    ? await Promise.all([
+        usernameStatsPromise,
+        Promise.resolve(buildDeferredVectorizeStats(env)),
+      ])
+    : await Promise.all([
+        usernameStatsPromise,
+        deleteVectorizeMemoriesForUser(env, userId),
+      ]);
 
   return {
     memoryKey,
     usernameMappings: usernameStats.deleted,
     scannedUsernameMappings: usernameStats.scanned,
     vectorize: vectorizeStats,
-    index: indexStats,
   };
 }
 
-async function syncUserNameLookup(
-  kv,
-  env,
-  userId,
-  nextName = '',
-  previousName = '',
-) {
+async function syncUserNameLookup(kv, userId, nextName = '', previousName = '') {
   if (!kv?.get || !kv?.put) return { linked: false, conflict: false };
 
   const normalizedUserId = normalizeUserId(userId);
@@ -296,10 +173,6 @@ async function syncUserNameLookup(
       const previousMappedUserId = normalizeUserId(await kv.get(previousKey));
       if (previousMappedUserId === normalizedUserId) {
         await kv.delete(previousKey);
-        await deleteAdminNameMapping(
-          env,
-          previousKey.replace(USERNAME_LOOKUP_PREFIX, ''),
-        );
       }
     }
 
@@ -314,20 +187,10 @@ async function syncUserNameLookup(
       (existingUserId && existingUserId !== normalizedUserId)
     ) {
       await kv.put(nextKey, USERNAME_LOOKUP_CONFLICT);
-      await upsertAdminNameMapping(
-        env,
-        nextKey.replace(USERNAME_LOOKUP_PREFIX, ''),
-        USERNAME_LOOKUP_CONFLICT,
-      );
       return { linked: false, conflict: true };
     }
 
     await kv.put(nextKey, normalizedUserId);
-    await upsertAdminNameMapping(
-      env,
-      nextKey.replace(USERNAME_LOOKUP_PREFIX, ''),
-      normalizedUserId,
-    );
     return { linked: true, conflict: false };
   } catch {
     return { linked: false, conflict: false };
@@ -371,54 +234,31 @@ export async function upsertVectorizeMemory(env, userId, entry) {
   }
 }
 
-async function deleteVectorizeMemoryByMetadata(env, filter) {
-  const index = env?.JULES_MEMORY;
-  if (!index) return false;
+async function tryDeleteVectorizeByMetadata(index, filter, onError = null) {
+  if (!index) return '';
 
-  const metadataDeleteMethods = [
-    'deleteByMetadata',
-    'deleteByFilter',
-    'deleteByMetadataFilter',
-  ];
-
-  for (const method of metadataDeleteMethods) {
+  for (const method of VECTORIZE_METADATA_DELETE_METHODS) {
     if (typeof index[method] !== 'function') continue;
     try {
       await index[method](filter);
-      return true;
-    } catch {
-      /* ignore */
+      return method;
+    } catch (error) {
+      onError?.(method, error);
     }
   }
 
-  return false;
+  return '';
 }
 
-function rankMemoryKey(key) {
-  const value = String(key || '').toLowerCase();
-  if (value === 'name') return 0;
-  if (value === 'preference') return 1;
-  if (value === 'occupation') return 2;
-  if (value === 'company') return 3;
-  if (value === 'location') return 4;
-  if (value === 'language') return 5;
-  if (value === 'interest') return 6;
-  if (value === 'skill') return 7;
-  if (value === 'goal') return 8;
-  if (value === 'project') return 9;
-  if (value === 'birthday') return 10;
-  if (value === 'dislike') return 11;
-  if (value === 'availability') return 12;
-  if (value === 'timezone') return 13;
-  if (value === 'note') return 14;
-  return 99;
+async function deleteVectorizeMemoryByMetadata(env, filter) {
+  return Boolean(await tryDeleteVectorizeByMetadata(env?.JULES_MEMORY, filter));
 }
 
 export function orderMemories(memories = []) {
   return [...memories].sort((a, b) => {
     const priorityDiff = (b.priority || 0) - (a.priority || 0);
     if (priorityDiff !== 0) return priorityDiff;
-    const rankDiff = rankMemoryKey(a.key) - rankMemoryKey(b.key);
+    const rankDiff = getRobotMemoryRank(a.key) - getRobotMemoryRank(b.key);
     if (rankDiff !== 0) return rankDiff;
     return (b.timestamp || 0) - (a.timestamp || 0);
   });
@@ -502,28 +342,23 @@ export async function deleteVectorizeMemoriesForUser(env, userId) {
     };
   }
 
-  const metadataDeleteMethods = [
-    'deleteByMetadata',
-    'deleteByFilter',
-    'deleteByMetadataFilter',
-  ];
-
-  for (const method of metadataDeleteMethods) {
-    if (typeof index[method] !== 'function') continue;
-    try {
-      await index[method]({ userId });
-      return {
-        available: true,
-        attempted: true,
-        deleted: null,
-        mode: method,
-      };
-    } catch (error) {
-      console.warn(
+  const metadataDeleteMethod = await tryDeleteVectorizeByMetadata(
+    index,
+    { userId },
+    (method, error) => {
+      log.warn(
         `[ai-agent-user] Vectorize ${method} failed:`,
         error?.message || error,
       );
-    }
+    },
+  );
+  if (metadataDeleteMethod) {
+    return {
+      available: true,
+      attempted: true,
+      deleted: null,
+      mode: metadataDeleteMethod,
+    };
   }
 
   const idDeleteMethod =
@@ -594,7 +429,7 @@ export async function deleteVectorizeMemoriesForUser(env, userId) {
       mode: `${idDeleteMethod}-by-id`,
     };
   } catch (error) {
-    console.warn(
+    log.warn(
       `[ai-agent-user] Vectorize ${idDeleteMethod} failed:`,
       error?.message || error,
     );
@@ -605,6 +440,63 @@ export async function deleteVectorizeMemoriesForUser(env, userId) {
       mode: `${idDeleteMethod}-failed`,
     };
   }
+}
+
+async function loadUserMemories(kv, env, userId) {
+  return loadFallbackMemories(kv, userId, env, {
+    persistPruned: true,
+  });
+}
+
+async function loadUserMemorySnapshot(kv, env, userId) {
+  const memories = await loadUserMemories(kv, env, userId);
+  return {
+    memories,
+    previousName: normalizeMemoryText(
+      getLatestMemoryEntry(memories, 'name')?.value,
+    ),
+  };
+}
+
+function getRetentionDays(env) {
+  return parseInteger(env?.ROBOT_MEMORY_RETENTION_DAYS, DEFAULT_MEMORY_RETENTION_DAYS, {
+    min: 1,
+    max: 3650,
+  });
+}
+
+async function buildMemoryListPayload(
+  kv,
+  env,
+  userId,
+  {
+    successText = 'Gespeicherte Erinnerungen erfolgreich geladen.',
+    emptyText = 'Keine Erinnerungen gespeichert.',
+  } = {},
+) {
+  const memories = await loadUserMemories(kv, env, userId);
+  const ordered = orderMemories(memories);
+
+  return {
+    success: true,
+    userId,
+    count: ordered.length,
+    retentionDays: getRetentionDays(env),
+    memories: ordered,
+    profile: buildProfileInfo(userId, ordered),
+    text: ordered.length > 0 ? successText : emptyText,
+  };
+}
+
+function buildMemoryMutationPayload(result, userId) {
+  const memories = result.memories || [];
+  return {
+    success: result.success,
+    userId,
+    memories,
+    profile: result.profile || buildProfileInfo(userId, memories),
+    text: result.text,
+  };
 }
 
 export async function updateSingleMemory(kv, env, userId, body) {
@@ -626,11 +518,10 @@ export async function updateSingleMemory(kv, env, userId, body) {
     };
   }
 
-  const existing = await loadFallbackMemories(kv, userId, env, {
-    persistPruned: true,
-  });
-  const previousName = normalizeMemoryText(
-    getLatestMemoryEntry(existing, 'name')?.value,
+  const { memories: existing, previousName } = await loadUserMemorySnapshot(
+    kv,
+    env,
+    userId,
   );
   const metadata = resolveMemoryMetadata(key);
   const now = Date.now();
@@ -659,7 +550,7 @@ export async function updateSingleMemory(kv, env, userId, body) {
   }
 
   if (key === 'name') {
-    await syncUserNameLookup(kv, env, userId, value, previousName);
+    await syncUserNameLookup(kv, userId, value, previousName);
   }
 
   if (SINGLETON_MEMORY_KEYS.has(key)) {
@@ -673,10 +564,7 @@ export async function updateSingleMemory(kv, env, userId, body) {
   }
   await upsertVectorizeMemory(env, userId, nextEntry);
 
-  const memories = await loadFallbackMemories(kv, userId, env, {
-    persistPruned: true,
-  });
-  await syncAdminUserIndex(env, kv, userId, memories);
+  const memories = await loadUserMemories(kv, env, userId);
 
   return {
     success: true,
@@ -694,11 +582,10 @@ export async function forgetSingleMemory(kv, env, userId, body) {
     return { success: false, status: 400, text: 'Memory-Key fehlt.' };
   }
 
-  const existing = await loadFallbackMemories(kv, userId, env, {
-    persistPruned: true,
-  });
-  const previousName = normalizeMemoryText(
-    getLatestMemoryEntry(existing, 'name')?.value,
+  const { memories: existing, previousName } = await loadUserMemorySnapshot(
+    kv,
+    env,
+    userId,
   );
   const filtered = existing.filter((entry) => {
     if (entry.key !== key) return true;
@@ -717,7 +604,7 @@ export async function forgetSingleMemory(kv, env, userId, body) {
   }
 
   if (key === 'name') {
-    await syncUserNameLookup(kv, env, userId, '', previousName);
+    await syncUserNameLookup(kv, userId, '', previousName);
   }
 
   if (SINGLETON_MEMORY_KEYS.has(key)) {
@@ -726,10 +613,7 @@ export async function forgetSingleMemory(kv, env, userId, body) {
     await deleteVectorizeMemoryByMetadata(env, { userId, key, value });
   }
 
-  const memories = await loadFallbackMemories(kv, userId, env, {
-    persistPruned: true,
-  });
-  await syncAdminUserIndex(env, kv, userId, memories);
+  const memories = await loadUserMemories(kv, env, userId);
 
   return {
     success: true,
@@ -795,23 +679,29 @@ export async function onRequestPost(context) {
         );
       }
 
-      const candidates = await findRecoveryCandidates(env, kv, recoveryName);
+      const candidates = await findRecoveryCandidates(kv, recoveryName);
+      const autoCandidate = pickAutoRecoveryCandidate(candidates);
       const recoveryStatus =
         candidates.length === 0
           ? 'none'
           : candidates.length === 1
             ? 'needs_confirmation'
             : 'conflict';
+      const recovery = createRecoveryState(
+        {
+          status: recoveryStatus,
+          name: recoveryName,
+          candidateUserId: candidates[0]?.userId || '',
+          autoCandidateUserId: autoCandidate?.userId || '',
+          candidates,
+        },
+        { allowNone: true },
+      );
 
       return jsonWithHeaders(
         {
           success: true,
-          recovery: {
-            status: recoveryStatus,
-            name: recoveryName,
-            candidateUserId: candidates[0]?.userId || '',
-            candidates,
-          },
+          recovery,
           text:
             candidates.length > 0
               ? 'Profile gefunden.'
@@ -839,7 +729,7 @@ export async function onRequestPost(context) {
         );
       }
 
-      const candidates = await findRecoveryCandidates(env, kv, recoveryName);
+      const candidates = await findRecoveryCandidates(kv, recoveryName);
       if (!candidates.some((candidate) => candidate.userId === targetUserId)) {
         return jsonWithHeaders(
           {
@@ -850,27 +740,12 @@ export async function onRequestPost(context) {
         );
       }
 
-      const memories = await loadFallbackMemories(kv, targetUserId, env, {
-        persistPruned: true,
-      });
-      const retentionDays = parseInteger(
-        env?.ROBOT_MEMORY_RETENTION_DAYS,
-        DEFAULT_MEMORY_RETENTION_DAYS,
-      );
-      const ordered = orderMemories(memories);
       return jsonWithHeaders(
-        {
-          success: true,
-          userId: targetUserId,
-          count: ordered.length,
-          retentionDays,
-          memories: ordered,
-          profile: buildProfileInfo(targetUserId, ordered),
-          text:
-            ordered.length > 0
-              ? 'Profil aktiviert und Erinnerungen geladen.'
-              : 'Profil aktiviert. Es sind noch keine Erinnerungen gespeichert.',
-        },
+        await buildMemoryListPayload(kv, env, targetUserId, {
+          successText: 'Profil aktiviert und Erinnerungen geladen.',
+          emptyText:
+            'Profil aktiviert. Es sind noch keine Erinnerungen gespeichert.',
+        }),
         { headers: responseHeaders },
       );
     }
@@ -880,12 +755,11 @@ export async function onRequestPost(context) {
         {
           success: true,
           userId: '',
-          profile: {
+          profile: createProfileState({
             userId: '',
             name: '',
             status: 'disconnected',
-            label: 'Kein aktives Profil',
-          },
+          }),
           text: 'Dieses Gerät ist nicht mehr mit einem Profil verbunden.',
         },
         { headers: responseHeaders },
@@ -903,28 +777,8 @@ export async function onRequestPost(context) {
     }
 
     if (action === 'list') {
-      const memories = await loadFallbackMemories(kv, userId, env, {
-        persistPruned: true,
-      });
-      const retentionDays = parseInteger(
-        env?.ROBOT_MEMORY_RETENTION_DAYS,
-        DEFAULT_MEMORY_RETENTION_DAYS,
-      );
-      const ordered = orderMemories(memories);
-
       return jsonWithHeaders(
-        {
-          success: true,
-          userId,
-          count: ordered.length,
-          retentionDays,
-          memories: ordered,
-          profile: buildProfileInfo(userId, ordered),
-          text:
-            ordered.length > 0
-              ? 'Gespeicherte Erinnerungen erfolgreich geladen.'
-              : 'Keine Erinnerungen gespeichert.',
-        },
+        await buildMemoryListPayload(kv, env, userId),
         { headers: responseHeaders },
       );
     }
@@ -932,14 +786,7 @@ export async function onRequestPost(context) {
     if (action === 'update-memory') {
       const result = await updateSingleMemory(kv, env, userId, body);
       return jsonWithHeaders(
-        {
-          success: result.success,
-          userId,
-          memories: result.memories || [],
-          profile:
-            result.profile || buildProfileInfo(userId, result.memories || []),
-          text: result.text,
-        },
+        buildMemoryMutationPayload(result, userId),
         {
           status: result.status,
           headers: responseHeaders,
@@ -950,14 +797,7 @@ export async function onRequestPost(context) {
     if (action === 'forget-memory') {
       const result = await forgetSingleMemory(kv, env, userId, body);
       return jsonWithHeaders(
-        {
-          success: result.success,
-          userId,
-          memories: result.memories || [],
-          profile:
-            result.profile || buildProfileInfo(userId, result.memories || []),
-          text: result.text,
-        },
+        buildMemoryMutationPayload(result, userId),
         {
           status: result.status,
           headers: responseHeaders,
@@ -965,7 +805,10 @@ export async function onRequestPost(context) {
       );
     }
 
-    const deleted = await deleteUserProfile(kv, env, userId);
+    const deleted = await deleteUserProfile(kv, env, userId, {
+      deferVectorize: true,
+      executionContext: context,
+    });
 
     return jsonWithHeaders(
       {
@@ -977,7 +820,7 @@ export async function onRequestPost(context) {
       { headers: responseHeaders },
     );
   } catch (error) {
-    console.error('[ai-agent-user] Delete failed:', error?.message || error);
+    log.error('[ai-agent-user] Delete failed:', error?.message || error);
     return jsonWithHeaders(
       {
         success: false,

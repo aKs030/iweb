@@ -94,6 +94,81 @@ export function upsertHeadLink(options = {}) {
 }
 
 /**
+ * Load or reuse a stylesheet link in the document head and resolve once it is
+ * ready for use.
+ *
+ * @param {string} href
+ * @param {{
+ *   injectedBy?: string,
+ *   dataset?: Record<string, string>,
+ *   attrs?: Record<string, string>,
+ * }} [options]
+ * @returns {Promise<HTMLLinkElement|null>}
+ */
+export function loadHeadStylesheet(href, options = {}) {
+  if (!href || typeof document === 'undefined' || !document.head) {
+    return Promise.resolve(null);
+  }
+
+  const { injectedBy = '', dataset = {}, attrs = {} } = options;
+  const nextDataset = { ...dataset };
+  if (injectedBy) {
+    nextDataset.injectedBy = injectedBy;
+  }
+
+  return new Promise((resolve) => {
+    const existing = /** @type {HTMLLinkElement|null} */ (
+      document.head.querySelector(`link[rel="stylesheet"][href="${href}"]`)
+    );
+    if (existing) {
+      if (existing.dataset.loaded === 'true' || existing.sheet) {
+        existing.dataset.loaded = 'true';
+        resolve(existing);
+        return;
+      }
+
+      const finalizeExisting = () => {
+        existing.dataset.loaded = 'true';
+        resolve(existing);
+      };
+      existing.addEventListener('load', finalizeExisting, { once: true });
+      existing.addEventListener('error', () => resolve(existing), {
+        once: true,
+      });
+      return;
+    }
+
+    const link = upsertHeadLink({
+      rel: 'stylesheet',
+      href,
+      attrs: { media: 'all', ...attrs },
+      dataset: nextDataset,
+    });
+
+    if (!link) {
+      resolve(null);
+      return;
+    }
+
+    if (link.sheet) {
+      link.dataset.loaded = 'true';
+      resolve(link);
+      return;
+    }
+
+    link.addEventListener(
+      'load',
+      () => {
+        link.dataset.loaded = 'true';
+        resolve(link);
+      },
+      { once: true },
+    );
+    link.addEventListener('error', () => resolve(link), { once: true });
+  });
+}
+
+/**
  * Upsert a meta element in the head
  * @param {string} nameOrProperty - Meta name or property
  * @param {string} content - Meta content
@@ -175,4 +250,31 @@ export function observeOnce(target, onIntersect, options = {}) {
 
   obs.observe(target);
   return () => obs.disconnect();
+}
+
+/**
+ * Add an event listener with a small passive-by-default policy and return
+ * a cleanup function.
+ *
+ * @param {EventTarget|null|undefined} target
+ * @param {string} event
+ * @param {EventListenerOrEventListenerObject} handler
+ * @param {AddEventListenerOptions | boolean} [options]
+ * @returns {() => void}
+ */
+export function addManagedEventListener(target, event, handler, options = {}) {
+  if (!target || typeof target.addEventListener !== 'function') {
+    return () => {};
+  }
+
+  const passiveByDefault =
+    event === 'touchstart' || event === 'touchmove' || event === 'wheel';
+  const normalizedOptions =
+    options && typeof options === 'object'
+      ? { passive: passiveByDefault, ...options }
+      : options;
+
+  target.addEventListener(event, handler, normalizedOptions);
+  return () =>
+    target.removeEventListener(event, handler, normalizedOptions);
 }

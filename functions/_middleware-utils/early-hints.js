@@ -56,9 +56,6 @@ function normalizePathname(pathname = '/') {
 function isStandaloneShellPath(pathname = '/') {
   const normalized = normalizePathname(pathname);
   return (
-    normalized === '/admin' ||
-    normalized === '/pages/admin' ||
-    normalized === '/pages/admin.html' ||
     normalized === '/ai-info' ||
     normalized.startsWith('/pages/ai-info')
   );

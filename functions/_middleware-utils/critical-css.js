@@ -1,3 +1,6 @@
+import { createLogger } from '../../content/core/logger.js';
+
+const log = createLogger('critical-css');
 /**
  * Critical CSS Edge Inliner
  *
@@ -6,9 +9,10 @@
  * to async loading via media-swap pattern.
  *
  * Strategy:
- * - foundation.css + menu base/state/mobile CSS → inlined as <style>
- *   (global variables, theme defaults, layout baseline, navigation shell)
- * - main.css + animations.css + menu search/backdrop → async loaded via
+ * - foundation.css + menu base/state/mobile CSS + footer shell CSS
+ *   → inlined as <style>
+ *   (global variables, theme defaults, layout baseline, navigation/footer shell)
+ * - main.css + animations.css + menu backdrop → async loaded via
  *   media="print" swap trick
  *
  * CSS content is cached in KV with SWR semantics for ~1ms reads.
@@ -26,9 +30,9 @@ const CSS_TTL_MS = 3600 * 1000; // 1 hour
 const INLINE_CSS_PATHS = [
   '/content/styles/foundation.css',
   '/content/components/menu/menu-base.css',
-  '/content/components/menu/menu-search.css',
   '/content/components/menu/menu-states.css',
   '/content/components/menu/menu-mobile.css',
+  '/content/components/footer/footer-shell.css',
 ];
 
 /**
@@ -39,7 +43,6 @@ const ASYNC_CSS_PATHS = [
   '/content/styles/main.css',
   '/content/styles/animations.css',
   '/content/components/menu/menu-backdrop.css',
-  '/content/components/footer/footer.css',
 ];
 
 /** Set of all CSS paths we handle (for quick lookup in HTMLRewriter) */
@@ -75,7 +78,7 @@ async function loadCssCached(context, cssPath) {
   try {
     cached = await kv.get(key, 'json');
   } catch (err) {
-    console.warn(`CSS KV error for ${key}:`, err);
+    log.warn(`CSS KV error for ${key}:`, err);
   }
 
   const now = Date.now();
@@ -110,7 +113,7 @@ async function refreshCssInKV(context, key, cssPath) {
     }
     return css;
   } catch (err) {
-    console.error(`CSS cache refresh failed for ${key}:`, err);
+    log.error(`CSS cache refresh failed for ${key}:`, err);
     return '';
   }
 }

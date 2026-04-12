@@ -47,8 +47,8 @@ The media-bearing fields in `brand-data.json`, `person.jsonld`,
 maintained manually from `media-urls.js`.
 
 `pages/projekte/apps-config.json` remains the canonical project-app config for
-`appPath`, `githubPath`, `previewUrl`, and `previewAlt`, and is checked by
-`scripts/validate-apps-config.mjs` during repo linting.
+`appPath`, `githubPath`, `previewUrl`, and `previewAlt`, and should be kept in
+sync manually with the project entries.
 
 ## Shared Constants
 

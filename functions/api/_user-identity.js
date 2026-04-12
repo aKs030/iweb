@@ -1,14 +1,11 @@
+import { normalizeUserId } from '../../content/core/user-id.js';
+
+export { normalizeUserId };
+
 export const USER_ID_HEADER_NAME = 'X-Jules-User-Id';
 export const USER_ID_HEADER_KEY = 'x-jules-user-id';
 export const USER_ID_COOKIE_NAME = 'jules_user_id';
 const USER_ID_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
-
-export function normalizeUserId(raw) {
-  const value = String(raw || '').trim();
-  if (!value || value === 'anonymous') return '';
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
-  return value;
-}
 
 export function readUserIdFromCookieHeader(cookieHeader) {
   const entries = String(cookieHeader || '')

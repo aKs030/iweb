@@ -1,33 +1,24 @@
+import { getSharedToolDefinition } from './shared-tool-definitions.js';
+
 const ALWAYS_AVAILABLE = 'always';
 const SITE_MENU_AVAILABLE = 'site-menu';
 const ROBOT_AVAILABLE = 'robot';
 const ROBOT_CHAT_AVAILABLE = 'robot-chat';
 
+function createToolDefinition(name, overrides = {}) {
+  const baseDefinition = getSharedToolDefinition(name);
+  if (!baseDefinition) {
+    throw new Error(`Unknown shared tool definition: ${name}`);
+  }
+
+  return {
+    ...baseDefinition,
+    ...overrides,
+  };
+}
+
 export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
-  {
-    name: 'navigate',
-    description:
-      'Navigiere zu einer Seite: home, projekte, about, gallery, blog, videos, kontakt, impressum, datenschutz.',
-    parameters: {
-      type: 'object',
-      properties: {
-        page: {
-          type: 'string',
-          enum: [
-            'home',
-            'projekte',
-            'about',
-            'gallery',
-            'blog',
-            'videos',
-            'kontakt',
-            'impressum',
-            'datenschutz',
-          ],
-        },
-      },
-      required: ['page'],
-    },
+  createToolDefinition('navigate', {
     minRole: 'user',
     category: 'navigation',
     execution: 'client',
@@ -38,17 +29,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'navigation',
       replayLabel: 'Erneut öffnen',
     },
-  },
-  {
-    name: 'setTheme',
-    description: 'Wechsle das Farbschema (dark/light/toggle).',
-    parameters: {
-      type: 'object',
-      properties: {
-        theme: { type: 'string', enum: ['dark', 'light', 'toggle'] },
-      },
-      required: ['theme'],
-    },
+  }),
+  createToolDefinition('setTheme', {
     minRole: 'user',
     category: 'ui',
     execution: 'client',
@@ -59,17 +41,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'appearance',
       replayLabel: 'Erneut anwenden',
     },
-  },
-  {
-    name: 'searchBlog',
-    description: 'Suche nach Inhalten auf der Website.',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: { type: 'string', description: 'Suchbegriff' },
-      },
-      required: ['query'],
-    },
+  }),
+  createToolDefinition('searchBlog', {
     minRole: 'user',
     category: 'search',
     execution: 'client',
@@ -80,35 +53,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'search',
       replayLabel: 'Erneut suchen',
     },
-  },
-  {
-    name: 'getSiteAnalytics',
-    description:
-      'Analysiere Seiteninformationen oder Statistiken (mocked/simuliert für Analytics-Demo).',
-    parameters: {
-      type: 'object',
-      properties: {
-        metric: {
-          type: 'string',
-          description: 'Die angeforderte Metrik (z.B. views, performance)',
-        },
-      },
-      required: ['metric'],
-    },
-    minRole: 'trusted',
-    category: 'analytics',
-    execution: 'server',
-  },
-  {
-    name: 'toggleMenu',
-    description: 'Menü öffnen/schließen.',
-    parameters: {
-      type: 'object',
-      properties: {
-        state: { type: 'string', enum: ['open', 'close', 'toggle'] },
-      },
-      required: ['state'],
-    },
+  }),
+  createToolDefinition('toggleMenu', {
     minRole: 'user',
     category: 'ui',
     execution: 'client',
@@ -119,18 +65,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'navigation',
       replayLabel: 'Erneut ausführen',
     },
-  },
-  {
-    name: 'scrollToSection',
-    description:
-      'Scrolle zu einem Abschnitt (header, footer, contact, hero, projects, skills).',
-    parameters: {
-      type: 'object',
-      properties: {
-        section: { type: 'string' },
-      },
-      required: ['section'],
-    },
+  }),
+  createToolDefinition('scrollToSection', {
     minRole: 'user',
     category: 'navigation',
     execution: 'client',
@@ -141,14 +77,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'navigation',
       replayLabel: 'Erneut scrollen',
     },
-  },
-  {
-    name: 'openSearch',
-    description: 'Öffne die Website-Suche.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
+  }),
+  createToolDefinition('openSearch', {
     minRole: 'user',
     category: 'search',
     execution: 'client',
@@ -159,14 +89,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'search',
       replayLabel: 'Suche öffnen',
     },
-  },
-  {
-    name: 'closeSearch',
-    description: 'Schließe die Website-Suche.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
+  }),
+  createToolDefinition('closeSearch', {
     minRole: 'user',
     category: 'search',
     execution: 'client',
@@ -177,17 +101,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'search',
       replayLabel: 'Erneut schließen',
     },
-  },
-  {
-    name: 'focusSearch',
-    description:
-      'Fokussiere die Suche. Optional kann ein Suchbegriff gesetzt werden.',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: { type: 'string' },
-      },
-    },
+  }),
+  createToolDefinition('focusSearch', {
     minRole: 'user',
     category: 'search',
     execution: 'client',
@@ -198,14 +113,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'search',
       replayLabel: 'Erneut fokussieren',
     },
-  },
-  {
-    name: 'scrollTop',
-    description: 'Scrolle zum Seitenanfang.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
+  }),
+  createToolDefinition('scrollTop', {
     minRole: 'user',
     category: 'navigation',
     execution: 'client',
@@ -216,14 +125,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'navigation',
       replayLabel: 'Erneut nach oben',
     },
-  },
-  {
-    name: 'copyCurrentUrl',
-    description: 'Kopiere den aktuellen Seitenlink.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
+  }),
+  createToolDefinition('copyCurrentUrl', {
     minRole: 'user',
     category: 'utility',
     execution: 'client',
@@ -234,14 +137,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'utility',
       replayLabel: 'Erneut kopieren',
     },
-  },
-  {
-    name: 'openImageUpload',
-    description: 'Öffne den Bild-Upload im Chat.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
+  }),
+  createToolDefinition('openImageUpload', {
     minRole: 'user',
     category: 'chat',
     execution: 'client',
@@ -252,15 +149,8 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'utility',
       replayLabel: 'Upload öffnen',
     },
-  },
-  {
-    name: 'clearChatHistory',
-    description:
-      'Lösche den lokalen Chatverlauf (nur auf Nutzerwunsch verwenden).',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
+  }),
+  createToolDefinition('clearChatHistory', {
     minRole: 'user',
     category: 'chat',
     execution: 'client',
@@ -273,67 +163,18 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       title: 'Chat',
       accent: 'utility',
     },
-  },
-  {
-    name: 'rememberUser',
-    description:
-      'Merke dir Infos über den Nutzer (Name, Interessen, Präferenzen, Ort, Beruf, Ziele usw.).',
-    parameters: {
-      type: 'object',
-      properties: {
-        key: {
-          type: 'string',
-          enum: [
-            'name',
-            'interest',
-            'preference',
-            'location',
-            'occupation',
-            'company',
-            'language',
-            'goal',
-            'project',
-            'skill',
-            'birthday',
-            'timezone',
-            'availability',
-            'dislike',
-            'note',
-          ],
-        },
-        value: { type: 'string' },
-      },
-      required: ['key', 'value'],
-    },
+  }),
+  createToolDefinition('rememberUser', {
     minRole: 'user',
     category: 'memory',
     execution: 'server',
-  },
-  {
-    name: 'recallMemory',
-    description:
-      'Rufe gespeicherte Erinnerungen zum aktuellen Nutzer ab. Nicht für Fragen über Abdulkerim, die Website, Blogposts oder Projekte verwenden.',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: { type: 'string' },
-      },
-      required: ['query'],
-    },
+  }),
+  createToolDefinition('recallMemory', {
     minRole: 'user',
     category: 'memory',
     execution: 'server',
-  },
-  {
-    name: 'recommend',
-    description: 'Gib eine personalisierte Empfehlung.',
-    parameters: {
-      type: 'object',
-      properties: {
-        topic: { type: 'string' },
-      },
-      required: ['topic'],
-    },
+  }),
+  createToolDefinition('recommend', {
     minRole: 'user',
     category: 'assistant',
     execution: 'client',
@@ -344,7 +185,7 @@ export const ROBOT_TOOL_DEFINITIONS = Object.freeze([
       accent: 'search',
       replayLabel: 'Erneut anfragen',
     },
-  },
+  }),
   {
     name: 'openExternalLink',
     description: 'Öffne einen externen Link (http/https).',
@@ -461,16 +302,6 @@ export const TOOL_DEFINITION_BY_NAME = new Map(
 
 export const CLIENT_TOOL_DEFINITIONS = Object.freeze(
   ROBOT_TOOL_DEFINITIONS.filter((tool) => tool.execution === 'client'),
-);
-
-export const CLIENT_TOOL_NAMES = new Set(
-  CLIENT_TOOL_DEFINITIONS.map((tool) => tool.name),
-);
-
-export const SERVER_TOOL_NAMES = new Set(
-  ROBOT_TOOL_DEFINITIONS.filter((tool) => tool.execution === 'server').map(
-    (tool) => tool.name,
-  ),
 );
 
 export const TOOL_CARD_CONFIG = Object.freeze(

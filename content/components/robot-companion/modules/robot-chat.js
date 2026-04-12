@@ -11,6 +11,11 @@ import {
 } from '../../../core/overlay-manager.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
 import { ChatHistoryStore } from './chat-history-store.js';
+import {
+  getRobotUserName,
+  normalizeRobotUserName,
+} from './name-identity.js';
+import { getRobotMemoryManagerFields } from '../../../core/robot-memory-schema.js';
 
 const log = createLogger('RobotChat');
 const DEFAULT_INPUT_PLACEHOLDER = 'Frag mich etwas...';
@@ -76,8 +81,7 @@ export class RobotChat {
   }
 
   hasUserName() {
-    const robotWindow = getRobotChatWindow();
-    return Boolean(String(robotWindow?.ROBOT_USER_NAME || '').trim());
+    return Boolean(getRobotUserName());
   }
 
   async applyUserName(rawName) {
@@ -102,7 +106,7 @@ export class RobotChat {
     if (!this.robot.dom.messages) return;
     if (this.robot.dom.messages.querySelector('.message--name-prompt')) return;
 
-    const currentName = String(getRobotChatWindow()?.ROBOT_USER_NAME || '');
+    const currentName = getRobotUserName();
 
     const wrapper = document.createElement('div');
     wrapper.className = 'message message--name-prompt';
@@ -158,7 +162,7 @@ export class RobotChat {
         return;
       }
 
-      const normalized = value.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 120);
+      const normalized = normalizeRobotUserName(value);
       if (!normalized) {
         feedback.classList.add('is-error');
         feedback.textContent =
@@ -209,9 +213,10 @@ export class RobotChat {
   }
 
   async getActiveRobotIdentity() {
-    const agentService = await this.robot.getAgentService();
-    const userId = String(agentService?.getUserId?.() || '').trim();
     const name = String(getRobotChatWindow()?.ROBOT_USER_NAME || '').trim();
+    const userId = String(
+      this.robot._agentService?.getUserId?.() || (name ? `name_${name}` : ''),
+    ).trim();
     return { userId, name };
   }
 
@@ -234,6 +239,7 @@ export class RobotChat {
   }
 
   async requestMemoryAction(action, payload = {}) {
+    await this.robot.prepareAgentFeatures();
     const { userId } = await this.getActiveRobotIdentity();
     const body = {
       action,
@@ -260,6 +266,14 @@ export class RobotChat {
         `Profil-Request fehlgeschlagen (${response.status}).`;
       throw new Error(text);
     }
+
+    try {
+      const { syncProfileStateFromPayload } = await import('./user-identity.js');
+      syncProfileStateFromPayload(data);
+    } catch (error) {
+      log.warn('memory identity sync failed', error);
+    }
+
     return data;
   }
 
@@ -445,10 +459,10 @@ export class RobotChat {
 
     const keyInput = document.createElement('select');
     keyInput.className = 'chat-memory-manager__input';
-    ['name', 'interest', 'preference', 'note'].forEach((key) => {
+    getRobotMemoryManagerFields().forEach((field) => {
       const option = document.createElement('option');
-      option.value = key;
-      option.textContent = key;
+      option.value = field.key;
+      option.textContent = field.label;
       keyInput.appendChild(option);
     });
 
@@ -680,6 +694,20 @@ export class RobotChat {
       const candidates = Array.isArray(data?.recovery?.candidates)
         ? data.recovery.candidates
         : [];
+      const autoCandidateUserId = String(
+        data?.recovery?.autoCandidateUserId || '',
+      ).trim();
+      if (autoCandidateUserId) {
+        this.setMemoryManagerState({
+          recoveryName,
+          recoveryCandidates: candidates,
+          feedback:
+            data.text || 'Passendes Profil erkannt. Aktiviere es direkt...',
+          feedbackTone: 'info',
+        });
+        await this.activateRecoveredProfile(autoCandidateUserId, recoveryName);
+        return;
+      }
       this.setMemoryManagerState({
         recoveryName,
         recoveryCandidates: candidates,
@@ -734,8 +762,7 @@ export class RobotChat {
       const data = await this.requestMemoryAction('disconnect');
       this.memoryManagerState = null;
       this.removeMemoryManagerCard();
-      const robotWindow = getRobotChatWindow();
-      if (robotWindow) robotWindow.ROBOT_USER_NAME = '';
+      await this.robot.clearUserName?.();
       this.addMessage(
         data?.text || 'Profil getrennt. Bitte Namen neu setzen.',
         'bot',
@@ -918,7 +945,10 @@ export class RobotChat {
       }
       this.renderQuickLinks();
       if (isInitialOpenWithoutHistory) {
-        this.handleAction(ROBOT_ACTIONS.START);
+        this.addMessage(
+          'Ich bin Jules. Frag mich etwas oder nutze die Schnellaktionen hier unten.',
+          'bot',
+        );
       }
 
       // Focus Trap
@@ -1022,7 +1052,7 @@ export class RobotChat {
   }
 
   async _streamAgentResponse(runRequest) {
-    const agentService = await this.robot.getAgentService();
+    const agentService = await this.robot.prepareAgentFeatures();
     const requestController = new AbortController();
     this.activeRequestController = requestController;
     /** @type {HTMLElement|null} */
@@ -1437,7 +1467,10 @@ export class RobotChat {
     }
 
     void this._clearAgentHistory();
-    this.handleAction(ROBOT_ACTIONS.START);
+    this.addMessage(
+      'Verlauf geleert. Schreib mir einfach neu, wenn du weitermachen willst.',
+      'bot',
+    );
     this.syncComposerState();
   }
 
@@ -1447,8 +1480,7 @@ export class RobotChat {
 
   async _clearAgentHistory() {
     try {
-      const agentService = await this.robot.getAgentService();
-      agentService.clearHistory?.();
+      this.robot._agentService?.clearHistory?.();
     } catch {
       /* ignore */
     }
@@ -1487,13 +1519,10 @@ export class RobotChat {
     }
 
     if (actionKey === ROBOT_ACTIONS.UPLOAD_IMAGE) {
-      const fileInput = document.getElementById('robot-image-upload');
-      if (fileInput) {
-        /** @type {HTMLElement} */ (fileInput).click();
-      }
-      await this._routeToAI(
-        actionKey,
-        'Ich moechte ein Bild analysieren. Bitte fordere mich kurz auf, ein Bild hochzuladen.',
+      await this.robot.openImageUploadPicker();
+      this.addMessage(
+        'Bildauswahl geöffnet. Lade ein Bild hoch und sende optional noch eine kurze Beschreibung mit.',
+        'bot',
       );
       return;
     }

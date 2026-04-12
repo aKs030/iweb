@@ -1,17 +1,19 @@
 /**
  * Cloudflare Pages Function – POST /api/ai-agent
- * Agentic AI: SSE streaming, tool-calling, image analysis, memory, RAG.
+ * Agentic AI: SSE streaming, tool-calling, image analysis and memory.
  * @version 5.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
+import { parseInteger } from '../_shared/number-utils.js';
 import {
-  extractPromptMemoryFacts,
   inferClientToolCallsFromPrompt,
-  promptNeedsMemoryRecall,
   promptNeedsTools,
   sanitizeAssistantText,
 } from './_ai-agent-intent.js';
+import { createUserId } from '../../content/core/user-id.js';
+import { buildAgentResponsePayload } from '../../content/core/ai-agent-contracts.js';
+import { normalizeUserId } from './_user-identity.js';
 import {
   buildAgentMessagePayload,
   hasMeaningfulAgentText,
@@ -25,7 +27,17 @@ import {
   mergeHeaders,
 } from '../_shared/http-headers.js';
 
-// debug logger (level controlled by environment / query params)
+// Extracted modules
+import { analyzeImage } from './_ai-agent-image.js';
+import { buildSystemPrompt } from './_ai-agent-prompt.js';
+import {
+  persistPromptMemories,
+  resolveMemoryContext,
+  mergeMemoryEntries,
+  storeMemory
+} from './_ai-agent-memory.js';
+import { TOOLS, classifyToolCalls } from './_ai-agent-tools.js';
+
 const log = createLogger('ai-agent');
 
 const DEFAULT_CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
@@ -35,15 +47,7 @@ const DEFAULT_MAX_MEMORY_RESULTS = 5;
 const DEFAULT_MEMORY_SCORE_THRESHOLD = 0.65;
 const DEFAULT_MAX_HISTORY_TURNS = 10;
 const DEFAULT_MAX_TOKENS = 2048;
-const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
-const FALLBACK_MEMORY_LIMIT = 60;
 const USER_ID_HEADER = 'X-Jules-User-Id';
-
-function parseInteger(value, fallback, { min = 1, max = 8192 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ''), 10);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(max, Math.max(min, parsed));
-}
 
 function parseDecimal(
   value,
@@ -89,33 +93,7 @@ function getAgentConfig(env) {
   };
 }
 
-function normalizeUserId(raw) {
-  const value = String(raw || '').trim();
-  if (!value || value === 'anonymous') return '';
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
-  return value;
-}
-
-function createUserId(prefix = 'anon') {
-  if (
-    typeof crypto !== 'undefined' &&
-    typeof crypto.randomUUID === 'function'
-  ) {
-    return `${prefix}_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
-  }
-
-  const bytes = new Uint8Array(12);
-  crypto.getRandomValues(bytes);
-  const randomPart = Array.from(bytes, (byte) =>
-    byte.toString(16).padStart(2, '0'),
-  )
-    .join('')
-    .slice(0, 24);
-  return `${prefix}_${randomPart}`;
-}
-
 function resolveUserIdentity(request, requestedUserId = '') {
-  // Name-only Identität: kein Bearer/JWT-Mapping im Request-Path.
   let nameId = normalizeUserId(requestedUserId);
   if (!nameId) {
     try {
@@ -126,15 +104,12 @@ function resolveUserIdentity(request, requestedUserId = '') {
     }
   }
   if (nameId) {
-    // if the value already includes a prefix we respect it; otherwise
-    // treat it as a bare name and prefix with "name_".
     const hasPrefix = /^(?:name_|jwt_|u_|anon_)/.test(nameId);
     return {
       userId: hasPrefix ? nameId : `name_${nameId}`,
     };
   }
 
-  // Kein Name angegeben: ephemere Session-ID (nicht persistent).
   return { userId: createUserId('anon') };
 }
 
@@ -160,649 +135,79 @@ function withUserIdentityHeader(headers, userId) {
   return out;
 }
 
-// ─── Tool Definitions ───────────────────────────────────────────────────────────
-
-const TOOL_DEFINITIONS = [
-  {
-    name: 'navigate',
-    description:
-      'Navigiere zu einer Seite: home, projekte, about, gallery, blog, videos, kontakt, impressum, datenschutz.',
-    parameters: {
-      type: 'object',
-      properties: {
-        page: {
-          type: 'string',
-          enum: [
-            'home',
-            'projekte',
-            'about',
-            'gallery',
-            'blog',
-            'videos',
-            'kontakt',
-            'impressum',
-            'datenschutz',
-          ],
-        },
-      },
-      required: ['page'],
-    },
-  },
-  {
-    name: 'setTheme',
-    description: 'Wechsle das Farbschema (dark/light/toggle).',
-    parameters: {
-      type: 'object',
-      properties: {
-        theme: { type: 'string', enum: ['dark', 'light', 'toggle'] },
-      },
-      required: ['theme'],
-    },
-  },
-  {
-    name: 'searchBlog',
-    description: 'Suche nach Inhalten auf der Website.',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: { type: 'string', description: 'Suchbegriff' },
-      },
-      required: ['query'],
-    },
-  },
-  {
-    name: 'toggleMenu',
-    description: 'Menü öffnen/schließen.',
-    parameters: {
-      type: 'object',
-      properties: {
-        state: { type: 'string', enum: ['open', 'close', 'toggle'] },
-      },
-      required: ['state'],
-    },
-  },
-  {
-    name: 'scrollToSection',
-    description:
-      'Scrolle zu einem Abschnitt (header, footer, contact, hero, projects, skills).',
-    parameters: {
-      type: 'object',
-      properties: {
-        section: { type: 'string' },
-      },
-      required: ['section'],
-    },
-  },
-  {
-    name: 'openSearch',
-    description: 'Öffne die Website-Suche.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'closeSearch',
-    description: 'Schließe die Website-Suche.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'focusSearch',
-    description:
-      'Fokussiere die Suche. Optional kann ein Suchbegriff gesetzt werden.',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: { type: 'string' },
-      },
-    },
-  },
-  {
-    name: 'scrollTop',
-    description: 'Scrolle zum Seitenanfang.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'copyCurrentUrl',
-    description: 'Kopiere den aktuellen Seitenlink.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'openImageUpload',
-    description: 'Öffne den Bild-Upload im Chat.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'clearChatHistory',
-    description:
-      'Lösche den lokalen Chatverlauf (nur auf Nutzerwunsch verwenden).',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'rememberUser',
-    description:
-      'Merke dir Infos über den Nutzer (Name, Interessen, Präferenzen).',
-    parameters: {
-      type: 'object',
-      properties: {
-        key: {
-          type: 'string',
-          enum: ['name', 'interest', 'preference', 'note'],
-        },
-        value: { type: 'string' },
-      },
-      required: ['key', 'value'],
-    },
-  },
-  {
-    name: 'recallMemory',
-    description: 'Rufe gespeicherte Erinnerungen ab.',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: { type: 'string' },
-      },
-      required: ['query'],
-    },
-  },
-  {
-    name: 'recommend',
-    description: 'Gib eine personalisierte Empfehlung.',
-    parameters: {
-      type: 'object',
-      properties: {
-        topic: { type: 'string' },
-      },
-      required: ['topic'],
-    },
-  },
-];
-
-/** OpenAI-compatible tool format */
-const TOOLS = TOOL_DEFINITIONS.map((t) => ({
-  type: 'function',
-  function: {
-    name: t.name,
-    description: t.description,
-    parameters: t.parameters,
-  },
-}));
-
-// ─── System Prompt ──────────────────────────────────────────────────────────────
-
-function buildSystemPrompt(memoryContext = '', imageContext = '') {
-  let prompt = `Du bist "Jules", ein freundlicher Roboter-Assistent auf der Portfolio-Webseite von Abdulkerim Sesli.
-
-**SPRACHE:** Antworte IMMER auf Deutsch.
-
-**Persönlichkeit:** Freundlich, hilfsbereit, technisch versiert. Nutze Emojis (🤖, ✨, 🚀) sparsam.
-
-**Entwickler:** Abdulkerim Sesli — Software-Engineer & UI/UX-Designer aus Berlin.
-Tech Stack: JavaScript, React, Node.js, Python, CSS, Web Components, Cloudflare, Three.js.
-
-**Seiten:** Startseite (/home), Projekte (/projekte), Über mich (/about), Galerie (/gallery), Blog (/blog), Videos (/videos), Kontakt (Footer).
-
-**DEIN GEDÄCHTNIS:**
-Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (Name, Interessen, Vorlieben) dauerhaft merken und bei späteren Besuchen abrufen.
-- Wenn ein Nutzer dir seinen Namen sagt → IMMER "rememberUser" mit key="name" aufrufen.
-- Wenn ein Nutzer Interessen, Vorlieben oder andere persönliche Infos teilt → "rememberUser" aufrufen.
-- Sage NIEMALS, dass du keinen Speicher hast oder dich nicht erinnern kannst.
-
-**KRITISCHE TOOL-REGELN:**
-1. Bei reinem Smalltalk OHNE persönliche Infos (z.B. "Hallo", "Was kannst du?"): Antworte mit Text, KEINE Tools.
-2. AUSNAHME: Wenn der Nutzer persönliche Infos teilt (Name, Interessen), IMMER rememberUser aufrufen — auch wenn es in einer Begrüßung passiert (z.B. "Hallo, ich bin Max" → rememberUser aufrufen!).
-3. Rufe andere Tools NUR auf wenn der Nutzer EXPLIZIT eine Aktion anfordert:
-   - "Zeig mir Projekte" / "Geh zu Projekte" → navigate
-   - "Mach es dunkel" / "Dark Mode" → setTheme
-   - "Suche nach React" → searchBlog oder focusSearch
-   - "Öffne das Menü" / "Schließe das Menü" → toggleMenu
-   - "Scroll nach oben" → scrollTop
-   - "Kopiere den Link" → copyCurrentUrl
-   - "Öffne Bild-Upload" → openImageUpload
-   - "Lösch den Chatverlauf" → clearChatHistory
-4. Wenn du dir bei einer Aktion unsicher bist: Stelle eine kurze Rückfrage statt ein falsches Tool aufzurufen.
-5. Fasse NIEMALS eigenständig die Seite zusammen. Seitenzusammenfassungen werden nur über den separaten UI-Button ausgelöst.
-
-**Antwort-Stil:** Prägnant (2-3 Sätze), Markdown nutzen.`;
-
-  if (memoryContext) {
-    prompt += `\n\n**NUTZER-INFO:**\n${memoryContext}`;
-  }
-  if (imageContext) {
-    prompt += `\n\n**BILDANALYSE:**\n${imageContext}`;
-  }
-
-  return prompt;
-}
-
-// ─── Vectorize Memory ───────────────────────────────────────────────────────────
-
-function getFallbackMemoryKV(env) {
-  if (env.JULES_MEMORY_KV) return env.JULES_MEMORY_KV;
-  if (env.RATE_LIMIT_KV) return env.RATE_LIMIT_KV;
-  if (env.SITEMAP_CACHE_KV) return env.SITEMAP_CACHE_KV;
-  return null;
-}
-
-function getFallbackMemoryKey(userId) {
-  return `${FALLBACK_MEMORY_PREFIX}${String(userId || 'anonymous')}`;
-}
-
-function normalizeMemoryText(value) {
-  return String(value || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-async function loadFallbackMemories(env, userId) {
-  const kv = getFallbackMemoryKV(env);
-  if (!kv?.get) return [];
-
-  try {
-    const raw = await kv.get(getFallbackMemoryKey(userId));
-    const parsed = JSON.parse(raw || '[]');
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((entry) => ({
-        key: String(entry?.key || 'note'),
-        value: normalizeMemoryText(entry?.value || ''),
-        timestamp:
-          typeof entry?.timestamp === 'number' ? entry.timestamp : Date.now(),
-      }))
-      .filter((entry) => entry.value.length > 0)
-      .slice(-FALLBACK_MEMORY_LIMIT);
-  } catch {
-    return [];
-  }
-}
-
-async function saveFallbackMemory(env, userId, key, value) {
-  const kv = getFallbackMemoryKV(env);
-  if (!kv?.get || !kv?.put) return false;
-
-  const cleanedKey = String(key || 'note');
-  const cleanedValue = normalizeMemoryText(value);
-  if (!cleanedValue) return false;
-
-  try {
-    const existing = await loadFallbackMemories(env, userId);
-    const now = Date.now();
-    const duplicateIndex = existing.findIndex(
-      (item) =>
-        item.key === cleanedKey &&
-        item.value.toLowerCase() === cleanedValue.toLowerCase(),
-    );
-
-    if (duplicateIndex >= 0) {
-      existing[duplicateIndex] = {
-        ...existing[duplicateIndex],
-        timestamp: now,
-      };
-    } else {
-      existing.push({
-        key: cleanedKey,
-        value: cleanedValue,
-        timestamp: now,
-      });
-    }
-
-    await kv.put(
-      getFallbackMemoryKey(userId),
-      JSON.stringify(existing.slice(-FALLBACK_MEMORY_LIMIT)),
-    );
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function scoreFallbackMemoryEntry(entry, query) {
-  const haystack = `${entry.key} ${entry.value}`.toLowerCase();
-  const normalizedQuery = normalizeMemoryText(query).toLowerCase();
-  if (!normalizedQuery) return 0.5;
-
-  if (haystack.includes(normalizedQuery)) return 1;
-
-  const terms = normalizedQuery.split(/\s+/).filter((term) => term.length >= 2);
-  if (terms.length === 0) return 0.4;
-
-  let hits = 0;
-  for (const term of terms) {
-    if (haystack.includes(term)) hits += 1;
-  }
-  return hits / terms.length;
-}
-
-async function recallMemoriesFromFallback(
-  env,
-  userId,
-  query,
-  { topK = DEFAULT_MAX_MEMORY_RESULTS, scoreThreshold = 0 } = {},
+function buildAiRunParams(
+  messages,
+  config,
+  { useTools = false, maxTokens = config.maxTokens, stream = false } = {},
 ) {
-  const entries = await loadFallbackMemories(env, userId);
-  if (!entries.length) return [];
-
-  return entries
-    .map((entry) => ({
-      ...entry,
-      score: scoreFallbackMemoryEntry(entry, query),
-    }))
-    .filter((entry) => entry.score >= scoreThreshold)
-    .sort((a, b) =>
-      b.score === a.score ? b.timestamp - a.timestamp : b.score - a.score,
-    )
-    .slice(0, topK);
+  const params = {
+    messages,
+    temperature: 0.7,
+    max_tokens: maxTokens,
+  };
+  if (useTools) params.tools = TOOLS;
+  if (stream) params.stream = true;
+  return params;
 }
 
-async function storeMemory(env, userId, key, value, config) {
-  log.debug('storeMemory called', { userId, key, value });
-  const kvStored = await saveFallbackMemory(env, userId, key, value);
-  if (!env.AI || !env.JULES_MEMORY) {
-    return kvStored
-      ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
-      : { success: false };
-  }
-
-  try {
-    const text = `${key}: ${value}`;
-    const { data } = await env.AI.run(config.embeddingModel, { text: [text] });
-    if (!data?.[0]) {
-      return kvStored
-        ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
-        : { success: false, error: 'Embedding failed' };
-    }
-
-    const id = `${userId}_${key}_${Date.now()}`;
-    await env.JULES_MEMORY.upsert([
-      {
-        id,
-        values: data[0],
-        metadata: { userId, key, value, timestamp: Date.now(), text },
-      },
-    ]);
-    return {
-      success: true,
-      id,
-      storage: kvStored ? 'vectorize+kv' : 'vectorize',
-    };
-  } catch (error) {
-    if (error?.remote) {
-      return kvStored
-        ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
-        : { success: false, error: 'Vectorize not available locally' };
-    }
-    log.error('storeMemory error:', error?.message || error);
-    return kvStored
-      ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
-      : { success: false, error: error.message };
-  }
-}
-
-async function recallMemories(env, userId, query, config, options = {}) {
-  log.debug('recallMemories', { userId, query, options });
-  const topK = Number.isFinite(options.topK)
-    ? Math.max(1, Math.floor(options.topK))
-    : config.maxMemoryResults;
-  const scoreThreshold =
-    typeof options.scoreThreshold === 'number'
-      ? options.scoreThreshold
-      : config.memoryScoreThreshold;
-
-  if (!env.AI || !env.JULES_MEMORY) {
-    return recallMemoriesFromFallback(env, userId, query, {
-      topK,
-      scoreThreshold,
-    });
-  }
-
-  try {
-    const { data } = await env.AI.run(config.embeddingModel, { text: [query] });
-    if (!data?.[0]) {
-      return recallMemoriesFromFallback(env, userId, query, {
-        topK,
-        scoreThreshold,
-      });
-    }
-
-    const results = await env.JULES_MEMORY.query(data[0], {
-      topK,
-      filter: { userId },
-      returnMetadata: 'all',
-    });
-
-    const vectorMemories = (results?.matches || [])
-      .filter((m) => m.score >= scoreThreshold)
-      .map((m) => ({
-        key: m.metadata?.key || 'unknown',
-        value: m.metadata?.value || '',
-        score: m.score,
-        timestamp: m.metadata?.timestamp || 0,
-      }))
-      .sort((a, b) => b.timestamp - a.timestamp);
-
-    if (vectorMemories.length > 0) return vectorMemories;
-
-    return recallMemoriesFromFallback(env, userId, query, {
-      topK,
-      scoreThreshold,
-    });
-  } catch (error) {
-    if (!error?.remote)
-      log.warn('recallMemories error:', error?.message || error);
-    return recallMemoriesFromFallback(env, userId, query, {
-      topK,
-      scoreThreshold,
-    });
-  }
-}
-
-// ─── Image Analysis ─────────────────────────────────────────────────────────────
-
-async function analyzeImage(env, imageData, userPrompt = '', config) {
-  if (!env.AI) return 'Bildanalyse nicht verfügbar.';
-
-  try {
-    const prompt = userPrompt
-      ? `Analysiere dieses Bild im Web-Kontext. Der Nutzer fragt: "${userPrompt}". Antworte auf Deutsch.`
-      : 'Analysiere dieses Bild. Beschreibe es und gib Design-Feedback. Antworte auf Deutsch.';
-
-    const result = await env.AI.run(config.imageModel, {
-      prompt,
-      image: imageData,
-    });
-    return result?.description || result?.response || 'Keine Analyse erhalten.';
-  } catch (error) {
-    log.error('LLaVA error:', error);
-    return `Bildanalyse fehlgeschlagen: ${error.message}`;
-  }
-}
-
-// ─── Server-Side Tool Execution ─────────────────────────────────────────────────
-
-async function executeServerTool(env, toolName, args, userId, config) {
-  if (toolName === 'rememberUser') {
-    const result = await storeMemory(
-      env,
-      userId,
-      args.key || 'note',
-      args.value || '',
-      config,
-    );
-    return result.success
-      ? `✅ Gemerkt: ${args.key} = "${args.value}"`
-      : `Konnte nicht gespeichert werden (${result.error || 'Fehler'}).`;
-  }
-
-  if (toolName === 'recallMemory') {
-    const memories = await recallMemories(
-      env,
-      userId,
-      args.query || '',
-      config,
-    );
-    if (!memories.length) return 'Keine Erinnerungen gefunden.';
-    return (
-      'Bekannte Infos:\n' +
-      memories.map((m) => `- **${m.key}**: ${m.value}`).join('\n')
-    );
-  }
-
-  return null; // Client-side tool
-}
-
-function parseToolArguments(rawArguments, toolName) {
-  if (!rawArguments) return {};
-  if (typeof rawArguments === 'object' && !Array.isArray(rawArguments)) {
-    return rawArguments;
-  }
-  if (typeof rawArguments !== 'string') return {};
-
-  const trimmed = rawArguments.trim();
-  if (!trimmed) return {};
-
-  try {
-    const parsed = JSON.parse(trimmed);
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? parsed
-      : {};
-  } catch (error) {
-    log.warn(
-      `Failed to parse tool arguments for "${toolName || 'unknown'}":`,
-      error?.message || error,
-    );
-    return {};
-  }
-}
-
-async function classifyToolCalls(env, toolCalls, userId, config) {
-  const clientToolCalls = [];
-  const serverToolResults = [];
-  for (const tc of toolCalls) {
-    const args = parseToolArguments(tc?.arguments, tc?.name);
-    const serverResult = await executeServerTool(
-      env,
-      tc.name,
-      args,
-      userId,
-      config,
-    );
-    if (serverResult !== null) {
-      serverToolResults.push({ name: tc.name, result: serverResult });
-    } else {
-      clientToolCalls.push({ name: tc.name, arguments: args });
-    }
-  }
-  return { clientToolCalls, serverToolResults };
-}
-
-// ─── RAG Context ────────────────────────────────────────────────────────────────
-
-async function getRAGContext(query, env) {
-  if (!env.AI) return null;
-
-  try {
-    const ragId = env.RAG_ID || 'wispy-pond-1055';
-    const searchData = await env.AI.autorag(ragId).aiSearch({
-      query,
-      max_num_results: 3,
-      stream: false,
-    });
-
-    if (!searchData?.data?.length) return null;
-
-    return searchData.data
-      .slice(0, 3)
-      .map((item) => {
-        const content = Array.isArray(item.content)
-          ? item.content.map((c) => c.text || '').join(' ')
-          : item.text || item.description || '';
-        return content.replace(/\s+/g, ' ').trim().slice(0, 400);
-      })
-      .filter(Boolean)
-      .join('\n---\n');
-  } catch {
-    return null;
-  }
-}
-
-async function persistPromptMemories(env, userId, prompt, config) {
-  const facts = extractPromptMemoryFacts(prompt);
-  if (!facts.length) return [];
-
-  const results = await Promise.allSettled(
-    facts.map((fact) => storeMemory(env, userId, fact.key, fact.value, config)),
-  );
-
-  return facts
-    .map((fact, index) => ({ fact, result: results[index] }))
-    .filter(
-      (entry) =>
-        entry.result.status === 'fulfilled' && entry.result.value?.success,
-    )
-    .map((entry) => ({
-      key: entry.fact.key,
-      value: entry.fact.value,
-      score: 1,
-      timestamp: Date.now(),
-    }));
-}
-
-async function resolveMemoryContext(env, userId, prompt, config) {
-  const nameMem = await recallMemories(env, userId, 'name', config);
-  if (nameMem.length > 0) return nameMem;
-
-  const primary = await recallMemories(env, userId, prompt || 'user', config);
-  if (primary.length > 0) return primary;
-
-  if (!promptNeedsMemoryRecall(prompt)) return [];
-
-  const recallQueries = [
-    'name',
-    'interests',
-    'preferences',
-    'notes about this user',
+function buildServerToolFollowUpMessages(messages, serverToolResults) {
+  return [
+    ...messages,
+    {
+      role: 'assistant',
+      content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
+    },
+    {
+      role: 'user',
+      content: `Ergebnisse:\n${serverToolResults.map((r) => `[${r.name}]: ${r.result}`).join('\n')}\n\nAntworte dem Nutzer.`,
+    },
   ];
-
-  for (const query of recallQueries) {
-    const fallback = await recallMemories(env, userId, query, config, {
-      topK: Math.max(12, config.maxMemoryResults),
-      scoreThreshold: 0,
-    });
-    if (fallback.length > 0) return fallback;
-  }
-
-  return [];
 }
 
-function mergeMemoryEntries(recalled = [], stored = []) {
-  const merged = [...recalled];
-  const seen = new Set(
-    merged.map((entry) => `${entry.key}:${String(entry.value).toLowerCase()}`),
+function buildClientToolConfirmationMessages(messages, clientToolCalls) {
+  return [
+    ...messages,
+    {
+      role: 'assistant',
+      content: `Aktionen: ${clientToolCalls.map((t) => t.name).join(', ')}`,
+    },
+    {
+      role: 'user',
+      content: 'Bestätige kurz auf Deutsch (1-2 Sätze).',
+    },
+  ];
+}
+
+async function requestClientToolConfirmationText(
+  env,
+  messages,
+  clientToolCalls,
+  config,
+) {
+  const result = await env.AI.run(
+    config.chatModel,
+    buildAiRunParams(
+      buildClientToolConfirmationMessages(messages, clientToolCalls),
+      config,
+      { maxTokens: 256 },
+    ),
   );
+  return sanitizeAssistantText(result?.response || '');
+}
 
-  for (const item of stored) {
-    const hash = `${item.key}:${String(item.value).toLowerCase()}`;
-    if (seen.has(hash)) continue;
-    seen.add(hash);
-    merged.push(item);
+async function writeTokenizedText(write, text) {
+  for (const chunk of text.match(/\S+\s*/g) || [text]) {
+    await write('token', { text: chunk });
   }
+}
 
-  return merged.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+function getFallbackAgentText(existingText, clientToolCalls, serverToolResults) {
+  if (hasMeaningfulAgentText(existingText)) return existingText;
+  if (clientToolCalls.length > 0) return 'Aktion wird ausgeführt…';
+  if (serverToolResults.length > 0) {
+    return 'Ich habe deine Infos geprüft. Frag mich gern noch einmal.';
+  }
+  return 'Keine Antwort erhalten.';
 }
 
 // ─── Main Handler ───────────────────────────────────────────────────────────────
@@ -818,7 +223,6 @@ export async function onRequestPost(context) {
   });
 
   try {
-    // ── Parse request ──
     const contentType = request.headers.get('content-type') || '';
     let body;
     let imageAnalysis = '';
@@ -859,13 +263,12 @@ export async function onRequestPost(context) {
     const identity = resolveUserIdentity(request, requestedUserId);
     const userId = identity.userId;
     log.debug('request', { userId, prompt, requestedUserId });
-    // if identity is a simple name and we haven't explicitly stored it before,
-    // save it now so even passive visits (query string only) are remembered.
+    
     if (userId && userId.startsWith('name_')) {
       const nameVal = userId.slice(5);
-      // fire-and-forget, ignore errors
       storeMemory(env, userId, 'name', nameVal, config).catch(() => {});
     }
+    
     const jsonHeaders = withUserIdentityHeader(
       mergeHeaders(corsHeaders, {
         'Cache-Control': CACHE_CONTROL_NO_STORE,
@@ -876,7 +279,12 @@ export async function onRequestPost(context) {
 
     if (!prompt && !imageAnalysis) {
       return jsonResponse(
-        { error: 'Empty prompt', text: 'Kein Prompt empfangen.' },
+        {
+          error: 'Empty prompt',
+          ...buildAgentResponsePayload({
+            text: 'Kein Prompt empfangen.',
+          }),
+        },
         { status: 400, headers: jsonHeaders },
       );
     }
@@ -885,19 +293,19 @@ export async function onRequestPost(context) {
       return jsonResponse(
         {
           error: 'AI service not configured',
-          text: 'KI-Dienst nicht verfügbar.',
-          toolCalls: [],
-          retryable: false,
+          ...buildAgentResponsePayload({
+            text: 'KI-Dienst nicht verfügbar.',
+            retryable: false,
+          }),
         },
         { status: 500, headers: jsonHeaders },
       );
     }
 
-    // ── Parallel: memory + RAG + deterministic memory persistence ──
-    const [memResult, ragResult, storedPromptMemoriesResult] =
+    // ── Parallel: memory recall + deterministic memory persistence ──
+    const [memResult, storedPromptMemoriesResult] =
       await Promise.allSettled([
         resolveMemoryContext(env, userId, prompt, config),
-        getRAGContext(prompt, env),
         persistPromptMemories(env, userId, prompt, config),
       ]);
 
@@ -920,15 +328,8 @@ export async function onRequestPost(context) {
             .join('\n')
         : '';
 
-    const ragText =
-      ragResult.status === 'fulfilled' ? ragResult.value || '' : '';
-
     // ── Build messages ──
-    let systemPrompt = buildSystemPrompt(memoryContext, imageAnalysis);
-    if (ragText) {
-      systemPrompt += `\n\n**WEBSITE-KONTEXT (RAG):**\n${ragText}`;
-    }
-
+    const systemPrompt = buildSystemPrompt(memoryContext, imageAnalysis);
     const messages = [{ role: 'system', content: systemPrompt }];
 
     if (Array.isArray(conversationHistory)) {
@@ -967,16 +368,11 @@ export async function onRequestPost(context) {
         try {
           await write('status', { phase: 'thinking' });
 
-          // Only pass tools when user prompt implies an action
           const useTools = promptNeedsTools(prompt);
-          const aiParams = {
-            messages,
-            temperature: 0.7,
-            max_tokens: config.maxTokens,
-          };
-          if (useTools) aiParams.tools = TOOLS;
-
-          const aiResult = await env.AI.run(config.chatModel, aiParams);
+          const aiResult = await env.AI.run(
+            config.chatModel,
+            buildAiRunParams(messages, config, { useTools }),
+          );
 
           let toolCalls = Array.isArray(aiResult?.tool_calls)
             ? aiResult.tool_calls
@@ -1000,10 +396,7 @@ export async function onRequestPost(context) {
             );
           } else if (responseText) {
             await write('status', { phase: 'streaming' });
-            const words = responseText.match(/\S+\s*/g) || [responseText];
-            for (const word of words) {
-              await write('token', { text: word });
-            }
+            await writeTokenizedText(write, responseText);
             await write(
               'message',
               buildAgentMessagePayload(
@@ -1065,9 +458,10 @@ export async function onRequestPost(context) {
     return jsonResponse(
       {
         error: 'AI Agent request failed',
-        text: 'KI-Dienst fehlgeschlagen. Bitte erneut versuchen.',
-        toolCalls: [],
-        retryable: true,
+        ...buildAgentResponsePayload({
+          text: 'KI-Dienst fehlgeschlagen. Bitte erneut versuchen.',
+          retryable: true,
+        }),
       },
       {
         status: 503,
@@ -1098,7 +492,6 @@ async function processToolCalls(
     config,
   );
 
-  // Emit SSE events for each tool
   for (const sr of serverToolResults) {
     await write('tool', {
       name: sr.name,
@@ -1116,30 +509,17 @@ async function processToolCalls(
     });
   }
 
-  // Follow-up AI call with server tool results
   if (serverToolResults.length > 0 && messages.length > 0) {
     await write('status', { phase: 'synthesizing' });
-    const summary = serverToolResults
-      .map((r) => `[${r.name}]: ${r.result}`)
-      .join('\n');
-    const followUpMessages = [
-      ...messages,
-      {
-        role: 'assistant',
-        content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
-      },
-      {
-        role: 'user',
-        content: `Ergebnisse:\n${summary}\n\nAntworte dem Nutzer.`,
-      },
-    ];
+    const followUpMessages = buildServerToolFollowUpMessages(
+      messages,
+      serverToolResults,
+    );
     try {
-      const result = await env.AI.run(config.chatModel, {
-        messages: followUpMessages,
-        temperature: 0.7,
-        max_tokens: config.maxTokens,
-        stream: true,
-      });
+      const result = await env.AI.run(
+        config.chatModel,
+        buildAiRunParams(followUpMessages, config, { stream: true }),
+      );
       const text = sanitizeAssistantText(await streamToSSE(result, write));
       if (hasMeaningfulAgentText(text)) {
         await write(
@@ -1155,12 +535,10 @@ async function processToolCalls(
         return;
       }
 
-      // Local dev fallback: if stream parsing produced only fragments, force full non-stream answer.
-      const fallback = await env.AI.run(config.chatModel, {
-        messages: followUpMessages,
-        temperature: 0.7,
-        max_tokens: config.maxTokens,
-      });
+      const fallback = await env.AI.run(
+        config.chatModel,
+        buildAiRunParams(followUpMessages, config),
+      );
       const fallbackText = sanitizeAssistantText(fallback?.response || '');
       if (hasMeaningfulAgentText(fallbackText)) {
         await write('message', {
@@ -1180,7 +558,6 @@ async function processToolCalls(
     }
   }
 
-  // Follow-up for client-only tools without text
   if (
     clientToolCalls.length > 0 &&
     !hasMeaningfulAgentText(existingText) &&
@@ -1188,20 +565,14 @@ async function processToolCalls(
   ) {
     await write('status', { phase: 'responding' });
     try {
-      const names = clientToolCalls.map((t) => t.name).join(', ');
-      const r = await env.AI.run(config.chatModel, {
-        messages: [
-          ...messages,
-          { role: 'assistant', content: `Aktionen: ${names}` },
-          { role: 'user', content: 'Bestätige kurz auf Deutsch (1-2 Sätze).' },
-        ],
-        temperature: 0.7,
-        max_tokens: 256,
-      });
-      const followUpText = sanitizeAssistantText(r?.response || '');
+      const followUpText = await requestClientToolConfirmationText(
+        env,
+        messages,
+        clientToolCalls,
+        config,
+      );
       if (followUpText) {
-        for (const w of followUpText.match(/\S+\s*/g) || [followUpText])
-          await write('token', { text: w });
+        await writeTokenizedText(write, followUpText);
         await write(
           'message',
           buildAgentMessagePayload(
@@ -1219,17 +590,10 @@ async function processToolCalls(
     }
   }
 
-  // Fallback
   await write(
     'message',
     buildAgentMessagePayload(
-      hasMeaningfulAgentText(existingText)
-        ? existingText
-        : clientToolCalls.length > 0
-          ? 'Aktion wird ausgeführt…'
-          : serverToolResults.length > 0
-            ? 'Ich habe deine Infos geprüft. Frag mich gern noch einmal.'
-            : 'Keine Antwort erhalten.',
+      getFallbackAgentText(existingText, clientToolCalls, serverToolResults),
       clientToolCalls,
       serverToolResults,
       ctx,
@@ -1249,18 +613,13 @@ async function handleNonStreaming(
   config,
 ) {
   try {
-    // Only pass tools when user prompt implies an action
     const useTools = promptNeedsTools(
       messages[messages.length - 1]?.content || '',
     );
-    const aiParams = {
-      messages,
-      temperature: 0.7,
-      max_tokens: config.maxTokens,
-    };
-    if (useTools) aiParams.tools = TOOLS;
-
-    const aiResult = await env.AI.run(config.chatModel, aiParams);
+    const aiResult = await env.AI.run(
+      config.chatModel,
+      buildAiRunParams(messages, config, { useTools }),
+    );
     if (!aiResult) throw new Error('Empty AI response');
 
     let toolCalls = Array.isArray(aiResult.tool_calls)
@@ -1279,28 +638,16 @@ async function handleNonStreaming(
       config,
     );
 
-    // Follow-up for server tools
     let responseText = sanitizeAssistantText(aiResult.response || '');
     if (serverToolResults.length > 0) {
-      const summary = serverToolResults
-        .map((r) => `[${r.name}]: ${r.result}`)
-        .join('\n');
       try {
-        const followUp = await env.AI.run(config.chatModel, {
-          messages: [
-            ...messages,
-            {
-              role: 'assistant',
-              content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
-            },
-            {
-              role: 'user',
-              content: `Ergebnisse:\n${summary}\n\nAntworte dem Nutzer.`,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: config.maxTokens,
-        });
+        const followUp = await env.AI.run(
+          config.chatModel,
+          buildAiRunParams(
+            buildServerToolFollowUpMessages(messages, serverToolResults),
+            config,
+          ),
+        );
         const followUpText = sanitizeAssistantText(followUp?.response || '');
         if (followUpText) responseText = followUpText;
       } catch {
@@ -1308,23 +655,14 @@ async function handleNonStreaming(
       }
     }
 
-    // Follow-up for client-only tools without text
     if (!responseText && clientToolCalls.length > 0) {
       try {
-        const names = clientToolCalls.map((t) => t.name).join(', ');
-        const r = await env.AI.run(config.chatModel, {
-          messages: [
-            ...messages,
-            { role: 'assistant', content: `Aktionen: ${names}` },
-            {
-              role: 'user',
-              content: 'Bestätige kurz auf Deutsch (1-2 Sätze).',
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 256,
-        });
-        const followUpText = sanitizeAssistantText(r?.response || '');
+        const followUpText = await requestClientToolConfirmationText(
+          env,
+          messages,
+          clientToolCalls,
+          config,
+        );
         if (followUpText) responseText = followUpText;
       } catch {
         /* ignore */
@@ -1332,7 +670,7 @@ async function handleNonStreaming(
     }
 
     return jsonResponse(
-      {
+      buildAgentResponsePayload({
         text:
           responseText ||
           (clientToolCalls.length
@@ -1342,7 +680,7 @@ async function handleNonStreaming(
         model: config.chatModel,
         hasMemory: !!ctx.memoryContext,
         hasImage: !!ctx.imageAnalysis,
-      },
+      }),
       { headers: corsHeaders },
     );
   } catch (error) {
@@ -1350,7 +688,7 @@ async function handleNonStreaming(
     const prompt = String(messages[messages.length - 1]?.content || '');
     const fallbackToolCalls = inferClientToolCallsFromPrompt(prompt);
     return jsonResponse(
-      {
+      buildAgentResponsePayload({
         text:
           fallbackToolCalls.length > 0
             ? 'Der KI-Dienst ist gerade nicht erreichbar. Ich habe die angefragte Aktion trotzdem lokal ausgefuehrt.'
@@ -1361,7 +699,7 @@ async function handleNonStreaming(
         hasImage: !!ctx.imageAnalysis,
         retryable: true,
         degraded: true,
-      },
+      }),
       { headers: corsHeaders },
     );
   }

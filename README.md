@@ -1,7 +1,6 @@
 # Portfolio Website
 
 [![CI/CD](https://github.com/aKs030/iweb/actions/workflows/main.yml/badge.svg)](https://github.com/aKs030/iweb/actions/workflows/main.yml)
-[![CodeQL](https://github.com/aKs030/iweb/actions/workflows/codeql.yml/badge.svg)](https://github.com/aKs030/iweb/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen)](https://nodejs.org/)
 [![Lighthouse](https://img.shields.io/badge/lighthouse-95%2B-brightgreen)](https://www.abdulkerimsesli.de)
@@ -29,17 +28,10 @@ Lokale URL: [http://localhost:8787](http://localhost:8787)
 
 ```bash
 npm run dev           # Lokalen Cloudflare-Pages-Server starten
-npm run qa            # Empfohlen: kompletter Qualitäts-Run (alles prüfen)
-npm run fix           # Auto-fix für ESLint + Stylelint + Prettier
-npm run format        # Nur Prettier schreiben
-npm run sync:import-map # Import-Map-Artefakte aus package.json synchronisieren
-npm run lint:apps-config # Projekt-Apps-Konfiguration prüfen
-npm run clean:artifacts # Caches, output, coverage und lokale Artefakte löschen
-npm run clean         # lokale Cache/Artifacts löschen
+npm run build         # Functions-Bundle lokal bauen
+npm run sync          # Generierte Import-Map und Footer-Dateien aktualisieren
+npm run clean         # Lokale Artefakte/Caches löschen
 npm run clean:full    # zusätzlich .wrangler / lokale D1-Daten löschen
-npm run prepare       # Husky Hooks installieren/aktualisieren
-npm run content-rag:update # Jules Content-RAG aktualisieren
-npm run content-rag:status # Jules Content-RAG Status prüfen
 ```
 
 Optionaler Port:
@@ -48,48 +40,17 @@ Optionaler Port:
 npm run dev -- --port 8787
 ```
 
-### Linting-Policy (modern)
+`npm run dev` zeigt beim Start automatisch die lokale URL, eine Netzwerk-URL falls verfügbar und führt lokale D1-Migrationen vor dem Start aus.
 
-- `npm run lint:es`
-  - ESLint prüft nur JS/MJS/CJS-Dateien.
-  - CSS-Dateien werden absichtlich ignoriert (`*.css` wird in ESLint `ignorePatterns` ausgeschlossen).
-  - Mit `--no-warn-ignored` in `package.json` unterdrückt es irrelevante Warnungen.
-- `npm run lint:css`
-  - Stylelint prüft alle CSS-Dateien (`**/*.css`).
-- `npm run lint` (oder `npm run qa`)
-  - Vollständiger Qualitäts-Run: ESLint + Stylelint + Prettier + Import-Map + Apps-Config-Check.
-
-`npm run dev` zeigt beim Start automatisch:
-
-- lokale URL (`localhost`)
-- Netzwerk-URL (LAN-IP), falls verfügbar
-
-## Hooks
-
-- `pre-commit`: `lint-staged` auf gestagten Dateien
-- `pre-push`: `npm run lint` mit optionalem Override bei Fehlern
+Der Repo-Workflow ist bewusst schlank gehalten: lokale Entwicklung, gezielte Generator-Synchronisierung und ein kleines Set an operativen Kommandos.
 
 ## CI/CD
 
 GitHub Workflows:
 
-- [`.github/workflows/main.yml`](.github/workflows/main.yml) - Lint, Security & Preview Deployments
+- [`.github/workflows/main.yml`](.github/workflows/main.yml) - schlankes Preview-Deployment für Pull Requests
 
-Preview-Deployments bleiben auf das Deployment reduziert. Content-RAG-Updates laufen bewusst nur noch manuell fuer die Live-Domain.
-
-Falls du intent-basiertes Vectorize-Filtering fuer den Jules-Content-RAG aktivierst, richte die Metadata-Indexes reproduzierbar mit `npm run setup:content-rag-index -- --url=...` ein. Das Skript legt `sourceType` und `category` an und startet danach ein einmaliges Full-Update, damit bestehende Vektoren neu indexiert werden.
-
-Der Robot-Agent begrenzt Memory-Recall und RAG-Retrieval ueber `ROBOT_CONTEXT_TIMEOUT_MS` standardmaessig auf `3500ms`. Prompt-Memory-Persistenz laeuft getrennt ueber `context.waitUntil(...)`, damit langsame Vectorize-/KV-/Embedding-Aufrufe die Chat-Antwort nicht blockieren.
-
-Fuer manuelle Live-Updates:
-
-```bash
-ADMIN_TOKEN=... npm run content-rag:update -- --url=https://www.abdulkerimsesli.de
-```
-
-Lokal laden die Admin-/RAG-Skripte `ADMIN_TOKEN` und weitere Variablen automatisch aus `.dev.vars`, `.env.local` oder `.env`, falls sie nicht bereits in der Shell gesetzt sind. Die Import-Map wird über `npm run sync:import-map` aus `package.json` synchronisiert und per `npm run lint` auf Drift geprüft. Media-Referenzen und AI-Index bleiben bewusst manuell gepflegt.
-
-Dependency-Automation ist bewusst getrennt: Renovate verwaltet npm-Paketupdates, Dependabot nur GitHub Actions. So entstehen keine doppelten Update-PRs.
+Preview-Deployments bleiben auf das Deployment reduziert. Der Robot-Agent begrenzt Memory-Recall über `ROBOT_CONTEXT_TIMEOUT_MS` standardmäßig auf `3500ms`, und Prompt-Memory-Persistenz läuft getrennt über `context.waitUntil(...)`, damit langsame Hintergrundschritte die Chat-Antwort nicht blockieren.
 
 ## Projektstruktur
 
@@ -97,30 +58,42 @@ Dependency-Automation ist bewusst getrennt: Renovate verwaltet npm-Paketupdates,
 content/      Frontend-Code (Komponenten, Core, Styles, Media)
 pages/        Seiten-spezifische Entry-Points
 functions/    Cloudflare Pages Functions + API-Endpunkte
-docs/         Technische Dokumentation
-scripts/      Repo-Wartung und Prüfskripte
-config/       Konfigurationsdateien (ESLint, Prettier, Stylelint)
+scripts/      Schlanke Dev- und Content-Utilities
 .github/      CI/CD Workflows
 ```
 
-Details: [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)
+## Root-Dateien
 
-Root-Entry-Points fuer Editor und CLI:
+- `index.html`, `offline.html`, `sw.js` - zentrale Entry-Points
+- `package.json`, `wrangler.jsonc`, `.env.example` - Projekt- und Laufzeitkonfiguration
+- `_headers`, `_redirects` - Cloudflare Header- und Routing-Regeln
+- `ai-index.json`, `llms.txt`, `llms-full.txt`, `person.jsonld`, `bio.md` - AI-Discovery und SEO
 
-- `prettier.config.mjs`
-- `eslint.config.mjs`
-- `.stylelintrc.cjs`
+## Architektur
 
-Admin-Dashboard:
+Frontend-Layer:
 
-- `pages/admin.html` enthaelt die Struktur
-- `pages/admin/admin-app.js` enthaelt die Client-Logik
+- `content/core` - generische Utilities und Runtime-Bausteine
+- `content/components` - wiederverwendbare UI-Komponenten
+- `content/styles` - globale Styles, Foundation und Utilities
+- `pages/*` - Seiten-Entry-Points und Seitenspezifika
+
+Cloudflare Functions:
+
+- `functions/api` - API-Endpunkte
+- `functions/sitemap*.js` - Sitemap-Generierung
+- `functions/_shared` - gemeinsame Laufzeit-Helfer
+
+## Deployment
+
+- Pull Request -> Preview-Deploy über GitHub Actions
+- `wrangler.jsonc` enthält das gemeinsame Setup für lokale Entwicklung und Preview
+- Secrets gehören nicht ins Repo; lokal werden nur `.dev.vars`, `.env.local` oder `.env` verwendet
 
 ## Dokumentation
 
-- [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md) - Vollständige Projekt-Dokumentation
+- [`functions/api/README.md`](functions/api/README.md) - API- und Functions-Überblick
 - [`content/styles/README.md`](content/styles/README.md) - CSS-Foundation und Utility-Workflow
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) - Beitrag/Workflow
 - [`SECURITY.md`](SECURITY.md) - Security Policy
 
 ## AI Discovery & SEO

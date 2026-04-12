@@ -17,7 +17,7 @@ import {
   initOverlayManager,
   registerOverlayController,
 } from '#core/overlay-manager.js';
-import { upsertHeadLink } from '#core/dom-utils.js';
+import { loadHeadStylesheet, upsertHeadLink } from '#core/dom-utils.js';
 import { createLogger } from '#core/logger.js';
 
 /**
@@ -51,6 +51,8 @@ export class SiteMenu extends HTMLElement {
     this.shadowStyleElement = null;
     this.initialized = false;
     this._overlayControllerCleanupFns = [];
+    this._deferredStylesPromise = null;
+    this._deferredStylesReady = false;
   }
 
   async connectedCallback() {
@@ -185,16 +187,18 @@ export class SiteMenu extends HTMLElement {
   getCssUrls() {
     const fallbackUrls = [
       '/content/components/menu/menu-base.css',
-      '/content/components/menu/menu-search.css',
       '/content/components/menu/menu-states.css',
       '/content/components/menu/menu-mobile.css',
-      '/content/components/menu/menu-backdrop.css',
     ];
     const configuredUrls = Array.isArray(this.config.CSS_URLS)
       ? this.config.CSS_URLS
       : fallbackUrls;
 
     return this.dedupeCssUrls(configuredUrls);
+  }
+
+  getDeferredCssUrls() {
+    return this.dedupeCssUrls(this.config.DEFERRED_CSS_URLS);
   }
 
   getGlobalCssUrls() {
@@ -204,6 +208,15 @@ export class SiteMenu extends HTMLElement {
   getShadowCssUrls(allCssUrls = this.getCssUrls()) {
     if (Array.isArray(this.config.SHADOW_CSS_URLS)) {
       return this.dedupeCssUrls(this.config.SHADOW_CSS_URLS);
+    }
+
+    const globalUrls = new Set(this.getGlobalCssUrls());
+    return allCssUrls.filter((cssUrl) => !globalUrls.has(cssUrl));
+  }
+
+  getDeferredShadowCssUrls(allCssUrls = this.getDeferredCssUrls()) {
+    if (Array.isArray(this.config.DEFERRED_SHADOW_CSS_URLS)) {
+      return this.dedupeCssUrls(this.config.DEFERRED_SHADOW_CSS_URLS);
     }
 
     const globalUrls = new Set(this.getGlobalCssUrls());
@@ -224,6 +237,14 @@ export class SiteMenu extends HTMLElement {
         dataset: { injectedBy },
       });
     }
+  }
+
+  ensureHeadStylesAsync(cssUrls, injectedBy = 'site-menu-deferred') {
+    if (!cssUrls.length) return Promise.resolve([]);
+
+    return Promise.all(
+      cssUrls.map((cssUrl) => loadHeadStylesheet(cssUrl, { injectedBy })),
+    );
   }
 
   async ensureStyles() {
@@ -267,6 +288,72 @@ export class SiteMenu extends HTMLElement {
     }
 
     this.ensureHeadStyles(allCssUrls, 'site-menu');
+  }
+
+  async ensureDeferredStyles() {
+    if (this._deferredStylesReady) return;
+    if (this._deferredStylesPromise) return this._deferredStylesPromise;
+
+    const deferredCssUrls = this.getDeferredCssUrls();
+    if (deferredCssUrls.length === 0) {
+      this._deferredStylesReady = true;
+      return;
+    }
+
+    this._deferredStylesPromise = (async () => {
+      if (this.usesShadowDOM && this.shadowRoot) {
+        const shadowCssUrls = this.getDeferredShadowCssUrls(deferredCssUrls);
+        if (shadowCssUrls.length > 0) {
+          const sheets = await this.getShadowStylesheets(shadowCssUrls);
+
+          if (sheets.length > 0 && 'adoptedStyleSheets' in this.shadowRoot) {
+            const mergedSheets = [...this.shadowRoot.adoptedStyleSheets];
+            for (const sheet of sheets) {
+              if (!mergedSheets.includes(sheet)) {
+                mergedSheets.push(sheet);
+              }
+            }
+            this.shadowRoot.adoptedStyleSheets = mergedSheets;
+          } else {
+            const cssText = await this.getShadowScopedCssTextBatch(
+              shadowCssUrls,
+            );
+            if (cssText) {
+              if (!this.shadowStyleElement) {
+                this.shadowStyleElement = document.createElement('style');
+                this.shadowStyleElement.dataset.injectedBy =
+                  'site-menu-shadow';
+                this.shadowRoot.appendChild(this.shadowStyleElement);
+              }
+              this.shadowStyleElement.textContent = [
+                this.shadowStyleElement.textContent || '',
+                cssText,
+              ]
+                .filter(Boolean)
+                .join('\n');
+            }
+          }
+        }
+
+        this.ensureHeadStyles(this.getGlobalCssUrls(), 'site-menu-global');
+        this._deferredStylesReady = true;
+      } else {
+        await this.ensureHeadStylesAsync(
+          deferredCssUrls,
+          'site-menu-deferred',
+        );
+        this._deferredStylesReady = true;
+      }
+    })()
+      .catch((error) => {
+        this._deferredStylesPromise = null;
+        logger.warn('Failed to load deferred menu styles:', error);
+      })
+      .finally(() => {
+        this._deferredStylesPromise = null;
+      });
+
+    return this._deferredStylesPromise;
   }
 
   async getShadowScopedCssTextBatch(cssUrls) {

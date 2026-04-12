@@ -1,36 +1,11 @@
 {
   "name": "aks-website",
   "version": "1.0.0",
-  "description": "Portfolio Website mit Cloudflare AI Search (Vanilla JS)",
+  "description": "Portfolio Website mit Cloudflare Pages Functions (Vanilla JS)",
   "private": true,
   "type": "module",
-  "keywords": [
-    "portfolio",
-    "three.js",
-    "cloudflare-pages",
-    "ai-search",
-    "rag",
-    "web-components",
-    "vanilla-javascript",
-    "zero-build",
-    "edge-computing",
-    "webgl",
-    "performance"
-  ],
-  "author": {
-    "name": "Abdulkerim Sesli",
-    "email": "kontakt@abdulkerimsesli.de",
-    "url": "https://www.abdulkerimsesli.de"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aKs030/iweb.git"
-  },
+  "author": "Abdulkerim Sesli <kontakt@abdulkerimsesli.de>",
   "homepage": "https://www.abdulkerimsesli.de",
-  "bugs": {
-    "url": "https://github.com/aKs030/iweb/issues",
-    "email": "kontakt@abdulkerimsesli.de"
-  },
   "license": "MIT",
   "engines": {
     "node": ">=22.0.0",
@@ -43,49 +18,14 @@
     "#pages/*": "./pages/*"
   },
   "scripts": {
-    "dev": "npm run dev:server",
-    "predev": "npm run db:migrate:local",
-    "dev:server": "wrangler pages dev . --port 8787 --show-interactive-dev-session=false",
-    "preview": "npm run dev:server",
-    "prepreview": "npm run db:migrate:local",
-    "start": "npm run dev",
-    "db:migrate:local": "node scripts/run-local-d1-migrations.mjs",
-    "lint": "run-p lint:*",
-    "typecheck": "run-p typecheck:*",
-    "typecheck:browser": "tsc --noEmit -p tsconfig.json",
-    "typecheck:functions": "tsc --noEmit -p functions/tsconfig.json",
-    "types:wrangler": "wrangler types worker-configuration.d.ts",
-    "build:functions": "wrangler pages functions build functions --project-directory .",
-    "lint:es": "eslint . --ext .js,.mjs,.cjs --no-warn-ignored --cache --cache-location node_modules/.cache/eslint/.eslintcache",
-    "lint:css": "stylelint \"**/*.css\" --cache --cache-location node_modules/.cache/stylelint/.stylelintcache --ignore-path .gitignore",
-    "lint:format": "prettier --check .",
-    "lint:wrangler-types": "wrangler types worker-configuration.d.ts --check",
-    "lint:import-map": "node scripts/sync-import-map.mjs --check",
-    "lint:footer-template": "node scripts/sync-footer-template.mjs --check",
-    "lint:apps-config": "node scripts/validate-apps-config.mjs",
-    "cloudflare:drift": "node scripts/check-pages-config-drift.mjs --project-name=1web --account-id=652ca9f4abc93203c1ecd059dc00d1da --expected-build-command='exit 0'",
-    "fix": "run-p fix:*",
-    "fix:es": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/.eslintcache",
-    "fix:css": "stylelint \"**/*.css\" --fix --cache --cache-location node_modules/.cache/stylelint/.stylelintcache --ignore-path .gitignore",
-    "fix:format": "prettier --write .",
-    "format": "npm run fix:format",
-    "sync:import-map": "node scripts/sync-import-map.mjs --write",
-    "sync:footer-template": "node scripts/sync-footer-template.mjs --write",
-    "content-rag:update": "node scripts/content-rag-update.mjs",
-    "content-rag:full": "node scripts/content-rag-update.mjs --full",
-    "content-rag:status": "node scripts/content-rag-update.mjs --status",
-    "admin:maintenance": "node scripts/admin-maintenance.mjs",
-    "setup:content-rag-index": "node scripts/setup-content-rag-index.mjs",
-    "clean:artifacts": "rm -rf node_modules/.cache .cache .prettiercache .eslintcache .stylelintcache output coverage .nyc_output .playwright-cli",
-    "qa": "run-s fix lint",
-    "clean": "npm run clean:cache",
-    "clean:full": "run-p clean:cache clean:dev",
-    "clean:cache": "rm -rf node_modules/.cache .prettiercache .eslintcache .stylelintcache",
-    "clean:dev": "rm -rf .wrangler node_modules/.mf _worker.bundle",
-    "clean:wrangler": "rm -rf .wrangler",
-    "prepare": "husky",
-    "preinstall": "npx only-allow npm",
-    "postinstall": "echo '✅ Dependencies installed successfully'"
+    "dev": "node scripts/run-wrangler.mjs pages dev . --port 8787 --show-interactive-dev-session=false",
+    "predev": "npm run db:migrate",
+    "db:migrate": "node scripts/run-local-d1-migrations.mjs",
+    "build": "node scripts/run-wrangler.mjs pages functions build functions --project-directory .",
+    "check": "npm run build",
+    "sync": "node scripts/sync-wrangler-vars.mjs && node scripts/sync-import-map.mjs && node scripts/sync-footer-template.mjs",
+    "clean": "rm -rf node_modules/.cache .cache output coverage .nyc_output .playwright-cli",
+    "clean:full": "rm -rf node_modules/.cache .cache output coverage .nyc_output .playwright-cli .wrangler node_modules/.mf _worker.bundle"
   },
   "dependencies": {
     "htm": "^3.1.1",
@@ -93,32 +33,5 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "three": "^0.183.2"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "4.20260405.1",
-    "@eslint/js": "^10.0.1",
-    "@types/node": "25.5.2",
-    "eslint": "10.2.0",
-    "globals": "^17.4.0",
-    "husky": "^9.1.7",
-    "lint-staged": "16.4.0",
-    "npm-run-all2": "^8.0.4",
-    "prettier": "^3.8.1",
-    "stylelint": "17.6.0",
-    "typescript": "6.0.2",
-    "wrangler": "4.80.0"
-  },
-  "lint-staged": {
-    "*.{js,mjs,cjs}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.css": [
-      "stylelint --fix",
-      "prettier --write"
-    ],
-    "*.{md,html,json,jsonc,yml,yaml}": [
-      "prettier --write"
-    ]
   }
 }

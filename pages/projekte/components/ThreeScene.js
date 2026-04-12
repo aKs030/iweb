@@ -7,6 +7,107 @@ const BREAKPOINTS = {
   tablet: 1024,
 };
 
+const QUALITY_PROFILES = Object.freeze({
+  high: Object.freeze({
+    key: 'high',
+    starCount: 4000,
+    starSize: 0.08,
+    starOpacity: 0.6,
+    dprCap: 2,
+    targetFrameIntervalMs: 16,
+    minFps: 48,
+    motionScale: 1,
+    antialias: true,
+  }),
+  balanced: Object.freeze({
+    key: 'balanced',
+    starCount: 2600,
+    starSize: 0.072,
+    starOpacity: 0.54,
+    dprCap: 1.5,
+    targetFrameIntervalMs: 20,
+    minFps: 42,
+    motionScale: 0.88,
+    antialias: true,
+  }),
+  low: Object.freeze({
+    key: 'low',
+    starCount: 1400,
+    starSize: 0.066,
+    starOpacity: 0.46,
+    dprCap: 1.25,
+    targetFrameIntervalMs: 28,
+    minFps: 34,
+    motionScale: 0.72,
+    antialias: false,
+  }),
+  saver: Object.freeze({
+    key: 'saver',
+    starCount: 800,
+    starSize: 0.06,
+    starOpacity: 0.36,
+    dprCap: 1,
+    targetFrameIntervalMs: 34,
+    minFps: 24,
+    motionScale: 0.5,
+    antialias: false,
+  }),
+});
+
+const QUALITY_PROFILE_ORDER = ['high', 'balanced', 'low', 'saver'];
+
+function getRuntimeQualitySignals() {
+  const nav =
+    typeof navigator === 'undefined'
+      ? /** @type {any} */ ({})
+      : /** @type {any} */ (navigator);
+  const connection =
+    nav?.connection || nav?.mozConnection || nav?.webkitConnection || null;
+
+  return {
+    deviceMemory: Number(nav?.deviceMemory || 0),
+    hardwareConcurrency: Number(nav?.hardwareConcurrency || 0),
+    effectiveType: String(connection?.effectiveType || '').toLowerCase(),
+    saveData: Boolean(connection?.saveData),
+    reducedMotion:
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  };
+}
+
+function resolveInitialQualityProfileKey(viewportWidth) {
+  const signals = getRuntimeQualitySignals();
+
+  if (signals.reducedMotion || signals.saveData) {
+    return 'saver';
+  }
+
+  if (
+    signals.effectiveType === 'slow-2g' ||
+    signals.effectiveType === '2g' ||
+    (signals.deviceMemory > 0 && signals.deviceMemory <= 2)
+  ) {
+    return 'low';
+  }
+
+  if (
+    viewportWidth <= BREAKPOINTS.mobile ||
+    (signals.hardwareConcurrency > 0 && signals.hardwareConcurrency <= 4) ||
+    (signals.deviceMemory > 0 && signals.deviceMemory <= 4)
+  ) {
+    return 'balanced';
+  }
+
+  return 'high';
+}
+
+function getNextLowerQualityProfileKey(currentKey) {
+  const currentIndex = QUALITY_PROFILE_ORDER.indexOf(currentKey);
+  if (currentIndex < 0) return QUALITY_PROFILE_ORDER[QUALITY_PROFILE_ORDER.length - 1];
+  return QUALITY_PROFILE_ORDER[Math.min(currentIndex + 1, QUALITY_PROFILE_ORDER.length - 1)];
+}
+
 function getViewportSize(container) {
   const width = Math.max(
     1,
@@ -56,6 +157,30 @@ function getMotionProfile(viewportWidth) {
   };
 }
 
+function createStarsForQuality(quality) {
+  const starGeometry = new THREE.BufferGeometry();
+  const starCount = quality.starCount;
+  const posArray = new Float32Array(starCount * 3);
+
+  for (let i = 0; i < starCount * 3; i += 1) {
+    posArray[i] = (Math.random() - 0.5) * 150;
+  }
+
+  starGeometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(posArray, 3),
+  );
+
+  const starMaterial = new THREE.PointsMaterial({
+    size: quality.starSize,
+    color: 0xffffff,
+    transparent: true,
+    opacity: quality.starOpacity,
+  });
+
+  return new THREE.Points(starGeometry, starMaterial);
+}
+
 function getProjectsSignature(projects) {
   return projects
     .map((project) => project?.name || project?.dirName || project?.id || '')
@@ -72,6 +197,91 @@ let globalStars = null;
 let globalGallery = null;
 let globalCameraLight = null;
 let globalGallerySignature = '';
+let globalQualityProfileKey = '';
+let globalQualityProfile = null;
+let globalQualityRuntime = {
+  frameDeltas: [],
+  lastFrameTime: 0,
+  lastPerformanceCheckTime: 0,
+  lastRenderTime: 0,
+};
+
+function getActiveQualityProfile() {
+  return globalQualityProfile || QUALITY_PROFILES.balanced;
+}
+
+function setActiveQualityProfile(profileKey) {
+  const nextProfile = QUALITY_PROFILES[profileKey] || QUALITY_PROFILES.balanced;
+  if (globalQualityProfileKey === nextProfile.key && globalQualityProfile) {
+    return false;
+  }
+
+  globalQualityProfileKey = nextProfile.key;
+  globalQualityProfile = nextProfile;
+  globalQualityRuntime = {
+    frameDeltas: [],
+    lastFrameTime: 0,
+    lastPerformanceCheckTime: 0,
+    lastRenderTime: 0,
+  };
+  return true;
+}
+
+function rebuildStarsForActiveQuality() {
+  if (!globalScene) return;
+
+  if (globalStars) {
+    globalScene.remove(globalStars);
+    globalStars.geometry?.dispose?.();
+    globalStars.material?.dispose?.();
+  }
+
+  globalStars = createStarsForQuality(getActiveQualityProfile());
+  globalScene.add(globalStars);
+}
+
+function maybeDowngradeQuality(now) {
+  const quality = getActiveQualityProfile();
+  const runtime = globalQualityRuntime;
+
+  if (!runtime.lastFrameTime) {
+    runtime.lastFrameTime = now;
+    runtime.lastPerformanceCheckTime = now;
+    return false;
+  }
+
+  const delta = now - runtime.lastFrameTime;
+  runtime.lastFrameTime = now;
+
+  if (delta <= 0 || delta > 1000) {
+    return false;
+  }
+
+  runtime.frameDeltas.push(delta);
+  if (runtime.frameDeltas.length > 48) {
+    runtime.frameDeltas.shift();
+  }
+
+  if (
+    runtime.frameDeltas.length < 12 ||
+    now - runtime.lastPerformanceCheckTime < 2000
+  ) {
+    return false;
+  }
+
+  runtime.lastPerformanceCheckTime = now;
+  const avgDelta =
+    runtime.frameDeltas.reduce((sum, value) => sum + value, 0) /
+    runtime.frameDeltas.length;
+  runtime.frameDeltas = [];
+
+  const fps = avgDelta > 0 ? 1000 / avgDelta : 60;
+  if (fps >= quality.minFps || quality.key === 'saver') {
+    return false;
+  }
+
+  return setActiveQualityProfile(getNextLowerQualityProfileKey(quality.key));
+}
 
 /**
  * Three.js Scene Component
@@ -100,13 +310,20 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     isMountedRef.current = true;
     if (!containerRef.current) return;
 
+    if (!globalQualityProfile) {
+      setActiveQualityProfile(
+        resolveInitialQualityProfileKey(window.innerWidth),
+      );
+    }
+
     // --- 1. INITIALIZATION (Once per app session) ---
     if (!globalRenderer) {
       try {
+        const quality = getActiveQualityProfile();
         // Setup Renderer
         globalRenderer = new THREE.WebGLRenderer({
           alpha: true,
-          antialias: true,
+          antialias: quality.antialias,
           powerPreference: 'high-performance',
           failIfMajorPerformanceCaveat: false,
         });
@@ -135,23 +352,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
         globalCamera.position.set(0, 1, 5); // Slightly higher Y position to better view elevated objects
 
         // Setup Stars
-        const starGeometry = new THREE.BufferGeometry();
-        const starCount = 4000;
-        const posArray = new Float32Array(starCount * 3);
-        for (let i = 0; i < starCount * 3; i++) {
-          posArray[i] = (Math.random() - 0.5) * 150;
-        }
-        starGeometry.setAttribute(
-          'position',
-          new THREE.BufferAttribute(posArray, 3),
-        );
-        const starMaterial = new THREE.PointsMaterial({
-          size: 0.08,
-          color: 0xffffff,
-          transparent: true,
-          opacity: 0.6,
-        });
-        globalStars = new THREE.Points(starGeometry, starMaterial);
+        globalStars = createStarsForQuality(quality);
         globalScene.add(globalStars);
 
         // Lighting
@@ -207,12 +408,10 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
       const { width, height } = getViewportSize(containerRef.current);
       viewportWidthRef.current = width;
-
-      // MAX QUALITY: Remove caps and allow native resolution up to DPR 3
-      const dprCap = 3;
+      const quality = getActiveQualityProfile();
 
       globalRenderer.setPixelRatio(
-        Math.min(window.devicePixelRatio || 1, dprCap),
+        Math.min(window.devicePixelRatio || 1, quality.dprCap),
       );
       globalRenderer.setSize(width, height, false);
       globalCamera.fov = getCameraFov(width);
@@ -256,6 +455,21 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       // CPU/GPU Optimization: Skip heavy calculations and rendering if totally off-screen
       if (!isVisibleRef.current) return;
 
+      const quality = getActiveQualityProfile();
+      if (
+        globalQualityRuntime.lastRenderTime &&
+        time - globalQualityRuntime.lastRenderTime <
+          quality.targetFrameIntervalMs
+      ) {
+        return;
+      }
+      globalQualityRuntime.lastRenderTime = time;
+
+      if (maybeDowngradeQuality(time)) {
+        rebuildStarsForActiveQuality();
+        doResize();
+      }
+
       const t = time * 0.001;
 
       // Update Camera & Light
@@ -272,9 +486,11 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
           (targetZ - globalCamera.position.z) * lerpFactor;
 
         // Reduce lateral motion on small screens to keep focus centered.
-        globalCamera.position.x = Math.sin(t * 0.5) * motion.xAmplitude;
+        globalCamera.position.x =
+          Math.sin(t * 0.5) * motion.xAmplitude * quality.motionScale;
         globalCamera.position.y =
-          motion.yBase + Math.cos(t * 0.3) * motion.yAmplitude;
+          motion.yBase +
+          Math.cos(t * 0.3) * motion.yAmplitude * quality.motionScale;
 
         globalCameraLight.position.copy(globalCamera.position);
       }
@@ -283,7 +499,8 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       if (globalStars) {
         const viewportWidth = viewportWidthRef.current;
         const motion = getMotionProfile(viewportWidth);
-        globalStars.rotation.z = t * motion.starRotationSpeed;
+        globalStars.rotation.z =
+          t * motion.starRotationSpeed * quality.motionScale;
       }
 
       // Update Gallery

@@ -128,6 +128,31 @@ const SCHEMA_PAGE_TYPE_CONFIG = Object.freeze({
       'Profil',
     ],
   }),
+  aiInfo: Object.freeze({
+    discoveryText:
+      'Die AI-Info-Seite bündelt Profil, Discovery-Dateien, strukturierte Daten und Kontaktpunkte für Suchsysteme, Agenten und andere KI-gestützte Clients.',
+    schemaKeywords: [
+      'AI Discovery',
+      'LLM Index',
+      'Strukturierte Daten',
+      'Profil Hub',
+    ],
+    seoTopics: [
+      'AI Indexing',
+      'LLM Discovery',
+      'Strukturierte Daten',
+      'Profil Hub',
+      'API Discovery',
+    ],
+    aboutTopics: [
+      'Portfolio',
+      'Webentwicklung',
+      'AI Discovery',
+      'LLM Index',
+      'Strukturierte Daten',
+      'Profil',
+    ],
+  }),
   generic: Object.freeze({
     discoveryText:
       'Diese Seite ist Teil des Portfolios von Abdulkerim Sesli und ergänzt den Gesamtzusammenhang aus Text, Bild und Video.',
@@ -191,6 +216,7 @@ function detectSchemaPageType(pathname = '/') {
   if (path.startsWith('/gallery')) return 'gallery';
   if (path.startsWith('/projekte')) return 'projects';
   if (path.startsWith('/about')) return 'about';
+  if (path.startsWith('/ai-info')) return 'aiInfo';
   return 'generic';
 }
 

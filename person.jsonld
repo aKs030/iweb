@@ -25,7 +25,7 @@
     "Three.js",
     "WebGL",
     "AI Integration",
-    "RAG",
+    "Site Search",
     "Performance Optimization",
     "Cloudflare Workers",
     "Edge Computing",
@@ -91,19 +91,19 @@
       "url": "https://www.abdulkerimsesli.de/",
       "keywords": [
         "AI",
-        "Groq",
+        "Cloudflare Workers AI",
         "LLM"
       ],
       "programmingLanguage": "JavaScript"
     },
     {
       "@type": "CreativeWork",
-      "name": "RAG Search System",
+      "name": "Website Search System",
       "url": "https://www.abdulkerimsesli.de/",
       "keywords": [
-        "RAG",
-        "AI Search",
-        "Cloudflare AI"
+        "Search",
+        "Content Indexing",
+        "Cloudflare Pages Functions"
       ],
       "programmingLanguage": "JavaScript"
     }

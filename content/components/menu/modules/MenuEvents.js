@@ -7,6 +7,7 @@ import { footerSignals } from '#footer/state.js';
 import { createLogger } from '#core/logger.js';
 import { TimerManager } from '#core/timer-manager.js';
 import { resolvedTheme, setTheme } from '#core/theme-state.js';
+import { addManagedEventListener } from '#core/dom-utils.js';
 import { withViewTransition } from '#core/view-transitions.js';
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
@@ -506,12 +507,7 @@ export class MenuEvents {
    * Helper to add event listener and return cleanup function
    */
   addListener(target, event, handler, options = {}) {
-    if (!target) return () => {};
-    const passiveByDefault =
-      event === 'touchstart' || event === 'touchmove' || event === 'wheel';
-    const opts = { passive: passiveByDefault, ...options };
-    target.addEventListener(event, handler, opts);
-    return () => target.removeEventListener(event, handler, opts);
+    return addManagedEventListener(target, event, handler, options);
   }
 
   destroy() {
