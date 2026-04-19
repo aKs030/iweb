@@ -102,6 +102,7 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
  * @returns {{ cspHeader: string, nonce: string | null, rewriter: any }}
  */
 export function createHtmlRewriter(context, url, options) {
+  const { cspHeader, nonce } = createHtmlSecurityContext(options.isLocal);
   const rewriter = new HTMLRewriter();
 
   rewriter.on('section[data-section-src]', new SectionInjector(context));
@@ -111,6 +112,7 @@ export function createHtmlRewriter(context, url, options) {
       '*',
       new TemplateCommentHandler({
         globalHead: options.resolvedGlobalHeadTemplate,
+        nonce,
       }),
     );
   }
@@ -118,7 +120,7 @@ export function createHtmlRewriter(context, url, options) {
   if (options.criticalCssMap.size > 0) {
     rewriter.on(
       'link[rel="stylesheet"]',
-      new CriticalCssInliner(options.criticalCssMap),
+      new CriticalCssInliner(options.criticalCssMap, nonce),
     );
   }
 
@@ -126,17 +128,16 @@ export function createHtmlRewriter(context, url, options) {
     'script[type="speculationrules"]',
     new StaticSpeculationRemover(),
   );
-  rewriter.on('head', new EdgeSpeculationRules(url.pathname));
+  rewriter.on('head', new EdgeSpeculationRules(url.pathname, nonce));
 
   if (options.routeMeta) {
-    const seoHandler = new SeoMetaHandler(options.routeMeta);
+    const seoHandler = new SeoMetaHandler(options.routeMeta, nonce);
     rewriter.on('title', seoHandler);
     rewriter.on('meta', seoHandler);
     rewriter.on('link[rel="canonical"]', seoHandler);
     rewriter.on('head', seoHandler);
   }
 
-  const { cspHeader, nonce } = createHtmlSecurityContext(options.isLocal);
   if (nonce) {
     const nonceHandler = new NonceInjector(nonce);
     rewriter.on('script', nonceHandler);

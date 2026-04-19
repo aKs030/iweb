@@ -22,7 +22,7 @@
  */
 export class TemplateCommentHandler {
   /**
-   * @param {{ globalHead?: string }} templates
+   * @param {{ globalHead?: string, nonce?: string | null }} templates
    */
   constructor(templates) {
     this.templates = templates;
@@ -34,7 +34,11 @@ export class TemplateCommentHandler {
 
     if (payload.name === 'INJECT:GLOBAL-HEAD' && this.templates.globalHead) {
       comment.replace(
-        renderGlobalHeadTemplate(this.templates.globalHead, payload),
+        renderGlobalHeadTemplate(
+          this.templates.globalHead,
+          payload,
+          this.templates.nonce || null,
+        ),
         {
           html: true,
         },
@@ -62,10 +66,7 @@ export class NonceInjector {
     const tag = el.tagName.toLowerCase();
 
     if (tag === 'script') {
-      // Keep external script policy host-based; nonce-gate inline scripts.
-      if (!el.getAttribute('src')) {
-        el.setAttribute('nonce', this.nonce);
-      }
+      el.setAttribute('nonce', this.nonce);
     } else if (tag === 'style') {
       el.setAttribute('nonce', this.nonce);
     }
@@ -88,9 +89,11 @@ export class NonceInjector {
 export class SeoMetaHandler {
   /**
    * @param {Object} meta - Route meta data from buildRouteMeta()
+   * @param {string | null} [nonce]
    */
-  constructor(meta) {
+  constructor(meta, nonce = null) {
     this.meta = meta;
+    this.nonce = nonce;
     /** @type {Set<string>} Track which fields were already upserted in-place */
     this._handledKeys = new Set();
     /** @type {string[]} Extra tags to append before </head> */
@@ -197,14 +200,14 @@ export class SeoMetaHandler {
     // JSON-LD schema
     if (m.schema && typeof m.schema === 'object') {
       parts.push(
-        `<script type="application/ld+json" id="edge-route-schema">${JSON.stringify(m.schema)}</script>`,
+        `<script type="application/ld+json" id="edge-route-schema"${buildNonceAttribute(this.nonce)}>${JSON.stringify(m.schema)}</script>`,
       );
     }
 
     // Partial meta
     if (m.partialMeta && typeof m.partialMeta === 'object') {
       parts.push(
-        `<script type="application/json" id="edge-partial-meta" data-partial-meta>${JSON.stringify(m.partialMeta)}</script>`,
+        `<script type="application/json" id="edge-partial-meta" data-partial-meta${buildNonceAttribute(this.nonce)}>${JSON.stringify(m.partialMeta)}</script>`,
       );
     }
 
@@ -292,7 +295,7 @@ function parseTemplateComment(value = '') {
   return { name, attrs };
 }
 
-function renderGlobalHeadTemplate(template, payload) {
+function renderGlobalHeadTemplate(template, payload, nonce = null) {
   const attrs = payload?.attrs || {};
   const mode = attrs.mode === 'standalone' ? 'standalone' : 'base';
   const useRouteTitle = attrs['title-source'] === 'route';
@@ -330,7 +333,36 @@ function renderGlobalHeadTemplate(template, payload) {
     );
   }
 
-  return routeManagedTemplate.replace(/\{\{([A-Z_]+)\}\}/g, (_match, key) =>
-    escapeForHtml(replacements[key] || ''),
+  const resolvedTemplate = routeManagedTemplate.replace(
+    /\{\{([A-Z_]+)\}\}/g,
+    (_match, key) => escapeForHtml(replacements[key] || ''),
   );
+
+  return applyNonceToHtml(resolvedTemplate, nonce);
+}
+
+function applyNonceToHtml(html, nonce) {
+  if (!nonce) return html;
+
+  return String(html || '')
+    .replace(/<script\b([^>]*)>/gi, (_match, attrs = '') => {
+      const nextAttrs = stripNonceAttribute(attrs);
+      return `<script${nextAttrs}${buildNonceAttribute(nonce)}>`;
+    })
+    .replace(/<style\b([^>]*)>/gi, (_match, attrs = '') => {
+      const nextAttrs = stripNonceAttribute(attrs);
+      return `<style${nextAttrs}${buildNonceAttribute(nonce)}>`;
+    });
+}
+
+function stripNonceAttribute(attrs = '') {
+  return String(attrs || '').replace(
+    /\snonce\s*=\s*(?:"[^"]*"|'[^']*')/gi,
+    '',
+  );
+}
+
+function buildNonceAttribute(nonce) {
+  if (!nonce) return '';
+  return ` nonce="${escapeForHtml(nonce)}"`;
 }

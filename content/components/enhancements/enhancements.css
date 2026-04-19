@@ -236,6 +236,14 @@ body[data-active-overlay='robot-chat'] .section-dots {
   height: auto;
 }
 
+.skill-radar__heading {
+  margin-bottom: var(--size-r-1);
+}
+
+.skill-radar__chart-col {
+  text-align: center;
+}
+
 .skill-radar__item {
   display: inline-flex;
   align-items: center;
@@ -248,6 +256,14 @@ body[data-active-overlay='robot-chat'] .section-dots {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+}
+
+.skill-radar__dot--0 {
+  background: #8b5cf6;
+}
+
+.skill-radar__dot--1 {
+  background: #06b6d4;
 }
 
 /* ============================================

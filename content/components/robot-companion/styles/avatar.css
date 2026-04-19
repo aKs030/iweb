@@ -234,6 +234,7 @@
 }
 
 .robot-flame {
+  opacity: 0;
   transform-origin: 50% var(--size-90);
   transition:
     opacity 0.3s ease,
@@ -338,6 +339,7 @@
 }
 
 .robot-particles {
+  opacity: 0;
   transition: opacity 0.4s ease;
 }
 
@@ -366,6 +368,7 @@
 }
 
 .robot-thinking {
+  opacity: 0;
   transition: opacity 0.3s ease;
   animation: thinkingPulse 2s ease-in-out infinite;
 }

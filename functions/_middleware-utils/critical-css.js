@@ -169,9 +169,11 @@ export async function preloadCriticalCss(context) {
 export class CriticalCssInliner {
   /**
    * @param {Map<string, string>} inlineCssMap - Map of path → CSS content
+   * @param {string | null} [nonce]
    */
-  constructor(inlineCssMap) {
+  constructor(inlineCssMap, nonce = null) {
     this.inlineCssMap = inlineCssMap;
+    this.nonce = nonce;
   }
 
   /** @param {Element} el */
@@ -183,9 +185,12 @@ export class CriticalCssInliner {
     const cssContent = this.inlineCssMap.get(href);
     if (cssContent) {
       // Replace <link> with <style> containing the CSS content
-      el.replace(`<style data-inlined-from="${href}">${cssContent}</style>`, {
-        html: true,
-      });
+      el.replace(
+        `<style data-inlined-from="${href}"${buildNonceAttribute(this.nonce)}>${cssContent}</style>`,
+        {
+          html: true,
+        },
+      );
       return;
     }
 
@@ -196,10 +201,21 @@ export class CriticalCssInliner {
       // 2. onload swaps to media="all" → CSS applies
       // 3. <noscript> fallback for JS-disabled browsers
       el.replace(
-        `<link rel="stylesheet" href="${href}" media="print" onload="this.media='all'" data-async-css>` +
+        `<link rel="stylesheet" href="${href}" media="print" data-async-css>` +
           `<noscript><link rel="stylesheet" href="${href}"></noscript>`,
         { html: true },
       );
     }
   }
+}
+
+function buildNonceAttribute(nonce) {
+  if (!nonce) return '';
+  return ` nonce="${escapeHtmlAttribute(nonce)}"`;
+}
+
+function escapeHtmlAttribute(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;');
 }

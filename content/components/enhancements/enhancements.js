@@ -297,7 +297,7 @@ function initSkillRadar() {
   const heading = document.createElement('h4');
   heading.className = 'about__subheading';
   heading.textContent = 'Skill Übersicht';
-  heading.style.marginBottom = 'var(--size-r-1)';
+  heading.classList.add('skill-radar__heading');
   wrapper.append(heading);
 
   const charts = document.createElement('div');
@@ -322,10 +322,12 @@ function initSkillRadar() {
 
   entries.forEach(([name], i) => {
     const col = document.createElement('div');
-    col.style.textAlign = 'center';
+    col.className = 'skill-radar__chart-col';
     const label = document.createElement('span');
     label.className = 'skill-radar__item';
-    label.innerHTML = `<span class="skill-radar__dot" style="background:${RADAR_COLORS[i]}"></span>${name}`;
+    const dot = document.createElement('span');
+    dot.className = `skill-radar__dot skill-radar__dot--${i % RADAR_COLORS.length}`;
+    label.append(dot, document.createTextNode(name));
     col.append(label);
     charts.append(col);
   });

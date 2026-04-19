@@ -101,9 +101,11 @@ function buildSpeculationRulesJson(prefetchUrls) {
 export class EdgeSpeculationRules {
   /**
    * @param {string} pathname - Current request pathname
+   * @param {string | null} [nonce]
    */
-  constructor(pathname) {
+  constructor(pathname, nonce = null) {
     this.pathname = pathname;
+    this.nonce = nonce;
     this._injected = false;
   }
 
@@ -119,7 +121,7 @@ export class EdgeSpeculationRules {
       const rulesJson = buildSpeculationRulesJson(routes);
 
       endTag.before(
-        `<script type="speculationrules" data-injected-by="edge-middleware">${rulesJson}</script>\n`,
+        `<script type="speculationrules" data-injected-by="edge-middleware"${buildNonceAttribute(this.nonce)}>${rulesJson}</script>\n`,
         { html: true },
       );
     });
@@ -142,4 +144,15 @@ export class StaticSpeculationRemover {
       el.remove();
     }
   }
+}
+
+function buildNonceAttribute(nonce) {
+  if (!nonce) return '';
+  return ` nonce="${escapeHtmlAttribute(nonce)}"`;
+}
+
+function escapeHtmlAttribute(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;');
 }

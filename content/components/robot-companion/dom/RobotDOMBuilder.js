@@ -121,7 +121,7 @@ export class RobotDOMBuilder {
     fileInput.type = 'file';
     fileInput.id = 'robot-image-upload';
     fileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
-    fileInput.style.display = 'none';
+    fileInput.hidden = true;
     fileInput.setAttribute('aria-label', 'Bild hochladen');
 
     // Image upload button
@@ -633,7 +633,6 @@ export class RobotDOMBuilder {
       'g',
     );
     happyMouth.classList.add('mouth-happy');
-    happyMouth.style.opacity = '0';
 
     // Left segment
     const happyLeft = document.createElementNS(
@@ -684,7 +683,6 @@ export class RobotDOMBuilder {
       'g',
     );
     sadMouth.classList.add('mouth-sad');
-    sadMouth.style.opacity = '0';
 
     // Left segment (down)
     const sadLeft = document.createElementNS(
@@ -735,7 +733,6 @@ export class RobotDOMBuilder {
       'g',
     );
     surprisedMouth.classList.add('mouth-surprised');
-    surprisedMouth.style.opacity = '0';
 
     // Top segment
     const surprisedTop = document.createElementNS(
@@ -969,7 +966,6 @@ export class RobotDOMBuilder {
   createFlame() {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.classList.add('robot-flame');
-    g.style.opacity = '0';
     // Apply clip-path to restore original clipping behavior for the flame
     g.setAttribute('clip-path', 'url(#flame-clip)');
 
@@ -999,7 +995,6 @@ export class RobotDOMBuilder {
   createParticles() {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.classList.add('robot-particles');
-    g.style.opacity = '0';
 
     // Create 3 animated particles
     const particles = [
@@ -1043,7 +1038,6 @@ export class RobotDOMBuilder {
   createThinking() {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.classList.add('robot-thinking');
-    g.style.opacity = '0';
 
     const circle = document.createElementNS(
       'http://www.w3.org/2000/svg',
@@ -1076,11 +1070,7 @@ export class RobotDOMBuilder {
   createMagnifyingGlass() {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.classList.add('robot-magnifying-glass');
-    g.style.opacity = '0';
-    // Remove transformBox: fill-box and transformOrigin: center to rely on coordinate system origin (0,0)
-    // which we will position at the hand grip.
-    // g.style.transformBox = 'fill-box'; // Removed to avoid rotation around bounding box center
-    // g.style.transformOrigin = 'center'; // Removed
+    // Position in local hand coordinates so the glass rotates around the grip.
 
     // Position adjusted to be held by the LEFT hand (Viewer's Left)
     // Left arm ends around 22, 82.

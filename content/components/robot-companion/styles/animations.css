@@ -548,6 +548,7 @@
 }
 
 .robot-magnifying-glass {
+  opacity: 0;
   transition: opacity 0.4s ease;
   pointer-events: none;
 }
@@ -660,6 +661,12 @@
 .robot-mouth rect,
 .robot-mouth g {
   transition: opacity 0.3s ease;
+}
+
+.mouth-happy,
+.mouth-sad,
+.mouth-surprised {
+  opacity: 0;
 }
 
 .robot-mouth.happy .mouth-neutral {

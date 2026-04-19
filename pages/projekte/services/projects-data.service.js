@@ -200,12 +200,6 @@ async function loadLocalConfig() {
   return localConfigPromise;
 }
 
-function createGradient(colors) {
-  return {
-    background: `linear-gradient(to bottom right, ${colors[0]}, ${colors[1]})`,
-  };
-}
-
 function getProjectIconAndTheme(project, icons) {
   const title = normalizeText(project?.title).toLowerCase();
   const tags = Array.isArray(project?.tags)
@@ -239,8 +233,7 @@ function getProjectIconAndTheme(project, icons) {
 
   return {
     icon: React.createElement(IconComponent, {
-      className: 'project-category-icon',
-      style: { '--project-icon-color': theme.icon },
+      className: `project-category-icon project-category-icon--${bestMatch.theme}`,
     }),
     theme,
   };
@@ -278,8 +271,6 @@ function mapProjectRecord(project, index, icons, fallbackDate) {
     hasCaseStudy: Boolean(caseStudy),
     hasLivePreview: Boolean(normalizeText(project?.appPath)),
     hasSource: Boolean(normalizeText(project?.githubPath)),
-    bgStyle: createGradient(theme.gradient),
-    glowColor: theme.icon,
     icon,
     previewContent: React.createElement('div', null, icon),
   };

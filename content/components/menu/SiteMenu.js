@@ -17,6 +17,7 @@ import {
   initOverlayManager,
   registerOverlayController,
 } from '#core/overlay-manager.js';
+import { applyCspNonce } from '#core/csp-nonce.js';
 import { loadHeadStylesheet, upsertHeadLink } from '#core/dom-utils.js';
 import { createLogger } from '#core/logger.js';
 
@@ -280,6 +281,7 @@ export class SiteMenu extends HTMLElement {
       if (!this.shadowStyleElement) {
         this.shadowStyleElement = document.createElement('style');
         this.shadowStyleElement.dataset.injectedBy = 'site-menu-shadow';
+        applyCspNonce(this.shadowStyleElement);
         this.shadowRoot.appendChild(this.shadowStyleElement);
       }
 
@@ -323,6 +325,7 @@ export class SiteMenu extends HTMLElement {
                 this.shadowStyleElement = document.createElement('style');
                 this.shadowStyleElement.dataset.injectedBy =
                   'site-menu-shadow';
+                applyCspNonce(this.shadowStyleElement);
                 this.shadowRoot.appendChild(this.shadowStyleElement);
               }
               this.shadowStyleElement.textContent = [
