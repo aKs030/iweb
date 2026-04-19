@@ -75,6 +75,11 @@ export function buildCspHeader(nonce) {
       'https://www.google-analytics.com',
       'https://region1.google-analytics.com',
       'https://www.googletagmanager.com',
+      'https://*.googletagmanager.com',
+      'https://www.gstatic.com',
+      'https://www.google.com',
+      'https://adservice.google.com',
+      'https://cct.google',
       'https://static.cloudflareinsights.com',
     ].join(' '),
     [
