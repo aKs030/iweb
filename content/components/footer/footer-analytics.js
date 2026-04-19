@@ -1,3 +1,4 @@
+import { applyCspNonce } from '#core/csp-nonce.js';
 import { createLogger } from '#core/logger.js';
 
 const log = createLogger('AnalyticsManager');
@@ -21,6 +22,7 @@ export class AnalyticsManager {
             newScript.setAttribute(name, attr.value);
           }
         }
+        applyCspNonce(newScript);
         if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
         script.replaceWith(newScript);
       });

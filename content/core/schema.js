@@ -8,6 +8,7 @@ import {
   extractMainImageAltTexts,
   extractMainVideoTitles,
 } from './content-extractors.js';
+import { applyCspNonce } from './csp-nonce.js';
 import { createLogger } from './logger.js';
 import { scheduleIdleTask } from './async-utils.js';
 import { ENV } from '../config/env.config.js';
@@ -851,11 +852,13 @@ export function injectSchema(graph, options = {}) {
     );
 
     if (script) {
+      applyCspNonce(script);
       script.textContent = payload;
     } else {
       script = /** @type {HTMLScriptElement} */ (doc.createElement('script'));
       script.type = 'application/ld+json';
       script.id = scriptId;
+      applyCspNonce(script);
       script.textContent = payload;
       document.head.appendChild(script);
     }

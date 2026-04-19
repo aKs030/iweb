@@ -1,4 +1,5 @@
 import { ENV } from '../../config/env.config.js';
+import { applyCspNonce } from '#core/csp-nonce.js';
 import { createLogger } from '#core/logger.js';
 
 const log = createLogger('head-analytics');
@@ -99,6 +100,7 @@ function injectGA4Fallback() {
       script.async = true;
       script.src =
         'https://www.googletagmanager.com/gtag/js?id=' + GA4_MEASUREMENT_ID;
+      applyCspNonce(script);
       document.head.appendChild(script);
     }
 
@@ -124,6 +126,7 @@ function injectGTM() {
     const gtmScript = document.createElement('script');
     gtmScript.async = true;
     gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(GTM_ID)}&l=dataLayer`;
+    applyCspNonce(gtmScript);
     firstScript.parentNode.insertBefore(gtmScript, firstScript);
   } catch (error) {
     log.warn('GTM injection failed', error);
