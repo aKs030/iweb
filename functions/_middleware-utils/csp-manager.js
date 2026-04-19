@@ -17,8 +17,8 @@ export function generateNonce() {
 
 /**
  * Build a nonce-bound CSP header.
- * Script execution is nonce-gated while still allowing required third-party
- * module/CDN hosts used by the site.
+ * Inline script execution is nonce-gated while external scripts are limited
+ * to the required first-party/module/CDN/analytics hosts used by the site.
  *
  * @param {string} nonce
  * @returns {string}
@@ -38,17 +38,20 @@ export function buildCspHeader(nonce) {
       'script-src',
       "'self'",
       nonceSource,
-      "'strict-dynamic'",
       'https://cdn.jsdelivr.net',
       'https://esm.sh',
       'https://unpkg.com',
       'https://www.googletagmanager.com',
       'https://static.cloudflareinsights.com',
     ].join(' '),
+    "script-src-attr 'none'",
     [
       'style-src',
       "'self'",
-      nonceSource,
+      // Cloudflare Fonts may rewrite Google Fonts into a first-party inline
+      // stylesheet after our HTMLRewriter pass, so style nonces cannot cover
+      // every production style block. Keep scripts nonce-gated; allow inline
+      // styles deliberately for critical CSS and edge font rewrites.
       "'unsafe-inline'",
       'https://fonts.googleapis.com',
     ].join(' '),

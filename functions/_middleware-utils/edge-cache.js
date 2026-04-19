@@ -15,7 +15,7 @@
 
 // Cache TTL for HTML responses (edge-side, not browser-side)
 const EDGE_HTML_TTL_S = 300; // 5 minutes
-const EDGE_CACHE_KEY_VERSION = '20260407-1';
+const EDGE_CACHE_KEY_VERSION = '20260419-csp-1';
 const CACHE_KEY_QUERY_ALLOWLIST = new Set(['menuShadow']);
 
 /**
