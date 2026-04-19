@@ -1,4 +1,5 @@
 import { scheduleIdleTask } from '#core/async-utils.js';
+import { applyCspNonce } from '#core/csp-nonce.js';
 import { upsertHeadLink } from '#core/dom-utils.js';
 import { createLogger } from '#core/logger.js';
 import { resourceHints } from '#core/resource-hints.js';
@@ -22,6 +23,7 @@ function upsertScript({ src, module }) {
     script.defer = true;
   }
   script.dataset.injectedBy = 'head-inline';
+  applyCspNonce(script);
   document.head.appendChild(script);
 }
 
@@ -174,6 +176,7 @@ export function injectHeroCriticalCSS() {
     const style = document.createElement('style');
     style.id = 'hero-critical-css';
     style.dataset.injectedBy = 'head-inline';
+    applyCspNonce(style);
     style.appendChild(document.createTextNode(css));
     document.head.appendChild(style);
   } catch (error) {

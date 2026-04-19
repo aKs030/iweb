@@ -2,6 +2,7 @@ import {
   VIEW_TRANSITION_TIMINGS_MS,
   toCssMs,
 } from './view-transition-constants.js';
+import { applyCspNonce } from './csp-nonce.js';
 
 const VIEW_TRANSITION_RUNTIME_STYLE_ID = 'core-view-transition-runtime-style';
 
@@ -66,6 +67,7 @@ export const injectViewTransitionRuntimeStyles = (options) => {
     styleEl = document.createElement('style');
     styleEl.id = VIEW_TRANSITION_RUNTIME_STYLE_ID;
     styleEl.dataset.injectedBy = 'core-view-transitions';
+    applyCspNonce(styleEl);
     document.head.appendChild(styleEl);
   }
 

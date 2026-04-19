@@ -6,7 +6,7 @@ const html = htm.bind(React.createElement);
 /**
  * Base Icon Component
  */
-export const IconBase = ({ children, className, style, ...props }) => html`
+export const IconBase = ({ children, className, ...props }) => html`
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
@@ -18,7 +18,6 @@ export const IconBase = ({ children, className, style, ...props }) => html`
     strokeLinecap="round"
     strokeLinejoin="round"
     className=${className}
-    style=${style}
     aria-hidden="true"
     focusable="false"
     ...${props}

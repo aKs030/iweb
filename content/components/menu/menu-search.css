@@ -675,7 +675,63 @@
   opacity: 0;
   transform: translateY(var(--size-6));
   animation: searchItemIn 0.25s ease forwards;
-  animation-delay: calc(var(--search-item-index, 0) * 0.04s);
+  animation-delay: 0s;
+}
+
+.menu-search__item:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.menu-search__item:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.menu-search__item:nth-child(4) {
+  animation-delay: 0.12s;
+}
+
+.menu-search__item:nth-child(5) {
+  animation-delay: 0.16s;
+}
+
+.menu-search__item:nth-child(6) {
+  animation-delay: 0.2s;
+}
+
+.menu-search__item:nth-child(7) {
+  animation-delay: 0.24s;
+}
+
+.menu-search__item:nth-child(8) {
+  animation-delay: 0.28s;
+}
+
+.menu-search__item:nth-child(9) {
+  animation-delay: 0.32s;
+}
+
+.menu-search__item:nth-child(10) {
+  animation-delay: 0.36s;
+}
+
+.menu-search__item:nth-child(11) {
+  animation-delay: 0.4s;
+}
+
+.menu-search__item:nth-child(12) {
+  animation-delay: 0.44s;
+}
+
+.menu-search__item:nth-child(13) {
+  animation-delay: 0.48s;
+}
+
+.menu-search__item:nth-child(14) {
+  animation-delay: 0.52s;
+}
+
+.menu-search__item:nth-child(15) {
+  animation-delay: 0.56s;
 }
 
 @keyframes searchItemIn {

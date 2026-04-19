@@ -18,13 +18,20 @@ const initPage = () => {
         <div class="project-load-error">
           <h2>Fehler beim Laden</h2>
           <p><strong>Details:</strong> <span id="error-detail"></span></p>
-          <button onclick="location.reload()" class="project-load-error__button">
+          <button
+            class="project-load-error__button"
+            type="button"
+            data-action="reload-page"
+          >
             Seite neu laden
           </button>
         </div>
       `;
       const errorSpan = root.querySelector('#error-detail');
       if (errorSpan) errorSpan.textContent = error.message;
+      root
+        .querySelector('[data-action="reload-page"]')
+        ?.addEventListener('click', () => window.location.reload());
     }
   }
 };

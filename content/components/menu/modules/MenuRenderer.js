@@ -69,8 +69,10 @@ export class MenuRenderer {
 
         // If SVG symbol is missing, show fallback emoji/text
         if (!target && fallback) {
-          if (svg) svg.style.display = 'none';
-          /** @type {any} */ (fallback).style.display = 'inline-block';
+          if (svg instanceof SVGElement) {
+            svg.setAttribute('hidden', '');
+          }
+          fallback.classList.remove('icon-fallback--hidden');
         }
       });
     }, delay);

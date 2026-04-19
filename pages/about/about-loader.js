@@ -132,17 +132,6 @@ function setupInteractions() {
     });
   });
 
-  // Add hover effects to cards
-  const cards = document.querySelectorAll('.card');
-  cards.forEach((card) => {
-    card.addEventListener('mouseenter', () => {
-      /** @type {any} */ (card).style.transform = 'translateY(-4px)';
-    });
-    card.addEventListener('mouseleave', () => {
-      /** @type {any} */ (card).style.transform = 'translateY(0)';
-    });
-  });
-
   log.debug('Interactions setup complete');
 }
 

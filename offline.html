@@ -11,9 +11,14 @@
       <p>
         Du bist offline. Prüfe deine Internetverbindung und versuche es erneut.
       </p>
-      <button class="offline-button" onclick="location.reload()">
+      <button class="offline-button" id="offline-retry" type="button">
         Erneut versuchen
       </button>
     </main>
+    <script>
+      document
+        .getElementById('offline-retry')
+        ?.addEventListener('click', () => window.location.reload());
+    </script>
   </body>
 </html>

@@ -97,6 +97,11 @@ body.blog-page #main-content {
   min-height: 50vh;
   padding: var(--size-r-2);
 }
+
+.blog-inline-error {
+  color: var(--color-error);
+}
+
 .blog-post-view,
 .blog-list-view {
   max-width: var(--size-1400);
@@ -672,6 +677,16 @@ body.blog-page #main-content {
   align-items: center;
 }
 
+.article-actions {
+  margin-top: 1rem;
+}
+
+.blog-post-excerpt {
+  font-size: 1.2rem;
+  color: rgba(226, 232, 240, 0.9);
+  margin-bottom: 2rem;
+}
+
 /* ===================================
    ARTICLE BODY TYPOGRAPHY
    =================================== */
@@ -801,6 +816,10 @@ body.blog-page .btn-back {
       inset;
 }
 
+.btn-back__icon {
+  transform: rotate(180deg);
+}
+
 body.blog-page .btn-back:hover {
   background: color-mix(in srgb, var(--clr-blue-500) 20%, transparent);
   border-color: color-mix(in srgb, var(--clr-blue-500) 60%, transparent);
@@ -865,6 +884,10 @@ body.blog-page .btn-back:hover {
   transform: translateY(var(--size-20)) scale(0.8) rotateZ(0deg);
   pointer-events: none;
   transform-style: preserve-3d;
+}
+
+.article-footer {
+  margin-top: 4rem;
 }
 
 .scroll-to-top-btn::before {

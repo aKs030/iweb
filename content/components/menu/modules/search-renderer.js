@@ -218,7 +218,6 @@ export class MenuSearchRenderer {
     items.forEach((item, index) => {
       const li = document.createElement('li');
       li.className = 'menu-search__item';
-      li.style.setProperty('--search-item-index', index);
 
       const button = document.createElement('button');
       button.type = 'button';

@@ -179,7 +179,7 @@ const BlogApp = () => {
       />`;
     } catch (e) {
       log.error('Markdown render failed', e);
-      return html`<p style=${{ color: 'var(--color-error)' }}>
+      return html`<p className="blog-inline-error">
         ${t('blog.render_error')}
       </p>`;
     }
@@ -193,7 +193,7 @@ const BlogApp = () => {
 
   if (error) {
     return html`<div className="blog-error">
-      <p style=${{ color: 'var(--color-error)' }}>${error}</p>
+      <p className="blog-inline-error">${error}</p>
     </div>`;
   }
 
@@ -201,7 +201,7 @@ const BlogApp = () => {
     return html`
       <div className="blog-post-view">
         <button className="btn-back" onClick=${closePost}>
-          <${ArrowRight} style=${{ transform: 'rotate(180deg)' }} />
+          <${ArrowRight} className="btn-back__icon" />
           ${t('blog.back_to_overview')}
         </button>
         <article className="blog-article">
@@ -223,23 +223,17 @@ const BlogApp = () => {
               <span className="card-read-time">
                 <${Clock} /> ${activePost.readTime}
               </span>
-              <div className="article-actions" style=${{ marginTop: '1rem' }}>
+              <div className="article-actions">
                 <${BlogLikes} id=${activePost.id} />
               </div>
             </div>
             ${activePost.excerpt &&
-            html`<p
-              style=${{
-                fontSize: '1.2rem',
-                color: 'rgba(226, 232, 240, 0.9)',
-                marginBottom: '2rem',
-              }}
-            >
+            html`<p className="blog-post-excerpt">
               ${activePost.excerpt}
             </p>`}
           </header>
           <div className="article-body">${renderPostContent(activePost)}</div>
-          <footer className="article-footer" style=${{ marginTop: '4rem' }}>
+          <footer className="article-footer">
             <${CommentSection} postId=${activePost.id} />
           </footer>
         </article>

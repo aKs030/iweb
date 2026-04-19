@@ -62,8 +62,7 @@ const setCSSVars = (el, vars) =>
  */
 function makeLineMeasurer(subtitleEl) {
   const measurer = document.createElement('div');
-  measurer.style.cssText =
-    'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:normal;pointer-events:none';
+  measurer.className = 'typewriter-line-measurer';
   document.body.appendChild(measurer);
 
   const cs = getComputedStyle(subtitleEl);
@@ -94,7 +93,10 @@ function makeLineMeasurer(subtitleEl) {
       const fs = parseFloat(cs.fontSize);
       if (!isNaN(fs)) return num * fs;
     }
-    measurer.innerHTML = '<span style="display:inline-block">A</span>';
+    const probe = document.createElement('span');
+    probe.className = 'typewriter-measure-probe';
+    probe.textContent = 'A';
+    measurer.replaceChildren(probe);
     const firstChild = /** @type {HTMLElement|null} */ (measurer.firstChild);
     return firstChild?.getBoundingClientRect().height || 0;
   };

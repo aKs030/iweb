@@ -79,7 +79,6 @@
         d.getAttribute('data-force-theme') ||
         (c === 'light' || c === 'dark' ? c : m ? 'light' : 'dark');
     d.setAttribute('data-theme', t);
-    d.style.colorScheme = t;
     var metas = document.querySelectorAll('meta[name="theme-color"]');
     for (var i = 0; i < metas.length; i++) {
       var meta = metas[i];
@@ -140,7 +139,7 @@
   rel="stylesheet"
   href="/content/styles/animations.css"
   media="print"
-  onload="this.media = 'all'"
+  data-async-css
 />
 <link rel="stylesheet" href="/content/styles/overlays.css" />
 <link rel="stylesheet" href="/content/components/menu/menu-base.css" />
@@ -151,13 +150,13 @@
   rel="stylesheet"
   href="/content/components/menu/menu-backdrop.css"
   media="print"
-  onload="this.media = 'all'"
+  data-async-css
 />
 <link
   rel="stylesheet"
   href="/content/components/enhancements/enhancements.css"
   media="print"
-  onload="this.media = 'all'"
+  data-async-css
 />
 <noscript>
   <link rel="stylesheet" href="/content/styles/animations.css" />
@@ -168,6 +167,31 @@
     href="/content/components/enhancements/enhancements.css"
   />
 </noscript>
+
+<script id="async-css-bootstrap">
+  try {
+    var activateAsyncCss = function (link) {
+      if (!link) return;
+      link.media = 'all';
+      link.dataset.loaded = 'true';
+    };
+    var asyncCssLinks = document.querySelectorAll('link[data-async-css]');
+    for (var i = 0; i < asyncCssLinks.length; i++) {
+      (function (link) {
+        if (!link || link.dataset.loaded === 'true') return;
+        if (link.sheet) {
+          activateAsyncCss(link);
+          return;
+        }
+        var finish = function () {
+          activateAsyncCss(link);
+        };
+        link.addEventListener('load', finish, { once: true });
+        link.addEventListener('error', finish, { once: true });
+      })(asyncCssLinks[i]);
+    }
+  } catch (e) {}
+</script>
 
 <!-- Hero Critical CSS (inline for fastest FCP on homepage) -->
 <style id="hero-critical-inline">
@@ -258,37 +282,6 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="preconnect" href="https://esm.sh" crossorigin />
 <link rel="preconnect" href="https://img.abdulkerimsesli.de" crossorigin />
-
-<!-- Baseline Speculation Rules (runtime manager upgrades this adaptively) -->
-<script type="speculationrules" data-injected-by="resource-hints">
-  {
-    "prerender": [
-      {
-        "source": "document",
-        "where": {
-          "and": [
-            { "href_matches": "/*" },
-            { "not": { "href_matches": "/api/*" } },
-            { "not": { "href_matches": "/functions/*" } },
-            {
-              "not": {
-                "selector_matches": "a[download],a[href^=\"#\"],a[href*=\"?\"],a[target=\"_blank\"],a[href$=\".pdf\"],a[href$=\".zip\"],a[href$=\".mp4\"],a[data-no-speculate],a[data-no-prerender]"
-              }
-            }
-          ]
-        },
-        "eagerness": "conservative"
-      }
-    ],
-    "prefetch": [
-      {
-        "source": "list",
-        "urls": ["/projekte/", "/gallery/", "/videos/"],
-        "eagerness": "conservative"
-      }
-    ]
-  }
-</script>
 
 <!-- Preload Critical App JS -->
 <link rel="modulepreload" href="/content/main.js" fetchpriority="high" />

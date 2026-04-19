@@ -47,7 +47,30 @@ body.projekte-page canvas {
 .project-category-icon {
   width: var(--project-icon-size, var(--size-32));
   height: var(--project-icon-size, var(--size-32));
-  color: var(--project-icon-color);
+}
+
+.project-category-icon--purple {
+  color: #c084fc;
+}
+
+.project-category-icon--green {
+  color: #34d399;
+}
+
+.project-category-icon--pink {
+  color: #f472b6;
+}
+
+.project-category-icon--cyan {
+  color: #22d3ee;
+}
+
+.project-category-icon--orange {
+  color: #fb923c;
+}
+
+.project-category-icon--indigo {
+  color: #818cf8;
 }
 
 .project-load-error {

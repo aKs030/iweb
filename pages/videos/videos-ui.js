@@ -220,8 +220,6 @@ export function activateThumb(btn) {
 
 export function bindThumb(btn) {
   if (btn.dataset.bound) return;
-  if (btn.dataset.thumb)
-    btn.style.backgroundImage = `url('${btn.dataset.thumb}')`;
   if (
     btn.getAttribute('aria-label') &&
     !btn.querySelector('.visually-hidden')
@@ -285,9 +283,8 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
   thumbImg.alt = `Thumbnail: ${title}`;
   thumbImg.loading = index < 4 ? 'eager' : 'lazy';
   thumbImg.decoding = 'async';
+  thumbImg.className = 'video-thumb__img';
   thumbImg.dataset.loaded = 'handling';
-  thumbImg.style.cssText =
-    'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
 
   const fallbackUrls = [
     optimizedThumb,
@@ -306,8 +303,6 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
       return;
     }
 
-    thumbImg.style.backgroundColor = '#1a1a1a';
-    thumbImg.style.opacity = '0';
     thumbImg.alt = `Video: ${title}`;
     thumbImg.dataset.loaded = 'error';
   };

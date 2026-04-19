@@ -111,6 +111,19 @@
   display: none;
 }
 
+.typewriter-measure-probe {
+  display: inline-block;
+}
+
+.typewriter-line-measurer {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: hidden;
+  white-space: normal;
+  pointer-events: none;
+}
+
 @keyframes caret-blink {
   50% {
     opacity: 0;
