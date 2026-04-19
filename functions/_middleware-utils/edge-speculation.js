@@ -109,21 +109,23 @@ export class EdgeSpeculationRules {
     this._injected = false;
   }
 
+  renderHtml() {
+    if (this._injected) return '';
+    this._injected = true;
+
+    const routes = resolvePrefetchRoutes(this.pathname);
+    const rulesJson = buildSpeculationRulesJson(routes);
+
+    return `<script type="speculationrules" data-injected-by="edge-middleware"${buildNonceAttribute(this.nonce)}>${rulesJson}</script>\n`;
+  }
+
   /** @param {Element} el */
   element(el) {
-    if (el.tagName !== 'head') return;
+    if (String(el.tagName || '').toLowerCase() !== 'head') return;
 
     el.onEndTag((endTag) => {
-      if (this._injected) return;
-      this._injected = true;
-
-      const routes = resolvePrefetchRoutes(this.pathname);
-      const rulesJson = buildSpeculationRulesJson(routes);
-
-      endTag.before(
-        `<script type="speculationrules" data-injected-by="edge-middleware"${buildNonceAttribute(this.nonce)}>${rulesJson}</script>\n`,
-        { html: true },
-      );
+      const html = this.renderHtml();
+      if (html) endTag.before(html, { html: true });
     });
   }
 }

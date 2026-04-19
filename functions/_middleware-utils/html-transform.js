@@ -128,14 +128,18 @@ export function createHtmlRewriter(context, url, options) {
     'script[type="speculationrules"]',
     new StaticSpeculationRemover(),
   );
-  rewriter.on('head', new EdgeSpeculationRules(url.pathname, nonce));
+  const edgeSpeculationRules = new EdgeSpeculationRules(url.pathname, nonce);
 
   if (options.routeMeta) {
-    const seoHandler = new SeoMetaHandler(options.routeMeta, nonce);
+    const seoHandler = new SeoMetaHandler(options.routeMeta, nonce, () =>
+      edgeSpeculationRules.renderHtml(),
+    );
     rewriter.on('title', seoHandler);
     rewriter.on('meta', seoHandler);
     rewriter.on('link[rel="canonical"]', seoHandler);
     rewriter.on('head', seoHandler);
+  } else {
+    rewriter.on('head', edgeSpeculationRules);
   }
 
   if (nonce) {

@@ -7,6 +7,7 @@
 
 import { createLogger } from './logger.js';
 import { cancelIdleTask, scheduleIdleTask } from './async-utils.js';
+import { applyCspNonce } from './csp-nonce.js';
 import { upsertHeadLink } from './dom-utils.js';
 import { getAdaptiveResourceHintBudget } from './resource-hints-matrix.js';
 
@@ -520,6 +521,7 @@ class ResourceHintsManager {
     const replacement = document.createElement('script');
     replacement.type = 'speculationrules';
     replacement.dataset.injectedBy = 'resource-hints';
+    applyCspNonce(replacement);
     replacement.textContent = JSON.stringify(rules);
     script.replaceWith(replacement);
 
@@ -635,6 +637,7 @@ class ResourceHintsManager {
       const script = document.createElement('script');
       script.type = 'speculationrules';
       script.dataset.injectedBy = 'resource-hints';
+      applyCspNonce(script);
 
       const rules = this.createSpeculationRules(speculativeRoutes);
 

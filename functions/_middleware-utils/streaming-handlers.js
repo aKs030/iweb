@@ -90,10 +90,12 @@ export class SeoMetaHandler {
   /**
    * @param {Object} meta - Route meta data from buildRouteMeta()
    * @param {string | null} [nonce]
+   * @param {(() => string) | string | null} [extraHeadEndHtml]
    */
-  constructor(meta, nonce = null) {
+  constructor(meta, nonce = null, extraHeadEndHtml = null) {
     this.meta = meta;
     this.nonce = nonce;
+    this.extraHeadEndHtml = extraHeadEndHtml;
     /** @type {Set<string>} Track which fields were already upserted in-place */
     this._handledKeys = new Set();
     /** @type {string[]} Extra tags to append before </head> */
@@ -134,8 +136,13 @@ export class SeoMetaHandler {
       // onEndTag is called when the </head> closing tag is encountered
       el.onEndTag((endTag) => {
         const remaining = this._buildRemainingTags();
-        if (remaining) {
-          endTag.before(remaining, { html: true });
+        const extra =
+          typeof this.extraHeadEndHtml === 'function'
+            ? this.extraHeadEndHtml()
+            : this.extraHeadEndHtml || '';
+        const html = `${remaining || ''}${extra || ''}`;
+        if (html) {
+          endTag.before(html, { html: true });
         }
       });
     }
