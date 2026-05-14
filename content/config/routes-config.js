@@ -4,7 +4,6 @@ import {
   OG_VIDEOS_IMAGE_URL,
 } from './constants.js';
 import {
-  SITE_DEFAULT_APP_TITLE,
   SITE_DEFAULT_ROBOTS,
   SITE_HOME_DESCRIPTION,
   SITE_HOME_DESCRIPTION_EN,
@@ -27,7 +26,6 @@ export const ROUTES = Object.freeze({
     title_en: SITE_HOME_TITLE_EN,
     description_en: SITE_HOME_DESCRIPTION_EN,
     type: 'ProfilePage',
-    appTitle: SITE_DEFAULT_APP_TITLE,
     ogDescription: SITE_HOME_OG_DESCRIPTION,
     twitterDescription: SITE_HOME_OG_DESCRIPTION,
     keywords: SITE_HOME_KEYWORDS,
@@ -43,7 +41,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'Discover interactive web experiments and business applications. Specialized in performant React solutions, 3D web experiences, and modern UI/UX design.',
     type: 'CollectionPage',
-    appTitle: 'Projekte — Abdulkerim Sesli',
     image: OG_PROJECTS_IMAGE,
   }),
   '/blog/': defineRoute({
@@ -54,7 +51,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'Blog by Abdulkerim Sesli with tips and guides on web design, SEO, performance, and online marketing.',
     type: 'Blog',
-    appTitle: 'Blog — Abdulkerim Sesli',
     ogDescription: 'Einblicke in Web-Performance, React und modernes UI-Design.',
     twitterDescription:
       'Tipps & Anleitungen zu Webdesign, SEO, Performance und Online-Marketing.',
@@ -68,7 +64,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'A selection of my work, brief presentations and behind-the-scenes.',
     type: 'CollectionPage',
-    appTitle: 'Videos — Abdulkerim Sesli',
     image: OG_VIDEOS_IMAGE,
   }),
   '/gallery/': defineRoute({
@@ -79,7 +74,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.',
     type: 'ImageGallery',
-    appTitle: '3D Gallery',
     image: OG_HOME_IMAGE,
   }),
   '/about/': defineRoute({
@@ -90,7 +84,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'The person behind the code. Detailed profile, tech stack overview, and direct contact options for projects and collaborations.',
     type: 'AboutPage',
-    appTitle: 'Über mich — Abdulkerim Sesli',
     ogType: 'profile',
     ogTitle: 'Kontakt & Profil | Abdulkerim Sesli',
     ogDescription:
@@ -108,7 +101,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'Abdul Sesli is the short form of Abdulkerim Sesli. This page points to the official portfolio with blog, videos, gallery and projects.',
     type: 'ProfilePage',
-    appTitle: 'Abdul Sesli | Abdulkerim Sesli',
     robots: 'index, follow, max-image-preview:large',
     image: OG_HOME_IMAGE,
   }),
@@ -120,7 +112,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'Contact page for questions, feedback, and personal exchange with Abdulkerim Sesli.',
     type: 'ContactPage',
-    appTitle: 'Kontakt | Abdulkerim Sesli',
     robots: 'index, follow',
     image: OG_HOME_IMAGE,
   }),
@@ -132,7 +123,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'Privacy policy for abdulkerimsesli.de covering hosting, contact form, AI chat, cookies, and optional analytics.',
     type: 'WebPage',
-    appTitle: 'Datenschutzerklärung',
     robots: 'noindex, follow',
     image: OG_HOME_IMAGE,
   }),
@@ -144,7 +134,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'Information about cookies, local storage, optional chat profile names, and analytics on abdulkerimsesli.de.',
     type: 'WebPage',
-    appTitle: 'Cookie-Informationen',
     robots: 'noindex, follow',
     image: OG_HOME_IMAGE,
   }),
@@ -156,7 +145,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'Legal notice with provider identification, contact details, and media-law information for abdulkerimsesli.de.',
     type: 'WebPage',
-    appTitle: 'Impressum',
     robots: 'noindex, follow',
     image: OG_HOME_IMAGE,
   }),
@@ -168,7 +156,6 @@ export const ROUTES = Object.freeze({
     description_en:
       'AI and profile hub for Abdulkerim Sesli with projects, technologies, and discovery resources for AI systems.',
     type: 'ProfilePage',
-    appTitle: 'AI Info',
     keywords:
       'Abdulkerim Sesli, Abdul Sesli, Full-Stack Developer, Three.js, JavaScript, Cloudflare, AI Integration, Portfolio',
     image: OG_HOME_IMAGE,

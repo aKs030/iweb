@@ -1,5 +1,10 @@
 import { resourceHints } from '#core/resource-hints.js';
-import { SEARCH_PRELOAD_URLS } from '#config/import-map.generated.js';
+
+const SEARCH_PRELOAD_URLS = Object.freeze([
+  'https://esm.sh/htm@3.1.1',
+  'https://esm.sh/react-dom@19.2.4?deps=react@19.2.4',
+  'https://esm.sh/react-dom@19.2.4/client?deps=react@19.2.4',
+]);
 
 export class MenuSearchPreloadController {
   constructor(options = {}) {

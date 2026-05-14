@@ -128,8 +128,7 @@ Browser Request
   │
   └─→ [6] Browser: CSS already loading (Link headers) → FCP ~200-400ms faster
 
-Deploy-Version Sync:
-  Edge sends X-Deploy-Version → SW detects mismatch → purges stale cache
+Deploy-Version is still sent as a response header for observability and cache-key versioning.
 ```
 
 ## KV Cache Keys

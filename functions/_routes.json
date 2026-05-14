@@ -3,7 +3,6 @@
   "include": ["/*"],
   "exclude": [
     "/robots.txt",
-    "/manifest.json",
     "/sw.js",
     "/llms.txt",
     "/llms-full.txt",

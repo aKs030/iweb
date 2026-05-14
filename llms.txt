@@ -25,7 +25,7 @@ Abdulkerim Sesli builds modern, high-performance web products with JavaScript ES
 - AI integration (deterministic site search, assistant workflows, API orchestration)
 - Cloudflare Pages + Functions + edge runtime patterns
 - Technical SEO and machine-readable discovery setup
-- PWA, accessibility, and Core Web Vitals
+- Accessibility and Core Web Vitals
 
 ## Main Website Sections
 

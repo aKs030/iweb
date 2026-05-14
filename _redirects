@@ -18,8 +18,9 @@
 # 1. Exact Path Redirects (No wildcards — highest performance)
 # ============================================================================
 
-# Internal offline page (needed for middleware/SW)
-/offline.html              /offline.html                  200
+# Legacy web-app cleanup
+/offline.html        /              301
+/manifest.json       /              301
 
 # Canonical URL Redirects (Remove index.html)
 /index.html          /              301

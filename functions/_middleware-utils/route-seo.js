@@ -123,7 +123,6 @@ const STATIC_ROUTE_META = Object.freeze(
       '/',
       Object.freeze({
         title: ROUTES.default.title,
-        appTitle: ROUTES.default.appTitle || ROUTES.default.title,
         description: ROUTES.default.description,
         ogType: ROUTES.default.ogType,
         ogTitle: ROUTES.default.ogTitle,
@@ -142,7 +141,6 @@ const STATIC_ROUTE_META = Object.freeze(
         pathname,
         Object.freeze({
           title: route.title,
-          appTitle: route.appTitle || route.title,
           description: route.description,
           ogType: route.ogType,
           ogTitle: route.ogTitle,
@@ -263,7 +261,6 @@ function buildStaticPageMeta(requestUrl, pathname, config) {
       config.twitterDescription,
       normalizeText(config.ogDescription, description),
     ),
-    appTitle: normalizeText(config.appTitle, title),
     siteName: DEFAULT_SITE_NAME,
     locale: DEFAULT_LOCALE,
     image,

@@ -141,23 +141,23 @@ export class MenuSearchStore {
     }
 
     if (navigator.onLine === false) {
-      const offlineItems = this.searchApi.filterResultsByFacet(
-        this.searchApi.buildOfflineSearchResults(query),
+      const localItems = this.searchApi.filterResultsByFacet(
+        this.searchApi.buildLocalSearchResults(query),
         facet,
       );
       this.applySearchPayload(query, {
-        items: offlineItems,
+        items: localItems,
         facet,
-        facets: this.searchApi.buildOfflineFacetCounts(query),
+        facets: this.searchApi.buildLocalFacetCounts(query),
         aiChatMessage: '',
         aiChatSuggestions: this.searchApi.pickSearchSuggestions(
           query,
-          offlineItems,
+          localItems,
         ),
         cacheKey,
         statusMessage: i18n.tOrFallback(
-          'menu.search_offline',
-          'Offline-Modus: lokale Treffer',
+          'menu.search_local_fallback',
+          'Server nicht erreichbar: lokale Treffer',
         ),
       });
       return;

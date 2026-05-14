@@ -1,4 +1,3 @@
-import { IMPORT_MAP_VERSIONS } from './import-map.generated.js';
 import {
   APPLE_TOUCH_ICON_URL,
   BLOG_POST_OG_IMAGE_URLS,
@@ -39,6 +38,6 @@ export {
 };
 
 // ── Three.js ──────────────────────────────
-export const THREE_VERSION = IMPORT_MAP_VERSIONS.three;
+export const THREE_VERSION = '0.183.2';
 
 export const FAVICON_512 = FAVICON_512_URL;

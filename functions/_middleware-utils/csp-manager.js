@@ -91,7 +91,6 @@ export function buildCspHeader(nonce) {
     ].join(' '),
     "media-src 'self' https://www.youtube.com https://*.googlevideo.com",
     "worker-src 'self' blob:",
-    "manifest-src 'self'",
     'upgrade-insecure-requests',
   ];
 

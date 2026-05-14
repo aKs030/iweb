@@ -83,13 +83,6 @@
  */
 
 /**
- * @typedef {Object} PWAAssets
- * @property {Array<{rel: string, href: string}>} links - Link elements
- * @property {Array<{rel: string, href: string, sizes: string, type?: string}>} iconLinks - Icon links
- * @property {Array<{name: string, content: string}>} metas - Meta tags
- */
-
-/**
  * Shared Style Types
  */
 

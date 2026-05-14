@@ -258,7 +258,7 @@ export class MenuSearchApi {
     ];
   }
 
-  buildOfflineSearchResults(query) {
+  buildLocalSearchResults(query) {
     const normalizedQuery = String(query || '')
       .trim()
       .toLowerCase();
@@ -285,16 +285,16 @@ export class MenuSearchApi {
         title: String(item.title || ''),
         url: String(item.url || '/'),
         description: i18n.tOrFallback(
-          'menu.search_offline_desc',
+          'menu.search_local_desc',
           'Aus lokal verfuegbaren Navigationseintraegen',
         ),
-        highlightedDescription: `<mark>${i18n.tOrFallback('menu.search_offline_match', 'Lokaler Treffer')}</mark>`,
-        category: i18n.tOrFallback('menu.search_offline_category', 'Offline'),
+        highlightedDescription: `<mark>${i18n.tOrFallback('menu.search_local_match', 'Lokaler Treffer')}</mark>`,
+        category: i18n.tOrFallback('menu.search_local_category', 'Lokal'),
       }));
   }
 
-  buildOfflineFacetCounts(query) {
-    const items = this.buildOfflineSearchResults(query);
+  buildLocalFacetCounts(query) {
+    const items = this.buildLocalSearchResults(query);
     return this.normalizeFacetCounts(
       SEARCH_FACETS.map((key) => ({
         key,

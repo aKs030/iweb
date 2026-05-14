@@ -15,10 +15,10 @@ This directory contains shared browser runtime modules used by pages, components
 - `async-utils.js` / `dom-utils.js` / `timer-manager.js` / `text-utils.js` / `sanitization-utils.js`: focused async, DOM, timer, text, and sanitizing helpers.
 - `url-utils.js`: Shared URL parsing, normalization, and safe internal-link helpers.
 - `content-extractors.js`: Shared heading/image/video extraction for SEO and schema.
-- `fetch.js` / `cache.js`: Request helpers with cache support.
+- `fetch.js` / `cache.js`: Request helpers with small in-memory cache support.
 - `section-manager.js`: Dynamic section loading and active section tracking.
 - `schema.js` / `schema-page-types.js` / `schema-media.js` / `canonical-manager.js`: SEO structured data, page-type mapping, media extraction, and canonical management.
-- `sw-registration.js` / `resource-hints.js` / `resource-hints-matrix.js`: offline lifecycle and route-aware runtime optimizations.
+- `resource-hints.js` / `resource-hints-matrix.js`: route-aware runtime optimizations.
 - `accessibility-manager.js`: Accessibility helpers and announcer utilities.
 - `three-earth-manager.js`: Three.js Earth lifecycle, loading orchestration, and cleanup.
 - `model-loader.js`: Compressed 3D model loader (Draco & Meshopt via GLTFLoader).
@@ -68,7 +68,6 @@ log.info('Core initialized');
 - `resource-hints.js` reads route/device/network budgets from `resource-hints-matrix.js`, so speculation and hover warmup stay bounded per section instead of using one global profile.
 - `schema.js` keeps the public SEO API stable, while `schema-page-types.js` and `schema-media.js` isolate taxonomy and media extraction.
 - `content-extractors.js` is the shared DOM extraction layer for head/SEO and schema text enrichment.
-- `sw-registration.js` owns service-worker registration and online/offline indicator lifecycle so `main.js` stays focused on app bootstrap.
 - `runtime-env.js` is the canonical place for local-dev host detection and should be preferred over ad-hoc hostname checks.
 - `i18n.tOrFallback(...)` is the preferred path for UI copy with explicit fallback text.
 - `url-utils.js` should be preferred over ad-hoc `new URL(...)` parsing for internal navigation and compact URL rendering.

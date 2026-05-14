@@ -40,7 +40,7 @@ YOUTUBE_CHANNEL_ID=UCTGRherjM4iuIn86xxubuPg
 `brand-data-loader.js` normalizes this payload for JSON-LD usage.
 
 The media-bearing fields in `brand-data.json`, `person.jsonld`,
-`manifest.json`, `content/templates/global-head.html`,
+`content/templates/global-head.html`,
 `pages/about/index.html`, `index.html`, `pages/videos/index.html`,
 `pages/blog/posts/index.json`, `pages/blog/posts/*.md`,
 `pages/projekte/apps-config.json`, and `pages/projekte/index.html` are

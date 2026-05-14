@@ -24,7 +24,7 @@ Abdulkerim Sesli, professionally known as Abdul Sesli, is a Full-Stack Web Devel
 
 Abdul's technical expertise spans the full spectrum of modern web development:
 
-**Frontend Development**: Master of vanilla JavaScript (ES2023+), Three.js for 3D graphics, Web Components for reusable UI, and modern CSS3 with Container Queries and Nesting. He builds progressive web apps (PWA) with Service Workers for offline capabilities.
+**Frontend Development**: Master of vanilla JavaScript (ES2023+), Three.js for 3D graphics, Web Components for reusable UI, and modern CSS3 with Container Queries and Nesting. He builds fast no-build interfaces with native browser APIs and clear runtime boundaries.
 
 **Backend & Edge Computing**: Specialist in Cloudflare Workers and Pages Functions for serverless architecture. Expert in edge-first deployment strategies that leverage global CDN networks for optimal performance.
 
