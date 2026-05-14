@@ -16,11 +16,6 @@ import { initViewTransitions } from '#core/view-transitions.js';
 import { i18n } from '#core/i18n.js';
 import { GlobalEventHandlers } from '#core/events.js';
 import { resourceHints } from '#core/resource-hints.js';
-import { initOfflineAnalytics } from '#core/offline-analytics.js';
-import {
-  initNetworkStatusIndicator,
-  initServiceWorkerLifecycle,
-} from '#core/sw-registration.js';
 import { initThemeState } from '#core/theme-state.js';
 import { initOverlayManager } from '#core/overlay-manager.js';
 import { initEnhancements } from '#components/enhancements/enhancements.js';
@@ -115,7 +110,6 @@ document.addEventListener(
   'DOMContentLoaded',
   async () => {
     await i18n.init();
-    initNetworkStatusIndicator({ announce, timers: appTimers });
     perfMarks.domReady = performance.now();
 
     const updateLoader = (progress, message, options) => {
@@ -173,9 +167,6 @@ document.addEventListener(
     // Initialize global event handlers
     GlobalEventHandlers.init(announce);
 
-    // Initialize offline-first analytics pipeline (IndexedDB + Background Sync)
-    initOfflineAnalytics();
-
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
       modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
@@ -197,5 +188,3 @@ globalThis.addEventListener('pageshow', (event) => {
     }
   }
 });
-
-initServiceWorkerLifecycle({ isTest: ENV.isTest, announce });

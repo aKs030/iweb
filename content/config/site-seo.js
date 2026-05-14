@@ -6,7 +6,6 @@ export const SITE_WEBSITE_DESCRIPTION =
   'Portfolio-Website mit technischen Artikeln, Bildern, Videos und Projektinhalten von Abdulkerim Sesli.';
 export const SITE_PERSON_DISAMBIGUATING_DESCRIPTION =
   'Persönliche Website von Abdulkerim Sesli (auch bekannt als Abdul Sesli, Webentwickler und Fotograf); nicht identisch mit dem Fußballspieler Abdülkerim Bardakcı und nicht mit Sesli-Kitap-Portalen.';
-export const SITE_DEFAULT_APP_TITLE = 'AKS Portfolio';
 export const SITE_DEFAULT_ROBOTS = 'index, follow, max-image-preview:large';
 export const SITE_HOME_TITLE =
   'Abdulkerim Sesli | Portfolio für Code, 3D, AI & digitale Experimente';

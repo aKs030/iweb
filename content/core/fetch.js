@@ -19,7 +19,6 @@ const log = createLogger('Fetch');
  * @property {RequestInit} [fetchOptions] - Native fetch options
  */
 
-// Use unified CacheManager instead of simple Map
 const cacheManager = getCache({ memorySize: 100 });
 
 /** In-flight request deduplication map */
@@ -41,7 +40,6 @@ async function fetchWithRetry(url, config = {}) {
     fetchOptions = {},
   } = config;
 
-  // Check cache first using CacheManager
   if (useCache) {
     const cached = await cacheManager.get(url);
     if (cached) {
@@ -49,7 +47,6 @@ async function fetchWithRetry(url, config = {}) {
         log.debug(`Cache hit: ${url}`);
         return cached.clone();
       } catch {
-        // Cache entry invalid (body already consumed), remove it
         await cacheManager.delete(url);
       }
     }
@@ -88,7 +85,6 @@ async function fetchWithRetry(url, config = {}) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        // Cache successful response using CacheManager
         if (useCache) {
           await cacheManager.set(url, response.clone(), { ttl: cacheTTL });
         }

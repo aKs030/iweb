@@ -7,7 +7,6 @@
 //   `env.production` erneut angegeben werden, sobald dort Overrides existieren
 // - `nodejs_compat` bleibt aktiv
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "1web",
   "compatibility_date": "2025-03-07", // bewusst gepinnt; nur nach Runtime-Review + Tests anheben
   "compatibility_flags": ["nodejs_compat"],

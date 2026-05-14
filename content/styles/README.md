@@ -15,7 +15,6 @@
 ## Workflow
 
 - `npm run dev` -> starts the local Cloudflare Pages development server
-- `npm run sync` -> refreshes generated frontend artifacts when dependencies or templates change
 - Global CSS now uses native cascade layers (`foundation`, `base`, `utilities`, `components`, `animations`) instead of generation or selector-order coupling.
 
 ## Theme switching

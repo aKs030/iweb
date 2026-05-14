@@ -488,8 +488,7 @@
       "JavaScript ES2023+",
       "Three.js 0.183.2",
       "Web Components",
-      "CSS3 (Container Queries, Nesting)",
-      "Service Workers"
+      "CSS3 (Container Queries, Nesting)"
     ],
     "backend": [
       "Cloudflare Pages Functions",
@@ -528,10 +527,6 @@
       "enabled": true,
       "technology": "Three.js",
       "features": ["interactive-globe", "day-night-textures", "normal-maps"]
-    },
-    "pwa": {
-      "enabled": true,
-      "features": ["offline-support", "service-worker", "cache-api"]
     },
     "performance": {
       "bundleSize": "~240 kB gzipped",

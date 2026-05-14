@@ -149,7 +149,7 @@ All API keys and secrets are stored as environment variables and never exposed t
 - Gallery API CORS restricted to own domain (was wildcard)
 - Cookie values now URL-encoded (special char handling)
 - Lucide CDN pinned to specific version (was @latest)
-- Service Worker cache size limits added
+- Static asset cache rules tightened
 
 ## Security Tools
 

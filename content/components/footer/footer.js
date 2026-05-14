@@ -17,12 +17,33 @@ import {
   setFooterLoaded,
 } from './state.js';
 import { TimerManager } from '#core/timer-manager.js';
-import { FOOTER_HTML } from './footer-template.generated.js';
 
 const log = createLogger('SiteFooter');
+const FOOTER_TEMPLATE_URL = new URL('./footer.html', import.meta.url);
 const CONSENT_COOKIE = 'cookie_consent';
 const ANALYTICS_CONSENT_COOKIE = 'cookie_analytics_consent';
 const ADS_CONSENT_COOKIE = 'cookie_ads_consent';
+
+let footerTemplatePromise = null;
+
+async function loadFooterTemplate() {
+  footerTemplatePromise ||= fetch(FOOTER_TEMPLATE_URL, {
+    headers: { Accept: 'text/html' },
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Footer template request failed: ${response.status}`);
+    }
+
+    return response.text();
+  });
+
+  try {
+    return await footerTemplatePromise;
+  } catch (error) {
+    footerTemplatePromise = null;
+    throw error;
+  }
+}
 
 /** @typedef {import('./footer.types.js').FooterElements} FooterElements */
 
@@ -67,7 +88,7 @@ export class SiteFooter extends HTMLElement {
     try {
       const hasShell = this.dataset.shell === 'true';
       if (!this.innerHTML.trim() || hasShell) {
-        const html = FOOTER_HTML;
+        const html = await loadFooterTemplate();
 
         if (!this.isConnected) return;
 

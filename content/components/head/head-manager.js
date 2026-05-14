@@ -113,7 +113,6 @@ const updateBasicMeta = (pageData, pageUrl) => {
     document.title = pageData.title;
   }
 
-  const appTitle = pageData.appTitle || pageData.title;
   const ogTitle = pageData.ogTitle || pageData.title;
   const ogDescription = pageData.ogDescription || pageData.description;
   const twitterTitle = pageData.twitterTitle || ogTitle || pageData.title;
@@ -136,7 +135,6 @@ const updateBasicMeta = (pageData, pageUrl) => {
     ['robots', pageData.robots || 'index, follow, max-image-preview:large'],
     ['language', pageData.pageLang || 'de-DE'],
     ['author', 'Abdulkerim Sesli'],
-    ['apple-mobile-web-app-title', appTitle],
     ['twitter:card', 'summary_large_image'],
     ['twitter:site', '@abdulkerimsesli'],
     ['twitter:creator', '@abdulkerimsesli'],

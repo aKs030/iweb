@@ -15,34 +15,23 @@ Voraussetzungen:
 - Node.js `22+` (siehe `package.json` engines)
 - npm
 
-Installation und Start:
+Start:
 
 ```bash
-npm ci
 npm run dev
 ```
 
 Lokale URL: [http://localhost:8787](http://localhost:8787)
 
-## Verfügbare Scripts
+## Lokaler Server
 
 ```bash
 npm run dev           # Lokalen Cloudflare-Pages-Server starten
-npm run build         # Functions-Bundle lokal bauen
-npm run sync          # Generierte Import-Map und Footer-Dateien aktualisieren
-npm run clean         # Lokale Artefakte/Caches löschen
-npm run clean:full    # zusätzlich .wrangler / lokale D1-Daten löschen
 ```
 
-Optionaler Port:
+`npm run dev` startet Cloudflare Pages lokal auf [http://localhost:8787](http://localhost:8787).
 
-```bash
-npm run dev -- --port 8787
-```
-
-`npm run dev` zeigt beim Start automatisch die lokale URL, eine Netzwerk-URL falls verfügbar und führt lokale D1-Migrationen vor dem Start aus.
-
-Der Repo-Workflow ist bewusst schlank gehalten: lokale Entwicklung, gezielte Generator-Synchronisierung und ein kleines Set an operativen Kommandos.
+Der Repo-Workflow ist bewusst schlank gehalten: ein lokaler Startbefehl, keine weiteren npm-Kommandos.
 
 ## CI/CD
 
@@ -58,13 +47,13 @@ Preview-Deployments bleiben auf das Deployment reduziert. Der Robot-Agent begren
 content/      Frontend-Code (Komponenten, Core, Styles, Media)
 pages/        Seiten-spezifische Entry-Points
 functions/    Cloudflare Pages Functions + API-Endpunkte
-scripts/      Schlanke Dev- und Content-Utilities
 .github/      CI/CD Workflows
 ```
 
 ## Root-Dateien
 
-- `index.html`, `offline.html`, `sw.js` - zentrale Entry-Points
+- `index.html` - zentraler Frontend-Entry-Point
+- `sw.js` - kleiner Legacy-Cleanup fuer alte Service-Worker-Registrierungen
 - `package.json`, `wrangler.jsonc`, `.env.example` - Projekt- und Laufzeitkonfiguration
 - `_headers`, `_redirects` - Cloudflare Header- und Routing-Regeln
 - `ai-index.json`, `llms.txt`, `llms-full.txt`, `person.jsonld`, `bio.md` - AI-Discovery und SEO

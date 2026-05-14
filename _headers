@@ -124,7 +124,7 @@
   Access-Control-Allow-Origin: *
   X-Robots-Tag: all
 
-# Favicon and manifest files
+# Favicon and legacy worker files
 /favicon.ico
   Cache-Control: public, max-age=2592000
   Content-Type: image/x-icon
@@ -136,10 +136,6 @@
 /sw.js
   Cache-Control: no-cache
   Content-Type: application/javascript
-
-/manifest.json
-  Cache-Control: public, max-age=86400
-  Content-Type: application/manifest+json
 
 # ============================================================================
 # JavaScript Bundles - Modern Optimization

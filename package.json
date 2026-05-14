@@ -11,27 +11,7 @@
     "node": ">=22.0.0",
     "npm": ">=10.0.0"
   },
-  "imports": {
-    "#core/*": "./content/core/*",
-    "#components/*": "./content/components/*",
-    "#config/*": "./content/config/*",
-    "#pages/*": "./pages/*"
-  },
   "scripts": {
-    "dev": "node scripts/run-wrangler.mjs pages dev . --port 8787 --show-interactive-dev-session=false",
-    "predev": "npm run db:migrate",
-    "db:migrate": "node scripts/run-local-d1-migrations.mjs",
-    "build": "node scripts/run-wrangler.mjs pages functions build functions --project-directory .",
-    "check": "npm run build",
-    "sync": "node scripts/sync-wrangler-vars.mjs && node scripts/sync-import-map.mjs && node scripts/sync-footer-template.mjs",
-    "clean": "rm -rf node_modules/.cache .cache output coverage .nyc_output .playwright-cli",
-    "clean:full": "rm -rf node_modules/.cache .cache output coverage .nyc_output .playwright-cli .wrangler node_modules/.mf _worker.bundle"
-  },
-  "dependencies": {
-    "htm": "^3.1.1",
-    "lucide-react": "1.7.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "three": "^0.183.2"
+    "dev": "npx --yes wrangler@4.80.0 pages dev . --port 8787 --show-interactive-dev-session=false"
   }
 }

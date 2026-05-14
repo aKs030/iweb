@@ -151,15 +151,11 @@ hero-640.avif
 - **ImageOptim** - macOS GUI für Bildoptimierung
 - **Squoosh.app** - Web-basiertes Tool
 
-### Installation
+### Ohne lokale Projekt-Abhaengigkeiten
 
-```bash
-# Squoosh CLI
-npm install -g @squoosh/cli
-
-# Sharp (für Resize)
-npm install --save-dev sharp
-```
+Nutze bevorzugt Squoosh.app oder ImageOptim. CLI-Tools sollten bei Bedarf
+temporaer per `npx --yes <tool>` laufen und nicht als Projekt-Dependency
+gespeichert werden.
 
 ## Performance-Monitoring
 

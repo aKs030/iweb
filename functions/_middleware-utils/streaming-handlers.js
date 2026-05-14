@@ -240,7 +240,6 @@ function buildSeoMetaNameMap(meta) {
     description: m.description,
     robots: m.robots || 'index, follow, max-image-preview:large',
     keywords: m.keywords,
-    'apple-mobile-web-app-title': m.appTitle || m.title,
     'twitter:card': m.twitterCard || 'summary_large_image',
     'twitter:title': m.twitterTitle || m.title,
     'twitter:description': m.twitterDescription || m.description,
@@ -306,15 +305,10 @@ function renderGlobalHeadTemplate(template, payload, nonce = null) {
   const attrs = payload?.attrs || {};
   const mode = attrs.mode === 'standalone' ? 'standalone' : 'base';
   const useRouteTitle = attrs['title-source'] === 'route';
-  const useRouteAppTitle = attrs['app-title-source'] === 'route';
   const replacements = {
     TITLE: attrs.title || 'Standalone',
     THEME_COLOR: attrs['theme-color'] || '#030303',
     COLOR_SCHEME: attrs['color-scheme'] || 'dark',
-    STATUS_BAR_STYLE: attrs['status-bar-style'] || 'black-translucent',
-    APP_TITLE:
-      attrs['app-title'] ||
-      (mode === 'standalone' ? attrs.title || 'Standalone' : 'AKS Portfolio'),
   };
 
   const nextTemplate = template
@@ -327,12 +321,6 @@ function renderGlobalHeadTemplate(template, payload, nonce = null) {
       (_match, block) => (mode === 'standalone' ? block : ''),
     );
   let routeManagedTemplate = nextTemplate;
-  if (useRouteAppTitle) {
-    routeManagedTemplate = routeManagedTemplate.replace(
-      /\s*<meta name="apple-mobile-web-app-title" content="\{\{APP_TITLE\}\}" \/>\s*/g,
-      '\n',
-    );
-  }
   if (useRouteTitle) {
     routeManagedTemplate = routeManagedTemplate.replace(
       /\s*<title>\{\{TITLE\}\}<\/title>\s*/g,

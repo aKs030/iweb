@@ -50,12 +50,9 @@ Der Robot-Agent arbeitet identifier-basiert: Memories werden über die stabile U
 
 ```bash
 npm run dev
-npm run build
-npm run sync
-npm run clean:full
 ```
 
-`npm run dev` runs the local Pages server via the shared Wrangler wrapper, applies local D1 migrations first, and uses the real `GALLERY_BUCKET` via Wrangler's `remote: true` binding, so local `r2-proxy` and gallery reads stay much closer to production without a route-specific live-mode hack.
+`npm run dev` starts the local Cloudflare Pages server on port 8787.
 
 ## Robot Cloudflare Config (Wrangler)
 
