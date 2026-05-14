@@ -9,7 +9,7 @@ import {
   respondWithSnapshotOr503,
   saveSitemapSnapshot,
 } from './api/_sitemap-snapshot.js';
-import { normalizeText, sanitizeDiscoveryText } from './api/_text-utils.js';
+import { normalizeText, sanitizeDiscoveryText } from '../content/core/text-utils.js';
 import {
   buildBlogPath,
   buildProjectAppPath,

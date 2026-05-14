@@ -36,6 +36,9 @@ class ResourceHintsManager {
     this.speculationRefreshHandle = null;
     this._cachedProfile = null;
     this._cachedProfilePathname = null;
+    // IntersectionObserver-based prefetch state
+    this.intersectionObserver = null;
+    this.intersectionPrefetchedRoutes = new Set();
   }
 
   /**
@@ -679,6 +682,7 @@ class ResourceHintsManager {
     }
 
     this.attachIntentPreloading();
+    this.attachIntersectionPrefetch();
     this.attachSpeculationRefresh();
   }
 
@@ -705,6 +709,74 @@ class ResourceHintsManager {
     this.speculationRefreshHandle = scheduleIdleTask(refresh, {
       timeout: 2200,
       fallbackDelay: 1200,
+    });
+  }
+
+  /**
+   * IntersectionObserver-based prefetching (2.3).
+   *
+   * Links that scroll into the viewport are prefetched earlier than the
+   * existing hover/pointerdown intent handlers, giving the browser more
+   * time to warm the connection before the user commits to clicking.
+   *
+   * - Only activates when IntersectionObserver is available.
+   * - Respects Save-Data and slow-connection guards.
+   * - Observes all eligible anchor links present at call time; re-runs
+   *   whenever speculation rules are refreshed (menu:loaded).
+   * - Each route is prefetched at most once per page lifecycle.
+   */
+  attachIntersectionPrefetch() {
+    if (this.intersectionObserver) return;
+    if (typeof IntersectionObserver === 'undefined') return;
+    if (!this.shouldUseSpeculativeLoading()) return;
+
+    const VIEWPORT_MARGIN = '0px 0px 150px 0px'; // pre-fetch slightly before fully visible
+
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const anchor = entry.target;
+          if (!(anchor instanceof HTMLAnchorElement)) continue;
+
+          const route = this.getIntentRouteFromAnchor(anchor);
+          if (!route) continue;
+          if (this.intersectionPrefetchedRoutes.has(route)) continue;
+          if (this.intentPrefetchedRoutes.has(route)) continue;
+
+          this.intersectionPrefetchedRoutes.add(route);
+          this.prefetch(route, { as: 'document' });
+          log.debug(`IntersectionObserver prefetch: ${route}`);
+
+          // Once prefetched, no need to keep watching this element.
+          this.intersectionObserver?.unobserve(anchor);
+        }
+      },
+      { rootMargin: VIEWPORT_MARGIN, threshold: 0 },
+    );
+
+    this._observeEligibleLinks();
+
+    // Re-scan after late hydration (menu, dynamic content).
+    document.addEventListener(
+      'menu:loaded',
+      () => this._observeEligibleLinks(),
+      { once: true },
+    );
+  }
+
+  /**
+   * Observe all currently-eligible anchor links in the document.
+   * @private
+   */
+  _observeEligibleLinks() {
+    if (!this.intersectionObserver) return;
+    document.querySelectorAll('a[href]').forEach((el) => {
+      if (!(el instanceof HTMLAnchorElement)) return;
+      const route = this.resolveEligibleRoute(el.getAttribute('href'));
+      if (!route) return;
+      if (this.intersectionPrefetchedRoutes.has(route)) return;
+      this.intersectionObserver.observe(el);
     });
   }
 
@@ -745,6 +817,10 @@ class ResourceHintsManager {
     if (this.intentHandlersAttached && this.intentHandler) {
       document.removeEventListener('pointerover', this.intentHandler);
       document.removeEventListener('pointerdown', this.intentHandler);
+    }
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+      this.intersectionObserver = null;
     }
     this.clearIntentWarmupTimer();
     cancelIdleTask(this.speculationRefreshHandle);

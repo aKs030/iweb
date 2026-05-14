@@ -15,8 +15,8 @@ import {
   normalizeUrl,
 } from './_search-url.js';
 import { CLEANUP_PATTERNS, HTML_ENTITIES } from './_cleanup-patterns.js';
-import { escapeHtml } from './_html-utils.js';
 import {
+  escapeHtml,
   escapeRegExp,
   normalizeForMatch,
 } from '../../content/core/text-utils.js';

@@ -8,7 +8,7 @@ const log = createLogger('contact');
  * Security: Honeypot, Rate Limiting, Input Sanitization
  */
 
-import { escapeHtml } from './_html-utils.js';
+import { escapeHtml } from '../../content/core/text-utils.js';
 import { getCorsHeaders, handleOptions } from './_cors.js';
 import { createWindowRateLimiter } from './_rate-limit.js';
 import { getRequestClientIp } from './_request-utils.js';

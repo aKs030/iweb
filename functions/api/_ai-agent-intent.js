@@ -3,6 +3,47 @@ const ACTION_PATTERNS =
   /\b(zeig|geh|navigier|oeffn|öffn|schlie(?:ss|ß)|schließ|such|find|mach|wechsel|dark|light|toggle|theme|dunkel|hell|merk|merke|erinner|scroll|oben|top|menü|menu|name ist|hei(?:ss|ß)e|ich bin |ich hei(?:ss|ß)|nenn mich|kennst du mich|wei(?:ss|ß)t du (meinen|wer ich)|bin der |bin die |empfehl|kopier|link|url|upload|bild hoch|chatverlauf|verlauf l[oö]sch|history)/i;
 const MEMORY_RECALL_PATTERNS =
   /\b(kennst du mich noch|erinnerst du dich|wei(?:ss|ß)t du (meinen namen|wer ich bin)|wie hei(?:ss|ß)e ich)\b/i;
+
+// ---------------------------------------------------------------------------
+// Prompt Injection Guards (3.3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Common prompt injection / jailbreak signal patterns.
+ * Ordered from most to least obvious so the first match short-circuits.
+ */
+const INJECTION_PATTERNS = [
+  /ignore\s+(all\s+|previous\s+)?instructions?/i,
+  /disregard\s+(all\s+|previous\s+)?instructions?/i,
+  /forget\s+(everything|all\s+previous)/i,
+  /you\s+are\s+now\b/i,
+  /from\s+now\s+on\s+(you\s+are|act\s+as|pretend)/i,
+  /pretend\s+(you\s+are|to\s+be)\b/i,
+  /\bjailbreak\b/i,
+  /\bdan\s+mode\b/i,
+  /\bact\s+as\s+(an?\s+)?(?:ai|gpt|llm|assistant|bot)\b/i,
+  /override\s+(your\s+)?(system\s+)?prompt/i,
+  /new\s+system\s+prompt/i,
+  /\bsystem:\s*you\s+(are|must|should)\b/i,
+];
+
+/**
+ * Check whether a prompt contains known injection/jailbreak signals.
+ *
+ * @param {string} prompt
+ * @returns {{ safe: boolean; pattern: string|null }}
+ */
+export function checkPromptInjection(prompt) {
+  const text = String(prompt || '');
+  if (!text.trim()) return { safe: true, pattern: null };
+
+  for (const pattern of INJECTION_PATTERNS) {
+    if (pattern.test(text)) {
+      return { safe: false, pattern: pattern.source };
+    }
+  }
+  return { safe: true, pattern: null };
+}
 const NAME_CONTEXT_STOPWORDS = new Set([
   'aus',
   'von',

@@ -2,7 +2,7 @@ import {
   formatSlug,
   normalizeText,
   sanitizeDiscoveryText,
-} from './_text-utils.js';
+} from '../../content/core/text-utils.js';
 import { loadJsonFile, toISODate } from './_xml-utils.js';
 import { buildProjectDetailPath } from '../../content/core/project-paths.js';
 import {

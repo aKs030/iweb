@@ -9,6 +9,28 @@ import {
 
 const log = createLogger('ai-agent-memory');
 
+/**
+ * Compute a single embedding vector for the given text.
+ * Returns null when the AI binding or Vectorize is unavailable.
+ * Callers can share one embedding across recall + persist to avoid
+ * paying the embedding cost twice per chat turn.
+ *
+ * @param {object} env
+ * @param {string} text
+ * @param {object} config
+ * @returns {Promise<number[]|null>}
+ */
+export async function computeEmbedding(env, text, config) {
+  if (!env.AI || !text) return null;
+  try {
+    const { data } = await env.AI.run(config.embeddingModel, { text: [text] });
+    return data?.[0] ?? null;
+  } catch (error) {
+    log.warn('computeEmbedding failed:', error?.message || error);
+    return null;
+  }
+}
+
 const DEFAULT_MAX_MEMORY_RESULTS = 5;
 
 async function recallMemoriesFromFallback(
@@ -33,7 +55,20 @@ async function recallMemoriesFromFallback(
     .slice(0, topK);
 }
 
-export async function storeMemory(env, userId, key, value, config) {
+/**
+ * Store a single memory fact in KV and (optionally) Vectorize.
+ * Accepts an optional pre-computed embedding so the caller can share one
+ * embedding across multiple store calls without redundant AI.run calls.
+ *
+ * @param {object} env
+ * @param {string} userId
+ * @param {string} key
+ * @param {string} value
+ * @param {object} config
+ * @param {number[]|null} [precomputedEmbedding]
+ * @returns {Promise<object>}
+ */
+export async function storeMemory(env, userId, key, value, config, precomputedEmbedding = null) {
   log.debug('storeMemory called', { userId, key, value });
   const kvStored = await saveFallbackMemorySingle(env, userId, key, value);
   if (!env.AI || !env.JULES_MEMORY) {
@@ -44,8 +79,9 @@ export async function storeMemory(env, userId, key, value, config) {
 
   try {
     const text = `${key}: ${value}`;
-    const { data } = await env.AI.run(config.embeddingModel, { text: [text] });
-    if (!data?.[0]) {
+    // Reuse a pre-computed embedding when provided to avoid an extra AI.run call.
+    const embedding = precomputedEmbedding ?? (await computeEmbedding(env, text, config));
+    if (!embedding) {
       return kvStored
         ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
         : { success: false, error: 'Embedding failed' };
@@ -55,7 +91,7 @@ export async function storeMemory(env, userId, key, value, config) {
     await env.JULES_MEMORY.upsert([
       {
         id,
-        values: data[0],
+        values: embedding,
         metadata: { userId, key, value, timestamp: Date.now(), text },
       },
     ]);
@@ -77,6 +113,18 @@ export async function storeMemory(env, userId, key, value, config) {
   }
 }
 
+/**
+ * Recall memories using a pre-computed embedding vector (preferred) or
+ * a raw query string (falls back to recomputing or KV search).
+ *
+ * @param {object} env
+ * @param {string} userId
+ * @param {string} query
+ * @param {object} config
+ * @param {object} [options]
+ * @param {number[]|null} [options.embedding] - Pre-computed embedding to reuse
+ * @returns {Promise<object[]>}
+ */
 export async function recallMemories(env, userId, query, config, options = {}) {
   log.debug('recallMemories', { userId, query, options });
   const topK = Number.isFinite(options.topK)
@@ -95,15 +143,16 @@ export async function recallMemories(env, userId, query, config, options = {}) {
   }
 
   try {
-    const { data } = await env.AI.run(config.embeddingModel, { text: [query] });
-    if (!data?.[0]) {
+    // Reuse a pre-computed embedding when provided to avoid a second AI.run call.
+    const embedding = options.embedding ?? (await computeEmbedding(env, query, config));
+    if (!embedding) {
       return recallMemoriesFromFallback(env, userId, query, {
         topK,
         scoreThreshold,
       });
     }
 
-    const results = await env.JULES_MEMORY.query(data[0], {
+    const results = await env.JULES_MEMORY.query(embedding, {
       topK,
       filter: { userId },
       returnMetadata: 'all',
@@ -135,12 +184,24 @@ export async function recallMemories(env, userId, query, config, options = {}) {
   }
 }
 
-export async function persistPromptMemories(env, userId, prompt, config) {
+/**
+ * Extract memory facts from the prompt and store them.
+ * Accepts an optional pre-computed embedding so the caller can share one
+ * embedding across recall + persist without a second AI.run call.
+ *
+ * @param {object} env
+ * @param {string} userId
+ * @param {string} prompt
+ * @param {object} config
+ * @param {number[]|null} [sharedEmbedding]
+ * @returns {Promise<object[]>}
+ */
+export async function persistPromptMemories(env, userId, prompt, config, sharedEmbedding = null) {
   const facts = extractPromptMemoryFacts(prompt);
   if (!facts.length) return [];
 
   const results = await Promise.allSettled(
-    facts.map((fact) => storeMemory(env, userId, fact.key, fact.value, config)),
+    facts.map((fact) => storeMemory(env, userId, fact.key, fact.value, config, sharedEmbedding)),
   );
 
   return facts
@@ -157,24 +218,35 @@ export async function persistPromptMemories(env, userId, prompt, config) {
     }));
 }
 
-export async function resolveMemoryContext(env, userId, prompt, config) {
-  // B. Memory-Context bei jedem Request optimiert!
-  // Nur Namen und Intents abfragen, es sei denn der Recall Intent schlägt an
-  const nameMem = await recallMemories(env, userId, 'name', config);
+/**
+ * Resolve memory context for the current prompt.
+ * Accepts an optional pre-computed embedding so the AI.run call for embedding
+ * is only made once when shared with persistPromptMemories.
+ *
+ * @param {object} env
+ * @param {string} userId
+ * @param {string} prompt
+ * @param {object} config
+ * @param {number[]|null} [sharedEmbedding]
+ * @returns {Promise<object[]>}
+ */
+export async function resolveMemoryContext(env, userId, prompt, config, sharedEmbedding = null) {
+  // Always attempt a name lookup first (cheap KV path when Vectorize is down).
+  const nameMem = await recallMemories(env, userId, 'name', config, {
+    embedding: sharedEmbedding,
+  });
   if (nameMem.length > 0) return nameMem;
 
-  // Optimize: Only do heavy memory queries if the prompt seems to need it
-  // Check if there are memory facts to extract or explicit requests
   const hasExtractedFacts = extractPromptMemoryFacts(prompt).length > 0;
   const needsRecall = promptNeedsMemoryRecall(prompt);
 
-  // If prompt needs recall or seems to have facts to store, do a primary search
   if (needsRecall || hasExtractedFacts) {
-    const primary = await recallMemories(env, userId, prompt || 'user', config);
+    const primary = await recallMemories(env, userId, prompt || 'user', config, {
+      embedding: sharedEmbedding,
+    });
     if (primary.length > 0) return primary;
   }
 
-  // Only run the extensive queries if explicitly looking for memory
   if (needsRecall) {
     const recallQueries = [
       'name',
@@ -187,6 +259,7 @@ export async function resolveMemoryContext(env, userId, prompt, config) {
       const fallback = await recallMemories(env, userId, query, config, {
         topK: Math.max(12, config.maxMemoryResults),
         scoreThreshold: 0,
+        // Don't forward the shared embedding here – queries differ from the prompt.
       });
       if (fallback.length > 0) return fallback;
     }

@@ -7,7 +7,7 @@ import {
   formatSlug,
   normalizeText,
   sanitizeDiscoveryText,
-} from '../api/_text-utils.js';
+} from '../../content/core/text-utils.js';
 import {
   buildProjectCanonicalUrl,
   extractProjectSlug,
