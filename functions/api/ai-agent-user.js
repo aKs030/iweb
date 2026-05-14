@@ -18,8 +18,7 @@ import {
   USER_ID_HEADER_NAME,
   normalizeUserId,
 } from './_user-identity.js';
-import { findRecoveryCandidates } from './_profile-recovery.js';
-import { pickAutoRecoveryCandidate } from './_profile-recovery.js';
+import { findRecoveryCandidates, pickAutoRecoveryCandidate } from './_profile-recovery.js';
 import {
   CACHE_CONTROL_NO_STORE,
   mergeHeaders,
@@ -48,15 +47,12 @@ import {
 } from './_ai-agent-memory-store.js';
 const USERNAME_LOOKUP_PREFIX = 'username:';
 const USERNAME_LOOKUP_CONFLICT = '__conflict__';
+const DEFAULT_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
 const VECTORIZE_METADATA_DELETE_METHODS = Object.freeze([
   'deleteByMetadata',
   'deleteByFilter',
   'deleteByMetadataFilter',
 ]);
-
-function jsonWithHeaders(payload, options = {}) {
-  return jsonResponse(payload, options);
-}
 
 function normalizeLookupName(rawName) {
   return normalizeMemoryText(rawName)
@@ -100,10 +96,6 @@ export function buildProfileInfo(userId, memories = []) {
     name,
   });
 }
-
-
-
-
 
 function buildDeferredVectorizeStats(env) {
   return {
@@ -644,7 +636,7 @@ export async function onRequestPost(context) {
 
     const kv = getMemoryKV(env);
     if (!kv) {
-      return jsonWithHeaders(
+      return jsonResponse(
         {
           success: false,
           text: 'Cloudflare KV für Memory ist nicht verfügbar.',
@@ -656,7 +648,7 @@ export async function onRequestPost(context) {
     const responseHeaders = new Headers(baseHeaders);
 
     if (trustedUserId && bodyUserId && bodyUserId !== trustedUserId) {
-      return jsonWithHeaders(
+      return jsonResponse(
         {
           success: false,
           text: 'User-ID-Mismatch: Zugriff nur auf die angemeldete ID erlaubt.',
@@ -670,7 +662,7 @@ export async function onRequestPost(context) {
         body?.name || body?.recoveryName || '',
       );
       if (!recoveryName) {
-        return jsonWithHeaders(
+        return jsonResponse(
           {
             success: false,
             text: 'Bitte gib einen Namen für die Profilsuche ein.',
@@ -698,7 +690,7 @@ export async function onRequestPost(context) {
         { allowNone: true },
       );
 
-      return jsonWithHeaders(
+      return jsonResponse(
         {
           success: true,
           recovery,
@@ -720,7 +712,7 @@ export async function onRequestPost(context) {
       );
 
       if (!targetUserId || !recoveryName) {
-        return jsonWithHeaders(
+        return jsonResponse(
           {
             success: false,
             text: 'Profil-Aktivierung erfordert Name und Zielprofil.',
@@ -731,7 +723,7 @@ export async function onRequestPost(context) {
 
       const candidates = await findRecoveryCandidates(kv, recoveryName);
       if (!candidates.some((candidate) => candidate.userId === targetUserId)) {
-        return jsonWithHeaders(
+        return jsonResponse(
           {
             success: false,
             text: 'Das gewaehlte Profil passt nicht zum angefragten Namen.',
@@ -740,7 +732,7 @@ export async function onRequestPost(context) {
         );
       }
 
-      return jsonWithHeaders(
+      return jsonResponse(
         await buildMemoryListPayload(kv, env, targetUserId, {
           successText: 'Profil aktiviert und Erinnerungen geladen.',
           emptyText:
@@ -751,7 +743,7 @@ export async function onRequestPost(context) {
     }
 
     if (action === 'disconnect') {
-      return jsonWithHeaders(
+      return jsonResponse(
         {
           success: true,
           userId: '',
@@ -767,7 +759,7 @@ export async function onRequestPost(context) {
     }
 
     if (!userId) {
-      return jsonWithHeaders(
+      return jsonResponse(
         {
           success: false,
           text: 'Keine aktive User-ID im Request vorhanden.',
@@ -777,7 +769,7 @@ export async function onRequestPost(context) {
     }
 
     if (action === 'list') {
-      return jsonWithHeaders(
+      return jsonResponse(
         await buildMemoryListPayload(kv, env, userId),
         { headers: responseHeaders },
       );
@@ -785,7 +777,7 @@ export async function onRequestPost(context) {
 
     if (action === 'update-memory') {
       const result = await updateSingleMemory(kv, env, userId, body);
-      return jsonWithHeaders(
+      return jsonResponse(
         buildMemoryMutationPayload(result, userId),
         {
           status: result.status,
@@ -796,7 +788,7 @@ export async function onRequestPost(context) {
 
     if (action === 'forget-memory') {
       const result = await forgetSingleMemory(kv, env, userId, body);
-      return jsonWithHeaders(
+      return jsonResponse(
         buildMemoryMutationPayload(result, userId),
         {
           status: result.status,
@@ -810,7 +802,7 @@ export async function onRequestPost(context) {
       executionContext: context,
     });
 
-    return jsonWithHeaders(
+    return jsonResponse(
       {
         success: true,
         userId,
@@ -821,7 +813,7 @@ export async function onRequestPost(context) {
     );
   } catch (error) {
     log.error('[ai-agent-user] Delete failed:', error?.message || error);
-    return jsonWithHeaders(
+    return jsonResponse(
       {
         success: false,
         text: 'Cloudflare-Löschung fehlgeschlagen.',

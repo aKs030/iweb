@@ -370,16 +370,41 @@ const startTransition = (update, types) => {
 };
 
 /**
+ * Maximum number of pending transition tasks allowed in the queue.
+ * Excess tasks are dropped (with a debug log) instead of piling up
+ * when the user rapidly triggers navigation/theme changes.
+ */
+const MAX_TRANSITION_QUEUE_DEPTH = 5;
+
+/** Tracks how many tasks are currently waiting in the queue. */
+let transitionQueueDepth = 0;
+
+/**
  * Serializes transitions to avoid AbortError races when multiple callers
  * trigger mutations in the same microtask window.
+ *
+ * Tasks are dropped when the queue depth exceeds MAX_TRANSITION_QUEUE_DEPTH
+ * to prevent unbounded growth from rapid user interactions.
  *
  * @param {() => Promise<void>} task
  * @returns {Promise<void>}
  */
 const runInTransitionQueue = async (task) => {
+  if (transitionQueueDepth >= MAX_TRANSITION_QUEUE_DEPTH) {
+    debugViewTransition('queue:overflow-drop', { depth: transitionQueueDepth });
+    return;
+  }
+
+  transitionQueueDepth += 1;
+
   const queuedTask = transitionQueue.then(task, task);
   transitionQueue = queuedTask.catch(() => {});
-  await queuedTask;
+
+  try {
+    await queuedTask;
+  } finally {
+    transitionQueueDepth -= 1;
+  }
 };
 
 /**
@@ -595,4 +620,5 @@ export const destroyViewTransitionCore = () => {
   reducedMotionMql = null;
   prefersReducedMotion = false;
   transitionQueue = Promise.resolve();
+  transitionQueueDepth = 0;
 };

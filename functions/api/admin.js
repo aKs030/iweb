@@ -28,14 +28,100 @@ import {
 // Auth
 // ---------------------------------------------------------------------------
 
+/**
+ * Constant-time string equality check to prevent timing-oracle attacks.
+ * Falls back to false if the lengths differ (short-circuit is safe here
+ * because length is not secret — the attacker already knows the expected
+ * token length from the format).
+ *
+ * @param {string} a
+ * @param {string} b
+ * @returns {boolean}
+ */
+function timingSafeEqual(a, b) {
+  const enc = new TextEncoder();
+  const aBytes = enc.encode(String(a));
+  const bBytes = enc.encode(String(b));
+
+  if (aBytes.length !== bBytes.length) return false;
+
+  let diff = 0;
+  for (let i = 0; i < aBytes.length; i++) {
+    diff |= aBytes[i] ^ bBytes[i];
+  }
+  return diff === 0;
+}
+
+/**
+ * Simple in-memory rate-limiter for failed admin auth attempts.
+ * Caps at MAX_FAILURES per IP per window.  Resets automatically.
+ * (For production deployments, replace with KV-backed rate-limiting.)
+ */
+const MAX_AUTH_FAILURES = 5;
+const AUTH_WINDOW_MS = 60_000; // 1 minute
+/** @type {Map<string, { count: number; resetAt: number }>} */
+const authFailureMap = new Map();
+
+function isAuthRateLimited(ip) {
+  const now = Date.now();
+  const entry = authFailureMap.get(ip);
+  if (!entry || now >= entry.resetAt) return false;
+  return entry.count >= MAX_AUTH_FAILURES;
+}
+
+function recordAuthFailure(ip) {
+  const now = Date.now();
+  const entry = authFailureMap.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    authFailureMap.set(ip, { count: 1, resetAt: now + AUTH_WINDOW_MS });
+  } else {
+    entry.count += 1;
+  }
+  // Evict stale entries to avoid unbounded growth
+  if (authFailureMap.size > 500) {
+    for (const [key, val] of authFailureMap) {
+      if (Date.now() >= val.resetAt) authFailureMap.delete(key);
+    }
+  }
+}
+
+function clearAuthFailures(ip) {
+  authFailureMap.delete(ip);
+}
+
+/**
+ * @param {Request} request
+ * @param {object} env
+ * @returns {{ ok: boolean; reason?: string }}
+ */
 function authenticateAdmin(request, env) {
+  const ip =
+    request.headers.get('CF-Connecting-IP') ||
+    request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
+    'unknown';
+
+  if (isAuthRateLimited(ip)) {
+    return { ok: false, reason: 'rate-limited' };
+  }
+
   const authHeader = request.headers.get('Authorization') || '';
   const token = authHeader.startsWith('Bearer ')
     ? authHeader.slice(7).trim()
     : '';
 
-  if (!env.ADMIN_TOKEN || !token) return false;
-  return token === env.ADMIN_TOKEN;
+  if (!env.ADMIN_TOKEN || !token) {
+    recordAuthFailure(ip);
+    return { ok: false, reason: 'missing-token' };
+  }
+
+  const valid = timingSafeEqual(token, env.ADMIN_TOKEN);
+  if (!valid) {
+    recordAuthFailure(ip);
+    return { ok: false, reason: 'invalid-token' };
+  }
+
+  clearAuthFailures(ip);
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------------------
@@ -484,8 +570,14 @@ async function handleClearCache(env, corsHeaders) {
 export async function onRequestPost({ request, env }) {
   const corsHeaders = getCorsHeaders(request, env);
 
-  if (!authenticateAdmin(request, env)) {
-    return adminError(corsHeaders, 'Nicht autorisiert', 401);
+  const authResult = authenticateAdmin(request, env);
+  if (!authResult.ok) {
+    const status = authResult.reason === 'rate-limited' ? 429 : 401;
+    const message =
+      authResult.reason === 'rate-limited'
+        ? 'Zu viele fehlgeschlagene Versuche. Bitte warte eine Minute.'
+        : 'Nicht autorisiert';
+    return adminError(corsHeaders, message, status);
   }
 
   try {

@@ -10,6 +10,7 @@ import {
   inferClientToolCallsFromPrompt,
   promptNeedsTools,
   sanitizeAssistantText,
+  checkPromptInjection,
 } from './_ai-agent-intent.js';
 import { createUserId } from '../../content/core/user-id.js';
 import { buildAgentResponsePayload } from '../../content/core/ai-agent-contracts.js';
@@ -34,7 +35,8 @@ import {
   persistPromptMemories,
   resolveMemoryContext,
   mergeMemoryEntries,
-  storeMemory
+  storeMemory,
+  computeEmbedding,
 } from './_ai-agent-memory.js';
 import { TOOLS, classifyToolCalls } from './_ai-agent-tools.js';
 
@@ -289,6 +291,22 @@ export async function onRequestPost(context) {
       );
     }
 
+    // ── Prompt injection guard ──
+    const injectionCheck = checkPromptInjection(prompt);
+    if (!injectionCheck.safe) {
+      log.warn('Prompt injection attempt detected', { userId, pattern: injectionCheck.pattern });
+      return jsonResponse(
+        {
+          error: 'Unsafe prompt',
+          ...buildAgentResponsePayload({
+            text: 'Diese Anfrage kann ich leider nicht verarbeiten.',
+            retryable: false,
+          }),
+        },
+        { status: 400, headers: jsonHeaders },
+      );
+    }
+
     if (!env.AI) {
       return jsonResponse(
         {
@@ -302,11 +320,15 @@ export async function onRequestPost(context) {
       );
     }
 
-    // ── Parallel: memory recall + deterministic memory persistence ──
+    // ── Compute a single shared embedding, then run memory recall + persist in parallel ──
+    // This eliminates the duplicate AI.run embedding call that previously occurred
+    // when resolveMemoryContext and persistPromptMemories each ran their own embedding.
+    const sharedEmbedding = await computeEmbedding(env, prompt, config).catch(() => null);
+
     const [memResult, storedPromptMemoriesResult] =
       await Promise.allSettled([
-        resolveMemoryContext(env, userId, prompt, config),
-        persistPromptMemories(env, userId, prompt, config),
+        resolveMemoryContext(env, userId, prompt, config, sharedEmbedding),
+        persistPromptMemories(env, userId, prompt, config, sharedEmbedding),
       ]);
 
     const recalledMemories =

@@ -1,19 +1,27 @@
-// wrangler.jsonc — migriert von wrangler.toml
-// Hinweise:
-// - Top-Level beschreibt das gemeinsame Setup fuer `wrangler pages dev`
-//   und Preview-Deployments
-// - `env.production` ist ein separater Production-Override
-// - Nicht vererbbare Felder wie `vars`, KV/R2/D1/AI/Vectorize muessen in
-//   `env.production` erneut angegeben werden, sobald dort Overrides existieren
-// - `nodejs_compat` bleibt aktiv
+// wrangler.jsonc — Cloudflare Pages Konfiguration
+//
+// ARCHITEKTUR:
+//   Top-Level   → Local-Dev (`wrangler pages dev`) + Preview-Deployments
+//   env.production → Production (CF-Pflicht: alle non-inheritable Felder neu deklarieren)
+//
+// WAS SICH ZWISCHEN DEN UMGEBUNGEN UNTERSCHEIDET:
+//   ✦ KV-Namespace-IDs  (Preview-KV ≠ Production-KV)
+//   ✦ vars              (Production-Werte → CF Dashboard "Environment Variables" setzen,
+//                        NICHT hier im Commit pflegen)
+//
+// WAS IDENTISCH BLEIBT (CF-Pflicht zur Wiederholung):
+//   R2, D1, AI, Vectorize — gleiche Konfiguration in beiden Umgebungen
+//
+// HINWEIS: `compatibility_date` nur nach Runtime-Review + Tests anheben.
 {
   "name": "1web",
-  "compatibility_date": "2025-03-07", // bewusst gepinnt; nur nach Runtime-Review + Tests anheben
+  "compatibility_date": "2025-03-07",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": ".",
 
-  // Gemeinsame Variablen fuer Local-Dev + Preview-Deployments.
-  // Production erbt diese Werte nicht automatisch.
+  // ─── Local-Dev / Preview: Variablen ────────────────────────────────────────
+  // Production-Werte werden im CF Dashboard gesetzt und NICHT im Commit gepflegt.
+  // Diese Werte dienen ausschließlich als Defaults für lokale Entwicklung und Preview.
   "vars": {
     "MAX_SEARCH_RESULTS": "10",
     "ROBOT_CHAT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
@@ -29,33 +37,23 @@
     "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
   },
 
-  // Gemeinsame Bindings fuer Local-Dev + Preview-Deployments
+  // ─── Local-Dev / Preview: KV-Bindings ──────────────────────────────────────
+  // Preview-KV-IDs (getrennt von Production für saubere Datenisolation)
   "kv_namespaces": [
+    { "binding": "RATE_LIMIT_KV",   "id": "edf1005c1b964f2fae4718afa152e836" },
+    { "binding": "JULES_MEMORY_KV", "id": "8165d825e79a4e8d953aaca346c91f10" },
     {
-      "binding": "RATE_LIMIT_KV",
-      "id": "edf1005c1b964f2fae4718afa152e836",
-    },
-    {
-      "binding": "JULES_MEMORY_KV",
-      "id": "8165d825e79a4e8d953aaca346c91f10",
-    },
-    {
-      // SITEMAP_CACHE_KV wird jetzt auch für Template-Caching genutzt
-      // (Keys: "template:global-head", "sitemap:*.xml")
+      // SITEMAP_CACHE_KV: auch für Template-Caching (Keys: "template:global-head", "sitemap:*.xml")
       "binding": "SITEMAP_CACHE_KV",
       "id": "84ddd91c726146f3b363749eff14dbd5",
     },
   ],
 
+  // ─── Gemeinsame Bindings (identisch in allen Umgebungen) ───────────────────
   "r2_buckets": [
-    {
-      "binding": "GALLERY_BUCKET",
-      "bucket_name": "img",
-      "remote": true,
-    },
+    { "binding": "GALLERY_BUCKET", "bucket_name": "img", "remote": true },
   ],
 
-  // D1-Binding fuer Portfolio Likes/Claps
   "d1_databases": [
     {
       "binding": "DB_LIKES",
@@ -65,29 +63,25 @@
     },
   ],
 
-  "ai": {
-    "binding": "AI",
-    "remote": true,
-  },
+  "ai": { "binding": "AI", "remote": true },
 
   "vectorize": [
-    {
-      "binding": "JULES_MEMORY",
-      "index_name": "jules-memory",
-      "remote": true,
-    },
+    { "binding": "JULES_MEMORY", "index_name": "jules-memory", "remote": true },
   ],
 
-  // Production-Override.
-  // Preview-Deployments verwenden weiterhin die Top-Level-Werte oben.
-  // Wichtiger Cloudflare-Pages-Fallstrick:
-  // Sobald hier ein nicht vererbbares Feld ueberschrieben wird
-  // (z. B. `kv_namespaces`), muessen die anderen nicht vererbbaren Felder
-  // ebenfalls erneut aufgefuehrt werden.
+  // ─── env.production ────────────────────────────────────────────────────────
+  // CF-Pages-Einschränkung: Sobald irgendein non-inheritable Feld überschrieben
+  // wird (hier: kv_namespaces), müssen ALLE non-inheritable Felder (vars,
+  // kv_namespaces, r2_buckets, d1_databases, ai, vectorize) neu deklariert werden.
+  //
+  // ► Was hier wirklich anders ist:  KV-Namespace-IDs (Production-Namespaces)
+  // ► Was unverändert ist (CF-Pflicht zur Wiederholung): vars, R2, D1, AI, Vectorize
   "env": {
     "production": {
-      // Production-spezifische Variablen.
-      // Diese werden nicht aus dem Top-Level geerbt.
+
+      // vars: Identische Defaults — im CF Dashboard können diese per Secret
+      // überschrieben werden (z. B. CONTACT_EMAIL, ALLOWED_ORIGINS).
+      // CF-Pflicht: muss trotz gleicher Werte vollständig deklariert werden.
       "vars": {
         "MAX_SEARCH_RESULTS": "10",
         "ROBOT_CHAT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
@@ -102,27 +96,19 @@
         "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
         "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
       },
+
+      // ✦ EINZIGER ECHTER UNTERSCHIED: Production-KV-IDs ──────────────────────
       "kv_namespaces": [
-        {
-          "binding": "RATE_LIMIT_KV",
-          "id": "75d79a452fa74cc980caf400862e2c67",
-        },
-        {
-          "binding": "JULES_MEMORY_KV",
-          "id": "90adb98d1b0c4dc783e91cfdcecad60d",
-        },
-        {
-          "binding": "SITEMAP_CACHE_KV",
-          "id": "5980265e029e4a88a987d17f25c71dfc",
-        },
+        { "binding": "RATE_LIMIT_KV",   "id": "75d79a452fa74cc980caf400862e2c67" },
+        { "binding": "JULES_MEMORY_KV", "id": "90adb98d1b0c4dc783e91cfdcecad60d" },
+        { "binding": "SITEMAP_CACHE_KV","id": "5980265e029e4a88a987d17f25c71dfc" },
       ],
+
+      // CF-Pflicht: unverändert gegenüber Top-Level ───────────────────────────
       "r2_buckets": [
-        {
-          "binding": "GALLERY_BUCKET",
-          "bucket_name": "img",
-          "remote": true,
-        },
+        { "binding": "GALLERY_BUCKET", "bucket_name": "img", "remote": true },
       ],
+
       "d1_databases": [
         {
           "binding": "DB_LIKES",
@@ -131,16 +117,11 @@
           "migrations_dir": "migrations",
         },
       ],
-      "ai": {
-        "binding": "AI",
-        "remote": true,
-      },
+
+      "ai": { "binding": "AI", "remote": true },
+
       "vectorize": [
-        {
-          "binding": "JULES_MEMORY",
-          "index_name": "jules-memory",
-          "remote": true,
-        },
+        { "binding": "JULES_MEMORY", "index_name": "jules-memory", "remote": true },
       ],
     },
   },
