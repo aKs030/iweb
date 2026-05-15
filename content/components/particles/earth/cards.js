@@ -524,6 +524,7 @@ export class CardManager {
 				nodeScale: 1,
 				spreadX: Math.min(1.16, Math.max(1, vw / 410)),
 				spreadY: Math.min(1.18, Math.max(1, vh / 790)),
+				offsetX: -this._pixelsToWorldX(Math.min(136, vw * 0.3)),
 				offsetY: topOffset(56),
 				hoverLift: 0.16,
 			};
@@ -623,7 +624,7 @@ export class CardManager {
 
 		const circle = this._getCircleLayoutSpec(vw, vh, layoutMode, safeAreaTop);
 		const offsetX = this._isStackedLayout(layoutMode)
-			? 0
+			? (circle.offsetX ?? 0)
 			: this._getDesktopStageOffsetX();
 
 		this._applyLayoutPositions({
@@ -1089,6 +1090,7 @@ export class CardManager {
 		const centerY = H * 0.42;
 		const coreR = 214 * S;
 		const titleY = centerY + coreR + 88 * S;
+		const palette = this.getPortalPalette(routeDisplay, accent);
 
 		ctx.clearRect(0, 0, W, H);
 
@@ -1165,10 +1167,10 @@ export class CardManager {
 
 		ctx.save();
 		ctx.shadowColor = accentGlow;
-		ctx.shadowBlur = 46 * S;
+		ctx.shadowBlur = 76 * S;
 		ctx.beginPath();
-		ctx.arc(centerX, centerY, coreR, 0, Math.PI * 2);
-		ctx.fillStyle = "rgba(1, 4, 12, 0.9)";
+		ctx.arc(centerX, centerY, coreR + 5 * S, 0, Math.PI * 2);
+		ctx.fillStyle = this.rgba(palette.secondary, 0.16);
 		ctx.fill();
 		ctx.restore();
 
@@ -1177,32 +1179,16 @@ export class CardManager {
 		ctx.arc(centerX, centerY, coreR, 0, Math.PI * 2);
 		ctx.clip();
 
-		const coreGradient = ctx.createRadialGradient(
-			centerX - coreR * 0.34,
-			centerY - coreR * 0.38,
-			0,
+		this.drawFilledPortalCore(
+			ctx,
+			routeDisplay,
 			centerX,
 			centerY,
 			coreR,
+			S,
+			accent,
+			palette,
 		);
-		coreGradient.addColorStop(0, "rgba(255, 255, 255, 0.36)");
-		coreGradient.addColorStop(0.2, accentMedium);
-		coreGradient.addColorStop(0.58, "rgba(8, 14, 30, 0.96)");
-		coreGradient.addColorStop(1, "rgba(1, 3, 9, 0.99)");
-		ctx.fillStyle = coreGradient;
-		ctx.fillRect(centerX - coreR, centerY - coreR, coreR * 2, coreR * 2);
-
-		ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-		ctx.lineWidth = 2 * S;
-		for (let i = 0; i < 7; i++) {
-			const offset = (i - 3) * 52 * S;
-			ctx.beginPath();
-			ctx.moveTo(centerX - coreR + offset, centerY - coreR);
-			ctx.lineTo(centerX + offset + 108 * S, centerY + coreR);
-			ctx.stroke();
-		}
-
-		this.drawPortalGlyph(ctx, routeDisplay, centerX, centerY, coreR, S, accent);
 		ctx.restore();
 
 		ctx.strokeStyle = accentStrong;
@@ -1392,14 +1378,255 @@ export class CardManager {
 		ctx.restore();
 	}
 
+	rgba(color, alpha) {
+		return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+	}
+
+	getPortalPalette(label, accent) {
+		const key = String(label || "").toLowerCase();
+		let colors = {
+			secondary: "#35e1ff",
+			tertiary: "#6f7cff",
+			deep: "#06102f",
+			highlight: "#e9fbff",
+		};
+
+		if (key.includes("projekt")) {
+			colors = {
+				secondary: "#c95cff",
+				tertiary: "#5f35ff",
+				deep: "#170628",
+				highlight: "#f5dcff",
+			};
+		} else if (key.includes("foto")) {
+			colors = {
+				secondary: "#ff5bc5",
+				tertiary: "#ff8b59",
+				deep: "#2d061f",
+				highlight: "#ffe2f5",
+			};
+		} else if (key.includes("video")) {
+			colors = {
+				secondary: "#55ffbf",
+				tertiary: "#3ea6ff",
+				deep: "#04231d",
+				highlight: "#d9fff2",
+			};
+		} else if (key.includes("journal")) {
+			colors = {
+				secondary: "#ffdd42",
+				tertiary: "#ff7a2f",
+				deep: "#2a1b04",
+				highlight: "#fff3c2",
+			};
+		}
+
+		return {
+			accent,
+			secondary: this.hexToRgb(colors.secondary),
+			tertiary: this.hexToRgb(colors.tertiary),
+			deep: this.hexToRgb(colors.deep),
+			highlight: this.hexToRgb(colors.highlight),
+		};
+	}
+
+	drawFilledPortalCore(ctx, label, cx, cy, r, scale, accent, palette) {
+		const S = scale;
+		const bg = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+
+		bg.addColorStop(0, "rgba(22, 31, 55, 0.96)");
+		bg.addColorStop(0.32, this.rgba(palette.deep, 0.95));
+		bg.addColorStop(0.64, "rgba(4, 9, 20, 0.98)");
+		bg.addColorStop(1, "rgba(1, 4, 12, 0.99)");
+		ctx.fillStyle = bg;
+		ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+		const wash = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+		wash.addColorStop(0, "rgba(255, 255, 255, 0.1)");
+		wash.addColorStop(0.44, this.rgba(palette.secondary, 0.08));
+		wash.addColorStop(0.78, this.rgba(accent, 0.12));
+		wash.addColorStop(1, "rgba(255, 255, 255, 0.03)");
+		ctx.globalCompositeOperation = "screen";
+		ctx.fillStyle = wash;
+		ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+		ctx.globalCompositeOperation = "source-over";
+		ctx.save();
+		ctx.translate(cx, cy);
+
+		ctx.strokeStyle = "rgba(255, 255, 255, 0.075)";
+		ctx.lineWidth = 1.25 * S;
+		for (let i = 0; i < 6; i++) {
+			const offset = (i - 2.5) * 56 * S;
+			ctx.beginPath();
+			ctx.moveTo(-r + offset, -r);
+			ctx.lineTo(offset + 74 * S, r);
+			ctx.stroke();
+		}
+
+		ctx.globalCompositeOperation = "screen";
+		for (let i = 0; i < 10; i++) {
+			const angle = i * 1.37;
+			const distance = r * (0.18 + ((i * 37) % 70) / 100);
+			const size = (1.25 + (i % 3) * 0.72) * S;
+			ctx.beginPath();
+			ctx.arc(
+				Math.cos(angle) * distance,
+				Math.sin(angle * 0.82) * distance,
+				size,
+				0,
+				Math.PI * 2,
+			);
+			ctx.fillStyle =
+				i % 3 === 0
+					? this.rgba(palette.highlight, 0.36)
+					: this.rgba(palette.secondary, 0.18);
+			ctx.fill();
+		}
+		ctx.globalCompositeOperation = "source-over";
+
+		const edge = ctx.createRadialGradient(0, 0, r * 0.28, 0, 0, r);
+		edge.addColorStop(0, "rgba(0, 0, 0, 0)");
+		edge.addColorStop(0.72, "rgba(0, 0, 0, 0.04)");
+		edge.addColorStop(1, "rgba(0, 0, 0, 0.42)");
+		ctx.fillStyle = edge;
+		ctx.beginPath();
+		ctx.arc(0, 0, r, 0, Math.PI * 2);
+		ctx.fill();
+
+		ctx.restore();
+	}
+
+	drawPortalEnergyField(ctx, key, r, S, accent, palette) {
+		ctx.lineCap = "round";
+		ctx.lineJoin = "round";
+
+		if (key.includes("profil")) {
+			const nodes = [
+				[-0.42, -0.24],
+				[-0.18, 0.2],
+				[0.18, -0.08],
+				[0.42, 0.24],
+				[0.02, 0.42],
+			];
+
+			ctx.strokeStyle = this.rgba(palette.highlight, 0.16);
+			ctx.lineWidth = 3 * S;
+			ctx.beginPath();
+			nodes.forEach(([x, y], index) => {
+				const px = x * r;
+				const py = y * r;
+				if (index === 0) ctx.moveTo(px, py);
+				else ctx.lineTo(px, py);
+			});
+			ctx.stroke();
+
+			nodes.forEach(([x, y], index) => {
+				ctx.beginPath();
+				ctx.arc(x * r, y * r, (index === 2 ? 14 : 9) * S, 0, Math.PI * 2);
+				ctx.fillStyle =
+					index === 2
+						? this.rgba(accent, 0.28)
+						: this.rgba(palette.highlight, 0.22);
+				ctx.fill();
+			});
+		} else if (key.includes("projekt")) {
+			for (let i = 0; i < 4; i++) {
+				const y = (-0.42 + i * 0.22) * r;
+				const w = (0.62 - i * 0.04) * r;
+				this.roundRect(ctx, -w * 0.5, y, w, 0.13 * r, 9 * S);
+				ctx.fillStyle =
+					i % 2 === 0
+						? this.rgba(palette.highlight, 0.08)
+						: this.rgba(palette.tertiary, 0.07);
+				ctx.fill();
+				ctx.strokeStyle = this.rgba(palette.highlight, 0.11);
+				ctx.lineWidth = 2 * S;
+				ctx.stroke();
+			}
+
+			ctx.strokeStyle = this.rgba(palette.secondary, 0.2);
+			ctx.lineWidth = 4 * S;
+			ctx.beginPath();
+			ctx.moveTo(-r * 0.44, r * 0.38);
+			ctx.lineTo(-r * 0.08, -r * 0.06);
+			ctx.lineTo(r * 0.28, r * 0.28);
+			ctx.lineTo(r * 0.5, -r * 0.34);
+			ctx.stroke();
+		} else if (key.includes("foto")) {
+			for (let i = 0; i < 8; i++) {
+				ctx.save();
+				ctx.rotate(i * (Math.PI / 4));
+				ctx.beginPath();
+				ctx.moveTo(0, 0);
+				ctx.arc(0, 0, r * 0.78, -0.18, 0.22);
+				ctx.closePath();
+				ctx.fillStyle =
+					i % 2 === 0
+						? this.rgba(palette.highlight, 0.08)
+						: this.rgba(palette.tertiary, 0.07);
+				ctx.fill();
+				ctx.restore();
+			}
+		} else if (key.includes("video")) {
+			for (let i = 0; i < 9; i++) {
+				const x = (-0.46 + i * 0.115) * r;
+				const h = (0.24 + ((i * 17) % 38) / 100) * r;
+				this.roundRect(ctx, x, -h * 0.5, 0.045 * r, h, 5 * S);
+				ctx.fillStyle =
+					i % 2 === 0
+						? this.rgba(palette.highlight, 0.1)
+						: this.rgba(accent, 0.12);
+				ctx.fill();
+			}
+
+			ctx.strokeStyle = this.rgba(palette.secondary, 0.16);
+			ctx.lineWidth = 3 * S;
+			for (let i = 0; i < 3; i++) {
+				ctx.beginPath();
+				ctx.arc(0, 0, r * (0.32 + i * 0.15), 0.2, Math.PI * 1.38);
+				ctx.stroke();
+			}
+		} else if (key.includes("journal")) {
+			for (let i = 0; i < 4; i++) {
+				const y = (-0.36 + i * 0.18) * r;
+				ctx.strokeStyle =
+					i % 2 === 0
+						? this.rgba(palette.highlight, 0.16)
+						: this.rgba(palette.secondary, 0.16);
+				ctx.lineWidth = 4 * S;
+				ctx.beginPath();
+				ctx.moveTo(-r * 0.48, y);
+				ctx.bezierCurveTo(
+					-r * 0.18,
+					y - r * 0.17,
+					r * 0.1,
+					y + r * 0.16,
+					r * 0.48,
+					y,
+				);
+				ctx.stroke();
+			}
+
+			ctx.fillStyle = this.rgba(palette.highlight, 0.12);
+			for (let i = 0; i < 5; i++) {
+				const x = (-0.4 + i * 0.2) * r;
+				const y = (i % 2 === 0 ? -0.16 : 0.18) * r;
+				ctx.beginPath();
+				ctx.arc(x, y, 5 * S, 0, Math.PI * 2);
+				ctx.fill();
+			}
+		}
+	}
+
 	drawPortalGlyph(ctx, label, cx, cy, radius, scale, accent) {
 		const S = scale;
 		const key = String(label || "").toLowerCase();
-		const accentStrong = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.92)`;
-		const accentMedium = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.5)`;
-		const accentSoft = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.2)`;
-		const whiteSoft = "rgba(255, 255, 255, 0.74)";
-		const whiteFaint = "rgba(255, 255, 255, 0.22)";
+		const accentStrong = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.46)`;
+		const accentMedium = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.2)`;
+		const accentSoft = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.08)`;
+		const whiteSoft = "rgba(255, 255, 255, 0.42)";
+		const whiteFaint = "rgba(255, 255, 255, 0.12)";
 		const r = radius;
 
 		ctx.save();
@@ -1412,11 +1639,11 @@ export class CardManager {
 		ctx.fillStyle = accentSoft;
 		ctx.fill();
 		ctx.strokeStyle = whiteFaint;
-		ctx.lineWidth = 2 * S;
+		ctx.lineWidth = 1.6 * S;
 		ctx.stroke();
 
 		ctx.strokeStyle = accentStrong;
-		ctx.lineWidth = 8 * S;
+		ctx.lineWidth = 5.6 * S;
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
 
@@ -1716,6 +1943,7 @@ export class CardManager {
 			// Removed hover tilt/motion as mouse tracking is disabled
 			this._applyOrientation(card);
 			this._updateCardGlow(card, time);
+			this._updatePortalMotion(card, time);
 		});
 
 		const averageEntrance =
@@ -1778,6 +2006,50 @@ export class CardManager {
 					0.56 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id)),
 				) * card.userData.entranceProgress;
 		}
+	}
+
+	_updatePortalMotion(card, time) {
+		const motion = card.userData?.portalMotion;
+		if (!motion?.group) return;
+
+		const t = time * 0.001 + motion.phase;
+		const entrance = card.userData.entranceProgress || 0;
+		const pulse = 1 + Math.sin(t * motion.theme.pulseSpeed) * 0.045;
+
+		if (motion.outerArc) {
+			motion.outerArc.rotation.z = t * motion.theme.outerSpeed;
+		}
+		if (motion.innerArc) {
+			motion.innerArc.rotation.z = t * motion.theme.innerSpeed;
+		}
+		if (motion.halo) {
+			motion.halo.scale.setScalar(pulse);
+		}
+		if (motion.iconGroup) {
+			const iconPulse = 1 + Math.sin(t * 2.1 + motion.phase) * 0.035;
+			motion.iconGroup.rotation.z =
+				Math.sin(t * 0.86 + motion.phase * 0.4) * 0.055;
+			motion.iconGroup.scale.setScalar(iconPulse);
+		}
+		if (motion.iconSweep) {
+			motion.iconSweep.rotation.z = -t * 1.28;
+		}
+
+		motion.materials.forEach((entry) => {
+			const wave = 1 + entry.pulse * Math.sin(t * entry.speed + entry.phase);
+			entry.material.opacity = Math.max(0, entry.opacity * entrance * wave);
+		});
+
+		motion.dots.forEach((dot) => {
+			const angle = t * dot.speed + dot.phase;
+			dot.mesh.position.set(
+				Math.cos(angle) * dot.radius,
+				Math.sin(angle) * dot.radius * dot.yScale,
+				dot.z,
+			);
+			dot.mesh.rotation.z = -angle;
+			dot.mesh.scale.setScalar(0.84 + Math.sin(t * 2.4 + dot.phase) * 0.18);
+		});
 	}
 
 	handleClick(mousePos) {
@@ -1914,6 +2186,7 @@ export class CardManager {
 			}
 			const glow = card.userData?.glow;
 			if (glow?.material) this._disposeGlowMaterial(glow);
+			this._disposePortalMotion(card);
 		} catch (err) {
 			log.warn("EarthCards: disposal error", err);
 		}
@@ -1970,6 +2243,27 @@ export class CardManager {
 		}
 	}
 
+	_disposePortalMotion(card) {
+		const motion = card.userData?.portalMotion;
+		if (!motion?.group) return;
+
+		try {
+			card.remove?.(motion.group);
+			motion.group.traverse?.((child) => {
+				if (child.geometry?.dispose) child.geometry.dispose();
+				if (Array.isArray(child.material)) {
+					child.material.forEach((material) => material?.dispose?.());
+				} else if (child.material?.dispose) {
+					child.material.dispose();
+				}
+			});
+		} catch (err) {
+			log.warn("EarthCards: portal motion dispose failed", err);
+		}
+
+		card.userData.portalMotion = null;
+	}
+
 	_removeResizeHandler() {
 		try {
 			globalThis.removeEventListener("resize", this._onResize);
@@ -1981,6 +2275,380 @@ export class CardManager {
 			cancelAnimationFrame(this._resizeRAF);
 			this._resizeRAF = null;
 		}
+	}
+
+	_getPortalMotionTheme(label, index) {
+		const key = String(label || "").toLowerCase();
+		const base = {
+			outerSpeed: 0.46,
+			innerSpeed: -0.72,
+			pulseSpeed: 2.2,
+			dotCount: 3,
+		};
+
+		if (key.includes("projekt")) {
+			return {
+				outerSpeed: 0.62,
+				innerSpeed: -0.92,
+				pulseSpeed: 2.8,
+				dotCount: 4,
+			};
+		}
+		if (key.includes("foto")) {
+			return {
+				outerSpeed: -0.4,
+				innerSpeed: 0.82,
+				pulseSpeed: 2.35,
+				dotCount: 5,
+			};
+		}
+		if (key.includes("video")) {
+			return {
+				outerSpeed: 0.78,
+				innerSpeed: -1.12,
+				pulseSpeed: 3.2,
+				dotCount: 4,
+			};
+		}
+		if (key.includes("journal")) {
+			return {
+				outerSpeed: 0.35,
+				innerSpeed: -0.58,
+				pulseSpeed: 1.9,
+				dotCount: 3,
+			};
+		}
+
+		return {
+			...base,
+			outerSpeed: base.outerSpeed + index * 0.04,
+			innerSpeed: base.innerSpeed - index * 0.03,
+		};
+	}
+
+	_colorFromRgb(rgb) {
+		return new this.THREE.Color(rgb.r / 255, rgb.g / 255, rgb.b / 255);
+	}
+
+	_createMotionMaterial(color, opacity) {
+		return new this.THREE.MeshBasicMaterial({
+			color,
+			transparent: true,
+			opacity,
+			blending: this.THREE.AdditiveBlending,
+			side: this.THREE.DoubleSide,
+			depthWrite: false,
+			depthTest: false,
+		});
+	}
+
+	_createLineMaterial(color, opacity) {
+		return new this.THREE.LineBasicMaterial({
+			color,
+			transparent: true,
+			opacity,
+			blending: this.THREE.AdditiveBlending,
+			depthWrite: false,
+			depthTest: false,
+		});
+	}
+
+	_createIconLine(points, material, z = 0.07) {
+		const geometry = new this.THREE.BufferGeometry().setFromPoints(
+			points.map(([x, y]) => new this.THREE.Vector3(x, y, z)),
+		);
+		const line = new this.THREE.Line(geometry, material);
+		line.renderOrder = 22;
+		return line;
+	}
+
+	_createIconArc(radiusX, radiusY, start, end, steps, material, z = 0.07) {
+		const points = [];
+		for (let i = 0; i <= steps; i++) {
+			const t = start + (end - start) * (i / steps);
+			points.push([Math.cos(t) * radiusX, Math.sin(t) * radiusY]);
+		}
+		return this._createIconLine(points, material, z);
+	}
+
+	_createPlayShape(size) {
+		const shape = new this.THREE.Shape();
+		shape.moveTo(-size * 0.34, -size * 0.42);
+		shape.lineTo(size * 0.42, 0);
+		shape.lineTo(-size * 0.34, size * 0.42);
+		shape.closePath();
+		return new this.THREE.ShapeGeometry(shape);
+	}
+
+	_createAnimatedPortalIcon(label, register, accentColor, secondaryColor) {
+		const key = String(label || "").toLowerCase();
+		const iconGroup = new this.THREE.Group();
+		const lineMat = register(
+			this._createLineMaterial(accentColor, 0.58),
+			0.58,
+			0.18,
+			2.6,
+		);
+		const softLineMat = register(
+			this._createLineMaterial(secondaryColor, 0.34),
+			0.34,
+			0.2,
+			2.2,
+		);
+		const fillMat = register(
+			this._createMotionMaterial(accentColor, 0.2),
+			0.2,
+			0.2,
+			2.4,
+		);
+
+		iconGroup.renderOrder = 22;
+
+		if (key.includes("profil")) {
+			const head = new this.THREE.Mesh(
+				new this.THREE.RingGeometry(0.105, 0.122, 48),
+				fillMat,
+			);
+			head.position.set(0, 0.12, 0.075);
+			head.renderOrder = 22;
+			iconGroup.add(
+				head,
+				this._createIconArc(
+					0.28,
+					0.18,
+					Math.PI * 0.08,
+					Math.PI * 0.92,
+					28,
+					lineMat,
+				),
+				this._createIconLine(
+					[
+						[-0.37, -0.04],
+						[-0.2, 0.07],
+						[0, 0.11],
+						[0.2, 0.07],
+						[0.37, -0.04],
+					],
+					softLineMat,
+				),
+			);
+		} else if (key.includes("projekt")) {
+			iconGroup.add(
+				this._createIconLine(
+					[
+						[-0.34, -0.2],
+						[0.22, 0.22],
+						[0.1, 0.24],
+						[0.32, 0.34],
+						[0.24, 0.1],
+						[0.22, 0.22],
+					],
+					lineMat,
+				),
+				this._createIconLine(
+					[
+						[-0.28, 0.16],
+						[-0.08, 0.25],
+						[0.05, 0.1],
+						[-0.14, 0.0],
+						[-0.28, 0.16],
+					],
+					softLineMat,
+				),
+				this._createIconLine(
+					[
+						[-0.34, -0.22],
+						[-0.18, -0.3],
+						[-0.1, -0.14],
+					],
+					softLineMat,
+				),
+			);
+		} else if (key.includes("foto")) {
+			iconGroup.add(
+				new this.THREE.Mesh(
+					new this.THREE.RingGeometry(0.17, 0.19, 54),
+					fillMat,
+				),
+				this._createIconArc(0.37, 0.24, -0.72, Math.PI + 0.72, 42, softLineMat),
+			);
+			for (let i = 0; i < 6; i++) {
+				const a = i * (Math.PI / 3);
+				const inner = 0.11;
+				const outer = 0.31;
+				iconGroup.add(
+					this._createIconLine(
+						[
+							[Math.cos(a) * inner, Math.sin(a) * inner],
+							[Math.cos(a + 0.22) * outer, Math.sin(a + 0.22) * outer],
+						],
+						lineMat,
+					),
+				);
+			}
+		} else if (key.includes("video")) {
+			const play = new this.THREE.Mesh(this._createPlayShape(0.5), fillMat);
+			play.position.z = 0.08;
+			play.renderOrder = 23;
+			iconGroup.add(
+				play,
+				this._createIconArc(0.4, 0.34, -0.42, Math.PI * 1.4, 46, lineMat),
+				this._createIconLine(
+					[
+						[-0.38, -0.34],
+						[-0.2, -0.34],
+						[-0.04, -0.34],
+						[0.18, -0.34],
+						[0.38, -0.34],
+					],
+					softLineMat,
+				),
+			);
+		} else if (key.includes("journal")) {
+			iconGroup.add(
+				this._createIconLine(
+					[
+						[-0.26, 0.34],
+						[0.16, 0.34],
+						[0.3, 0.2],
+						[0.3, -0.28],
+						[-0.26, -0.28],
+						[-0.26, 0.34],
+					],
+					lineMat,
+				),
+				this._createIconLine(
+					[
+						[-0.14, 0.12],
+						[0.15, 0.12],
+						[-0.14, -0.03],
+						[0.12, -0.03],
+						[-0.14, -0.18],
+						[0.04, -0.18],
+					],
+					softLineMat,
+				),
+				this._createIconLine(
+					[
+						[0.08, -0.32],
+						[0.38, 0.02],
+						[0.31, 0.08],
+					],
+					lineMat,
+				),
+			);
+		}
+
+		const iconSweep = new this.THREE.Mesh(
+			new this.THREE.RingGeometry(0.42, 0.432, 76, 1, 0.12, Math.PI * 0.48),
+			register(this._createMotionMaterial(secondaryColor, 0.2), 0.2, 0.22, 2),
+		);
+		iconSweep.renderOrder = 21;
+		iconGroup.add(iconSweep);
+
+		return { iconGroup, iconSweep };
+	}
+
+	_createPortalMotionLayer(data, index, baseH) {
+		const accent = this.hexToRgb(data.color);
+		const palette = this.getPortalPalette(
+			data.routeLabel || data.title,
+			accent,
+		);
+		const theme = this._getPortalMotionTheme(
+			data.routeLabel || data.title,
+			index,
+		);
+		const group = new this.THREE.Group();
+		const materials = [];
+		const dots = [];
+		const register = (material, opacity, pulse = 0.12, speed = 2.1) => {
+			materials.push({
+				material,
+				opacity,
+				pulse,
+				speed,
+				phase: index * 0.74 + materials.length * 0.58,
+			});
+			return material;
+		};
+
+		group.position.set(0, baseH * 0.08, 0.035);
+		group.renderOrder = 16;
+
+		const accentColor = new this.THREE.Color(data.color || "#ffffff");
+		const secondaryColor = this._colorFromRgb(palette.secondary);
+		const tertiaryColor = this._colorFromRgb(palette.tertiary);
+		const outerArc = new this.THREE.Mesh(
+			new this.THREE.RingGeometry(0.72, 0.742, 96, 1, 0.18, Math.PI * 1.22),
+			register(this._createMotionMaterial(accentColor, 0.24), 0.24, 0.16, 2.4),
+		);
+		const innerArc = new this.THREE.Mesh(
+			new this.THREE.RingGeometry(0.5, 0.516, 80, 1, 0.62, Math.PI * 1.52),
+			register(
+				this._createMotionMaterial(secondaryColor, 0.18),
+				0.18,
+				0.2,
+				2.8,
+			),
+		);
+		const halo = new this.THREE.Mesh(
+			new this.THREE.RingGeometry(0.62, 0.628, 96, 1),
+			register(this._createMotionMaterial(tertiaryColor, 0.1), 0.1, 0.24, 1.8),
+		);
+
+		outerArc.renderOrder = 16;
+		innerArc.renderOrder = 17;
+		halo.renderOrder = 15;
+		group.add(halo, outerArc, innerArc);
+
+		const icon = this._createAnimatedPortalIcon(
+			data.routeLabel || data.title,
+			register,
+			accentColor,
+			secondaryColor,
+		);
+		group.add(icon.iconGroup);
+
+		for (let i = 0; i < theme.dotCount; i++) {
+			const radius = 0.48 + i * 0.06;
+			const dot = new this.THREE.Mesh(
+				new this.THREE.CircleGeometry(0.026 - Math.min(i, 3) * 0.002, 18),
+				register(
+					this._createMotionMaterial(
+						i % 2 === 0 ? secondaryColor : accentColor,
+						0.32,
+					),
+					0.32,
+					0.28,
+					2.6 + i * 0.26,
+				),
+			);
+
+			dot.renderOrder = 18;
+			group.add(dot);
+			dots.push({
+				mesh: dot,
+				radius,
+				speed: theme.outerSpeed + 0.28 + i * 0.08,
+				phase: index * 1.3 + i * ((Math.PI * 2) / theme.dotCount),
+				yScale: 0.54 + i * 0.025,
+				z: 0.026 + i * 0.002,
+			});
+		}
+
+		return {
+			group,
+			outerArc,
+			innerArc,
+			halo,
+			iconGroup: icon.iconGroup,
+			iconSweep: icon.iconSweep,
+			dots,
+			materials,
+			phase: index * 0.92,
+			theme,
+		};
 	}
 
 	_createMeshFromData(data, index, baseW, baseH) {
@@ -2031,6 +2699,10 @@ export class CardManager {
 		glow.renderOrder = 11;
 		mesh.add(glow);
 		mesh.userData.glow = glow;
+
+		const portalMotion = this._createPortalMotionLayer(data, index, baseH);
+		mesh.add(portalMotion.group);
+		mesh.userData.portalMotion = portalMotion;
 
 		return mesh;
 	}
