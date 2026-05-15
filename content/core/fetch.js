@@ -25,6 +25,26 @@ const cacheManager = getCache({ memorySize: 100 });
 const _inflight = new Map();
 
 /**
+ * @param {RequestInit} fetchOptions
+ * @returns {string}
+ */
+const getRequestMethod = (fetchOptions) =>
+	String(fetchOptions?.method || "GET").toUpperCase();
+
+/**
+ * Deduplicate only safe/idempotent requests with stable payload.
+ * @param {string} url
+ * @param {RequestInit} fetchOptions
+ * @returns {string|null}
+ */
+const getInflightKey = (url, fetchOptions) => {
+	const method = getRequestMethod(fetchOptions);
+	if (method !== "GET" && method !== "HEAD") return null;
+	if ("body" in fetchOptions && fetchOptions.body != null) return null;
+	return `${method}:${url}`;
+};
+
+/**
  * Modern fetch with timeout, retry, and caching
  * @param {string} url - URL to fetch
  * @param {FetchConfig} [config] - Fetch configuration
@@ -39,35 +59,29 @@ async function fetchWithRetry(url, config = {}) {
 		cacheTTL = 300000,
 		fetchOptions = {},
 	} = config;
+	const inflightKey = getInflightKey(url, fetchOptions);
 
 	if (useCache) {
-		const cached = await cacheManager.get(url);
+		const cached = cacheManager.get(url);
 		if (cached) {
 			try {
 				log.debug(`Cache hit: ${url}`);
 				return cached.clone();
 			} catch {
-				await cacheManager.delete(url);
+				cacheManager.delete(url);
 			}
 		}
 	}
 
-	// Request deduplication — reuse in-flight request for the same URL
-	if (_inflight.has(url)) {
-		log.debug(`Dedup: reusing in-flight request for ${url}`);
-		const response = await _inflight.get(url);
+	// Request deduplication — reuse in-flight request for the same safe key
+	if (inflightKey && _inflight.has(inflightKey)) {
+		log.debug(`Dedup: reusing in-flight request for ${inflightKey}`);
+		const response = await _inflight.get(inflightKey);
 		return response.clone();
 	}
 
-	let lastError;
-	/** @type {Function | undefined} */
-	let resolveInflight;
-	const inflightPromise = new Promise((r) => {
-		resolveInflight = r;
-	});
-	_inflight.set(url, inflightPromise);
-
-	try {
+	const executeRequest = async () => {
+		let lastError;
 		for (let attempt = 0; attempt <= retries; attempt++) {
 			const controller = new AbortController();
 			const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -86,11 +100,7 @@ async function fetchWithRetry(url, config = {}) {
 				}
 
 				if (useCache) {
-					await cacheManager.set(url, response.clone(), { ttl: cacheTTL });
-				}
-
-				if (resolveInflight) {
-					resolveInflight(response.clone());
+					cacheManager.set(url, response.clone(), { ttl: cacheTTL });
 				}
 				return response;
 			} catch (error) {
@@ -115,9 +125,19 @@ async function fetchWithRetry(url, config = {}) {
 
 		log.error(`Fetch failed after ${retries + 1} attempts:`, lastError);
 		throw lastError;
-	} finally {
-		_inflight.delete(url);
+	};
+
+	if (inflightKey) {
+		const requestPromise = executeRequest();
+		_inflight.set(inflightKey, requestPromise);
+		try {
+			return await requestPromise;
+		} finally {
+			_inflight.delete(inflightKey);
+		}
 	}
+
+	return executeRequest();
 }
 
 /**
