@@ -1,6 +1,6 @@
-import { createLogger } from '../../content/core/logger.js';
+import { createLogger } from "../../content/core/logger.js";
 
-const log = createLogger('critical-css');
+const log = createLogger("critical-css");
 /**
  * Critical CSS Edge Inliner
  *
@@ -9,9 +9,9 @@ const log = createLogger('critical-css');
  * to async loading via media-swap pattern.
  *
  * Strategy:
- * - foundation.css + menu base/state/mobile CSS + footer shell CSS
+ * - foundation.css + menu base/state/mobile CSS
  *   → inlined as <style>
- *   (global variables, theme defaults, layout baseline, navigation/footer shell)
+ *   (global variables, theme defaults, layout baseline, navigation shell)
  * - main.css + animations.css + menu backdrop → async loaded via
  *   media="print" swap trick
  *
@@ -20,7 +20,7 @@ const log = createLogger('critical-css');
  * @version 1.0.0
  */
 
-const CSS_CACHE_VERSION = '20260324-1';
+const CSS_CACHE_VERSION = "20260324-1";
 const CSS_TTL_MS = 3600 * 1000; // 1 hour
 
 /**
@@ -28,11 +28,10 @@ const CSS_TTL_MS = 3600 * 1000; // 1 hour
  * These block first paint and must be in the initial HTML stream.
  */
 const INLINE_CSS_PATHS = [
-  '/content/styles/foundation.css',
-  '/content/components/menu/menu-base.css',
-  '/content/components/menu/menu-states.css',
-  '/content/components/menu/menu-mobile.css',
-  '/content/components/footer/footer-shell.css',
+	"/content/styles/foundation.css",
+	"/content/components/menu/menu-base.css",
+	"/content/components/menu/menu-states.css",
+	"/content/components/menu/menu-mobile.css",
 ];
 
 /**
@@ -40,9 +39,9 @@ const INLINE_CSS_PATHS = [
  * Converted from blocking <link> to async media-swap pattern.
  */
 const ASYNC_CSS_PATHS = [
-  '/content/styles/main.css',
-  '/content/styles/animations.css',
-  '/content/components/menu/menu-backdrop.css',
+	"/content/styles/main.css",
+	"/content/styles/animations.css",
+	"/content/components/menu/menu-backdrop.css",
 ];
 
 /** Set of all CSS paths we handle (for quick lookup in HTMLRewriter) */
@@ -54,7 +53,7 @@ const ALL_MANAGED_CSS = new Set([...INLINE_CSS_PATHS, ...ASYNC_CSS_PATHS]);
  * @returns {string}
  */
 function cssKvKey(cssPath) {
-  return `css:${CSS_CACHE_VERSION}:${cssPath}`;
+	return `css:${CSS_CACHE_VERSION}:${cssPath}`;
 }
 
 /**
@@ -65,34 +64,34 @@ function cssKvKey(cssPath) {
  * @returns {Promise<string>} CSS content
  */
 async function loadCssCached(context, cssPath) {
-  const kv = context.env?.SITEMAP_CACHE_KV;
+	const kv = context.env?.SITEMAP_CACHE_KV;
 
-  // Direct fetch fallback when KV unavailable (local dev)
-  if (!kv) {
-    return fetchCssFromAssets(context, cssPath);
-  }
+	// Direct fetch fallback when KV unavailable (local dev)
+	if (!kv) {
+		return fetchCssFromAssets(context, cssPath);
+	}
 
-  const key = cssKvKey(cssPath);
-  let cached = null;
+	const key = cssKvKey(cssPath);
+	let cached = null;
 
-  try {
-    cached = await kv.get(key, 'json');
-  } catch (err) {
-    log.warn(`CSS KV error for ${key}:`, err);
-  }
+	try {
+		cached = await kv.get(key, "json");
+	} catch (err) {
+		log.warn(`CSS KV error for ${key}:`, err);
+	}
 
-  const now = Date.now();
+	const now = Date.now();
 
-  if (cached?.css) {
-    // SWR: serve stale, refresh in background
-    if (now - cached.timestamp > CSS_TTL_MS) {
-      context.waitUntil(refreshCssInKV(context, key, cssPath));
-    }
-    return cached.css;
-  }
+	if (cached?.css) {
+		// SWR: serve stale, refresh in background
+		if (now - cached.timestamp > CSS_TTL_MS) {
+			context.waitUntil(refreshCssInKV(context, key, cssPath));
+		}
+		return cached.css;
+	}
 
-  // Cache miss: blocking fetch + store
-  return refreshCssInKV(context, key, cssPath);
+	// Cache miss: blocking fetch + store
+	return refreshCssInKV(context, key, cssPath);
 }
 
 /**
@@ -103,19 +102,19 @@ async function loadCssCached(context, cssPath) {
  * @returns {Promise<string>}
  */
 async function refreshCssInKV(context, key, cssPath) {
-  try {
-    const css = await fetchCssFromAssets(context, cssPath);
-    if (css) {
-      await context.env.SITEMAP_CACHE_KV.put(
-        key,
-        JSON.stringify({ timestamp: Date.now(), css }),
-      );
-    }
-    return css;
-  } catch (err) {
-    log.error(`CSS cache refresh failed for ${key}:`, err);
-    return '';
-  }
+	try {
+		const css = await fetchCssFromAssets(context, cssPath);
+		if (css) {
+			await context.env.SITEMAP_CACHE_KV.put(
+				key,
+				JSON.stringify({ timestamp: Date.now(), css }),
+			);
+		}
+		return css;
+	} catch (err) {
+		log.error(`CSS cache refresh failed for ${key}:`, err);
+		return "";
+	}
 }
 
 /**
@@ -125,14 +124,14 @@ async function refreshCssInKV(context, key, cssPath) {
  * @returns {Promise<string>}
  */
 async function fetchCssFromAssets(context, cssPath) {
-  try {
-    const url = new URL(cssPath, context.request.url);
-    const res = await context.env.ASSETS.fetch(url);
-    if (!res.ok) return '';
-    return await res.text();
-  } catch {
-    return '';
-  }
+	try {
+		const url = new URL(cssPath, context.request.url);
+		const res = await context.env.ASSETS.fetch(url);
+		if (!res.ok) return "";
+		return await res.text();
+	} catch {
+		return "";
+	}
 }
 
 /**
@@ -143,13 +142,13 @@ async function fetchCssFromAssets(context, cssPath) {
  * @returns {Promise<Map<string, string>>} Map of path → CSS content
  */
 export async function preloadCriticalCss(context) {
-  const entries = await Promise.all(
-    INLINE_CSS_PATHS.map(async (path) => {
-      const css = await loadCssCached(context, path);
-      return /** @type {[string, string]} */ ([path, css]);
-    }),
-  );
-  return new Map(entries);
+	const entries = await Promise.all(
+		INLINE_CSS_PATHS.map(async (path) => {
+			const css = await loadCssCached(context, path);
+			return /** @type {[string, string]} */ ([path, css]);
+		}),
+	);
+	return new Map(entries);
 }
 
 /**
@@ -167,55 +166,55 @@ export async function preloadCriticalCss(context) {
  *   rewriter.on('link[rel="stylesheet"]', new CriticalCssInliner(cssMap));
  */
 export class CriticalCssInliner {
-  /**
-   * @param {Map<string, string>} inlineCssMap - Map of path → CSS content
-   * @param {string | null} [nonce]
-   */
-  constructor(inlineCssMap, nonce = null) {
-    this.inlineCssMap = inlineCssMap;
-    this.nonce = nonce;
-  }
+	/**
+	 * @param {Map<string, string>} inlineCssMap - Map of path → CSS content
+	 * @param {string | null} [nonce]
+	 */
+	constructor(inlineCssMap, nonce = null) {
+		this.inlineCssMap = inlineCssMap;
+		this.nonce = nonce;
+	}
 
-  /** @param {Element} el */
-  element(el) {
-    const href = el.getAttribute('href');
-    if (!href || !ALL_MANAGED_CSS.has(href)) return;
+	/** @param {Element} el */
+	element(el) {
+		const href = el.getAttribute("href");
+		if (!href || !ALL_MANAGED_CSS.has(href)) return;
 
-    // --- Inline CSS (foundation + menu shell) ---
-    const cssContent = this.inlineCssMap.get(href);
-    if (cssContent) {
-      // Replace <link> with <style> containing the CSS content
-      el.replace(
-        `<style data-inlined-from="${href}"${buildNonceAttribute(this.nonce)}>${cssContent}</style>`,
-        {
-          html: true,
-        },
-      );
-      return;
-    }
+		// --- Inline CSS (foundation + menu shell) ---
+		const cssContent = this.inlineCssMap.get(href);
+		if (cssContent) {
+			// Replace <link> with <style> containing the CSS content
+			el.replace(
+				`<style data-inlined-from="${href}"${buildNonceAttribute(this.nonce)}>${cssContent}</style>`,
+				{
+					html: true,
+				},
+			);
+			return;
+		}
 
-    // --- Async CSS (main + animations + deferred menu files) ---
-    if (ASYNC_CSS_PATHS.includes(href)) {
-      // media="print" swap pattern:
-      // 1. Browser loads with media="print" (non-blocking)
-      // 2. onload swaps to media="all" → CSS applies
-      // 3. <noscript> fallback for JS-disabled browsers
-      el.replace(
-        `<link rel="stylesheet" href="${href}" media="print" data-async-css>` +
-          `<noscript><link rel="stylesheet" href="${href}"></noscript>`,
-        { html: true },
-      );
-    }
-  }
+		// --- Async CSS (main + animations + deferred menu files) ---
+		if (ASYNC_CSS_PATHS.includes(href)) {
+			// media="print" swap pattern:
+			// 1. Browser loads with media="print" (non-blocking)
+			// 2. onload swaps to media="all" → CSS applies
+			// 3. <noscript> fallback for JS-disabled browsers
+			el.replace(
+				`<link rel="stylesheet" href="${href}" media="print" data-async-css>` +
+					`<noscript><link rel="stylesheet" href="${href}"></noscript>`,
+				{ html: true },
+			);
+		}
+	}
 }
 
 function buildNonceAttribute(nonce) {
-  if (!nonce) return '';
-  return ` nonce="${escapeHtmlAttribute(nonce)}"`;
+	if (!nonce) return "";
+	return ` nonce="${escapeHtmlAttribute(nonce)}"`;
 }
 
 function escapeHtmlAttribute(value) {
-  return String(value || '')
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;');
+	return String(value || "")
+		.replace(/&/g, "&amp;")
+		.replace(/"/g, "&quot;");
 }

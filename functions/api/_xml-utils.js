@@ -3,7 +3,7 @@
  * @version 2.0.0
  */
 
-export { escapeXml } from '../../content/core/text-utils.js';
+export { escapeXml } from "../../content/core/text-utils.js";
 
 /**
  * Normalize URL path for sitemaps (adds trailing slash)
@@ -11,15 +11,15 @@ export { escapeXml } from '../../content/core/text-utils.js';
  * @returns {string} Normalized path
  */
 export function normalizePath(path) {
-  if (!path) return '/';
-  if (path === '/') return '/';
+	if (!path) return "/";
+	if (path === "/") return "/";
 
-  let normalized = String(path).trim();
-  if (!normalized.startsWith('/')) normalized = '/' + normalized;
-  normalized = normalized.replace(/\/index\.html?$/i, '/');
-  if (!normalized.endsWith('/')) normalized += '/';
+	let normalized = String(path).trim();
+	if (!normalized.startsWith("/")) normalized = "/" + normalized;
+	normalized = normalized.replace(/\/index\.html?$/i, "/");
+	if (!normalized.endsWith("/")) normalized += "/";
 
-  return normalized;
+	return normalized;
 }
 
 /**
@@ -28,11 +28,11 @@ export function normalizePath(path) {
  * @returns {string} Origin with www prefix
  */
 export function resolveOrigin(requestUrl) {
-  const url = new URL(requestUrl);
-  if (url.hostname === 'abdulkerimsesli.de') {
-    url.hostname = 'www.abdulkerimsesli.de';
-  }
-  return url.origin;
+	const url = new URL(requestUrl);
+	if (url.hostname === "abdulkerimsesli.de") {
+		url.hostname = "www.abdulkerimsesli.de";
+	}
+	return url.origin;
 }
 
 /**
@@ -41,10 +41,10 @@ export function resolveOrigin(requestUrl) {
  * @returns {string|null} ISO date string or null
  */
 export function toISODate(value) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString().split('T')[0];
+	if (!value) return null;
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return null;
+	return date.toISOString().split("T")[0];
 }
 
 /**
@@ -54,11 +54,11 @@ export function toISODate(value) {
  * @returns {string} Absolute URL
  */
 export function toAbsoluteUrl(origin, value) {
-  if (!value) return '';
-  if (/^https?:\/\//i.test(value)) return value;
+	if (!value) return "";
+	if (/^https?:\/\//i.test(value)) return value;
 
-  const path = value.startsWith('/') ? value : `/${value}`;
-  return `${origin}${path}`;
+	const path = value.startsWith("/") ? value : `/${value}`;
+	return `${origin}${path}`;
 }
 
 /**
@@ -68,15 +68,15 @@ export function toAbsoluteUrl(origin, value) {
  * @returns {Promise<any|null>} Parsed JSON or null
  */
 export async function loadJsonFile(context, path) {
-  if (!context.env?.ASSETS) return null;
+	if (!context.env?.ASSETS) return null;
 
-  try {
-    const response = await context.env.ASSETS.fetch(
-      new URL(path, context.request.url),
-    );
-    if (!response.ok) return null;
-    return await response.json();
-  } catch {
-    return null;
-  }
+	try {
+		const response = await context.env.ASSETS.fetch(
+			new URL(path, context.request.url),
+		);
+		if (!response.ok) return null;
+		return await response.json();
+	} catch {
+		return null;
+	}
 }

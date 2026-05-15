@@ -4,248 +4,248 @@
  * @last-modified 2026-02-14
  */
 
-import React, { useEffect, useState, useRef } from 'react';
-import { createRoot } from 'react-dom/client';
+import React, { useEffect, useState, useRef } from "react";
+import { createRoot } from "react-dom/client";
 
-import { createLogger } from '#core/logger.js';
-import { AppLoadManager } from '#core/load-manager.js';
-import { createUseTranslation } from '#core/react-utils.js';
-import { injectSchema } from '#core/schema.js';
-import { createErrorBoundary } from '#components/ErrorBoundary.js';
-import { i18n } from '#core/i18n.js';
+import { createLogger } from "#core/logger.js";
+import { AppLoadManager } from "#core/load-manager.js";
+import { createUseTranslation } from "#core/react-utils.js";
+import { injectSchema } from "#core/schema.js";
+import { createErrorBoundary } from "#components/ErrorBoundary.js";
+import { i18n } from "#core/i18n.js";
 
-import { ThreeGalleryScene } from './components/ThreeGalleryScene.js';
+import { ThreeGalleryScene } from "./components/ThreeGalleryScene.js";
 // Removed static GALLERY_ITEMS import to use dynamic loading
-import { GALLERY_ITEMS as STATIC_GALLERY_ITEMS } from './config.js';
+import { GALLERY_ITEMS as STATIC_GALLERY_ITEMS } from "./config.js";
 
-const log = createLogger('gallery-app');
+const log = createLogger("gallery-app");
 const useTranslation = createUseTranslation();
 const h = React.createElement;
 
 function normalizeGalleryItem(item) {
-  if (!item || typeof item !== 'object') return null;
+	if (!item || typeof item !== "object") return null;
 
-  const type = String(item.type || 'image').trim() || 'image';
-  const title = String(item.title || '').trim() || 'Untitled';
-  const description = String(item.description || '').trim();
-  const caption = String(item.caption || '').trim() || description || title;
+	const type = String(item.type || "image").trim() || "image";
+	const title = String(item.title || "").trim() || "Untitled";
+	const description = String(item.description || "").trim();
+	const caption = String(item.caption || "").trim() || description || title;
 
-  return {
-    ...item,
-    type,
-    title,
-    description,
-    caption,
-    orientation: String(
-      item.orientation || (type === 'video' ? 'landscape' : 'unknown'),
-    ),
-    dominantColor: String(item.dominantColor || '#111827'),
-    blurPlaceholder: String(item.blurPlaceholder || ''),
-    width:
-      Number.isFinite(item.width) && Number(item.width) > 0
-        ? Number(item.width)
-        : null,
-    height:
-      Number.isFinite(item.height) && Number(item.height) > 0
-        ? Number(item.height)
-        : null,
-  };
+	return {
+		...item,
+		type,
+		title,
+		description,
+		caption,
+		orientation: String(
+			item.orientation || (type === "video" ? "landscape" : "unknown"),
+		),
+		dominantColor: String(item.dominantColor || "#111827"),
+		blurPlaceholder: String(item.blurPlaceholder || ""),
+		width:
+			Number.isFinite(item.width) && Number(item.width) > 0
+				? Number(item.width)
+				: null,
+		height:
+			Number.isFinite(item.height) && Number(item.height) > 0
+				? Number(item.height)
+				: null,
+	};
 }
 
 const GalleryApp = () => {
-  const { t } = useTranslation();
-  const [isReady, setIsReady] = useState(false);
-  const [items, setItems] = useState([]);
-  const initRef = useRef(false);
+	const { t } = useTranslation();
+	const [isReady, setIsReady] = useState(false);
+	const [items, setItems] = useState([]);
+	const initRef = useRef(false);
 
-  useEffect(() => {
-    // Prevent double initialization
-    if (initRef.current) return;
-    initRef.current = true;
-    const controller = new AbortController();
-    let isCancelled = false;
+	useEffect(() => {
+		// Prevent double initialization
+		if (initRef.current) return;
+		initRef.current = true;
+		const controller = new AbortController();
+		let isCancelled = false;
 
-    const initGallery = async () => {
-      try {
-        log.info('Initializing 3D Gallery...');
-        if (isCancelled) return;
+		const initGallery = async () => {
+			try {
+				log.info("Initializing 3D Gallery...");
+				if (isCancelled) return;
 
-        AppLoadManager.updateLoader(
-          0.2,
-          i18n.t('gallery.loading.init') || 'Initializing...',
-        );
+				AppLoadManager.updateLoader(
+					0.2,
+					i18n.t("gallery.loading.init") || "Initializing...",
+				);
 
-        // Fetch dynamic items from R2 API
-        let dynamicItems = [];
-        try {
-          const res = await fetch('/api/gallery-items', {
-            signal: controller.signal,
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.items && Array.isArray(data.items)) {
-              // Ensure there are enough items for 3D gallery stability, or mix with static if too few?
-              // For now, trust the API.
-              dynamicItems = data.items;
-              log.info(`Loaded ${dynamicItems.length} items from R2`);
-            }
-          }
-        } catch (apiErr) {
-          if (controller.signal.aborted || isCancelled) return;
-          log.warn(
-            'Failed to load dynamic gallery items, falling back to static config',
-            apiErr,
-          );
-        }
-        if (isCancelled) return;
+				// Fetch dynamic items from R2 API
+				let dynamicItems = [];
+				try {
+					const res = await fetch("/api/gallery-items", {
+						signal: controller.signal,
+					});
+					if (res.ok) {
+						const data = await res.json();
+						if (data.items && Array.isArray(data.items)) {
+							// Ensure there are enough items for 3D gallery stability, or mix with static if too few?
+							// For now, trust the API.
+							dynamicItems = data.items;
+							log.info(`Loaded ${dynamicItems.length} items from R2`);
+						}
+					}
+				} catch (apiErr) {
+					if (controller.signal.aborted || isCancelled) return;
+					log.warn(
+						"Failed to load dynamic gallery items, falling back to static config",
+						apiErr,
+					);
+				}
+				if (isCancelled) return;
 
-        // Use dynamic items if available, otherwise fallback to static config
-        const finalItems =
-          dynamicItems.length > 0 ? dynamicItems : STATIC_GALLERY_ITEMS;
-        setItems(
-          finalItems.map((item) => normalizeGalleryItem(item)).filter(Boolean),
-        );
+				// Use dynamic items if available, otherwise fallback to static config
+				const finalItems =
+					dynamicItems.length > 0 ? dynamicItems : STATIC_GALLERY_ITEMS;
+				setItems(
+					finalItems.map((item) => normalizeGalleryItem(item)).filter(Boolean),
+				);
 
-        AppLoadManager.updateLoader(
-          0.5,
-          i18n.t('gallery.loading.prepare') || 'Preparing Scene...',
-        );
-        if (isCancelled) return;
+				AppLoadManager.updateLoader(
+					0.5,
+					i18n.t("gallery.loading.prepare") || "Preparing Scene...",
+				);
+				if (isCancelled) return;
 
-        AppLoadManager.updateLoader(
-          0.9,
-          i18n.t('gallery.loading.assets') || 'Loading Assets...',
-        );
-        if (isCancelled) return;
+				AppLoadManager.updateLoader(
+					0.9,
+					i18n.t("gallery.loading.assets") || "Loading Assets...",
+				);
+				if (isCancelled) return;
 
-        AppLoadManager.updateLoader(
-          1,
-          i18n.t('gallery.loading.ready') || 'Ready',
-        );
-        AppLoadManager.hideLoader(100);
+				AppLoadManager.updateLoader(
+					1,
+					i18n.t("gallery.loading.ready") || "Ready",
+				);
+				AppLoadManager.hideLoader(100);
 
-        if (isCancelled) return;
-        setIsReady(true);
-      } catch (err) {
-        if (controller.signal.aborted || isCancelled) return;
-        log.error('Gallery init failed', err);
-        // Fallback to static items even on critical failure if possible
-        setItems(
-          STATIC_GALLERY_ITEMS.map((item) => normalizeGalleryItem(item)).filter(
-            Boolean,
-          ),
-        );
-        setIsReady(true); // Still try to render something
-        AppLoadManager.updateLoader(1, 'Gallery loaded (fallback)');
-        AppLoadManager.hideLoader(500);
-      }
-    };
+				if (isCancelled) return;
+				setIsReady(true);
+			} catch (err) {
+				if (controller.signal.aborted || isCancelled) return;
+				log.error("Gallery init failed", err);
+				// Fallback to static items even on critical failure if possible
+				setItems(
+					STATIC_GALLERY_ITEMS.map((item) => normalizeGalleryItem(item)).filter(
+						Boolean,
+					),
+				);
+				setIsReady(true); // Still try to render something
+				AppLoadManager.updateLoader(1, "Gallery loaded (fallback)");
+				AppLoadManager.hideLoader(500);
+			}
+		};
 
-    initGallery();
+		initGallery();
 
-    return () => {
-      isCancelled = true;
-      controller.abort();
-    };
-  }, []); // Run once on mount
+		return () => {
+			isCancelled = true;
+			controller.abort();
+		};
+	}, []); // Run once on mount
 
-  // Separate effect for Schema updates when items change
-  useEffect(() => {
-    if (items.length > 0) {
-      updateGallerySchema(items);
-    }
-  }, [items]);
+	// Separate effect for Schema updates when items change
+	useEffect(() => {
+		if (items.length > 0) {
+			updateGallerySchema(items);
+		}
+	}, [items]);
 
-  // Helper to inject Schema.org JSON-LD
-  const updateGallerySchema = (galleryItems) => {
-    if (!Array.isArray(galleryItems) || galleryItems.length === 0) {
-      document.getElementById('gallery-schema-json-ld')?.remove();
-      return;
-    }
+	// Helper to inject Schema.org JSON-LD
+	const updateGallerySchema = (galleryItems) => {
+		if (!Array.isArray(galleryItems) || galleryItems.length === 0) {
+			document.getElementById("gallery-schema-json-ld")?.remove();
+			return;
+		}
 
-    const schema = {
-      '@type': 'ImageGallery',
-      name: 'Fotografie Portfolio | Abdulkerim Sesli',
-      description:
-        'Kuratierte Galerie mit Fokus auf Street Photography, Architektur und Portraits.',
-      url: window.location.href,
-      author: {
-        '@type': 'Person',
-        name: 'Abdulkerim Sesli',
-      },
-      image: galleryItems.map((item) => ({
-        '@type': 'ImageObject',
-        contentUrl: item.url,
-        url: item.url,
-        name: item.title,
-        description: item.caption || item.description || item.title,
-        author: {
-          '@type': 'Person',
-          name: 'Abdulkerim Sesli',
-        },
-        creator: {
-          '@type': 'Person',
-          name: 'Abdulkerim Sesli',
-        },
-        creditText: 'Photo: Abdulkerim Sesli',
-        license: 'https://abdulkerimsesli.de/#image-license',
-        acquireLicensePage: 'https://abdulkerimsesli.de/#image-license',
-        copyrightNotice: `© ${new Date().getFullYear()} Abdulkerim Sesli`,
-      })),
-    };
+		const schema = {
+			"@type": "ImageGallery",
+			name: "Fotografie Portfolio | Abdulkerim Sesli",
+			description:
+				"Kuratierte Galerie mit Fokus auf Street Photography, Architektur und Portraits.",
+			url: window.location.href,
+			author: {
+				"@type": "Person",
+				name: "Abdulkerim Sesli",
+			},
+			image: galleryItems.map((item) => ({
+				"@type": "ImageObject",
+				contentUrl: item.url,
+				url: item.url,
+				name: item.title,
+				description: item.caption || item.description || item.title,
+				author: {
+					"@type": "Person",
+					name: "Abdulkerim Sesli",
+				},
+				creator: {
+					"@type": "Person",
+					name: "Abdulkerim Sesli",
+				},
+				creditText: "Photo: Abdulkerim Sesli",
+				license: "https://abdulkerimsesli.de/#image-license",
+				acquireLicensePage: "https://abdulkerimsesli.de/#image-license",
+				copyrightNotice: `© ${new Date().getFullYear()} Abdulkerim Sesli`,
+			})),
+		};
 
-    injectSchema([schema], { scriptId: 'gallery-schema-json-ld' });
-  };
+		injectSchema([schema], { scriptId: "gallery-schema-json-ld" });
+	};
 
-  if (!isReady) return null;
+	if (!isReady) return null;
 
-  return h(
-    'div',
-    {
-      className: 'gallery-shell',
-    },
-    // Pass dynamic items to the scene
-    h(ThreeGalleryScene, { items: items }),
+	return h(
+		"div",
+		{
+			className: "gallery-shell",
+		},
+		// Pass dynamic items to the scene
+		h(ThreeGalleryScene, { items: items }),
 
-    // Title Overlay - Safe Area zwischen Menu (top: 76px) und Footer (bottom: 76px)
-    h(
-      'div',
-      {
-        className: 'gallery-title-overlay',
-      },
-      h(
-        'h1',
-        {
-          className: 'gallery-title',
-        },
-        t('gallery.title') || 'Gallery',
-      ),
+		// Title Overlay - Safe Area zwischen Menu (top: 76px) und Footer (bottom: 76px)
+		h(
+			"div",
+			{
+				className: "gallery-title-overlay",
+			},
+			h(
+				"h1",
+				{
+					className: "gallery-title",
+				},
+				t("gallery.title") || "Gallery",
+			),
 
-      h(
-        'p',
-        {
-          className: 'gallery-subtitle',
-        },
-        t('gallery.subtitle') || 'Explore visual moments',
-      ),
-    ),
+			h(
+				"p",
+				{
+					className: "gallery-subtitle",
+				},
+				t("gallery.subtitle") || "Explore visual moments",
+			),
+		),
 
-    // Instructions - Safe Area über Footer (min-height: 52px + bottom: 12px + safe-bottom)
-    h(
-      'div',
-      {
-        className: 'gallery-instructions',
-      },
-      h(
-        'p',
-        { className: 'gallery-instructions__text' },
-        t('gallery.instructions') || 'Scroll to explore \u2022 Click to view',
-      ),
-    ),
-  );
+		// Instructions - Safe Area über Footer (min-height: 52px + bottom: 12px + safe-bottom)
+		h(
+			"div",
+			{
+				className: "gallery-instructions",
+			},
+			h(
+				"p",
+				{ className: "gallery-instructions__text" },
+				t("gallery.instructions") || "Scroll to explore \u2022 Click to view",
+			),
+		),
+	);
 };
 
-const root = createRoot(document.getElementById('root'));
+const root = createRoot(document.getElementById("root"));
 const ErrorBoundary = createErrorBoundary(React);
 
 root.render(h(ErrorBoundary, null, h(GalleryApp)));

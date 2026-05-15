@@ -5,7 +5,7 @@
    request /content/components/menu/menu.css directly.
    ======================================================================== */
 
-@import url('./menu-base.css');
-@import url('./menu-search.css');
-@import url('./menu-states.css');
-@import url('./menu-mobile.css');
+@import url("./menu-base.css");
+@import url("./menu-search.css");
+@import url("./menu-states.css");
+@import url("./menu-mobile.css");

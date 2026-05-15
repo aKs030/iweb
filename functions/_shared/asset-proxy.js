@@ -1,15 +1,15 @@
 import {
-  CACHE_CONTROL_NOT_FOUND_SHORT as DEFAULT_NOT_FOUND_CACHE_CONTROL,
-  CACHE_CONTROL_PROXY_DEFAULT as DEFAULT_PROXY_CACHE_CONTROL,
-} from './http-headers.js';
+	CACHE_CONTROL_NOT_FOUND_SHORT as DEFAULT_NOT_FOUND_CACHE_CONTROL,
+	CACHE_CONTROL_PROXY_DEFAULT as DEFAULT_PROXY_CACHE_CONTROL,
+} from "./http-headers.js";
 const CONDITIONAL_HEADER_NAMES = [
-  'Cache-Control',
-  'Content-Type',
-  'ETag',
-  'Last-Modified',
-  'X-Robots-Tag',
+	"Cache-Control",
+	"Content-Type",
+	"ETag",
+	"Last-Modified",
+	"X-Robots-Tag",
 ];
-const CONDITIONAL_REQUEST_HEADER_NAMES = ['If-None-Match', 'If-Modified-Since'];
+const CONDITIONAL_REQUEST_HEADER_NAMES = ["If-None-Match", "If-Modified-Since"];
 
 /**
  * @param {string | null | undefined} rawPath
@@ -20,26 +20,26 @@ const CONDITIONAL_REQUEST_HEADER_NAMES = ['If-None-Match', 'If-Modified-Since'];
  * @returns {string}
  */
 export function normalizeEncodedProxyPath(rawPath, options = {}) {
-  const defaultDocument = String(options.defaultDocument || '');
-  const filterEmptySegments = options.filterEmptySegments !== false;
-  const normalizedSource = String(rawPath || '').replace(/^\/+/, '');
-  const pathname =
-    !normalizedSource || normalizedSource.endsWith('/')
-      ? `${normalizedSource}${defaultDocument}`
-      : normalizedSource;
+	const defaultDocument = String(options.defaultDocument || "");
+	const filterEmptySegments = options.filterEmptySegments !== false;
+	const normalizedSource = String(rawPath || "").replace(/^\/+/, "");
+	const pathname =
+		!normalizedSource || normalizedSource.endsWith("/")
+			? `${normalizedSource}${defaultDocument}`
+			: normalizedSource;
 
-  if (!pathname || pathname.includes('..')) {
-    return '';
-  }
+	if (!pathname || pathname.includes("..")) {
+		return "";
+	}
 
-  try {
-    const segments = pathname.split('/');
-    return (filterEmptySegments ? segments.filter(Boolean) : segments)
-      .map((segment) => encodeURIComponent(decodeURIComponent(segment)))
-      .join('/');
-  } catch {
-    return '';
-  }
+	try {
+		const segments = pathname.split("/");
+		return (filterEmptySegments ? segments.filter(Boolean) : segments)
+			.map((segment) => encodeURIComponent(decodeURIComponent(segment)))
+			.join("/");
+	} catch {
+		return "";
+	}
 }
 
 /**
@@ -47,10 +47,10 @@ export function normalizeEncodedProxyPath(rawPath, options = {}) {
  * @returns {string}
  */
 export function decodeProxyPath(proxyPath) {
-  return String(proxyPath || '')
-    .split('/')
-    .map((segment) => decodeURIComponent(segment))
-    .join('/');
+	return String(proxyPath || "")
+		.split("/")
+		.map((segment) => decodeURIComponent(segment))
+		.join("/");
 }
 
 /**
@@ -60,15 +60,15 @@ export function decodeProxyPath(proxyPath) {
  * @returns {string}
  */
 export function inferProxyContentType(pathname, contentTypes, sourceHeaders) {
-  const extensionMatch = String(pathname || '').match(/(\.[A-Za-z0-9]+)$/);
-  const mappedType =
-    extensionMatch && contentTypes.get(extensionMatch[1].toLowerCase());
+	const extensionMatch = String(pathname || "").match(/(\.[A-Za-z0-9]+)$/);
+	const mappedType =
+		extensionMatch && contentTypes.get(extensionMatch[1].toLowerCase());
 
-  return (
-    mappedType ||
-    sourceHeaders?.get('content-type') ||
-    'application/octet-stream'
-  );
+	return (
+		mappedType ||
+		sourceHeaders?.get("content-type") ||
+		"application/octet-stream"
+	);
 }
 
 /**
@@ -82,33 +82,33 @@ export function inferProxyContentType(pathname, contentTypes, sourceHeaders) {
  * @returns {Headers}
  */
 export function buildProxyResponseHeaders(options) {
-  const headers = new Headers();
-  headers.set(
-    'Content-Type',
-    inferProxyContentType(
-      options.pathname,
-      options.contentTypes,
-      options.sourceHeaders,
-    ),
-  );
-  headers.set(
-    'Cache-Control',
-    options.cacheControl || DEFAULT_PROXY_CACHE_CONTROL,
-  );
+	const headers = new Headers();
+	headers.set(
+		"Content-Type",
+		inferProxyContentType(
+			options.pathname,
+			options.contentTypes,
+			options.sourceHeaders,
+		),
+	);
+	headers.set(
+		"Cache-Control",
+		options.cacheControl || DEFAULT_PROXY_CACHE_CONTROL,
+	);
 
-  const etag = options.sourceHeaders?.get('etag');
-  if (etag) headers.set('ETag', etag);
+	const etag = options.sourceHeaders?.get("etag");
+	if (etag) headers.set("ETag", etag);
 
-  const lastModified = options.sourceHeaders?.get('last-modified');
-  if (lastModified) headers.set('Last-Modified', lastModified);
+	const lastModified = options.sourceHeaders?.get("last-modified");
+	if (lastModified) headers.set("Last-Modified", lastModified);
 
-  for (const [headerName, headerValue] of Object.entries(
-    options.extraHeaders || {},
-  )) {
-    headers.set(headerName, headerValue);
-  }
+	for (const [headerName, headerValue] of Object.entries(
+		options.extraHeaders || {},
+	)) {
+		headers.set(headerName, headerValue);
+	}
 
-  return headers;
+	return headers;
 }
 
 /**
@@ -116,7 +116,7 @@ export function buildProxyResponseHeaders(options) {
  * @returns {Request}
  */
 export function buildProxyCacheKey(url) {
-  return new Request(url.toString(), { method: 'GET' });
+	return new Request(url.toString(), { method: "GET" });
 }
 
 /**
@@ -124,10 +124,10 @@ export function buildProxyCacheKey(url) {
  * @returns {string}
  */
 function normalizeEtag(etag) {
-  return String(etag || '')
-    .trim()
-    .replace(/^W\//i, '')
-    .replace(/^"(.*)"$/, '$1');
+	return String(etag || "")
+		.trim()
+		.replace(/^W\//i, "")
+		.replace(/^"(.*)"$/, "$1");
 }
 
 /**
@@ -136,13 +136,13 @@ function normalizeEtag(etag) {
  * @returns {boolean}
  */
 function matchesIfNoneMatch(ifNoneMatch, etag) {
-  if (!ifNoneMatch || !etag) return false;
-  const expectedEtag = normalizeEtag(etag);
+	if (!ifNoneMatch || !etag) return false;
+	const expectedEtag = normalizeEtag(etag);
 
-  return ifNoneMatch
-    .split(',')
-    .map((value) => value.trim())
-    .some((value) => value === '*' || normalizeEtag(value) === expectedEtag);
+	return ifNoneMatch
+		.split(",")
+		.map((value) => value.trim())
+		.some((value) => value === "*" || normalizeEtag(value) === expectedEtag);
 }
 
 /**
@@ -151,15 +151,15 @@ function matchesIfNoneMatch(ifNoneMatch, etag) {
  * @returns {boolean}
  */
 function matchesIfModifiedSince(ifModifiedSince, lastModified) {
-  if (!ifModifiedSince || !lastModified) return false;
+	if (!ifModifiedSince || !lastModified) return false;
 
-  const modifiedSinceMs = Date.parse(ifModifiedSince);
-  const lastModifiedMs = Date.parse(lastModified);
-  if (Number.isNaN(modifiedSinceMs) || Number.isNaN(lastModifiedMs)) {
-    return false;
-  }
+	const modifiedSinceMs = Date.parse(ifModifiedSince);
+	const lastModifiedMs = Date.parse(lastModified);
+	if (Number.isNaN(modifiedSinceMs) || Number.isNaN(lastModifiedMs)) {
+		return false;
+	}
 
-  return lastModifiedMs <= modifiedSinceMs;
+	return lastModifiedMs <= modifiedSinceMs;
 }
 
 /**
@@ -170,27 +170,27 @@ function matchesIfModifiedSince(ifModifiedSince, lastModified) {
  * @returns {Response | null}
  */
 export function maybeBuildNotModifiedResponse(
-  request,
-  headers,
-  cacheHeaderName,
-  cacheStatus,
+	request,
+	headers,
+	cacheHeaderName,
+	cacheStatus,
 ) {
-  const ifNoneMatch = request.headers.get('If-None-Match');
-  const ifModifiedSince = request.headers.get('If-Modified-Since');
-  const etag = headers.get('ETag');
-  const lastModified = headers.get('Last-Modified');
+	const ifNoneMatch = request.headers.get("If-None-Match");
+	const ifModifiedSince = request.headers.get("If-Modified-Since");
+	const etag = headers.get("ETag");
+	const lastModified = headers.get("Last-Modified");
 
-  if (
-    !matchesIfNoneMatch(ifNoneMatch, etag) &&
-    !matchesIfModifiedSince(ifModifiedSince, lastModified)
-  ) {
-    return null;
-  }
+	if (
+		!matchesIfNoneMatch(ifNoneMatch, etag) &&
+		!matchesIfModifiedSince(ifModifiedSince, lastModified)
+	) {
+		return null;
+	}
 
-  return new Response(null, {
-    status: 304,
-    headers: buildNotModifiedHeaders(headers, cacheHeaderName, cacheStatus),
-  });
+	return new Response(null, {
+		status: 304,
+		headers: buildNotModifiedHeaders(headers, cacheHeaderName, cacheStatus),
+	});
 }
 
 /**
@@ -200,15 +200,15 @@ export function maybeBuildNotModifiedResponse(
  * @returns {Headers}
  */
 export function buildNotModifiedHeaders(headers, cacheHeaderName, cacheStatus) {
-  const responseHeaders = new Headers();
-  for (const headerName of CONDITIONAL_HEADER_NAMES) {
-    const headerValue = headers.get(headerName);
-    if (headerValue) {
-      responseHeaders.set(headerName, headerValue);
-    }
-  }
-  responseHeaders.set(cacheHeaderName, cacheStatus);
-  return responseHeaders;
+	const responseHeaders = new Headers();
+	for (const headerName of CONDITIONAL_HEADER_NAMES) {
+		const headerValue = headers.get(headerName);
+		if (headerValue) {
+			responseHeaders.set(headerName, headerValue);
+		}
+	}
+	responseHeaders.set(cacheHeaderName, cacheStatus);
+	return responseHeaders;
 }
 
 /**
@@ -217,19 +217,19 @@ export function buildNotModifiedHeaders(headers, cacheHeaderName, cacheStatus) {
  * @returns {Headers}
  */
 export function buildConditionalProxyRequestHeaders(
-  request,
-  extraHeaders = {},
+	request,
+	extraHeaders = {},
 ) {
-  const headers = new Headers(extraHeaders);
+	const headers = new Headers(extraHeaders);
 
-  for (const headerName of CONDITIONAL_REQUEST_HEADER_NAMES) {
-    const headerValue = request.headers.get(headerName);
-    if (headerValue) {
-      headers.set(headerName, headerValue);
-    }
-  }
+	for (const headerName of CONDITIONAL_REQUEST_HEADER_NAMES) {
+		const headerValue = request.headers.get(headerName);
+		if (headerValue) {
+			headers.set(headerName, headerValue);
+		}
+	}
 
-  return headers;
+	return headers;
 }
 
 /**
@@ -242,28 +242,28 @@ export function buildConditionalProxyRequestHeaders(
  * @returns {Promise<Response | null>}
  */
 export async function matchAssetProxyCache(url, options) {
-  try {
-    const cached = await caches.default.match(buildProxyCacheKey(url));
-    if (!cached) return null;
+	try {
+		const cached = await caches.default.match(buildProxyCacheKey(url));
+		if (!cached) return null;
 
-    const cachedHeaders = new Headers(cached.headers);
-    const notModified = maybeBuildNotModifiedResponse(
-      options.request,
-      cachedHeaders,
-      options.cacheHeaderName,
-      'HIT',
-    );
-    if (notModified) return notModified;
+		const cachedHeaders = new Headers(cached.headers);
+		const notModified = maybeBuildNotModifiedResponse(
+			options.request,
+			cachedHeaders,
+			options.cacheHeaderName,
+			"HIT",
+		);
+		if (notModified) return notModified;
 
-    cachedHeaders.set(options.cacheHeaderName, 'HIT');
-    return new Response(options.includeBody ? cached.body : null, {
-      status: cached.status,
-      statusText: cached.statusText,
-      headers: cachedHeaders,
-    });
-  } catch {
-    return null;
-  }
+		cachedHeaders.set(options.cacheHeaderName, "HIT");
+		return new Response(options.includeBody ? cached.body : null, {
+			status: cached.status,
+			statusText: cached.statusText,
+			headers: cachedHeaders,
+		});
+	} catch {
+		return null;
+	}
 }
 
 /**
@@ -272,11 +272,11 @@ export async function matchAssetProxyCache(url, options) {
  * @param {any} context
  */
 export function storeAssetProxyCache(url, response, context) {
-  try {
-    context.waitUntil(caches.default.put(buildProxyCacheKey(url), response));
-  } catch {
-    // Ignore cache API failures and continue serving the fresh response.
-  }
+	try {
+		context.waitUntil(caches.default.put(buildProxyCacheKey(url), response));
+	} catch {
+		// Ignore cache API failures and continue serving the fresh response.
+	}
 }
 
 /**
@@ -285,7 +285,7 @@ export function storeAssetProxyCache(url, response, context) {
  * @returns {Response}
  */
 export function buildProxyErrorResponse(message, status) {
-  return new Response(message, { status });
+	return new Response(message, { status });
 }
 
 /**
@@ -294,12 +294,12 @@ export function buildProxyErrorResponse(message, status) {
  * @returns {Response}
  */
 export function buildProxyNotFoundResponse(message, status = 404) {
-  return new Response(message, {
-    status,
-    headers: {
-      'Cache-Control': DEFAULT_NOT_FOUND_CACHE_CONTROL,
-    },
-  });
+	return new Response(message, {
+		status,
+		headers: {
+			"Cache-Control": DEFAULT_NOT_FOUND_CACHE_CONTROL,
+		},
+	});
 }
 
 export { DEFAULT_NOT_FOUND_CACHE_CONTROL, DEFAULT_PROXY_CACHE_CONTROL };

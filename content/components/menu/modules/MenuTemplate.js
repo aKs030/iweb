@@ -1,4 +1,4 @@
-import { i18n } from '#core/i18n.js';
+import { i18n } from "#core/i18n.js";
 
 let menuTemplateInstanceCounter = 0;
 
@@ -10,31 +10,31 @@ let menuTemplateInstanceCounter = 0;
  */
 
 export class MenuTemplate {
-  /**
-   * @param {MenuComponentConfigInput} [config]
-   */
-  constructor(config = {}) {
-    this.config = config;
-    this.ids = this.createDomIds();
-  }
+	/**
+	 * @param {MenuComponentConfigInput} [config]
+	 */
+	constructor(config = {}) {
+		this.config = config;
+		this.ids = this.createDomIds();
+	}
 
-  createDomIds() {
-    menuTemplateInstanceCounter += 1;
-    const configuredPrefix = String(this.config?.DOM_ID_PREFIX || '').trim();
-    const prefix =
-      configuredPrefix || `site-menu-${menuTemplateInstanceCounter}`;
+	createDomIds() {
+		menuTemplateInstanceCounter += 1;
+		const configuredPrefix = String(this.config?.DOM_ID_PREFIX || "").trim();
+		const prefix =
+			configuredPrefix || `site-menu-${menuTemplateInstanceCounter}`;
 
-    return {
-      navigation: `${prefix}-navigation`,
-      title: `${prefix}-title`,
-      subtitle: `${prefix}-subtitle`,
-      searchInput: `${prefix}-search-input`,
-      searchResults: `${prefix}-search-results`,
-    };
-  }
+		return {
+			navigation: `${prefix}-navigation`,
+			title: `${prefix}-title`,
+			subtitle: `${prefix}-subtitle`,
+			searchInput: `${prefix}-search-input`,
+			searchResults: `${prefix}-search-results`,
+		};
+	}
 
-  getHTML() {
-    return `
+	getHTML() {
+		return `
 ${this.getSkipLinks()}
 ${this.getSVGSprite()}
 ${this.getBrand()}
@@ -42,26 +42,26 @@ ${this.getNavigation()}
 ${this.getSearchUI()}
 ${this.getToggleButton()}
 `;
-  }
+	}
 
-  getSkipLinks() {
-    return `
+	getSkipLinks() {
+		return `
 <div class="skip-links">
-  <a href="#main-content" class="skip-link" data-i18n="menu.skip_main">${i18n.t('menu.skip_main')}</a>
-  <a href="#${this.ids.navigation}" class="skip-link" data-i18n="menu.skip_nav">${i18n.t('menu.skip_nav')}</a>
+  <a href="#main-content" class="skip-link" data-i18n="menu.skip_main">${i18n.t("menu.skip_main")}</a>
+  <a href="#${this.ids.navigation}" class="skip-link" data-i18n="menu.skip_nav">${i18n.t("menu.skip_nav")}</a>
 </div>`;
-  }
+	}
 
-  getBrand() {
-    return `
+	getBrand() {
+		return `
 <div class="site-logo__container">
   <span id="${this.ids.title}" class="site-title"></span>
   <span id="${this.ids.subtitle}" class="site-subtitle"></span>
 </div>`;
-  }
+	}
 
-  getSVGSprite() {
-    return `
+	getSVGSprite() {
+		return `
 <svg aria-hidden="true" class="menu-icon-sprite" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <symbol id="icon-house" viewBox="0 0 576 512">
@@ -110,14 +110,14 @@ ${this.getToggleButton()}
     </symbol>
   </defs>
 </svg>`;
-  }
+	}
 
-  getToggleButton() {
-    return `
+	getToggleButton() {
+		return `
 <button
   type="button"
   class="site-menu__toggle"
-  aria-label="${i18n.t('menu.toggle')}"
+  aria-label="${i18n.t("menu.toggle")}"
   data-i18n-aria="menu.toggle"
   aria-controls="${this.ids.navigation}"
   aria-expanded="false"
@@ -129,16 +129,16 @@ ${this.getToggleButton()}
   </div>
   <div class="menu-ripple" data-collision-ignore></div>
 </button>`;
-  }
+	}
 
-  getNavigation() {
-    const menuItems = this.config?.MENU_ITEMS || [];
+	getNavigation() {
+		const menuItems = this.config?.MENU_ITEMS || [];
 
-    const items = menuItems
-      .map(
-        (item) => `
+		const items = menuItems
+			.map(
+				(item) => `
     <li class="menu-nav-item">
-      <a href="${item.href}"${item.attrs ? ' ' + item.attrs : ''}>
+      <a href="${item.href}"${item.attrs ? " " + item.attrs : ""}>
         <span class="nav-icon-wrapper">
              <svg class="nav-icon" aria-hidden="true">
                <use href="#icon-${item.icon}"></use>
@@ -148,14 +148,14 @@ ${this.getToggleButton()}
         <span data-i18n="${item.label}">${i18n.t(item.label)}</span>
       </a>
     </li>`,
-      )
-      .join('');
+			)
+			.join("");
 
-    return `
+		return `
 <nav
   id="${this.ids.navigation}"
   class="site-menu"
-  aria-label="${i18n.t('menu.main_nav')}"
+  aria-label="${i18n.t("menu.main_nav")}"
   data-i18n-aria="menu.main_nav"
 >
   <ul class="site-menu__list">
@@ -167,9 +167,9 @@ ${this.getToggleButton()}
       <button
         type="button"
         class="search-trigger"
-        aria-label="${i18n.t('menu.search_label')}"
+        aria-label="${i18n.t("menu.search_label")}"
         data-i18n-aria="menu.search_label"
-        title="${i18n.t('menu.search_tooltip')}"
+        title="${i18n.t("menu.search_tooltip")}"
         data-i18n-title="menu.search_tooltip"
         aria-expanded="false"
         aria-controls="${this.ids.searchResults}"
@@ -188,9 +188,9 @@ ${this.getToggleButton()}
         class="contact-trigger"
         data-footer-trigger
         aria-expanded="false"
-        aria-label="${i18n.t('menu.contact')}"
+        aria-label="${i18n.t("menu.contact")}"
         data-i18n-aria="menu.contact"
-        title="${i18n.t('menu.contact')}"
+        title="${i18n.t("menu.contact")}"
         data-i18n-title="menu.contact"
       >
         <span class="icon-container">
@@ -205,9 +205,9 @@ ${this.getToggleButton()}
       <button
         type="button"
         class="theme-toggle"
-        aria-label="${i18n.t('menu.theme_toggle')}"
+        aria-label="${i18n.t("menu.theme_toggle")}"
         data-i18n-aria="menu.theme_toggle"
-        title="${i18n.t('menu.theme_toggle')}"
+        title="${i18n.t("menu.theme_toggle")}"
         data-i18n-title="menu.theme_toggle"
       >
         <svg class="nav-icon theme-icon theme-icon--sun" aria-hidden="true">
@@ -222,9 +222,9 @@ ${this.getToggleButton()}
       <button
         type="button"
         class="lang-toggle"
-        aria-label="${i18n.t('menu.lang_toggle')}"
+        aria-label="${i18n.t("menu.lang_toggle")}"
         data-i18n-aria="menu.lang_toggle"
-        title="${i18n.t('menu.lang_toggle')}"
+        title="${i18n.t("menu.lang_toggle")}"
         data-i18n-title="menu.lang_toggle"
       >
         <svg class="nav-icon" aria-hidden="true">
@@ -235,10 +235,10 @@ ${this.getToggleButton()}
     </li>
   </ul>
 </nav>`;
-  }
+	}
 
-  getSearchUI() {
-    return `
+	getSearchUI() {
+		return `
 <div class="menu-search" aria-hidden="true">
   <div class="menu-search__panel">
     <div
@@ -255,13 +255,13 @@ ${this.getToggleButton()}
         id="${this.ids.searchInput}"
         type="text"
         class="menu-search__input"
-        aria-label="${i18n.t('menu.search_input_label')}"
+        aria-label="${i18n.t("menu.search_input_label")}"
         data-i18n-aria="menu.search_input_label"
         aria-autocomplete="list"
         aria-controls="${this.ids.searchResults}"
         aria-expanded="false"
         role="searchbox"
-        placeholder="${i18n.t('menu.search_placeholder')}"
+        placeholder="${i18n.t("menu.search_placeholder")}"
         data-i18n-placeholder="menu.search_placeholder"
         autocomplete="off"
         autocorrect="off"
@@ -275,5 +275,5 @@ ${this.getToggleButton()}
     <div id="${this.ids.searchResults}" class="menu-search__results" role="listbox" aria-live="polite"></div>
   </div>
 </div>`;
-  }
+	}
 }

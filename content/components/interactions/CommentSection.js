@@ -1,5 +1,5 @@
-import React from 'react';
-import htm from 'htm';
+import React from "react";
+import htm from "htm";
 
 const html = htm.bind(React.createElement);
 
@@ -7,55 +7,55 @@ const html = htm.bind(React.createElement);
  * Premium Comment Section Component
  */
 export const CommentSection = ({ postId }) => {
-  const [comments, setComments] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [submitting, setSubmitting] = React.useState(false);
-  const [author, setAuthor] = React.useState('');
-  const [content, setContent] = React.useState('');
-  const [error, setError] = React.useState('');
+	const [comments, setComments] = React.useState([]);
+	const [loading, setLoading] = React.useState(true);
+	const [submitting, setSubmitting] = React.useState(false);
+	const [author, setAuthor] = React.useState("");
+	const [content, setContent] = React.useState("");
+	const [error, setError] = React.useState("");
 
-  React.useEffect(() => {
-    if (!postId) return;
+	React.useEffect(() => {
+		if (!postId) return;
 
-    setLoading(true);
-    fetch(`/api/comments?post_id=${encodeURIComponent(postId)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.comments) setComments(data.comments);
-      })
-      .catch((e) => console.error('Error fetching comments', e))
-      .finally(() => setLoading(false));
-  }, [postId]);
+		setLoading(true);
+		fetch(`/api/comments?post_id=${encodeURIComponent(postId)}`)
+			.then((res) => res.json())
+			.then((data) => {
+				if (data.comments) setComments(data.comments);
+			})
+			.catch((e) => console.error("Error fetching comments", e))
+			.finally(() => setLoading(false));
+	}, [postId]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!author.trim() || !content.trim()) return;
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		if (!author.trim() || !content.trim()) return;
 
-    setSubmitting(true);
-    setError('');
+		setSubmitting(true);
+		setError("");
 
-    try {
-      const res = await fetch('/api/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ post_id: postId, author_name: author, content }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setComments([data.comment, ...comments]);
-        setAuthor('');
-        setContent('');
-      } else {
-        setError(data.error || 'Fehler beim Senden');
-      }
-    } catch {
-      setError('Netzwerkfehler');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+		try {
+			const res = await fetch("/api/comments", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ post_id: postId, author_name: author, content }),
+			});
+			const data = await res.json();
+			if (data.success) {
+				setComments([data.comment, ...comments]);
+				setAuthor("");
+				setContent("");
+			} else {
+				setError(data.error || "Fehler beim Senden");
+			}
+		} catch {
+			setError("Netzwerkfehler");
+		} finally {
+			setSubmitting(false);
+		}
+	};
 
-  return html`
+	return html`
     <section className="comment-section">
       <h3 className="comment-title">
         Gedanken & Feedback (${comments.length})
@@ -87,19 +87,20 @@ export const CommentSection = ({ postId }) => {
           className="btn btn-primary"
           disabled=${submitting}
         >
-          ${submitting ? 'Abgeschickt...' : 'Beitrag posten'}
+          ${submitting ? "Abgeschickt..." : "Beitrag posten"}
         </button>
       </form>
 
       <div className="comment-list">
-        ${loading
-          ? html`<p>Lade Interaktionen...</p>`
-          : comments.length === 0
-            ? html`<p className="no-comments">
+        ${
+					loading
+						? html`<p>Lade Interaktionen...</p>`
+						: comments.length === 0
+							? html`<p className="no-comments">
                 Bisher noch keine Gedanken geteilt. Sei der Erste!
               </p>`
-            : comments.map(
-                (c) => html`
+							: comments.map(
+									(c) => html`
                   <div key=${c.id} className="comment-item">
                     <div className="comment-header">
                       <strong className="comment-author"
@@ -112,7 +113,8 @@ export const CommentSection = ({ postId }) => {
                     <p className="comment-content">${c.content}</p>
                   </div>
                 `,
-              )}
+								)
+				}
       </div>
     </section>
   `;
