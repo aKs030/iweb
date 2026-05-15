@@ -1,17 +1,25 @@
 {
-  "name": "aks-website",
-  "version": "1.0.0",
-  "description": "Portfolio Website mit Cloudflare Pages Functions (Vanilla JS)",
-  "private": true,
-  "type": "module",
-  "author": "Abdulkerim Sesli <kontakt@abdulkerimsesli.de>",
-  "homepage": "https://www.abdulkerimsesli.de",
-  "license": "MIT",
-  "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.0.0"
-  },
-  "scripts": {
-    "dev": "npx --yes wrangler@4.80.0 pages dev . --port 8787 --show-interactive-dev-session=false"
-  }
+	"name": "aks-website",
+	"version": "1.0.0",
+	"description": "Portfolio Website mit Cloudflare Pages Functions (Vanilla JS)",
+	"private": true,
+	"type": "module",
+	"author": "Abdulkerim Sesli <kontakt@abdulkerimsesli.de>",
+	"homepage": "https://www.abdulkerimsesli.de",
+	"license": "MIT",
+	"engines": {
+		"node": ">=22.0.0",
+		"npm": ">=10.0.0"
+	},
+	"scripts": {
+		"dev": "npx --yes wrangler@4.80.0 pages dev . --port 8787 --show-interactive-dev-session=false",
+		"lint": "npm run lint:js && npm run lint:css",
+		"lint:js": "npx --yes eslint@9.27.0 content pages functions --ext .js --no-config-lookup --rule \"no-unused-vars: [2, {\\\"vars\\\":\\\"all\\\",\\\"args\\\":\\\"none\\\",\\\"ignoreRestSiblings\\\":true}]\"",
+		"lint:css": "npx --yes prettier@3.5.3 --check \"content/**/*.css\" \"pages/**/*.css\"",
+		"format": "npx --yes @biomejs/biome format --write .",
+		"format:check": "npx --yes @biomejs/biome format .",
+		"analyze:unused": "npx --yes knip@5 --no-progress",
+		"analyze:duplicates": "npx --yes jscpd@4.0.5 --min-lines 8 --min-tokens 80 --format javascript,css --reporters console content pages content/styles",
+		"clean": "rm -rf .wrangler .jscpd .eslintcache"
+	}
 }

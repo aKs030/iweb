@@ -1,17 +1,17 @@
 import {
-  VIEW_TRANSITION_TIMINGS_MS,
-  toCssMs,
-} from './view-transition-constants.js';
-import { applyCspNonce } from './csp-nonce.js';
+	VIEW_TRANSITION_TIMINGS_MS,
+	toCssMs,
+} from "./view-transition-constants.js";
+import { applyCspNonce } from "./csp-nonce.js";
 
-const VIEW_TRANSITION_RUNTIME_STYLE_ID = 'core-view-transition-runtime-style';
+const VIEW_TRANSITION_RUNTIME_STYLE_ID = "core-view-transition-runtime-style";
 
 /**
  * @param {boolean} enableCrossDocument
  * @returns {string}
  */
 const getRuntimeStyles = (enableCrossDocument) => `
-${enableCrossDocument ? '@view-transition { navigation: auto; }' : ''}
+${enableCrossDocument ? "@view-transition { navigation: auto; }" : ""}
 :root:active-view-transition-type(page-navigate)::view-transition-old(root),
 :root:active-view-transition-type(same-page-scroll)::view-transition-old(root) {
   animation: vt-page-old var(--vt-page-old-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_OLD)}) cubic-bezier(0.4, 0, 1, 1) both;
@@ -59,30 +59,30 @@ ${enableCrossDocument ? '@view-transition { navigation: auto; }' : ''}
  * @returns {void}
  */
 export const injectViewTransitionRuntimeStyles = (options) => {
-  if (!options.injectNavigationStyles) return;
-  if (typeof document === 'undefined') return;
+	if (!options.injectNavigationStyles) return;
+	if (typeof document === "undefined") return;
 
-  let styleEl = document.getElementById(VIEW_TRANSITION_RUNTIME_STYLE_ID);
-  if (!(styleEl instanceof HTMLStyleElement)) {
-    styleEl = document.createElement('style');
-    styleEl.id = VIEW_TRANSITION_RUNTIME_STYLE_ID;
-    styleEl.dataset.injectedBy = 'core-view-transitions';
-    applyCspNonce(styleEl);
-    document.head.appendChild(styleEl);
-  }
+	let styleEl = document.getElementById(VIEW_TRANSITION_RUNTIME_STYLE_ID);
+	if (!(styleEl instanceof HTMLStyleElement)) {
+		styleEl = document.createElement("style");
+		styleEl.id = VIEW_TRANSITION_RUNTIME_STYLE_ID;
+		styleEl.dataset.injectedBy = "core-view-transitions";
+		applyCspNonce(styleEl);
+		document.head.appendChild(styleEl);
+	}
 
-  styleEl.textContent = getRuntimeStyles(options.enableCrossDocument);
+	styleEl.textContent = getRuntimeStyles(options.enableCrossDocument);
 };
 
 export const removeViewTransitionRuntimeStyles = () => {
-  if (typeof document === 'undefined') return;
-  const runtimeStyle = document.getElementById(
-    VIEW_TRANSITION_RUNTIME_STYLE_ID,
-  );
-  if (
-    runtimeStyle instanceof HTMLStyleElement &&
-    runtimeStyle.dataset.injectedBy === 'core-view-transitions'
-  ) {
-    runtimeStyle.remove();
-  }
+	if (typeof document === "undefined") return;
+	const runtimeStyle = document.getElementById(
+		VIEW_TRANSITION_RUNTIME_STYLE_ID,
+	);
+	if (
+		runtimeStyle instanceof HTMLStyleElement &&
+		runtimeStyle.dataset.injectedBy === "core-view-transitions"
+	) {
+		runtimeStyle.remove();
+	}
 };

@@ -1,4 +1,4 @@
-import { isLocalDevHost } from '../../content/core/runtime-env.js';
+import { isLocalDevHost } from "../../content/core/runtime-env.js";
 
 /**
  * Development Environment Utilities
@@ -11,7 +11,7 @@ import { isLocalDevHost } from '../../content/core/runtime-env.js';
  * @returns {boolean} True if localhost
  */
 export function isLocalhost(hostname) {
-  return isLocalDevHost(hostname);
+	return isLocalDevHost(hostname);
 }
 
 /**
@@ -21,39 +21,39 @@ export function isLocalhost(hostname) {
  * @returns {boolean} True if headers were modified
  */
 export function normalizeLocalDevHeaders(headers, hostname) {
-  if (!isLocalhost(hostname)) {
-    return false;
-  }
+	if (!isLocalhost(hostname)) {
+		return false;
+	}
 
-  let changed = false;
+	let changed = false;
 
-  if (headers.has('Strict-Transport-Security')) {
-    headers.delete('Strict-Transport-Security');
-    changed = true;
-  }
+	if (headers.has("Strict-Transport-Security")) {
+		headers.delete("Strict-Transport-Security");
+		changed = true;
+	}
 
-  const csp = headers.get('Content-Security-Policy');
-  if (csp) {
-    const sanitized = csp
-      .replace(/upgrade-insecure-requests;?\s*/gi, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
+	const csp = headers.get("Content-Security-Policy");
+	if (csp) {
+		const sanitized = csp
+			.replace(/upgrade-insecure-requests;?\s*/gi, "")
+			.replace(/\s{2,}/g, " ")
+			.trim();
 
-    if (sanitized !== csp) {
-      headers.set('Content-Security-Policy', sanitized);
-      changed = true;
-    }
-  }
+		if (sanitized !== csp) {
+			headers.set("Content-Security-Policy", sanitized);
+			changed = true;
+		}
+	}
 
-  if (headers.has('Cross-Origin-Embedder-Policy')) {
-    headers.delete('Cross-Origin-Embedder-Policy');
-    changed = true;
-  }
+	if (headers.has("Cross-Origin-Embedder-Policy")) {
+		headers.delete("Cross-Origin-Embedder-Policy");
+		changed = true;
+	}
 
-  if (headers.has('Cross-Origin-Opener-Policy')) {
-    headers.delete('Cross-Origin-Opener-Policy');
-    changed = true;
-  }
+	if (headers.has("Cross-Origin-Opener-Policy")) {
+		headers.delete("Cross-Origin-Opener-Policy");
+		changed = true;
+	}
 
-  return changed;
+	return changed;
 }

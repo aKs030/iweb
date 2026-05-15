@@ -1,269 +1,272 @@
 import {
-  escapeXml,
-  normalizePath,
-  resolveOrigin,
-  toAbsoluteUrl,
-} from './api/_xml-utils.js';
+	escapeXml,
+	normalizePath,
+	resolveOrigin,
+	toAbsoluteUrl,
+} from "./api/_xml-utils.js";
 import {
-  buildSitemapHeaders,
-  respondWithSnapshotOr503,
-  saveSitemapSnapshot,
-} from './api/_sitemap-snapshot.js';
-import { normalizeText, sanitizeDiscoveryText } from '../content/core/text-utils.js';
+	buildSitemapHeaders,
+	respondWithSnapshotOr503,
+	saveSitemapSnapshot,
+} from "./api/_sitemap-snapshot.js";
 import {
-  buildBlogPath,
-  buildProjectAppPath,
-  buildProjectPreviewImageUrl,
-  loadBlogPosts,
-  loadGalleryImages,
-  loadProjectApps,
-  loadYouTubeVideos,
-} from './api/_sitemap-data.js';
+	normalizeText,
+	sanitizeDiscoveryText,
+} from "../content/core/text-utils.js";
 import {
-  FAVICON_512_URL,
-  OG_DESIGN_IMAGE_URL,
-  OG_HOME_IMAGE_URL,
-  OG_PHOTOGRAPHY_IMAGE_URL,
-  OG_PROJECTS_IMAGE_URL,
-  OG_VIDEOS_IMAGE_URL,
-} from '../content/config/media-urls.js';
+	buildBlogPath,
+	buildProjectAppPath,
+	buildProjectPreviewImageUrl,
+	loadBlogPosts,
+	loadGalleryImages,
+	loadProjectApps,
+	loadYouTubeVideos,
+} from "./api/_sitemap-data.js";
+import {
+	FAVICON_512_URL,
+	OG_DESIGN_IMAGE_URL,
+	OG_HOME_IMAGE_URL,
+	OG_PHOTOGRAPHY_IMAGE_URL,
+	OG_PROJECTS_IMAGE_URL,
+	OG_VIDEOS_IMAGE_URL,
+} from "../content/config/media-urls.js";
 
-const LICENSE_URL = 'https://www.abdulkerimsesli.de/#image-license';
-const CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400';
-const SNAPSHOT_NAME = 'sitemap-images.xml';
+const LICENSE_URL = "https://www.abdulkerimsesli.de/#image-license";
+const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400";
+const SNAPSHOT_NAME = "sitemap-images.xml";
 
 const STATIC_PAGE_IMAGES = [
-  {
-    page: '/',
-    image: OG_HOME_IMAGE_URL,
-    title: 'Abdulkerim Sesli Startseite',
-    caption:
-      'Zentrale Hauptseite mit Portfolio, Blog, Bildern, Videos und Projekten',
-  },
-  {
-    page: '/about/',
-    image: FAVICON_512_URL,
-    title: 'Abdulkerim Sesli',
-    caption:
-      'Profilseite mit Hintergrund, Themenfeldern und redaktionellen Inhalten',
-  },
-  {
-    page: '/contact/',
-    image: OG_HOME_IMAGE_URL,
-    title: 'Kontakt',
-    caption: 'Kontaktseite mit E-Mail, Formular und Kommunikationswegen',
-  },
-  {
-    page: '/abdul-sesli/',
-    image: OG_HOME_IMAGE_URL,
-    title: 'Abdul Sesli',
-    caption: 'Alias-Seite: Abdul Sesli ist die Kurzform von Abdulkerim Sesli',
-  },
-  {
-    page: '/blog/',
-    image: OG_DESIGN_IMAGE_URL,
-    title: 'Tech Blog',
-    caption:
-      'Blog mit Artikeln zu Webentwicklung, SEO, Performance, React und TypeScript',
-  },
-  {
-    page: '/gallery/',
-    image: OG_PHOTOGRAPHY_IMAGE_URL,
-    title: 'Fotografie Portfolio',
-    caption:
-      'Bildgalerie mit Portraits, Street-Fotografie und visuellen Serien',
-  },
-  {
-    page: '/videos/',
-    image: OG_VIDEOS_IMAGE_URL,
-    title: 'Videos',
-    caption:
-      'Videoseite mit YouTube-Inhalten, Clips, Making-of und Story-Formaten',
-  },
-  {
-    page: '/projekte/',
-    image: OG_PROJECTS_IMAGE_URL,
-    title: 'Code Projekte',
-    caption:
-      'Interaktive Webprojekte mit JavaScript, React, UI und Frontend-Experimenten',
-  },
+	{
+		page: "/",
+		image: OG_HOME_IMAGE_URL,
+		title: "Abdulkerim Sesli Startseite",
+		caption:
+			"Zentrale Hauptseite mit Portfolio, Blog, Bildern, Videos und Projekten",
+	},
+	{
+		page: "/about/",
+		image: FAVICON_512_URL,
+		title: "Abdulkerim Sesli",
+		caption:
+			"Profilseite mit Hintergrund, Themenfeldern und redaktionellen Inhalten",
+	},
+	{
+		page: "/contact/",
+		image: OG_HOME_IMAGE_URL,
+		title: "Kontakt",
+		caption: "Kontaktseite mit E-Mail, Formular und Kommunikationswegen",
+	},
+	{
+		page: "/abdul-sesli/",
+		image: OG_HOME_IMAGE_URL,
+		title: "Abdul Sesli",
+		caption: "Alias-Seite: Abdul Sesli ist die Kurzform von Abdulkerim Sesli",
+	},
+	{
+		page: "/blog/",
+		image: OG_DESIGN_IMAGE_URL,
+		title: "Tech Blog",
+		caption:
+			"Blog mit Artikeln zu Webentwicklung, SEO, Performance, React und TypeScript",
+	},
+	{
+		page: "/gallery/",
+		image: OG_PHOTOGRAPHY_IMAGE_URL,
+		title: "Fotografie Portfolio",
+		caption:
+			"Bildgalerie mit Portraits, Street-Fotografie und visuellen Serien",
+	},
+	{
+		page: "/videos/",
+		image: OG_VIDEOS_IMAGE_URL,
+		title: "Videos",
+		caption:
+			"Videoseite mit YouTube-Inhalten, Clips, Making-of und Story-Formaten",
+	},
+	{
+		page: "/projekte/",
+		image: OG_PROJECTS_IMAGE_URL,
+		title: "Code Projekte",
+		caption:
+			"Interaktive Webprojekte mit JavaScript, React, UI und Frontend-Experimenten",
+	},
 ];
 
 function ensureUrlEntry(urlMap, pagePath) {
-  const rawPath = String(pagePath || '').trim();
-  const [pathname, query] = rawPath.split('?');
-  const normalizedPath = normalizePath(pathname);
-  const path = query ? `${normalizedPath}?${query}` : normalizedPath;
-  if (!urlMap.has(path)) {
-    urlMap.set(path, []);
-  }
-  return urlMap.get(path);
+	const rawPath = String(pagePath || "").trim();
+	const [pathname, query] = rawPath.split("?");
+	const normalizedPath = normalizePath(pathname);
+	const path = query ? `${normalizedPath}?${query}` : normalizedPath;
+	if (!urlMap.has(path)) {
+		urlMap.set(path, []);
+	}
+	return urlMap.get(path);
 }
 
 function addImage(urlMap, pagePath, image) {
-  const images = ensureUrlEntry(urlMap, pagePath);
-  const imageLoc = normalizeText(image?.loc);
-  if (!imageLoc) return;
+	const images = ensureUrlEntry(urlMap, pagePath);
+	const imageLoc = normalizeText(image?.loc);
+	if (!imageLoc) return;
 
-  // Keep each image URL unique per <url> entry while allowing
-  // cross-page reuse (same image on overview + detail pages).
-  const exists = images.some((existing) => existing.loc === imageLoc);
-  if (exists) return;
+	// Keep each image URL unique per <url> entry while allowing
+	// cross-page reuse (same image on overview + detail pages).
+	const exists = images.some((existing) => existing.loc === imageLoc);
+	if (exists) return;
 
-  images.push({
-    ...image,
-    loc: imageLoc,
-  });
+	images.push({
+		...image,
+		loc: imageLoc,
+	});
 }
 
 function addStaticImages(urlMap, origin) {
-  for (const item of STATIC_PAGE_IMAGES) {
-    addImage(urlMap, item.page, {
-      loc: toAbsoluteUrl(origin, item.image),
-      title: item.title,
-      caption: item.caption,
-      license: LICENSE_URL,
-    });
-  }
+	for (const item of STATIC_PAGE_IMAGES) {
+		addImage(urlMap, item.page, {
+			loc: toAbsoluteUrl(origin, item.image),
+			title: item.title,
+			caption: item.caption,
+			license: LICENSE_URL,
+		});
+	}
 }
 
 function addBlogImages(urlMap, origin, posts) {
-  if (!Array.isArray(posts)) return;
+	if (!Array.isArray(posts)) return;
 
-  for (const post of posts) {
-    const id = normalizeText(post?.id);
-    const image = normalizeText(post?.image);
-    if (!id || !image) continue;
+	for (const post of posts) {
+		const id = normalizeText(post?.id);
+		const image = normalizeText(post?.image);
+		if (!id || !image) continue;
 
-    const cleanTitle = sanitizeDiscoveryText(post.title, `Blog Artikel ${id}`);
-    const cleanCaption = sanitizeDiscoveryText(
-      post.description,
-      `${cleanTitle || id} - Blogbeitrag mit Bildern, Codebeispielen und Kontext`,
-    );
+		const cleanTitle = sanitizeDiscoveryText(post.title, `Blog Artikel ${id}`);
+		const cleanCaption = sanitizeDiscoveryText(
+			post.description,
+			`${cleanTitle || id} - Blogbeitrag mit Bildern, Codebeispielen und Kontext`,
+		);
 
-    addImage(urlMap, buildBlogPath(id), {
-      loc: toAbsoluteUrl(origin, image),
-      title: cleanTitle,
-      caption: cleanCaption,
-      license: LICENSE_URL,
-    });
-  }
+		addImage(urlMap, buildBlogPath(id), {
+			loc: toAbsoluteUrl(origin, image),
+			title: cleanTitle,
+			caption: cleanCaption,
+			license: LICENSE_URL,
+		});
+	}
 }
 
 function addProjectPreviewImages(urlMap, apps) {
-  for (const app of apps) {
-    const name = normalizeText(app?.name);
-    if (!name) continue;
-    const previewImage = buildProjectPreviewImageUrl(app);
-    if (!previewImage) continue;
+	for (const app of apps) {
+		const name = normalizeText(app?.name);
+		if (!name) continue;
+		const previewImage = buildProjectPreviewImageUrl(app);
+		if (!previewImage) continue;
 
-    addImage(urlMap, buildProjectAppPath(name), {
-      loc: previewImage,
-      title: app.title,
-      caption: app.description,
-      license: LICENSE_URL,
-    });
-  }
+		addImage(urlMap, buildProjectAppPath(name), {
+			loc: previewImage,
+			title: app.title,
+			caption: app.description,
+			license: LICENSE_URL,
+		});
+	}
 }
 
 function addGalleryImages(urlMap, images) {
-  for (const image of images) {
-    addImage(urlMap, '/gallery/', {
-      loc: image.loc,
-      title: image.title,
-      caption: image.caption,
-      license: LICENSE_URL,
-    });
-  }
+	for (const image of images) {
+		addImage(urlMap, "/gallery/", {
+			loc: image.loc,
+			title: image.title,
+			caption: image.caption,
+			license: LICENSE_URL,
+		});
+	}
 }
 
 function addYouTubeVideoImages(urlMap, videos) {
-  for (const video of videos) {
-    if (!video?.videoId || !video?.thumbnail) continue;
+	for (const video of videos) {
+		if (!video?.videoId || !video?.thumbnail) continue;
 
-    addImage(urlMap, video.path, {
-      loc: video.thumbnail,
-      title: video.title,
-      caption: video.description,
-    });
-  }
+		addImage(urlMap, video.path, {
+			loc: video.thumbnail,
+			title: video.title,
+			caption: video.description,
+		});
+	}
 }
 
 function buildXml(origin, urlMap) {
-  const lines = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
-    '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
-  ];
+	const lines = [
+		'<?xml version="1.0" encoding="UTF-8"?>',
+		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+		'        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+	];
 
-  const sortedPaths = [...urlMap.keys()].sort();
+	const sortedPaths = [...urlMap.keys()].sort();
 
-  for (const path of sortedPaths) {
-    const images = urlMap.get(path) || [];
-    if (!images.length) continue;
+	for (const path of sortedPaths) {
+		const images = urlMap.get(path) || [];
+		if (!images.length) continue;
 
-    lines.push('  <url>');
-    lines.push(`    <loc>${escapeXml(`${origin}${path}`)}</loc>`);
+		lines.push("  <url>");
+		lines.push(`    <loc>${escapeXml(`${origin}${path}`)}</loc>`);
 
-    for (const image of images) {
-      lines.push('    <image:image>');
-      lines.push(`      <image:loc>${escapeXml(image.loc)}</image:loc>`);
-      if (image.title) {
-        lines.push(
-          `      <image:title>${escapeXml(image.title)}</image:title>`,
-        );
-      }
-      if (image.caption) {
-        lines.push(
-          `      <image:caption>${escapeXml(image.caption)}</image:caption>`,
-        );
-      }
-      if (image.license) {
-        lines.push(
-          `      <image:license>${escapeXml(image.license)}</image:license>`,
-        );
-      }
-      lines.push('    </image:image>');
-    }
+		for (const image of images) {
+			lines.push("    <image:image>");
+			lines.push(`      <image:loc>${escapeXml(image.loc)}</image:loc>`);
+			if (image.title) {
+				lines.push(
+					`      <image:title>${escapeXml(image.title)}</image:title>`,
+				);
+			}
+			if (image.caption) {
+				lines.push(
+					`      <image:caption>${escapeXml(image.caption)}</image:caption>`,
+				);
+			}
+			if (image.license) {
+				lines.push(
+					`      <image:license>${escapeXml(image.license)}</image:license>`,
+				);
+			}
+			lines.push("    </image:image>");
+		}
 
-    lines.push('  </url>');
-  }
+		lines.push("  </url>");
+	}
 
-  lines.push('</urlset>');
-  return lines.join('\n');
+	lines.push("</urlset>");
+	return lines.join("\n");
 }
 
 export async function onRequest(context) {
-  try {
-    const origin = resolveOrigin(context.request.url);
-    const urlMap = new Map();
+	try {
+		const origin = resolveOrigin(context.request.url);
+		const urlMap = new Map();
 
-    addStaticImages(urlMap, origin);
+		addStaticImages(urlMap, origin);
 
-    const [posts, apps, galleryImages, videos] = await Promise.all([
-      loadBlogPosts(context),
-      loadProjectApps(context),
-      loadGalleryImages(context),
-      loadYouTubeVideos(context.env),
-    ]);
+		const [posts, apps, galleryImages, videos] = await Promise.all([
+			loadBlogPosts(context),
+			loadProjectApps(context),
+			loadGalleryImages(context),
+			loadYouTubeVideos(context.env),
+		]);
 
-    addBlogImages(urlMap, origin, posts);
-    addProjectPreviewImages(urlMap, apps);
-    addGalleryImages(urlMap, galleryImages);
-    addYouTubeVideoImages(urlMap, videos);
+		addBlogImages(urlMap, origin, posts);
+		addProjectPreviewImages(urlMap, apps);
+		addGalleryImages(urlMap, galleryImages);
+		addYouTubeVideoImages(urlMap, videos);
 
-    const xml = buildXml(origin, urlMap);
+		const xml = buildXml(origin, urlMap);
 
-    await saveSitemapSnapshot(context.env, SNAPSHOT_NAME, xml);
+		await saveSitemapSnapshot(context.env, SNAPSHOT_NAME, xml);
 
-    return new Response(xml, {
-      headers: buildSitemapHeaders(CACHE_CONTROL),
-    });
-  } catch {
-    return respondWithSnapshotOr503({
-      env: context.env,
-      name: SNAPSHOT_NAME,
-      cacheControl: CACHE_CONTROL,
-    });
-  }
+		return new Response(xml, {
+			headers: buildSitemapHeaders(CACHE_CONTROL),
+		});
+	} catch {
+		return respondWithSnapshotOr503({
+			env: context.env,
+			name: SNAPSHOT_NAME,
+			cacheControl: CACHE_CONTROL,
+		});
+	}
 }

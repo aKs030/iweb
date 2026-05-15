@@ -10,19 +10,19 @@
  * @returns {Promise<string|null>} Uploads playlist ID or null
  */
 export async function fetchUploadsPlaylistId(channelId, apiKey) {
-  const channelUrl = new URL('https://www.googleapis.com/youtube/v3/channels');
-  channelUrl.searchParams.set('id', channelId);
-  channelUrl.searchParams.set('key', apiKey);
-  channelUrl.searchParams.set('part', 'contentDetails');
+	const channelUrl = new URL("https://www.googleapis.com/youtube/v3/channels");
+	channelUrl.searchParams.set("id", channelId);
+	channelUrl.searchParams.set("key", apiKey);
+	channelUrl.searchParams.set("part", "contentDetails");
 
-  const response = await fetch(channelUrl.toString());
-  if (!response.ok) {
-    throw new Error(`YouTube channels API failed: ${response.status}`);
-  }
+	const response = await fetch(channelUrl.toString());
+	if (!response.ok) {
+		throw new Error(`YouTube channels API failed: ${response.status}`);
+	}
 
-  const payload = await response.json();
-  const firstItem = payload?.items?.[0];
-  return firstItem?.contentDetails?.relatedPlaylists?.uploads || null;
+	const payload = await response.json();
+	const firstItem = payload?.items?.[0];
+	return firstItem?.contentDetails?.relatedPlaylists?.uploads || null;
 }
 
 /**
@@ -33,27 +33,27 @@ export async function fetchUploadsPlaylistId(channelId, apiKey) {
  * @returns {Promise<Object>} Playlist page payload
  */
 export async function fetchPlaylistItemsPage(
-  playlistId,
-  apiKey,
-  pageToken = null,
+	playlistId,
+	apiKey,
+	pageToken = null,
 ) {
-  const playlistUrl = new URL(
-    'https://www.googleapis.com/youtube/v3/playlistItems',
-  );
-  playlistUrl.searchParams.set('playlistId', playlistId);
-  playlistUrl.searchParams.set('key', apiKey);
-  playlistUrl.searchParams.set('part', 'snippet');
-  playlistUrl.searchParams.set('maxResults', '50');
-  if (pageToken) {
-    playlistUrl.searchParams.set('pageToken', pageToken);
-  }
+	const playlistUrl = new URL(
+		"https://www.googleapis.com/youtube/v3/playlistItems",
+	);
+	playlistUrl.searchParams.set("playlistId", playlistId);
+	playlistUrl.searchParams.set("key", apiKey);
+	playlistUrl.searchParams.set("part", "snippet");
+	playlistUrl.searchParams.set("maxResults", "50");
+	if (pageToken) {
+		playlistUrl.searchParams.set("pageToken", pageToken);
+	}
 
-  const response = await fetch(playlistUrl.toString());
-  if (!response.ok) {
-    throw new Error(`YouTube playlistItems API failed: ${response.status}`);
-  }
+	const response = await fetch(playlistUrl.toString());
+	if (!response.ok) {
+		throw new Error(`YouTube playlistItems API failed: ${response.status}`);
+	}
 
-  return response.json();
+	return response.json();
 }
 
 /**
@@ -62,12 +62,12 @@ export async function fetchPlaylistItemsPage(
  * @returns {string} Thumbnail URL
  */
 export function getBestYouTubeThumbnail(snippet = {}) {
-  return (
-    snippet.thumbnails?.maxres?.url ||
-    snippet.thumbnails?.standard?.url ||
-    snippet.thumbnails?.high?.url ||
-    snippet.thumbnails?.medium?.url ||
-    snippet.thumbnails?.default?.url ||
-    ''
-  );
+	return (
+		snippet.thumbnails?.maxres?.url ||
+		snippet.thumbnails?.standard?.url ||
+		snippet.thumbnails?.high?.url ||
+		snippet.thumbnails?.medium?.url ||
+		snippet.thumbnails?.default?.url ||
+		""
+	);
 }

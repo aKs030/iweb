@@ -2,351 +2,357 @@
 
 /* TypeWriter Title Container & Positioning */
 .typewriter-title {
-  --tw-left: clamp(var(--size-12), 2vw, var(--size-20));
-  --tw-bottom: clamp(var(--size-12), 2vw, var(--size-24));
-  --tw-fixed-bottom: clamp(var(--size-16), 2.5vw, var(--size-32));
-  --tw-size: clamp(var(--size-r-0-9), 1.8vw, var(--size-r-1-1));
-  --tw-line-height: 1.22;
-  --tw-typed-line-height: 1.18;
-  --tw-min-height: calc(var(--size-r-1-6) * 2);
-  --tw-gap: var(--gap-px, var(--size-r-0-5));
+	--tw-left: clamp(var(--size-12), 2vw, var(--size-20));
+	--tw-bottom: clamp(var(--size-12), 2vw, var(--size-24));
+	--tw-fixed-bottom: clamp(var(--size-16), 2.5vw, var(--size-32));
+	--tw-size: clamp(var(--size-r-0-9), 1.8vw, var(--size-r-1-1));
+	--tw-line-height: 1.22;
+	--tw-typed-line-height: 1.18;
+	--tw-min-height: calc(var(--size-r-1-6) * 2);
+	--tw-gap: var(--gap-px, var(--size-r-0-5));
 
-  position: absolute;
-  left: var(--tw-left);
+	position: absolute;
+	left: var(--tw-left);
 
-  /* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
-  bottom: var(--tw-bottom);
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  -webkit-font-smoothing: auto;
-  -moz-osx-font-smoothing: auto;
-  text-rendering: optimizelegibility;
-  font-size: var(--tw-size);
-  line-height: var(--tw-line-height);
-  opacity: 0;
-  pointer-events: none;
-  max-width: clamp(var(--size-480), 48vw, var(--size-720));
-  /* Use CSS variable set by JS; provide a safe fallback to reserve space before JS runs to avoid CLS */
-  height: var(--box-h, calc(var(--tw-typed-line-height) * 2em));
-  gap: var(--tw-gap);
-  transform: translateY(var(--size-6));
-  transition:
-    opacity 0.45s ease,
-    transform 0.45s ease;
+	/* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
+	bottom: var(--tw-bottom);
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	text-align: left;
+	-webkit-font-smoothing: auto;
+	-moz-osx-font-smoothing: auto;
+	text-rendering: optimizelegibility;
+	font-size: var(--tw-size);
+	line-height: var(--tw-line-height);
+	opacity: 0;
+	pointer-events: none;
+	max-width: clamp(var(--size-480), 48vw, var(--size-720));
+	/* Use CSS variable set by JS; provide a safe fallback to reserve space before JS runs to avoid CLS */
+	height: var(--box-h, calc(var(--tw-typed-line-height) * 2em));
+	gap: var(--tw-gap);
+	transform: translateY(var(--size-6));
+	transition:
+		opacity 0.45s ease,
+		transform 0.45s ease;
 
-  /* Ensure the typewriter is displayed above the footer component (footer z-index is high)
+	/* Ensure the typewriter is displayed above the footer component (footer z-index is high)
      Use a higher explicit z-index to keep the text visible above the footer overlay */
-  z-index: var(--z-typewriter);
-  /* Reserve vertical space to prevent layout shifts while JS computes sizes */
-  min-height: var(--tw-min-height);
+	z-index: var(--z-typewriter);
+	/* Reserve vertical space to prevent layout shifts while JS computes sizes */
+	min-height: var(--tw-min-height);
 }
 
 .typewriter-title--fixed {
-  position: fixed;
-  left: var(--tw-left);
+	position: fixed;
+	left: var(--tw-left);
 
-  /* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
-  bottom: var(--tw-fixed-bottom);
-  z-index: var(--z-typewriter-fixed);
-  opacity: 0.92;
-  transform: translateY(0);
-  pointer-events: auto;
-  /* Fixed variant also reserves space to avoid CLS when toggling modes */
-  min-height: var(--tw-min-height);
+	/* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
+	bottom: var(--tw-fixed-bottom);
+	z-index: var(--z-typewriter-fixed);
+	opacity: 0.92;
+	transform: translateY(0);
+	pointer-events: auto;
+	/* Fixed variant also reserves space to avoid CLS when toggling modes */
+	min-height: var(--tw-min-height);
+}
+
+body.footer-expanded .typewriter-title--fixed {
+	opacity: 0;
+	transform: translateY(var(--size-8));
+	pointer-events: none;
 }
 
 /* TypeWriter Text Elements */
 .typewriter-title .typed-author {
-  font-size: 0.75em;
-  color: color-mix(in srgb, var(--clr-white) 72%, transparent);
-  font-weight: 350;
-  letter-spacing: -0.01em;
-  margin: 0;
-  display: block;
-  text-align: left;
+	font-size: 0.75em;
+	color: color-mix(in srgb, var(--clr-white) 72%, transparent);
+	font-weight: 350;
+	letter-spacing: -0.01em;
+	margin: 0;
+	display: block;
+	text-align: left;
 }
 
 .typed-text {
-  font-weight: 300;
-  font-size: 0.82em;
-  line-height: var(--tw-typed-line-height);
-  display: flex;
-  flex-direction: column;
-  gap: var(--tw-gap);
-  color: var(--text-secondary);
-  text-shadow: none;
-  white-space: normal;
-  letter-spacing: 0;
-  overflow-wrap: anywhere;
-  word-break: normal;
-  hyphens: auto;
-  opacity: 0.8;
-  /* Reserve at least two lines to avoid layout shift when text is typed */
-  min-height: calc(var(--tw-typed-line-height) * 2em);
+	font-weight: 300;
+	font-size: 0.82em;
+	line-height: var(--tw-typed-line-height);
+	display: flex;
+	flex-direction: column;
+	gap: var(--tw-gap);
+	color: var(--text-secondary);
+	text-shadow: none;
+	white-space: normal;
+	letter-spacing: 0;
+	overflow-wrap: anywhere;
+	word-break: normal;
+	hyphens: auto;
+	opacity: 0.8;
+	/* Reserve at least two lines to avoid layout shift when text is typed */
+	min-height: calc(var(--tw-typed-line-height) * 2em);
 }
 
 @supports (text-wrap: balance) {
-  .typewriter-title .typed-text {
-    text-wrap: balance;
-  }
+	.typewriter-title .typed-text {
+		text-wrap: balance;
+	}
 }
 
 /* TypeWriter Cursor Animation */
 .typewriter-title .typed-text .typed-line:last-child::after {
-  content: '';
-  display: inline-block;
-  width: 0;
-  height: 0.9em;
-  margin-left: 0.06ch;
-  border-left: var(--size-2) solid var(--text-primary);
-  animation: caret-blink 0.9s steps(1, end) infinite;
-  vertical-align: -0.1em;
-  opacity: 1;
+	content: "";
+	display: inline-block;
+	width: 0;
+	height: 0.9em;
+	margin-left: 0.06ch;
+	border-left: var(--size-2) solid var(--text-primary);
+	animation: caret-blink 0.9s steps(1, end) infinite;
+	vertical-align: -0.1em;
+	opacity: 1;
 }
 
 .typewriter-title .cursor {
-  display: none;
+	display: none;
 }
 
 .typewriter-measure-probe {
-  display: inline-block;
+	display: inline-block;
 }
 
 .typewriter-line-measurer {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  visibility: hidden;
-  white-space: normal;
-  pointer-events: none;
+	position: absolute;
+	left: -9999px;
+	top: 0;
+	visibility: hidden;
+	white-space: normal;
+	pointer-events: none;
 }
 
 @keyframes caret-blink {
-  50% {
-    opacity: 0;
-  }
+	50% {
+		opacity: 0;
+	}
 }
 
 /* CSS-Only Fallback (wenn TypeWriter JS nicht lädt) */
 body:not(.has-typingjs) .typewriter-title .typed-text {
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  border-right: var(--size-2) solid var(--text-primary);
-  width: 0;
-  animation:
-    typing 3s steps(var(--typing-steps)) forwards,
-    blink-caret 0.75s step-end infinite;
+	display: inline-block;
+	white-space: nowrap;
+	overflow: hidden;
+	border-right: var(--size-2) solid var(--text-primary);
+	width: 0;
+	animation:
+		typing 3s steps(var(--typing-steps)) forwards,
+		blink-caret 0.75s step-end infinite;
 }
 
 /* Locked state for TypeWriter */
 .is-locked {
-  pointer-events: none;
-  -webkit-user-select: none;
-  user-select: none;
+	pointer-events: none;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 @keyframes typing {
-  to {
-    width: var(--typing-target);
-  }
+	to {
+		width: var(--typing-target);
+	}
 }
 
 @keyframes blink-caret {
-  50% {
-    border-right-color: transparent;
-  }
+	50% {
+		border-right-color: transparent;
+	}
 }
 
 /* ── Robot Collision Impact Effects ─────────────────────────── */
 
 /* Text shake on impact */
 .typewriter-title.collision-shake {
-  animation: textImpactShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+	animation: textImpactShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 @keyframes textImpactShake {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0);
-  }
-  10% {
-    transform: translate(-6px, 2px) rotate(-1.5deg);
-  }
-  20% {
-    transform: translate(5px, -3px) rotate(1deg);
-  }
-  30% {
-    transform: translate(-4px, 1px) rotate(-0.8deg);
-  }
-  40% {
-    transform: translate(3px, -2px) rotate(0.6deg);
-  }
-  50% {
-    transform: translate(-2px, 1px) rotate(-0.4deg);
-  }
-  60% {
-    transform: translate(1px, -1px) rotate(0.2deg);
-  }
+	0%,
+	100% {
+		transform: translate(0, 0) rotate(0);
+	}
+	10% {
+		transform: translate(-6px, 2px) rotate(-1.5deg);
+	}
+	20% {
+		transform: translate(5px, -3px) rotate(1deg);
+	}
+	30% {
+		transform: translate(-4px, 1px) rotate(-0.8deg);
+	}
+	40% {
+		transform: translate(3px, -2px) rotate(0.6deg);
+	}
+	50% {
+		transform: translate(-2px, 1px) rotate(-0.4deg);
+	}
+	60% {
+		transform: translate(1px, -1px) rotate(0.2deg);
+	}
 }
 
 /* RGB glitch on text */
 .typewriter-title.collision-glitch {
-  animation: textImpactGlitch 0.4s steps(4) both;
+	animation: textImpactGlitch 0.4s steps(4) both;
 }
 
 @keyframes textImpactGlitch {
-  0% {
-    text-shadow: none;
-    filter: none;
-  }
-  20% {
-    text-shadow:
-      3px 0 var(--clr-red-400, #f87171),
-      -3px 0 var(--clr-blue-400, #60a5fa);
-    filter: brightness(1.3);
-  }
-  40% {
-    text-shadow:
-      -2px 1px var(--clr-cyan-400, #22d3ee),
-      2px -1px var(--clr-red-400, #f87171);
-    filter: brightness(0.9) contrast(1.5);
-  }
-  60% {
-    text-shadow:
-      1px -2px var(--clr-green-400, #4ade80),
-      -1px 2px var(--clr-blue-400, #60a5fa);
-    filter: brightness(1.4);
-  }
-  80% {
-    text-shadow:
-      -1px 0 var(--clr-red-400, #f87171),
-      1px 0 var(--clr-cyan-400, #22d3ee);
-    filter: brightness(1.1);
-  }
-  100% {
-    text-shadow: none;
-    filter: none;
-  }
+	0% {
+		text-shadow: none;
+		filter: none;
+	}
+	20% {
+		text-shadow:
+			3px 0 var(--clr-red-400, #f87171),
+			-3px 0 var(--clr-blue-400, #60a5fa);
+		filter: brightness(1.3);
+	}
+	40% {
+		text-shadow:
+			-2px 1px var(--clr-cyan-400, #22d3ee),
+			2px -1px var(--clr-red-400, #f87171);
+		filter: brightness(0.9) contrast(1.5);
+	}
+	60% {
+		text-shadow:
+			1px -2px var(--clr-green-400, #4ade80),
+			-1px 2px var(--clr-blue-400, #60a5fa);
+		filter: brightness(1.4);
+	}
+	80% {
+		text-shadow:
+			-1px 0 var(--clr-red-400, #f87171),
+			1px 0 var(--clr-cyan-400, #22d3ee);
+		filter: brightness(1.1);
+	}
+	100% {
+		text-shadow: none;
+		filter: none;
+	}
 }
 
 /* Individual letter scatter */
 .typewriter-title.collision-scatter .typed-line {
-  display: inline-block;
-  animation: letterJolt 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+	display: inline-block;
+	animation: letterJolt 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 .typewriter-title.collision-scatter .typed-line:nth-child(odd) {
-  animation-name: letterJoltAlt;
+	animation-name: letterJoltAlt;
 }
 
 @keyframes letterJolt {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0);
-  }
-  25% {
-    transform: translate(3px, -5px) rotate(2deg);
-  }
-  50% {
-    transform: translate(-2px, 3px) rotate(-1.5deg);
-  }
-  75% {
-    transform: translate(1px, -2px) rotate(0.5deg);
-  }
+	0%,
+	100% {
+		transform: translate(0, 0) rotate(0);
+	}
+	25% {
+		transform: translate(3px, -5px) rotate(2deg);
+	}
+	50% {
+		transform: translate(-2px, 3px) rotate(-1.5deg);
+	}
+	75% {
+		transform: translate(1px, -2px) rotate(0.5deg);
+	}
 }
 
 @keyframes letterJoltAlt {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0);
-  }
-  25% {
-    transform: translate(-4px, -3px) rotate(-2deg);
-  }
-  50% {
-    transform: translate(3px, 4px) rotate(1.5deg);
-  }
-  75% {
-    transform: translate(-1px, -1px) rotate(-0.5deg);
-  }
+	0%,
+	100% {
+		transform: translate(0, 0) rotate(0);
+	}
+	25% {
+		transform: translate(-4px, -3px) rotate(-2deg);
+	}
+	50% {
+		transform: translate(3px, 4px) rotate(1.5deg);
+	}
+	75% {
+		transform: translate(-1px, -1px) rotate(-0.5deg);
+	}
 }
 
 /* Flash/brightness pulse */
 .typewriter-title.collision-flash {
-  animation: textImpactFlash 0.3s ease-out both;
+	animation: textImpactFlash 0.3s ease-out both;
 }
 
 @keyframes textImpactFlash {
-  0% {
-    filter: brightness(3) saturate(0.5);
-    color: var(--clr-white, #fff);
-  }
-  100% {
-    filter: none;
-    color: inherit;
-  }
+	0% {
+		filter: brightness(3) saturate(0.5);
+		color: var(--clr-white, #fff);
+	}
+	100% {
+		filter: none;
+		color: inherit;
+	}
 }
 
 /* Shockwave ring (spawned at impact point via JS) */
 .collision-shockwave {
-  position: fixed;
-  pointer-events: none;
-  border-radius: 50%;
-  border: 2px solid
-    color-mix(in srgb, var(--robot-cyan, #40e0d0) 70%, transparent);
-  box-shadow:
-    0 0 12px 2px color-mix(in srgb, var(--robot-cyan, #40e0d0) 40%, transparent),
-    inset 0 0 8px
-      color-mix(in srgb, var(--robot-cyan, #40e0d0) 20%, transparent);
-  animation: shockwaveExpand 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  z-index: 9999;
-  will-change: transform, opacity;
+	position: fixed;
+	pointer-events: none;
+	border-radius: 50%;
+	border: 2px solid
+		color-mix(in srgb, var(--robot-cyan, #40e0d0) 70%, transparent);
+	box-shadow:
+		0 0 12px 2px color-mix(in srgb, var(--robot-cyan, #40e0d0) 40%, transparent),
+		inset 0 0 8px
+		color-mix(in srgb, var(--robot-cyan, #40e0d0) 20%, transparent);
+	animation: shockwaveExpand 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	z-index: 9999;
+	will-change: transform, opacity;
 }
 
 @keyframes shockwaveExpand {
-  0% {
-    width: 10px;
-    height: 10px;
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    width: 10px;
-    height: 10px;
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(18);
-  }
+	0% {
+		width: 10px;
+		height: 10px;
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+	100% {
+		width: 10px;
+		height: 10px;
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(18);
+	}
 }
 
 /* Impact sparks (small directional lines) */
 .collision-spark {
-  position: fixed;
-  pointer-events: none;
-  width: 3px;
-  height: 12px;
-  background: linear-gradient(
-    to bottom,
-    var(--robot-cyan, #40e0d0),
-    transparent
-  );
-  border-radius: 2px;
-  z-index: 9999;
-  animation: sparkShoot 0.4s ease-out forwards;
-  will-change: transform, opacity;
+	position: fixed;
+	pointer-events: none;
+	width: 3px;
+	height: 12px;
+	background: linear-gradient(
+		to bottom,
+		var(--robot-cyan, #40e0d0),
+		transparent
+	);
+	border-radius: 2px;
+	z-index: 9999;
+	animation: sparkShoot 0.4s ease-out forwards;
+	will-change: transform, opacity;
 }
 
 @keyframes sparkShoot {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(var(--spark-angle, 0deg)) scaleY(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(var(--spark-angle, 0deg))
-      translateY(-40px) scaleY(0.3);
-  }
+	0% {
+		opacity: 1;
+		transform: translate(-50%, -50%) rotate(var(--spark-angle, 0deg)) scaleY(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(-50%, -50%) rotate(var(--spark-angle, 0deg))
+			translateY(-40px) scaleY(0.3);
+	}
 }

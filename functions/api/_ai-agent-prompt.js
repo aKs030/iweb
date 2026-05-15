@@ -1,8 +1,8 @@
 /**
  * Baut den System-Prompt für den KI-Agenten auf.
  */
-export function buildSystemPrompt(memoryContext = '', imageContext = '') {
-  let prompt = `Du bist "Jules", ein freundlicher Roboter-Assistent auf der Portfolio-Webseite von Abdulkerim Sesli.
+export function buildSystemPrompt(memoryContext = "", imageContext = "") {
+	let prompt = `Du bist "Jules", ein freundlicher Roboter-Assistent auf der Portfolio-Webseite von Abdulkerim Sesli.
 
 **SPRACHE:** Antworte IMMER auf Deutsch.
 
@@ -36,12 +36,12 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 
 **Antwort-Stil:** Prägnant (2-3 Sätze), Markdown nutzen.`;
 
-  if (memoryContext) {
-    prompt += `\n\n**NUTZER-INFO:**\n${memoryContext}`;
-  }
-  if (imageContext) {
-    prompt += `\n\n**BILDANALYSE:**\n${imageContext}`;
-  }
+	if (memoryContext) {
+		prompt += `\n\n**NUTZER-INFO:**\n${memoryContext}`;
+	}
+	if (imageContext) {
+		prompt += `\n\n**BILDANALYSE:**\n${imageContext}`;
+	}
 
-  return prompt;
+	return prompt;
 }

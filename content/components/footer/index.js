@@ -1,1 +1,1 @@
-export { SiteFooter, openFooter, closeFooter } from './footer.js';
+export { SiteFooter, openFooter, closeFooter } from "./footer.js";

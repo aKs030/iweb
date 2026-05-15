@@ -1,9 +1,9 @@
 import {
-  buildSitemapHeaders,
-  createSnapshotStaleResponse,
-  loadSitemapSnapshot,
-  saveSitemapSnapshot,
-} from './_sitemap-snapshot.js';
+	buildSitemapHeaders,
+	createSnapshotStaleResponse,
+	loadSitemapSnapshot,
+	saveSitemapSnapshot,
+} from "./_sitemap-snapshot.js";
 
 /**
  * Dedupe list entries while preserving insertion order.
@@ -13,17 +13,17 @@ import {
  * @returns {T[]}
  */
 export function dedupeBy(list, keyFn) {
-  const seen = new Set();
-  const out = [];
+	const seen = new Set();
+	const out = [];
 
-  for (const item of list || []) {
-    const key = String(keyFn(item) || '');
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    out.push(item);
-  }
+	for (const item of list || []) {
+		const key = String(keyFn(item) || "");
+		if (!key || seen.has(key)) continue;
+		seen.add(key);
+		out.push(item);
+	}
 
-  return out;
+	return out;
 }
 
 /**
@@ -37,16 +37,16 @@ export function dedupeBy(list, keyFn) {
  * @returns {Promise<Response>}
  */
 export async function saveAndRespondSitemapXml({
-  env,
-  name,
-  xml,
-  cacheControl,
-  extraHeaders = {},
+	env,
+	name,
+	xml,
+	cacheControl,
+	extraHeaders = {},
 }) {
-  await saveSitemapSnapshot(env, name, xml);
-  return new Response(xml, {
-    headers: buildSitemapHeaders(cacheControl, extraHeaders),
-  });
+	await saveSitemapSnapshot(env, name, xml);
+	return new Response(xml, {
+		headers: buildSitemapHeaders(cacheControl, extraHeaders),
+	});
 }
 
 /**
@@ -60,20 +60,20 @@ export async function saveAndRespondSitemapXml({
  * @returns {Promise<Response>}
  */
 export async function respondWithSnapshotOrFallback({
-  env,
-  name,
-  cacheControl,
-  fallbackXml,
-  fallbackSource,
+	env,
+	name,
+	cacheControl,
+	fallbackXml,
+	fallbackSource,
 }) {
-  const snapshot = await loadSitemapSnapshot(env, name);
-  if (snapshot?.xml) {
-    return createSnapshotStaleResponse(snapshot, cacheControl);
-  }
+	const snapshot = await loadSitemapSnapshot(env, name);
+	if (snapshot?.xml) {
+		return createSnapshotStaleResponse(snapshot, cacheControl);
+	}
 
-  return new Response(fallbackXml, {
-    headers: buildSitemapHeaders(cacheControl, {
-      'X-Sitemap-Source': fallbackSource,
-    }),
-  });
+	return new Response(fallbackXml, {
+		headers: buildSitemapHeaders(cacheControl, {
+			"X-Sitemap-Source": fallbackSource,
+		}),
+	});
 }

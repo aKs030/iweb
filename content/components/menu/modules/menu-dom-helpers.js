@@ -3,7 +3,7 @@
  * @returns {element is HTMLElement}
  */
 export function isConnectedHTMLElement(element) {
-  return element instanceof HTMLElement && element.isConnected;
+	return element instanceof HTMLElement && element.isConnected;
 }
 
 /**
@@ -12,7 +12,7 @@ export function isConnectedHTMLElement(element) {
  * @returns {HTMLElement|null}
  */
 export function resolveMenuHost(container, host = null) {
-  const resolvedHost =
-    host || (container instanceof ShadowRoot ? container.host : container);
-  return resolvedHost instanceof HTMLElement ? resolvedHost : null;
+	const resolvedHost =
+		host || (container instanceof ShadowRoot ? container.host : container);
+	return resolvedHost instanceof HTMLElement ? resolvedHost : null;
 }

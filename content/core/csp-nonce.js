@@ -7,30 +7,30 @@ let cachedNonce = null;
  * @returns {string}
  */
 export function getCspNonce() {
-  if (cachedNonce) return cachedNonce;
-  if (typeof document === 'undefined') return '';
+	if (cachedNonce) return cachedNonce;
+	if (typeof document === "undefined") return "";
 
-  const currentScript =
-    document.currentScript instanceof HTMLScriptElement
-      ? document.currentScript
-      : null;
-  const currentScriptNonce = currentScript?.nonce || '';
-  if (currentScriptNonce) {
-    cachedNonce = currentScriptNonce;
-    return cachedNonce;
-  }
+	const currentScript =
+		document.currentScript instanceof HTMLScriptElement
+			? document.currentScript
+			: null;
+	const currentScriptNonce = currentScript?.nonce || "";
+	if (currentScriptNonce) {
+		cachedNonce = currentScriptNonce;
+		return cachedNonce;
+	}
 
-  const nonceSource = document.querySelector('script[nonce], style[nonce]');
-  const resolvedNonce =
-    nonceSource instanceof HTMLElement
-      ? nonceSource.nonce || nonceSource.getAttribute('nonce') || ''
-      : '';
+	const nonceSource = document.querySelector("script[nonce], style[nonce]");
+	const resolvedNonce =
+		nonceSource instanceof HTMLElement
+			? nonceSource.nonce || nonceSource.getAttribute("nonce") || ""
+			: "";
 
-  if (resolvedNonce) {
-    cachedNonce = resolvedNonce;
-  }
+	if (resolvedNonce) {
+		cachedNonce = resolvedNonce;
+	}
 
-  return cachedNonce || '';
+	return cachedNonce || "";
 }
 
 /**
@@ -41,9 +41,9 @@ export function getCspNonce() {
  * @returns {T}
  */
 export function applyCspNonce(element) {
-  const nonce = getCspNonce();
-  if (!nonce) return element;
-  element.nonce = nonce;
-  element.setAttribute('nonce', nonce);
-  return element;
+	const nonce = getCspNonce();
+	if (!nonce) return element;
+	element.nonce = nonce;
+	element.setAttribute("nonce", nonce);
+	return element;
 }
