@@ -432,7 +432,7 @@ export async function initHeroSubtitle(options = {}) {
 			const profile = getProfileState();
 			if (profile && profile.name && profile.name.toLowerCase() !== "jules") {
 				quotes.unshift({
-					text: `Willkommen zurück, ${profile.name}! Lass uns weiter an der Zukunft bauen.`,
+					text: "Willkommen zurück! Schön, dass du wieder da bist.",
 					author: "Jules (AI)",
 				});
 			}

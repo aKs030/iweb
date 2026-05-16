@@ -1,6 +1,101 @@
 import { createLogger } from "#core/logger.js";
 
 const log = createLogger("CardManager");
+const PHONE_PORTAL_TARGETS = [
+	{ x: 0.14, y: 0.16 },
+	{ x: 0.88, y: 0.13 },
+	{ x: 0.88, y: 0.58 },
+	{ x: 0.39, y: 0.67 },
+	{ x: 0.1, y: 0.47 },
+];
+const DEFAULT_PORTAL_ANGLES = [132, 42, -22, -98, -166];
+const WIDE_PORTAL_ANGLES = [130, 46, -18, -96, -164];
+const PHONE_PORTAL_ANGLES = [132, 76, -28, -104, -178];
+const CIRCLE_LAYOUTS = {
+	phone: {
+		scaleRef: [470, 900],
+		scaleBoost: 0.08,
+		scaleMin: 0.88,
+		scaleMax: 0.98,
+		compactScaleMin: 0.74,
+		compactScaleMax: 0.9,
+		radiusX: 2.28,
+		radiusY: 1.72,
+		angles: PHONE_PORTAL_ANGLES,
+		offsetXPx: (vw) => -Math.min(52, vw * 0.13),
+		offsetYPx: 56,
+		hoverLift: 0.16,
+	},
+	tabletPortrait: {
+		scaleRef: [760, 940],
+		scaleBoost: 0.04,
+		scaleMin: 0.82,
+		scaleMax: 1.08,
+		roomRef: [760, 940],
+		roomMin: 0.88,
+		roomMax: 1.14,
+		radiusX: [1.8, 0.42],
+		radiusY: [1.46, 0.3],
+		spreadX: (vw) => Math.min(1.2, Math.max(1.04, vw / 740)),
+		spreadY: (vw, vh) => Math.min(1.16, Math.max(1, vh / 920)),
+		offsetYPx: 70,
+		hoverLift: 0.18,
+	},
+	tabletLandscape: {
+		scaleRef: [940, 700],
+		scaleBoost: 0.04,
+		scaleMin: 0.9,
+		scaleMax: 1.14,
+		roomRef: [940, 700],
+		roomMin: 0.92,
+		roomMax: 1.22,
+		radiusX: [2.52, 0.62],
+		radiusY: [1.76, 0.38],
+		spreadX: (vw) => Math.min(1.18, Math.max(1.04, vw / 980)),
+		spreadY: (vw, vh) => Math.min(1.16, Math.max(1, vh / 740)),
+		offsetYPx: 66,
+		hoverLift: 0.18,
+	},
+	desktopCompact: {
+		scaleRef: [1120, 680],
+		scaleBoost: 0.03,
+		scaleMin: 0.98,
+		scaleMax: 1.2,
+		roomRef: [1120, 680],
+		roomMin: 0.96,
+		roomMax: 1.28,
+		radiusX: [3.18, 0.64],
+		radiusY: [2.02, 0.42],
+		angles: DEFAULT_PORTAL_ANGLES,
+		hoverLift: 0.2,
+	},
+	desktopWide: {
+		scaleRef: [1320, 760],
+		scaleBoost: 0.02,
+		scaleMin: 1.02,
+		scaleMax: 1.22,
+		roomRef: [1320, 760],
+		roomMin: 1.02,
+		roomMax: 1.32,
+		radiusX: [3.42, 0.88],
+		radiusY: [2.12, 0.56],
+		angles: DEFAULT_PORTAL_ANGLES,
+		hoverLift: 0.22,
+	},
+	desktopUltra: {
+		scaleRef: [1320, 760],
+		scaleBoost: 0,
+		scaleMin: 1.04,
+		scaleMax: 1.14,
+		roomRef: [1320, 760],
+		roomMin: 1.08,
+		roomMax: 1.36,
+		radiusX: [3.32, 0.58],
+		radiusY: [2.1, 0.38],
+		angles: WIDE_PORTAL_ANGLES,
+		hoverLift: 0.22,
+	},
+};
 
 export class CardManager {
 	constructor(THREE, scene, camera, renderer) {
@@ -13,9 +108,6 @@ export class CardManager {
 		this.isVisible = false;
 
 		// Internal state
-		this._hovered = null;
-		this._hoverCandidate = null;
-		this._hoverFrames = 0;
 		this._resizeRAF = null;
 		this._lastCameraLayoutAt = 0;
 		this._sharedGeometry = null;
@@ -27,26 +119,9 @@ export class CardManager {
 		this.cardGroup = new THREE.Group();
 		this.scene.add(this.cardGroup);
 		this.cardGroup.visible = false;
-		this.orbitGuide = null;
 
 		// Texture cache to reuse generated canvases / textures when card content is identical
 		this._textureCache = new Map();
-
-		// Profiling
-		this._profile = {
-			texturesCreated: 0,
-			texturesDisposed: 0,
-			cacheHits: 0,
-			cacheMisses: 0,
-		};
-
-		// Pointer/touch handling state
-		this._lastPointerPos = { x: 0, y: 0 };
-		this._pointerDown = false;
-		this._pointerDownPos = null;
-		this._boundPointerMove = null;
-		this._boundPointerDown = null;
-		this._boundPointerUp = null;
 	}
 
 	_getCardTextureScale() {
@@ -257,10 +332,19 @@ export class CardManager {
 			const rect = copy.getBoundingClientRect();
 
 			if (rect.width > 0 && rect.height > 0) {
+				// Use vertically centered rect to prevent scroll-based jumping
+				const top = (window.innerHeight - rect.height) * 0.45;
+				const stableRect = {
+					left: rect.left,
+					right: rect.right,
+					top: top,
+					bottom: top + rect.height,
+				};
+
 				zones.push({
 					kind: "copy",
 					rect: this._expandRect(
-						rect,
+						stableRect,
 						phoneLayout ? 10 : stackedLayout ? 12 : 14,
 						phoneLayout ? 10 : stackedLayout ? 12 : 14,
 					),
@@ -277,10 +361,18 @@ export class CardManager {
 			const rect = note.getBoundingClientRect();
 
 			if (rect.width > 0 && rect.height > 0) {
+				const top = window.innerHeight - rect.height - 40;
+				const stableRect = {
+					left: rect.left,
+					right: rect.right,
+					top: top,
+					bottom: top + rect.height,
+				};
+
 				zones.push({
 					kind: "note",
 					rect: this._expandRect(
-						rect,
+						stableRect,
 						phoneLayout ? 10 : stackedLayout ? 12 : 14,
 						phoneLayout ? 10 : stackedLayout ? 12 : 12,
 					),
@@ -378,24 +470,9 @@ export class CardManager {
 		const viewportTopBound = phoneLayout ? 104 : stackedLayout ? 96 : 92;
 		const viewportBottomBound =
 			window.innerHeight - (phoneLayout ? 82 : stackedLayout ? 88 : 118);
-		const featureRect = document
-			.querySelector("#features")
-			?.getBoundingClientRect?.();
-		const featureVisible =
-			featureRect?.bottom > 0 && featureRect?.top < window.innerHeight;
-		const sectionPadding = phoneLayout ? 22 : stackedLayout ? 28 : 36;
-		const topBound =
-			featureVisible && featureRect.top > viewportTopBound
-				? Math.max(viewportTopBound, featureRect.top + sectionPadding)
-				: viewportTopBound;
-		const sectionBottomBound = featureVisible
-			? featureRect.bottom - sectionPadding
-			: viewportBottomBound;
-		const minimumLayoutHeight = phoneLayout ? 360 : stackedLayout ? 420 : 460;
-		const bottomBound = Math.max(
-			topBound + minimumLayoutHeight,
-			Math.min(viewportBottomBound, sectionBottomBound),
-		);
+		
+		const topBound = viewportTopBound;
+		const bottomBound = viewportBottomBound;
 
 		for (let iteration = 0; iteration < 6; iteration++) {
 			this.alignCardsToCameraImmediate();
@@ -437,6 +514,52 @@ export class CardManager {
 			});
 
 			if (!moved) break;
+		}
+	}
+
+	_getPhonePortalTargets() {
+		if (typeof window === "undefined") return [];
+
+		const vw = window.innerWidth;
+		const vh = window.innerHeight;
+		const insetX = this._clamp(vw * 0.1, 38, 52);
+		const topBound = this._clamp(104 + vh * 0.03, 126, 148);
+		const bottomBound = vh - this._clamp(vh * 0.12, 86, 112);
+
+		return PHONE_PORTAL_TARGETS.map((target) => ({
+			x: this._clamp(vw * target.x, insetX, vw - insetX),
+			y: this._clamp(vh * target.y, topBound, bottomBound),
+		}));
+	}
+
+	_applyPhonePortalTargets({ layoutMode }) {
+		if (layoutMode !== "phone" || !this.renderer || !this.camera) return;
+
+		const targets = this._getPhonePortalTargets();
+		if (targets.length === 0) return;
+
+		for (let iteration = 0; iteration < 8; iteration++) {
+			this.alignCardsToCameraImmediate();
+			this.scene.updateMatrixWorld?.(true);
+
+			let settled = true;
+
+			this.cards.forEach((card, index) => {
+				const target = targets[index];
+				const center = this._getCardScreenCenter(card);
+
+				if (!target || !center) return;
+
+				const deltaX = target.x - center.x;
+				const deltaY = target.y - center.y;
+
+				if (Math.hypot(deltaX, deltaY) > 4) {
+					this._nudgeCardOnScreen(card, deltaX, deltaY);
+					settled = false;
+				}
+			});
+
+			if (settled) break;
 		}
 	}
 
@@ -496,7 +619,7 @@ export class CardManager {
 	}
 
 	_createCirclePositions(radiusX, radiusY, nodeScale = 1, angles = null) {
-		const waypointAngles = angles || [132, 42, -22, -98, -166];
+		const waypointAngles = angles || DEFAULT_PORTAL_ANGLES;
 
 		return waypointAngles.map((degrees) => {
 			const angle = (degrees * Math.PI) / 180;
@@ -513,105 +636,56 @@ export class CardManager {
 	_getCircleLayoutSpec(vw, vh, layoutMode, safeAreaTop) {
 		const fit = (refW, refH) => Math.min(vw / refW, vh / refH);
 		const topOffset = (px) => -this._pixelsToWorldY(px + safeAreaTop);
-
-		if (layoutMode === "phone") {
-			const resolutionFit = this._clamp(fit(560, 1010) + 0.06, 0.64, 0.88);
+		const buildSpec = (config) => {
+			const compactPhone = layoutMode === "phone" && (vw < 360 || vh < 680);
+			const scale = this._clamp(
+				fit(...config.scaleRef) + config.scaleBoost,
+				compactPhone ? config.compactScaleMin : config.scaleMin,
+				compactPhone ? config.compactScaleMax : config.scaleMax,
+			);
+			const roomFit = config.roomRef
+				? this._clamp(fit(...config.roomRef), config.roomMin, config.roomMax)
+				: 0;
+			const resolveRadius = (value) =>
+				Array.isArray(value) ? value[0] + roomFit * value[1] : value;
 
 			return {
-				scale: resolutionFit,
-				radiusX: 1.12 + resolutionFit * 0.24,
-				radiusY: 1.02 + resolutionFit * 0.18,
+				scale,
+				radiusX: resolveRadius(config.radiusX),
+				radiusY: resolveRadius(config.radiusY),
 				nodeScale: 1,
-				spreadX: Math.min(1.16, Math.max(1, vw / 410)),
-				spreadY: Math.min(1.18, Math.max(1, vh / 790)),
-				offsetX: -this._pixelsToWorldX(Math.min(136, vw * 0.3)),
-				offsetY: topOffset(56),
-				hoverLift: 0.16,
+				angles: config.angles,
+				spreadX: config.spreadX?.(vw, vh) ?? 1,
+				spreadY: config.spreadY?.(vw, vh) ?? 1,
+				offsetX: config.offsetXPx
+					? this._pixelsToWorldX(config.offsetXPx(vw, vh))
+					: 0,
+				offsetY: config.offsetYPx == null ? 0 : topOffset(config.offsetYPx),
+				hoverLift: config.hoverLift,
 			};
+		};
+
+		if (layoutMode === "phone") {
+			return buildSpec(CIRCLE_LAYOUTS.phone);
 		}
 
 		if (layoutMode === "tablet-portrait") {
-			const resolutionFit = this._clamp(fit(760, 940) + 0.04, 0.82, 1.08);
-			const roomFit = this._clamp(fit(760, 940), 0.88, 1.14);
-
-			return {
-				scale: resolutionFit,
-				radiusX: 1.8 + roomFit * 0.42,
-				radiusY: 1.46 + roomFit * 0.3,
-				nodeScale: 1,
-				spreadX: Math.min(1.2, Math.max(1.04, vw / 740)),
-				spreadY: Math.min(1.16, Math.max(1, vh / 920)),
-				offsetY: topOffset(70),
-				hoverLift: 0.18,
-			};
+			return buildSpec(CIRCLE_LAYOUTS.tabletPortrait);
 		}
 
 		if (layoutMode === "tablet-landscape") {
-			const resolutionFit = this._clamp(fit(940, 700) + 0.04, 0.9, 1.14);
-			const roomFit = this._clamp(fit(940, 700), 0.92, 1.22);
-
-			return {
-				scale: resolutionFit,
-				radiusX: 2.52 + roomFit * 0.62,
-				radiusY: 1.76 + roomFit * 0.38,
-				nodeScale: 1,
-				spreadX: Math.min(1.18, Math.max(1.04, vw / 980)),
-				spreadY: Math.min(1.16, Math.max(1, vh / 740)),
-				offsetY: topOffset(66),
-				hoverLift: 0.18,
-			};
+			return buildSpec(CIRCLE_LAYOUTS.tabletLandscape);
 		}
 
 		if (layoutMode === "desktop-compact") {
-			const resolutionFit = this._clamp(fit(1120, 680) + 0.03, 0.98, 1.2);
-			const roomFit = this._clamp(fit(1120, 680), 0.96, 1.28);
-
-			return {
-				scale: resolutionFit,
-				radiusX: 3.18 + roomFit * 0.64,
-				radiusY: 2.02 + roomFit * 0.42,
-				nodeScale: 1,
-				angles: [132, 42, -22, -98, -166],
-				spreadX: 1,
-				spreadY: 1,
-				offsetY: 0,
-				hoverLift: 0.2,
-			};
+			return buildSpec(CIRCLE_LAYOUTS.desktopCompact);
 		}
-
-		const rawFit = fit(1320, 760);
 
 		if (vw >= 1680) {
-			const resolutionFit = this._clamp(rawFit, 1.04, 1.14);
-			const roomFit = this._clamp(rawFit, 1.08, 1.36);
-
-			return {
-				scale: resolutionFit,
-				radiusX: 3.32 + roomFit * 0.58,
-				radiusY: 2.1 + roomFit * 0.38,
-				nodeScale: 1,
-				angles: [130, 46, -18, -96, -164],
-				spreadX: 1,
-				spreadY: 1,
-				offsetY: 0,
-				hoverLift: 0.22,
-			};
+			return buildSpec(CIRCLE_LAYOUTS.desktopUltra);
 		}
 
-		const resolutionFit = this._clamp(rawFit + 0.02, 1.02, 1.22);
-		const roomFit = this._clamp(rawFit, 1.02, 1.32);
-
-		return {
-			scale: resolutionFit,
-			radiusX: 3.42 + roomFit * 0.88,
-			radiusY: 2.12 + roomFit * 0.56,
-			nodeScale: 1,
-			angles: [132, 42, -22, -98, -166],
-			spreadX: 1,
-			spreadY: 1,
-			offsetY: 0,
-			hoverLift: 0.22,
-		};
+		return buildSpec(CIRCLE_LAYOUTS.desktopWide);
 	}
 
 	_applyResponsiveLayout(vw, vh, layoutMode) {
@@ -654,8 +728,8 @@ export class CardManager {
 		this._resolveCardOverlaps({ layoutMode });
 		this._resolveUiSafeZones({ layoutMode });
 		this._resolveViewportBounds({ layoutMode });
+		this._applyPhonePortalTargets({ layoutMode });
 		this._syncPortalAnchors(layoutMode);
-		this._updateOrbitGuide();
 	}
 
 	refreshLayoutForCamera(force = false) {
@@ -681,27 +755,6 @@ export class CardManager {
 		const layoutMode = this._getLayoutMode(vw, vh);
 
 		this._runResponsiveLayout(vw, vh, layoutMode);
-	}
-
-	_ensureOrbitGuide() {
-		return;
-	}
-
-	_updateOrbitGuide() {
-		if (!this.orbitGuide) return;
-
-		this.cardGroup?.remove?.(this.orbitGuide);
-		this.orbitGuide.geometry?.dispose?.();
-		this.orbitGuide.material?.dispose?.();
-		this.orbitGuide = null;
-	}
-
-	_setOrbitGuideOpacity(_opacity) {
-		const material = this.orbitGuide?.material;
-
-		if (!material) return;
-
-		material.opacity = 0;
 	}
 
 	_easeOutCubic(value) {
@@ -816,11 +869,19 @@ export class CardManager {
 
 		const stackedLayout = this._isStackedLayout(layoutMode);
 		const phoneLayout = layoutMode === "phone";
+		const compactPhone =
+			phoneLayout && (window.innerWidth < 360 || window.innerHeight < 680);
 		const minGapPx = phoneLayout ? 20 : stackedLayout ? 18 : 60;
 		const horizontalWeight = phoneLayout ? 0.34 : stackedLayout ? 0.42 : 0.62;
 		const verticalWeight = phoneLayout ? 0.52 : stackedLayout ? 0.34 : 0.44;
 		const scaleStep = phoneLayout ? 0.018 : stackedLayout ? 0.014 : 0.01;
-		const minScale = phoneLayout ? 0.68 : stackedLayout ? 0.76 : 0.78;
+		const minScale = phoneLayout
+			? compactPhone
+				? 0.76
+				: 0.82
+			: stackedLayout
+				? 0.76
+				: 0.78;
 
 		for (let iteration = 0; iteration < 14; iteration++) {
 			this.alignCardsToCameraImmediate();
@@ -951,10 +1012,23 @@ export class CardManager {
 		}
 
 		// Dynamic Resize & Layout Logic
+		let lastVw = globalThis.window?.innerWidth || 0;
+		let lastVh = globalThis.window?.innerHeight || 0;
+
 		this._onResize = () => {
 			if (this._resizeRAF) cancelAnimationFrame(this._resizeRAF);
 			this._resizeRAF = requestAnimationFrame(() => {
-				this.refreshLayoutForCamera(true);
+				const currentVw = globalThis.window?.innerWidth || 0;
+				const currentVh = globalThis.window?.innerHeight || 0;
+
+				const widthChanged = currentVw !== lastVw;
+				const heightChangedSignificantly = Math.abs(currentVh - lastVh) > 80;
+
+				if (widthChanged || heightChangedSignificantly) {
+					this.refreshLayoutForCamera(true);
+					lastVw = currentVw;
+					lastVh = currentVh;
+				}
 
 				this._resizeRAF = null;
 			});
@@ -964,6 +1038,7 @@ export class CardManager {
 			window.addEventListener("resize", this._onResize, { passive: true });
 			// Force initial layout
 			this._onResize();
+			this.refreshLayoutForCamera(true); // Ensure it runs initially
 		}
 	}
 
@@ -1034,11 +1109,8 @@ export class CardManager {
 		const cached = this._textureCache.get(key);
 		if (cached?.texture) {
 			cached.count++;
-			this._profile.cacheHits++;
 			return cached.texture;
 		}
-
-		this._profile.cacheMisses++;
 
 		let canvas, ctx;
 		try {
@@ -1255,7 +1327,6 @@ export class CardManager {
 		texture.needsUpdate = true;
 
 		this._textureCache.set(key, { texture, count: 1 });
-		this._profile.texturesCreated++;
 
 		return texture;
 	}
@@ -1302,80 +1373,6 @@ export class CardManager {
 		tex.magFilter = this.THREE.LinearFilter;
 		tex.needsUpdate = true;
 		return tex;
-	}
-
-	roundRect(ctx, x, y, w, h, r) {
-		if (w < 2 * r) r = w / 2;
-		if (h < 2 * r) r = h / 2;
-		ctx.beginPath();
-		ctx.moveTo(x + r, y);
-		ctx.arcTo(x + w, y, x + w, y + h, r);
-		ctx.arcTo(x + w, y + h, x, y + h, r);
-		ctx.arcTo(x, y + h, x, y, r);
-		ctx.arcTo(x, y, x + w, y, r);
-		ctx.closePath();
-	}
-
-	drawStarBorder(ctx, x, y, w, h, r, scale) {
-		ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
-		ctx.lineWidth = 1.08 * scale;
-		this.roundRect(ctx, x, y, w, h, r);
-		ctx.stroke();
-
-		const tick = 22 * scale;
-		const inset = 18 * scale;
-		const corners = [
-			{ x: x + inset, y: y + inset, sx: 1, sy: 1 },
-			{ x: x + w - inset, y: y + inset, sx: -1, sy: 1 },
-			{ x: x + inset, y: y + h - inset, sx: 1, sy: -1 },
-			{ x: x + w - inset, y: y + h - inset, sx: -1, sy: -1 },
-		];
-
-		ctx.save();
-		ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
-		ctx.lineWidth = 1.8 * scale;
-
-		corners.forEach((corner) => {
-			ctx.beginPath();
-			ctx.moveTo(corner.x, corner.y);
-			ctx.lineTo(corner.x + tick * corner.sx, corner.y);
-			ctx.moveTo(corner.x, corner.y);
-			ctx.lineTo(corner.x, corner.y + tick * corner.sy);
-			ctx.stroke();
-		});
-
-		const nodeRadius = 1.5 * scale;
-		const nodes = [
-			[x + w * 0.18, y + 1.5 * scale],
-			[x + w * 0.82, y + 1.5 * scale],
-			[x + 1.5 * scale, y + h * 0.26],
-			[x + w - 1.5 * scale, y + h * 0.74],
-			[x + w * 0.3, y + h - 1.5 * scale],
-			[x + w * 0.7, y + h - 1.5 * scale],
-		];
-
-		ctx.fillStyle = "rgba(255, 255, 255, 0.58)";
-		nodes.forEach(([px, py]) => {
-			ctx.beginPath();
-			ctx.arc(px, py, nodeRadius, 0, Math.PI * 2);
-			ctx.fill();
-		});
-		ctx.restore();
-	}
-
-	drawPill(ctx, x, y, w, h, r, fillStyle, strokeStyle = null, lineWidth = 1) {
-		ctx.save();
-		this.roundRect(ctx, x, y, w, h, r);
-		ctx.fillStyle = fillStyle;
-		ctx.fill();
-
-		if (strokeStyle) {
-			ctx.strokeStyle = strokeStyle;
-			ctx.lineWidth = lineWidth;
-			ctx.stroke();
-		}
-
-		ctx.restore();
 	}
 
 	rgba(color, alpha) {
@@ -1497,291 +1494,6 @@ export class CardManager {
 		ctx.restore();
 	}
 
-	drawPortalEnergyField(ctx, key, r, S, accent, palette) {
-		ctx.lineCap = "round";
-		ctx.lineJoin = "round";
-
-		if (key.includes("profil")) {
-			const nodes = [
-				[-0.42, -0.24],
-				[-0.18, 0.2],
-				[0.18, -0.08],
-				[0.42, 0.24],
-				[0.02, 0.42],
-			];
-
-			ctx.strokeStyle = this.rgba(palette.highlight, 0.16);
-			ctx.lineWidth = 3 * S;
-			ctx.beginPath();
-			nodes.forEach(([x, y], index) => {
-				const px = x * r;
-				const py = y * r;
-				if (index === 0) ctx.moveTo(px, py);
-				else ctx.lineTo(px, py);
-			});
-			ctx.stroke();
-
-			nodes.forEach(([x, y], index) => {
-				ctx.beginPath();
-				ctx.arc(x * r, y * r, (index === 2 ? 14 : 9) * S, 0, Math.PI * 2);
-				ctx.fillStyle =
-					index === 2
-						? this.rgba(accent, 0.28)
-						: this.rgba(palette.highlight, 0.22);
-				ctx.fill();
-			});
-		} else if (key.includes("projekt")) {
-			for (let i = 0; i < 4; i++) {
-				const y = (-0.42 + i * 0.22) * r;
-				const w = (0.62 - i * 0.04) * r;
-				this.roundRect(ctx, -w * 0.5, y, w, 0.13 * r, 9 * S);
-				ctx.fillStyle =
-					i % 2 === 0
-						? this.rgba(palette.highlight, 0.08)
-						: this.rgba(palette.tertiary, 0.07);
-				ctx.fill();
-				ctx.strokeStyle = this.rgba(palette.highlight, 0.11);
-				ctx.lineWidth = 2 * S;
-				ctx.stroke();
-			}
-
-			ctx.strokeStyle = this.rgba(palette.secondary, 0.2);
-			ctx.lineWidth = 4 * S;
-			ctx.beginPath();
-			ctx.moveTo(-r * 0.44, r * 0.38);
-			ctx.lineTo(-r * 0.08, -r * 0.06);
-			ctx.lineTo(r * 0.28, r * 0.28);
-			ctx.lineTo(r * 0.5, -r * 0.34);
-			ctx.stroke();
-		} else if (key.includes("foto")) {
-			for (let i = 0; i < 8; i++) {
-				ctx.save();
-				ctx.rotate(i * (Math.PI / 4));
-				ctx.beginPath();
-				ctx.moveTo(0, 0);
-				ctx.arc(0, 0, r * 0.78, -0.18, 0.22);
-				ctx.closePath();
-				ctx.fillStyle =
-					i % 2 === 0
-						? this.rgba(palette.highlight, 0.08)
-						: this.rgba(palette.tertiary, 0.07);
-				ctx.fill();
-				ctx.restore();
-			}
-		} else if (key.includes("video")) {
-			for (let i = 0; i < 9; i++) {
-				const x = (-0.46 + i * 0.115) * r;
-				const h = (0.24 + ((i * 17) % 38) / 100) * r;
-				this.roundRect(ctx, x, -h * 0.5, 0.045 * r, h, 5 * S);
-				ctx.fillStyle =
-					i % 2 === 0
-						? this.rgba(palette.highlight, 0.1)
-						: this.rgba(accent, 0.12);
-				ctx.fill();
-			}
-
-			ctx.strokeStyle = this.rgba(palette.secondary, 0.16);
-			ctx.lineWidth = 3 * S;
-			for (let i = 0; i < 3; i++) {
-				ctx.beginPath();
-				ctx.arc(0, 0, r * (0.32 + i * 0.15), 0.2, Math.PI * 1.38);
-				ctx.stroke();
-			}
-		} else if (key.includes("journal")) {
-			for (let i = 0; i < 4; i++) {
-				const y = (-0.36 + i * 0.18) * r;
-				ctx.strokeStyle =
-					i % 2 === 0
-						? this.rgba(palette.highlight, 0.16)
-						: this.rgba(palette.secondary, 0.16);
-				ctx.lineWidth = 4 * S;
-				ctx.beginPath();
-				ctx.moveTo(-r * 0.48, y);
-				ctx.bezierCurveTo(
-					-r * 0.18,
-					y - r * 0.17,
-					r * 0.1,
-					y + r * 0.16,
-					r * 0.48,
-					y,
-				);
-				ctx.stroke();
-			}
-
-			ctx.fillStyle = this.rgba(palette.highlight, 0.12);
-			for (let i = 0; i < 5; i++) {
-				const x = (-0.4 + i * 0.2) * r;
-				const y = (i % 2 === 0 ? -0.16 : 0.18) * r;
-				ctx.beginPath();
-				ctx.arc(x, y, 5 * S, 0, Math.PI * 2);
-				ctx.fill();
-			}
-		}
-	}
-
-	drawPortalGlyph(ctx, label, cx, cy, radius, scale, accent) {
-		const S = scale;
-		const key = String(label || "").toLowerCase();
-		const accentStrong = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.46)`;
-		const accentMedium = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.2)`;
-		const accentSoft = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.08)`;
-		const whiteSoft = "rgba(255, 255, 255, 0.42)";
-		const whiteFaint = "rgba(255, 255, 255, 0.12)";
-		const r = radius;
-
-		ctx.save();
-		ctx.translate(cx, cy);
-		ctx.shadowColor = accentMedium;
-		ctx.shadowBlur = 16 * S;
-
-		ctx.beginPath();
-		ctx.arc(0, 0, r * 0.48, 0, Math.PI * 2);
-		ctx.fillStyle = accentSoft;
-		ctx.fill();
-		ctx.strokeStyle = whiteFaint;
-		ctx.lineWidth = 1.6 * S;
-		ctx.stroke();
-
-		ctx.strokeStyle = accentStrong;
-		ctx.lineWidth = 5.6 * S;
-		ctx.lineCap = "round";
-		ctx.lineJoin = "round";
-
-		if (key.includes("profil")) {
-			ctx.beginPath();
-			ctx.arc(0, -r * 0.16, r * 0.13, 0, Math.PI * 2);
-			ctx.stroke();
-
-			ctx.beginPath();
-			ctx.moveTo(-r * 0.32, r * 0.28);
-			ctx.quadraticCurveTo(0, r * 0.03, r * 0.32, r * 0.28);
-			ctx.stroke();
-
-			ctx.strokeStyle = whiteSoft;
-			ctx.lineWidth = 6 * S;
-			ctx.beginPath();
-			ctx.moveTo(-r * 0.5, -r * 0.1);
-			ctx.lineTo(-r * 0.66, 0);
-			ctx.lineTo(-r * 0.5, r * 0.1);
-			ctx.moveTo(r * 0.5, -r * 0.1);
-			ctx.lineTo(r * 0.66, 0);
-			ctx.lineTo(r * 0.5, r * 0.1);
-			ctx.stroke();
-		} else if (key.includes("projekt")) {
-			const cards = [
-				[-r * 0.36, -r * 0.22, r * 0.34, r * 0.24],
-				[-r * 0.06, -r * 0.02, r * 0.34, r * 0.24],
-				[-r * 0.28, r * 0.2, r * 0.34, r * 0.24],
-			];
-
-			cards.forEach(([x, y, w, h], index) => {
-				this.roundRect(ctx, x, y, w, h, 10 * S);
-				ctx.fillStyle = index === 1 ? accentStrong : accentSoft;
-				ctx.fill();
-				ctx.strokeStyle = index === 1 ? "rgba(3, 8, 18, 0.82)" : accentMedium;
-				ctx.lineWidth = 3 * S;
-				ctx.stroke();
-			});
-
-			ctx.strokeStyle = whiteSoft;
-			ctx.lineWidth = 5 * S;
-			ctx.beginPath();
-			ctx.moveTo(-r * 0.18, -r * 0.02);
-			ctx.lineTo(r * 0.16, r * 0.18);
-			ctx.moveTo(r * 0.08, r * 0.12);
-			ctx.lineTo(-r * 0.1, r * 0.3);
-			ctx.stroke();
-		} else if (key.includes("foto")) {
-			for (let i = 0; i < 6; i++) {
-				ctx.save();
-				ctx.rotate((Math.PI / 3) * i);
-				ctx.beginPath();
-				ctx.moveTo(0, -r * 0.11);
-				ctx.lineTo(r * 0.38, -r * 0.42);
-				ctx.lineTo(r * 0.48, -r * 0.08);
-				ctx.lineTo(r * 0.12, r * 0.08);
-				ctx.closePath();
-				ctx.fillStyle =
-					i % 2 === 0 ? accentMedium : "rgba(255, 255, 255, 0.16)";
-				ctx.fill();
-				ctx.restore();
-			}
-
-			ctx.beginPath();
-			ctx.arc(0, 0, r * 0.24, 0, Math.PI * 2);
-			ctx.strokeStyle = whiteSoft;
-			ctx.lineWidth = 7 * S;
-			ctx.stroke();
-			ctx.beginPath();
-			ctx.arc(0, 0, r * 0.09, 0, Math.PI * 2);
-			ctx.fillStyle = accentStrong;
-			ctx.fill();
-		} else if (key.includes("video")) {
-			ctx.beginPath();
-			ctx.moveTo(-r * 0.16, -r * 0.28);
-			ctx.lineTo(r * 0.34, 0);
-			ctx.lineTo(-r * 0.16, r * 0.28);
-			ctx.closePath();
-			ctx.fillStyle = accentStrong;
-			ctx.fill();
-
-			ctx.strokeStyle = whiteSoft;
-			ctx.lineWidth = 5 * S;
-			[-0.42, -0.24, 0.42].forEach((x) => {
-				ctx.beginPath();
-				ctx.moveTo(r * x, r * 0.46);
-				ctx.lineTo(r * (x + 0.1), r * 0.46);
-				ctx.stroke();
-			});
-			ctx.beginPath();
-			ctx.moveTo(-r * 0.46, r * 0.46);
-			ctx.lineTo(r * 0.5, r * 0.46);
-			ctx.strokeStyle = whiteFaint;
-			ctx.stroke();
-		} else if (key.includes("journal")) {
-			this.roundRect(ctx, -r * 0.36, -r * 0.42, r * 0.6, r * 0.72, 14 * S);
-			ctx.fillStyle = "rgba(255, 255, 255, 0.09)";
-			ctx.fill();
-			ctx.strokeStyle = accentStrong;
-			ctx.lineWidth = 5 * S;
-			ctx.stroke();
-
-			ctx.strokeStyle = whiteSoft;
-			ctx.lineWidth = 4 * S;
-			for (let i = 0; i < 4; i++) {
-				const y = -r * 0.25 + i * r * 0.15;
-				ctx.beginPath();
-				ctx.moveTo(-r * 0.23, y);
-				ctx.lineTo(r * 0.1, y);
-				ctx.stroke();
-			}
-
-			ctx.strokeStyle = accentStrong;
-			ctx.lineWidth = 8 * S;
-			ctx.beginPath();
-			ctx.moveTo(r * 0.12, r * 0.34);
-			ctx.lineTo(r * 0.46, -r * 0.02);
-			ctx.stroke();
-			ctx.beginPath();
-			ctx.moveTo(r * 0.41, -r * 0.08);
-			ctx.lineTo(r * 0.5, -r * 0.16);
-			ctx.stroke();
-		} else {
-			ctx.beginPath();
-			for (let i = 0; i < 5; i++) {
-				const angle = -Math.PI / 2 + i * ((Math.PI * 2) / 5);
-				const x = Math.cos(angle) * r * 0.42;
-				const y = Math.sin(angle) * r * 0.42;
-				if (i === 0) ctx.moveTo(x, y);
-				else ctx.lineTo(x, y);
-			}
-			ctx.closePath();
-			ctx.stroke();
-		}
-
-		ctx.restore();
-	}
-
 	hexToRgb(hex) {
 		const raw = String(hex || "")
 			.trim()
@@ -1804,31 +1516,6 @@ export class CardManager {
 			g: (parsed >> 8) & 255,
 			b: parsed & 255,
 		};
-	}
-
-	wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 5) {
-		const words = (text || "").split(" ");
-		let line = "";
-		let lineCount = 0;
-
-		for (let n = 0; n < words.length; n++) {
-			const testLine = line + words[n] + " ";
-			const metrics = ctx.measureText(testLine);
-			const testWidth = metrics.width;
-			if (testWidth > maxWidth && n > 0) {
-				ctx.fillText(line, x, y);
-				line = words[n] + " ";
-				y += lineHeight;
-				lineCount++;
-				if (lineCount >= maxLines) {
-					line += "...";
-					break;
-				}
-			} else {
-				line = testLine;
-			}
-		}
-		ctx.fillText(line, x, y);
 	}
 
 	fitTextToWidth(
@@ -1887,11 +1574,6 @@ export class CardManager {
 		return result;
 	}
 
-	setVisible(visible) {
-		this.isVisible = visible;
-		this.setProgress(visible ? 1 : 0);
-	}
-
 	setProgress(progress) {
 		const p = Math.max(
 			0,
@@ -1922,8 +1604,6 @@ export class CardManager {
 			card.userData.entranceTarget = local;
 			card.userData.targetOpacity = 1;
 		});
-
-		this._setOrbitGuideOpacity(p * 0.12);
 	}
 
 	getHoveredCardFromScreen(mousePos) {
@@ -1945,13 +1625,6 @@ export class CardManager {
 			this._updateCardGlow(card, time);
 			this._updatePortalMotion(card, time);
 		});
-
-		const averageEntrance =
-			this.cards.reduce(
-				(sum, card) => sum + (card.userData.entranceProgress || 0),
-				0,
-			) / Math.max(1, this.cards.length);
-		this._setOrbitGuideOpacity(averageEntrance * 0.14);
 
 		if (
 			!this.isVisible &&
@@ -2053,80 +1726,13 @@ export class CardManager {
 	}
 
 	handleClick(mousePos) {
-		const pos = mousePos || this._lastPointerPos || { x: 0, y: 0 };
-		if (!this.cardGroup.visible) return;
-		const clickedCard = this.getHoveredCardFromScreen(pos);
+		if (!mousePos || !this.cardGroup.visible) return;
+		const clickedCard = this.getHoveredCardFromScreen(mousePos);
 		if (clickedCard) {
 			const link = clickedCard.userData.link;
 			if (!link || link === "#") return;
 			globalThis.location.href = link;
 		}
-	}
-
-	attachPointerHandlers(domElement) {
-		const el = domElement || this.renderer?.domElement || globalThis;
-		if (this._boundPointerMove) this.detachPointerHandlers();
-
-		this._boundPointerMove = (e) => {
-			const rect = el.getBoundingClientRect?.() ?? {
-				left: 0,
-				top: 0,
-				width: globalThis.innerWidth,
-				height: globalThis.innerHeight,
-			};
-			const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-			const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-			this._lastPointerPos.x = x;
-			this._lastPointerPos.y = y;
-		};
-
-		this._boundPointerDown = () => {
-			this._pointerDown = true;
-			this._pointerDownPos = { ...this._lastPointerPos };
-		};
-
-		this._boundPointerUp = () => {
-			if (!this._pointerDown) return;
-			this._pointerDown = false;
-			if (!this._pointerDownPos) return;
-			const dx = this._lastPointerPos.x - this._pointerDownPos.x;
-			const dy = this._lastPointerPos.y - this._pointerDownPos.y;
-			if (Math.hypot(dx, dy) < 0.04) this.handleClick(this._lastPointerPos);
-			this._pointerDownPos = null;
-		};
-
-		el.addEventListener("pointermove", this._boundPointerMove, {
-			passive: true,
-		});
-		el.addEventListener("pointerdown", this._boundPointerDown, {
-			passive: true,
-		});
-		el.addEventListener("pointerup", this._boundPointerUp, {
-			passive: true,
-		});
-		this._pointerElement = el;
-	}
-
-	detachPointerHandlers() {
-		const el = this._pointerElement || this.renderer?.domElement || globalThis;
-		if (!el) return;
-		if (this._boundPointerMove)
-			el.removeEventListener("pointermove", this._boundPointerMove);
-		if (this._boundPointerDown)
-			el.removeEventListener("pointerdown", this._boundPointerDown);
-		if (this._boundPointerUp)
-			el.removeEventListener("pointerup", this._boundPointerUp);
-		this._pointerElement = null;
-	}
-
-	getProfilingData() {
-		return {
-			texturesCreated: this._profile.texturesCreated,
-			texturesDisposed: this._profile.texturesDisposed,
-			cacheHits: this._profile.cacheHits,
-			cacheMisses: this._profile.cacheMisses,
-			cachedTextures: this._textureCache.size,
-		};
 	}
 
 	alignCardsToCameraImmediate() {
@@ -2140,7 +1746,6 @@ export class CardManager {
 	}
 
 	cleanup() {
-		this._disposeOrbitGuide();
 		this.scene.remove(this.cardGroup);
 		this.cards.forEach((card) => this._disposeCardResources(card));
 		if (this._sharedGeometry) {
@@ -2153,26 +1758,7 @@ export class CardManager {
 		}
 		this.cards = [];
 		this._disposeCachedTextures();
-		try {
-			this.detachPointerHandlers();
-		} catch {
-			/* ignore */
-		}
 		this._removeResizeHandler();
-	}
-
-	_disposeOrbitGuide() {
-		if (!this.orbitGuide) return;
-
-		try {
-			this.cardGroup?.remove?.(this.orbitGuide);
-			this.orbitGuide.geometry?.dispose?.();
-			this.orbitGuide.material?.dispose?.();
-		} catch (err) {
-			log.warn("EarthCards: orbit guide dispose failed", err);
-		}
-
-		this.orbitGuide = null;
 	}
 
 	_disposeCardResources(card) {
@@ -2197,7 +1783,6 @@ export class CardManager {
 			try {
 				if (v.texture?.dispose) {
 					v.texture.dispose();
-					this._profile.texturesDisposed++;
 				}
 			} catch (err) {
 				log.warn("EarthCards: error disposing cached texture", err);
@@ -2217,7 +1802,6 @@ export class CardManager {
 					if (v.count <= 0) {
 						if (v.texture?.dispose) {
 							v.texture.dispose();
-							this._profile.texturesDisposed++;
 						}
 						this._textureCache.delete(k);
 					}

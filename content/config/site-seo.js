@@ -1,20 +1,20 @@
 export const SITE_OWNER_NAME = "Abdulkerim Sesli";
 export const SITE_LEGAL_NAME = "Abdulkerim Sesli";
-export const SITE_NAME = "Abdulkerim Sesli — Digital Creator Portfolio";
-export const SITE_WEBSITE_ALT_NAME = "Abdulkerim Sesli Portfolio";
+export const SITE_NAME = "Digital Creator Portfolio";
+export const SITE_WEBSITE_ALT_NAME = "Portfolio";
 export const SITE_WEBSITE_DESCRIPTION =
-	"Portfolio-Website mit technischen Artikeln, Bildern, Videos und Projektinhalten von Abdulkerim Sesli.";
+	"Portfolio-Website mit technischen Artikeln, Bildern, Videos und Projektinhalten.";
 export const SITE_PERSON_DISAMBIGUATING_DESCRIPTION =
 	"Persönliche Website von Abdulkerim Sesli (auch bekannt als Abdul Sesli, Webentwickler und Fotograf); nicht identisch mit dem Fußballspieler Abdülkerim Bardakcı und nicht mit Sesli-Kitap-Portalen.";
 export const SITE_DEFAULT_ROBOTS = "index, follow, max-image-preview:large";
 export const SITE_HOME_TITLE =
-	"Abdulkerim Sesli | Portfolio für Code, 3D, AI & digitale Experimente";
+	"Portfolio für Code, 3D, AI & digitale Experimente";
 export const SITE_HOME_DESCRIPTION =
-	"Persönliches Portfolio von Abdulkerim Sesli mit Web-Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes.";
+	"Persönliches Portfolio mit Web-Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes.";
 export const SITE_HOME_TITLE_EN =
-	"Abdulkerim Sesli — Portfolio for Code, 3D, AI & Digital Experiments";
+	"Portfolio for Code, 3D, AI & Digital Experiments";
 export const SITE_HOME_DESCRIPTION_EN =
-	"Personal portfolio of Abdulkerim Sesli with web projects, 3D interfaces, photography, videos, and build notes.";
+	"Personal portfolio with web projects, 3D interfaces, photography, videos, and build notes.";
 export const SITE_HOME_OG_DESCRIPTION =
 	"Persönliches Portfolio mit Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes.";
 export const SITE_HOME_KEYWORDS =

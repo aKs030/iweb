@@ -5,10 +5,21 @@ import { AppLoadManager } from "#core/load-manager.js";
 import { i18n } from "#core/i18n.js";
 import { EARTH_FALLBACK_BACKGROUND_URL } from "./texture-paths.js";
 
-import {
-	calculateQualityLevel,
-	calculateDynamicResolution,
-} from "./ui_helpers.js";
+// ===== Helper Functions (Pure) =====
+
+export function calculateQualityLevel(fps) {
+	if (fps < CONFIG.QUALITY_LEVELS.MEDIUM.minFPS) {
+		return "LOW";
+	} else if (fps < CONFIG.QUALITY_LEVELS.HIGH.minFPS) {
+		return "MEDIUM";
+	}
+	return "HIGH";
+}
+
+// DRS Disabled for maximum quality
+export function calculateDynamicResolution(_fps, _currentRatio, perfConfig) {
+	return perfConfig.PIXEL_RATIO;
+}
 
 const log = createLogger("EarthUI");
 
