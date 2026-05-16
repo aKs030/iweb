@@ -34,7 +34,6 @@ const SHARED_CONFIG = {
 class SharedParticleState {
 	constructor() {
 		this.systems = new Map();
-		this.isInitialized = false;
 	}
 
 	/**
@@ -68,7 +67,6 @@ class SharedParticleState {
 
 	reset() {
 		this.systems.clear();
-		this.isInitialized = false;
 	}
 }
 
@@ -265,16 +263,6 @@ class SharedCleanupManager {
 		log.info("Global cleanup completed");
 	}
 
-	/**
-	 * @param {string} systemName
-	 */
-	hasSystem(systemName) {
-		return this.cleanupFunctions.has(systemName);
-	}
-
-	getSystemCount() {
-		return this.cleanupFunctions.size;
-	}
 }
 
 // ===== Singleton Instances =====

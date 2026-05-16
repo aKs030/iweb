@@ -312,18 +312,18 @@
 		"closed": "{{title}} geschlossen"
 	},
 	"meta": {
-		"title": "Abdulkerim Sesli — Portfolio für Code, 3D, AI & digitale Experimente",
-		"description": "Persönliches Portfolio von Abdulkerim Sesli mit Web-Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes."
+		"title": "Portfolio für Code, 3D, AI & digitale Experimente",
+		"description": "Persönliches Portfolio mit Web-Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes."
 	},
 	"hero": {
 		"greeting": "Willkommen",
 		"btn_next": "Selected Work",
-		"aria_next": "Zur Selected-Work-Sektion scrollen",
+		"aria_next": "Zu Selected Work",
 		"btn_contact": "Kontakt"
 	},
 	"home": {
-		"hero_title": "Code, 3D, AI und <em>digitale Experimente.</em>",
-		"hero_lede": "Öffentliche Sammlung von Interfaces, Web-Experimenten, Fotografie, Videos und Build Notes aus Berlin.",
+		"hero_title": "Schön, dass du da bist.",
+		"hero_lede": "Willkommen in meiner digitalen Welt. Hier sammle ich Interfaces, Web-Experimente, Fotografie, Videos und Build Notes.",
 		"hero_meta_code": "JavaScript ES2023+",
 		"hero_meta_3d": "Three.js / WebGL",
 		"hero_meta_ai": "AI Search & Chat",

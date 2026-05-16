@@ -38,6 +38,37 @@ import {
 } from "./earth/ui.js";
 
 const log = createLogger("ThreeEarthSystem");
+const SECTION_CONFIGS = {
+	hero: {
+		earth: { pos: { x: 1, y: -2.5, z: -1 }, scale: 1.3, rotation: 0 },
+		moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+		mode: "day",
+	},
+	features: {
+		earth: { pos: { x: 0, y: -0.06, z: -2.35 }, scale: 0.64, rotation: 0 },
+		moon: { pos: { x: 5.8, y: 3.4, z: -9.6 }, scale: 0.72 },
+		lighting: {
+			ambientColor: 0x5f6678,
+			ambientIntensity: 1.55,
+			sunIntensity: 1.45,
+		},
+		mode: "day",
+	},
+	section3: {
+		earth: { pos: { x: -1, y: -0.5, z: -1 }, scale: 1, rotation: Math.PI },
+		moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+		mode: "night",
+	},
+	contact: {
+		earth: {
+			pos: { x: 0, y: -1.5, z: 0 },
+			scale: 1.1,
+			rotation: Math.PI / 2,
+		},
+		moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+		mode: "day",
+	},
+};
 
 /**
  * @typedef {import('../../core/types.js').TimerID} TimerID
@@ -100,6 +131,7 @@ class ThreeEarthSystem {
 		this.isVisible = true;
 		this.deviceCapabilities = null;
 		this._featuresCameraNeedsSettleLayout = false;
+		this._featureCardLayoutTimer = 0;
 		this._sectionEntries = new Map();
 
 		// Animation
@@ -124,9 +156,6 @@ class ThreeEarthSystem {
 		this.sectionObserver = null;
 		this.viewportObserver = null;
 
-		// Reuse vectors to avoid allocation in high-frequency callbacks
-		this._vTargetPos = null;
-		this._vTargetMoonPos = null;
 	}
 
 	async init() {
@@ -137,7 +166,7 @@ class ThreeEarthSystem {
 		}
 
 		const sharedState = getSharedState();
-		if (sharedState.systems.has("three-earth")) {
+		if (sharedState.hasSystem("three-earth")) {
 			log.debug("System already initialized");
 			return () => this.cleanup();
 		}
@@ -194,9 +223,6 @@ class ThreeEarthSystem {
 			this.nightMaterial = earthAssets.nightMaterial;
 			this.moonMesh = moonLOD;
 			this.cloudMesh = cloudObj;
-
-			this._vTargetPos = new this.THREE.Vector3();
-			this._vTargetMoonPos = new this.THREE.Vector3();
 
 			this._assembleScene();
 			this._initManagers(container);
@@ -286,10 +312,7 @@ class ThreeEarthSystem {
 	}
 
 	_detectDevice() {
-		const caps = /** @type {any} */ (this.deviceCapabilities);
-		this.isMobileDevice =
-			!!caps?.isMobile ||
-			(window.matchMedia?.("(max-width: 768px)")?.matches ?? false);
+		this.isMobileDevice = window.innerWidth <= 768;
 	}
 
 	/**
@@ -396,21 +419,11 @@ class ThreeEarthSystem {
 
 	_setupStarsAndLighting() {
 		try {
-			this.starManager = new StarManager(
-				this.THREE,
-				this.scene,
-				this.camera,
-				this.renderer,
-			);
+			this.starManager = new StarManager(this.THREE, this.scene);
 			const starField = this.starManager.createStarField();
 
 			sharedParallaxManager.addHandler((/** @type {number} */ progress) => {
-				if (
-					!starField ||
-					!this.starManager ||
-					this.starManager.transition?.active
-				)
-					return;
+				if (!starField || !this.starManager) return;
 				starField.rotation.y = progress * Math.PI * 0.2;
 				starField.position.z = Math.sin(progress * Math.PI) * 15;
 			}, "three-earth-stars");
@@ -485,11 +498,8 @@ class ThreeEarthSystem {
 			this.renderer,
 		);
 
-		if (this.starManager && "setCardManager" in this.starManager) {
-			this.starManager.setCardManager(this.cardManager);
-		}
-
 		this.cardManager.initFromData(this._getCardData());
+		this._syncFeatureCardsForSection();
 	}
 
 	_getCardData() {
@@ -605,21 +615,20 @@ class ThreeEarthSystem {
 				if (!this.camera || !this.renderer) return;
 				const width = container.clientWidth;
 				const height = container.clientHeight;
-				this.isMobileDevice =
-					window.matchMedia?.("(max-width: 768px)")?.matches ?? false;
+				this.isMobileDevice = width <= 768;
 
 				this.camera.aspect = width / height;
 				this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
 				this.camera.updateProjectionMatrix();
 				this.renderer.setSize(width, height);
-				if (this.starManager && "handleResize" in this.starManager) {
-					/** @type {any} */ (this.starManager).handleResize(width, height);
-				}
 			};
 			const cleanup = onResize(handler, 100);
 			sharedCleanupManager.addCleanupFunction("three-earth", cleanup, "resize");
 			return;
 		}
+
+		let lastWidth = 0;
+		let lastHeight = 0;
 
 		const resizeObserver = new ResizeObserver(
 			/** @type {ResizeObserverCallback} */ (
@@ -627,15 +636,21 @@ class ThreeEarthSystem {
 					if (!this.active || !this.camera || !this.renderer) return;
 					for (const entry of entries) {
 						const { width, height } = entry.contentRect;
-						this.isMobileDevice =
-							window.matchMedia?.("(max-width: 768px)")?.matches ?? false;
 
-						this.camera.aspect = width / height;
-						this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
-						this.camera.updateProjectionMatrix();
-						this.renderer.setSize(width, height);
-						if (this.starManager && "handleResize" in this.starManager) {
-							/** @type {any} */ (this.starManager).handleResize(width, height);
+						const isFirstRun = lastWidth === 0 && lastHeight === 0;
+						const widthChanged = width !== lastWidth;
+						const heightChangedSignificantly = Math.abs(height - lastHeight) > 80;
+
+						if (isFirstRun || widthChanged || heightChangedSignificantly) {
+							this.isMobileDevice = width <= 768;
+
+							this.camera.aspect = width / height;
+							this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
+							this.camera.updateProjectionMatrix();
+							this.renderer.setSize(width, height);
+							
+							lastWidth = width;
+							lastHeight = height;
 						}
 					}
 				}, 100)
@@ -727,15 +742,6 @@ class ThreeEarthSystem {
 
 			if (featuresCameraTransitioning) {
 				this.cardManager.alignCardsToCameraImmediate?.();
-				this._featuresCameraNeedsSettleLayout = true;
-			} else if (
-				this.currentSection === "features" &&
-				this._featuresCameraNeedsSettleLayout
-			) {
-				this.cardManager.refreshLayoutForCamera?.(true);
-				this._featuresCameraNeedsSettleLayout = false;
-			} else if (this.currentSection !== "features") {
-				this._featuresCameraNeedsSettleLayout = false;
 			}
 
 			this.cardManager.update(totalTime * 1000);
@@ -859,7 +865,7 @@ class ThreeEarthSystem {
 	 * @param {any} entry
 	 */
 	_handleSectionChange(entry) {
-		const newSection = _mapId(entry.target.id || "");
+		const newSection = entry.target.id || "";
 		if (!newSection || newSection === this.currentSection) return;
 
 		const prev = this.currentSection;
@@ -869,9 +875,7 @@ class ThreeEarthSystem {
 
 		const isFeaturesToAbout = prev === "features" && newSection === "section3";
 		this._updateEarthForSection(newSection, isFeaturesToAbout);
-
-		if (newSection === "features") this.cardManager?.setProgress(1);
-		else if (prev === "features") this.cardManager?.setProgress(0);
+		this._syncFeatureCardsForSection();
 
 		const container = document.querySelector(".three-earth-container");
 		const datasetContainer =
@@ -881,6 +885,48 @@ class ThreeEarthSystem {
 		if (datasetContainer) datasetContainer.dataset.section = newSection;
 	}
 
+	_syncFeatureCardsForSection() {
+		if (!this.cardManager) return;
+
+		if (this.currentSection === "features") {
+			// Temporarily snap camera to target so CardManager can calculate screen projections
+			const preset = CONFIG.CAMERA.PRESETS["features"];
+			const origPos = this.camera.position.clone();
+			const origQuat = this.camera.quaternion.clone();
+            
+			if (preset) {
+				this.camera.position.set(preset.x, preset.y, preset.z);
+				this.camera.lookAt(preset.lookAt.x, preset.lookAt.y, preset.lookAt.z);
+				this.camera.updateMatrixWorld(true);
+			}
+
+			this.cardManager.setProgress(1);
+			this.cardManager.alignCardsToCameraImmediate?.();
+			this.cardManager.refreshLayoutForCamera?.(true);
+
+			// Restore camera
+			if (preset) {
+				this.camera.position.copy(origPos);
+				this.camera.quaternion.copy(origQuat);
+				this.camera.updateMatrixWorld(true);
+			}
+
+			this._featuresCameraNeedsSettleLayout = false; // Layout is already perfect, no need to recalculate later
+			
+			if (this._featureCardLayoutTimer) {
+				this.timers.clearTimeout(this._featureCardLayoutTimer);
+				this._featureCardLayoutTimer = 0;
+			}
+		} else {
+			this.cardManager.setProgress(0);
+			this._featuresCameraNeedsSettleLayout = false;
+			if (this._featureCardLayoutTimer) {
+				this.timers.clearTimeout(this._featureCardLayoutTimer);
+				this._featureCardLayoutTimer = 0;
+			}
+		}
+	}
+
 	/**
 	 * @param {string} sectionName
 	 * @param {boolean} allowModeSwitch
@@ -888,7 +934,9 @@ class ThreeEarthSystem {
 	_updateEarthForSection(sectionName, allowModeSwitch) {
 		if (!this.earthMesh || !this.active) return;
 
-		const config = _getSectionConfig(sectionName);
+		const sectionKey = sectionName === "site-footer" ? "contact" : sectionName;
+		const config =
+			/** @type {any} */ (SECTION_CONFIGS)[sectionKey] || SECTION_CONFIGS.hero;
 		this._applyConfigToMeshes(config);
 
 		if (allowModeSwitch) {
@@ -1282,53 +1330,4 @@ function getOptimizedConfig(capabilities) {
 		};
 	}
 	return {};
-}
-
-/**
- * @param {string} id
- */
-function _mapId(id) {
-	return id;
-}
-
-/**
- * @param {string} sectionName
- */
-function _getSectionConfig(sectionName) {
-	const configs = {
-		hero: {
-			earth: { pos: { x: 1, y: -2.5, z: -1 }, scale: 1.3, rotation: 0 },
-			moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-			mode: "day",
-		},
-		features: {
-			earth: { pos: { x: 0, y: -0.06, z: -2.35 }, scale: 0.64, rotation: 0 },
-			moon: { pos: { x: 5.8, y: 3.4, z: -9.6 }, scale: 0.72 },
-			lighting: {
-				ambientColor: 0x5f6678,
-				ambientIntensity: 1.55,
-				sunIntensity: 1.45,
-			},
-			mode: "day",
-		},
-		section3: {
-			earth: { pos: { x: -1, y: -0.5, z: -1 }, scale: 1, rotation: Math.PI },
-			moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-			mode: "night",
-		},
-		contact: {
-			earth: {
-				pos: { x: 0, y: -1.5, z: 0 },
-				scale: 1.1,
-				rotation: Math.PI / 2,
-			},
-			moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-			mode: "day",
-		},
-	};
-	return (
-		/** @type {any} */ (configs)[
-			sectionName === "site-footer" ? "contact" : sectionName
-		] || configs.hero
-	);
 }

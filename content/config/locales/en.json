@@ -312,8 +312,8 @@
 		"closed": "{{title}} closed"
 	},
 	"meta": {
-		"title": "Abdulkerim Sesli — Portfolio for Code, 3D, AI & Digital Experiments",
-		"description": "Personal portfolio of Abdulkerim Sesli with web projects, 3D interfaces, photography, videos, and build notes."
+		"title": "Portfolio for Code, 3D, AI & Digital Experiments",
+		"description": "Personal portfolio with web projects, 3D interfaces, photography, videos, and build notes."
 	},
 	"hero": {
 		"greeting": "Welcome",
@@ -322,8 +322,8 @@
 		"btn_contact": "Contact"
 	},
 	"home": {
-		"hero_title": "Code, 3D, AI and <em>digital experiments.</em>",
-		"hero_lede": "Public collection of interfaces, web experiments, photography, videos, and build notes from Berlin.",
+		"hero_title": "Glad you're here.",
+		"hero_lede": "Welcome to my digital world. Here I collect interfaces, web experiments, photography, videos, and build notes.",
 		"hero_meta_code": "JavaScript ES2023+",
 		"hero_meta_3d": "Three.js / WebGL",
 		"hero_meta_ai": "AI Search & Chat",

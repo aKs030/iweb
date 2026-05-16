@@ -58,6 +58,36 @@ const HeroManager = (() => {
 
 				const dataModule = await ensureHeroData().catch(() => ({}));
 				await loadTyped(dataModule);
+
+				// Randomize all hero content
+				if (dataModule.getHeroContent) {
+					const content = dataModule.getHeroContent(i18n.currentLang);
+					const titleEl = document.querySelector(".hero__title");
+					const ledeEl = document.querySelector(".hero__lede");
+					const metaEls = document.querySelectorAll(".hero__meta li");
+					const btnPrimary = document.querySelector(".hero__button--primary");
+					const btnSecondary = document.querySelector(".hero__button--secondary");
+
+					if (titleEl) titleEl.textContent = content.title;
+					if (ledeEl) ledeEl.textContent = content.lede;
+					if (metaEls.length > 0 && content.meta) {
+						metaEls.forEach((el, i) => {
+							if (content.meta[i]) {
+								el.textContent = content.meta[i];
+								el.removeAttribute("data-i18n");
+							}
+						});
+					}
+					if (btnPrimary && content.primaryBtn) {
+						btnPrimary.textContent = content.primaryBtn;
+						btnPrimary.removeAttribute("data-i18n");
+					}
+					if (btnSecondary && content.secondaryBtn) {
+						btnSecondary.textContent = content.secondaryBtn;
+						btnSecondary.removeAttribute("data-i18n");
+					}
+				}
+
 				setRandomGreetingHTML();
 
 				isInitialized = true;
