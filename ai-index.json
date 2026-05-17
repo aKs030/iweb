@@ -1,577 +1,563 @@
 {
-	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"version": "1.1.0",
-	"lastUpdated": "2026-03-25",
-	"site": {
-		"name": "Abdulkerim Sesli Portfolio",
-		"url": "https://www.abdulkerimsesli.de",
-		"description": "Portfolio of Abdulkerim Sesli with modern web engineering, interactive 3D experiences, performance optimization, and AI integration",
-		"language": ["de", "en"],
-		"author": {
-			"name": "Abdulkerim Sesli",
-			"alternateName": ["Abdul Sesli", "AKS", "aKs030"],
-			"email": "kontakt@abdulkerimsesli.de",
-			"url": "https://www.abdulkerimsesli.de",
-			"sameAs": [
-				"https://github.com/aKs030",
-				"https://linkedin.com/in/abdulkerim-s",
-				"https://x.com/kRm_030",
-				"https://www.youtube.com/@aks.030"
-			]
-		}
-	},
-	"indexing": {
-		"allowAI": true,
-		"allowTraining": true,
-		"allowCaching": true,
-		"attribution": "required",
-		"crawlDelay": 1,
-		"preferredBots": [
-			"GPTBot",
-			"OAI-SearchBot",
-			"ChatGPT-User",
-			"Claude-Web",
-			"Google-Extended",
-			"PerplexityBot",
-			"CCBot"
-		],
-		"discovery": {
-			"llms": "https://www.abdulkerimsesli.de/llms.txt",
-			"llmsFull": "https://www.abdulkerimsesli.de/llms-full.txt",
-			"aiIndex": "https://www.abdulkerimsesli.de/ai-index.json",
-			"personJsonLd": "https://www.abdulkerimsesli.de/person.jsonld",
-			"sitemap": "https://www.abdulkerimsesli.de/sitemap.xml"
-		}
-	},
-	"content": {
-		"pages": [
-			{
-				"url": "https://www.abdulkerimsesli.de/",
-				"title": "Home - 3D Earth Visualization",
-				"description": "Interactive 3D Earth with Three.js",
-				"type": "homepage",
-				"keywords": ["three.js", "3d", "webgl", "interactive"],
-				"priority": 1
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/",
-				"title": "Projects Showcase",
-				"description": "Web development projects and applications",
-				"type": "portfolio",
-				"keywords": ["projects", "web apps", "javascript", "portfolio"],
-				"priority": 0.9
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/blog/",
-				"title": "Technical Blog",
-				"description": "Articles about web development, performance, and AI",
-				"type": "blog",
-				"keywords": ["blog", "tutorials", "web development", "performance"],
-				"priority": 0.8
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/videos/",
-				"title": "Video Portfolio",
-				"description": "Video tutorials and demonstrations",
-				"type": "media",
-				"keywords": ["videos", "tutorials", "youtube"],
-				"priority": 0.7
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/gallery/",
-				"title": "Photo Gallery",
-				"description": "Optimized image gallery with AVIF/WebP",
-				"type": "media",
-				"keywords": ["gallery", "images", "photography"],
-				"priority": 0.6
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/about/",
-				"title": "About & CV",
-				"description": "Professional background and skills",
-				"type": "about",
-				"keywords": ["about", "cv", "resume", "skills"],
-				"priority": 0.7
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/contact/",
-				"title": "Contact",
-				"description": "Get in touch",
-				"type": "contact",
-				"keywords": ["contact", "email", "form"],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/datenschutz/",
-				"title": "Datenschutzerklärung",
-				"description": "Datenschutzinformationen gemäß DSGVO",
-				"type": "legal",
-				"keywords": ["datenschutz", "privacy", "dsgvo"],
-				"priority": 0.45
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/impressum/",
-				"title": "Impressum",
-				"description": "Rechtliche Anbieterkennzeichnung und Kontaktdaten",
-				"type": "legal",
-				"keywords": ["impressum", "legal", "anbieterkennzeichnung"],
-				"priority": 0.45
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/abdul-sesli/",
-				"title": "Abdul Sesli (Alias)",
-				"description": "Alias-Route und alternative Namensschreibweise",
-				"type": "about",
-				"keywords": ["abdul sesli", "alias", "name", "profil"],
-				"priority": 0.42
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/pages/projekte/apps-config.json",
-				"title": "Project Apps Config",
-				"description": "Kanonische JSON-Quelle fuer Projekt-App-Metadaten",
-				"type": "data",
-				"keywords": ["apps", "config", "json", "projekte", "index"],
-				"priority": 0.55
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/pages/blog/posts/index.json",
-				"title": "Blog Posts Index",
-				"description": "Kanonische JSON-Quelle fuer alle Blog-Posts",
-				"type": "data",
-				"keywords": ["blog", "posts", "index", "json", "artikel"],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/calculator/",
-				"title": "Calculator",
-				"description": "Moderner Taschenrechner mit erweiterten Funktionen. Grundrechenarten und wissenschaftliche Operationen.",
-				"type": "project-app",
-				"keywords": [
-					"calculator",
-					"utility",
-					"math",
-					"tool",
-					"scientific",
-					"computation",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.54
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/color-changer/",
-				"title": "Color Changer",
-				"description": "Dynamische Hintergrundfarben per Klick. Entdecke schöne Farbkombinationen und Gradienten.",
-				"type": "project-app",
-				"keywords": [
-					"color-changer",
-					"color",
-					"changer",
-					"ui",
-					"design",
-					"css",
-					"theme",
-					"gradient",
-					"interactive",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/ip-info/",
-				"title": "Ip Info",
-				"description": "Zeigt deine öffentliche IP-Adresse und Standortinformationen an. Optimiert für Cloudflare Workers/Pages.",
-				"type": "project-app",
-				"keywords": [
-					"ip-info",
-					"ip",
-					"info",
-					"utility",
-					"network",
-					"geo",
-					"location",
-					"cloudflare",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.54
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/memory-game/",
-				"title": "Memory Game",
-				"description": "Klassisches Memory-Spiel mit verschiedenen Schwierigkeitsgraden. Trainiere dein Gedächtnis!",
-				"type": "project-app",
-				"keywords": [
-					"memory-game",
-					"memory",
-					"game",
-					"cards",
-					"brain-training",
-					"puzzle",
-					"concentration",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/paint-app/",
-				"title": "Paint App",
-				"description": "Einfaches Zeichenprogramm mit verschiedenen Farben und Pinselgrößen.",
-				"type": "project-app",
-				"keywords": [
-					"paint-app",
-					"paint",
-					"app",
-					"ui",
-					"drawing",
-					"canvas",
-					"art",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/password-generator/",
-				"title": "Password Generator",
-				"description": "Sicherer Passwort-Generator mit anpassbaren Optionen. Erstelle starke Passwörter für maximale Sicherheit.",
-				"type": "project-app",
-				"keywords": [
-					"password-generator",
-					"password",
-					"generator",
-					"utility",
-					"security",
-					"encryption",
-					"safety",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.54
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/pong-game/",
-				"title": "Pong Game",
-				"description": "Klassisches Pong-Spiel mit KI-Gegner, Physics Engine und Canvas-Rendering",
-				"type": "project-app",
-				"keywords": [
-					"pong-game",
-					"pong",
-					"game",
-					"canvas",
-					"retro",
-					"arcade",
-					"ai",
-					"physics",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/quiz-app/",
-				"title": "Quiz App",
-				"description": "Interaktive Quiz-App mit verschiedenen Kategorien und Schwierigkeitsgraden",
-				"type": "project-app",
-				"keywords": [
-					"quiz-app",
-					"quiz",
-					"app",
-					"game",
-					"trivia",
-					"education",
-					"javascript",
-					"wissen",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/schere-stein-papier/",
-				"title": "Schere Stein Papier",
-				"description": "Der Klassiker gegen den Computer! Wähle Schere, Stein oder Papier und tritt gegen die KI an.",
-				"type": "project-app",
-				"keywords": [
-					"schere-stein-papier",
-					"schere",
-					"stein",
-					"papier",
-					"game",
-					"spiel",
-					"rock-paper-scissors",
-					"javascript",
-					"entertainment",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/schluesselweite/",
-				"title": "Schluesselweite",
-				"description": "ISO/DIN Schlüsselweite und Gewinde Tabelle",
-				"type": "project-app",
-				"keywords": [
-					"schluesselweite",
-					"utility",
-					"mechanic",
-					"tool",
-					"iso",
-					"din",
-					"thread",
-					"bolt",
-					"schlüsselweite",
-					"gewinde",
-					"steigung"
-				],
-				"priority": 0.54
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/snake-game/",
-				"title": "Snake Game",
-				"description": "Klassisches Snake-Spiel mit Canvas, Game Loop und fortgeschrittener Kollisionserkennung",
-				"type": "project-app",
-				"keywords": [
-					"snake-game",
-					"snake",
-					"game",
-					"canvas",
-					"retro",
-					"arcade",
-					"javascript",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/tic-tac-toe/",
-				"title": "Tic Tac Toe",
-				"description": "Klassisches Tic-Tac-Toe Spiel für zwei Spieler.",
-				"type": "project-app",
-				"keywords": [
-					"tic-tac-toe",
-					"tic",
-					"tac",
-					"toe",
-					"game",
-					"strategy",
-					"2-player",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/timer-app/",
-				"title": "Timer App",
-				"description": "Vielseitige Timer-App mit Countdown, Stoppuhr und Pomodoro-Technik",
-				"type": "project-app",
-				"keywords": [
-					"timer-app",
-					"timer",
-					"app",
-					"utility",
-					"countdown",
-					"stopwatch",
-					"pomodoro",
-					"productivity",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.54
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/todo-liste/",
-				"title": "Todo Liste",
-				"description": "Produktivitäts-Tool zum Verwalten von Aufgaben. Erstelle, bearbeite und organisiere deine To-Dos.",
-				"type": "project-app",
-				"keywords": [
-					"todo-liste",
-					"todo",
-					"liste",
-					"productivity",
-					"tasks",
-					"crud",
-					"organization",
-					"planner",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.52
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/typing-speed-test/",
-				"title": "Typing Speed Test",
-				"description": "Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.",
-				"type": "project-app",
-				"keywords": [
-					"typing-speed-test",
-					"typing",
-					"speed",
-					"test",
-					"productivity",
-					"wpm",
-					"speed-test",
-					"keyboard",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.52
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/weather-app/",
-				"title": "Weather App",
-				"description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
-				"type": "project-app",
-				"keywords": [
-					"weather-app",
-					"weather",
-					"app",
-					"web",
-					"api",
-					"forecast",
-					"location",
-					"temperature",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.54
-			},
-			{
-				"url": "https://www.abdulkerimsesli.de/projekte/zahlen-raten/",
-				"title": "Zahlen Raten",
-				"description": "Finde die geheime Zahl zwischen 1 und 100. Ein klassisches Ratespiel mit Hinweisen.",
-				"type": "project-app",
-				"keywords": [
-					"zahlen-raten",
-					"zahlen",
-					"raten",
-					"puzzle",
-					"logic",
-					"guessing",
-					"numbers",
-					"math",
-					"brain",
-					"abdulkerim",
-					"sesli"
-				],
-				"priority": 0.5
-			}
-		],
-		"apis": [
-			{
-				"endpoint": "/api/search",
-				"method": "POST",
-				"description": "Deterministic search over static content and sitemap data",
-				"technology": "Cloudflare Pages Functions"
-			},
-			{
-				"endpoint": "/api/ai-agent",
-				"method": "POST",
-				"description": "Streaming AI assistant with memory and tool-calling",
-				"technology": "Cloudflare Workers AI"
-			},
-			{
-				"endpoint": "/api/contact",
-				"method": "POST",
-				"description": "Contact form submission",
-				"technology": "Resend API"
-			}
-		]
-	},
-	"technologies": {
-		"frontend": [
-			"JavaScript ES2023+",
-			"Three.js 0.183.2",
-			"Web Components",
-			"CSS3 (Container Queries, Nesting)"
-		],
-		"backend": [
-			"Cloudflare Pages Functions",
-			"Cloudflare Workers AI",
-			"Resend API"
-		],
-		"infrastructure": [
-			"Cloudflare Pages",
-			"R2 Storage",
-			"KV Storage",
-			"Edge Computing"
-		],
-		"tools": ["npm", "Wrangler", "Chrome DevTools", "GitHub Actions"]
-	},
-	"features": {
-		"ai": {
-			"search": {
-				"enabled": true,
-				"technology": "Cloudflare Pages Functions",
-				"type": "deterministic",
-				"source": "static content and sitemaps"
-			},
-			"chat": {
-				"enabled": true,
-				"technology": "Cloudflare Workers AI",
-				"model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-				"features": [
-					"context-aware",
-					"markdown-rendering",
-					"memory",
-					"tool-calling"
-				]
-			}
-		},
-		"3d": {
-			"enabled": true,
-			"technology": "Three.js",
-			"features": ["interactive-globe", "day-night-textures", "normal-maps"]
-		},
-		"performance": {
-			"bundleSize": "~240 kB gzipped",
-			"lighthouseScore": "95+",
-			"coreWebVitals": "optimized"
-		}
-	},
-	"sitemaps": [
-		{
-			"url": "https://www.abdulkerimsesli.de/sitemap.xml",
-			"type": "main"
-		},
-		{
-			"url": "https://www.abdulkerimsesli.de/sitemap-images.xml",
-			"type": "images"
-		},
-		{
-			"url": "https://www.abdulkerimsesli.de/sitemap-videos.xml",
-			"type": "videos"
-		}
-	],
-	"feeds": [
-		{
-			"url": "https://www.abdulkerimsesli.de/blog/feed.xml",
-			"type": "rss",
-			"format": "RSS 2.0"
-		}
-	],
-	"documentation": {
-		"llms": "https://www.abdulkerimsesli.de/llms.txt",
-		"llmsFull": "https://www.abdulkerimsesli.de/llms-full.txt",
-		"bio": "https://www.abdulkerimsesli.de/bio.md",
-		"person": "https://www.abdulkerimsesli.de/person.jsonld",
-		"aiIndex": "https://www.abdulkerimsesli.de/ai-index.json",
-		"openapi": "https://www.abdulkerimsesli.de/.well-known/openapi.json",
-		"aiPlugin": "https://www.abdulkerimsesli.de/.well-known/ai-plugin.json"
-	},
-	"license": {
-		"type": "MIT",
-		"url": "https://github.com/aKs030/iweb/blob/main/LICENSE",
-		"attribution": "required"
-	},
-	"contact": {
-		"email": "kontakt@abdulkerimsesli.de",
-		"github": "https://github.com/aKs030",
-		"linkedin": "https://linkedin.com/in/abdulkerim-s"
-	}
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.1.0",
+  "lastUpdated": "2026-03-25",
+  "site": {
+    "name": "Abdulkerim Sesli Portfolio",
+    "url": "https://www.abdulkerimsesli.de",
+    "description": "Portfolio of Abdulkerim Sesli with modern web engineering, interactive 3D experiences, performance optimization, and AI integration",
+    "language": ["de", "en"],
+    "author": {
+      "name": "Abdulkerim Sesli",
+      "alternateName": ["Abdul Sesli", "AKS", "aKs030"],
+      "email": "kontakt@abdulkerimsesli.de",
+      "url": "https://www.abdulkerimsesli.de",
+      "sameAs": [
+        "https://github.com/aKs030",
+        "https://linkedin.com/in/abdulkerim-s",
+        "https://x.com/kRm_030",
+        "https://www.youtube.com/@aks.030"
+      ]
+    }
+  },
+  "indexing": {
+    "allowAI": true,
+    "allowTraining": true,
+    "allowCaching": true,
+    "attribution": "required",
+    "crawlDelay": 1,
+    "preferredBots": [
+      "GPTBot",
+      "OAI-SearchBot",
+      "ChatGPT-User",
+      "Claude-Web",
+      "Google-Extended",
+      "PerplexityBot",
+      "CCBot"
+    ],
+    "discovery": {
+      "llms": "https://www.abdulkerimsesli.de/llms.txt",
+      "llmsFull": "https://www.abdulkerimsesli.de/llms-full.txt",
+      "aiIndex": "https://www.abdulkerimsesli.de/ai-index.json",
+      "personJsonLd": "https://www.abdulkerimsesli.de/person.jsonld",
+      "sitemap": "https://www.abdulkerimsesli.de/sitemap.xml"
+    }
+  },
+  "content": {
+    "pages": [
+      {
+        "url": "https://www.abdulkerimsesli.de/",
+        "title": "Home - 3D Earth Visualization",
+        "description": "Interactive 3D Earth with Three.js",
+        "type": "homepage",
+        "keywords": ["three.js", "3d", "webgl", "interactive"],
+        "priority": 1
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/",
+        "title": "Projects Showcase",
+        "description": "Web development projects and applications",
+        "type": "portfolio",
+        "keywords": ["projects", "web apps", "javascript", "portfolio"],
+        "priority": 0.9
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/blog/",
+        "title": "Technical Blog",
+        "description": "Articles about web development, performance, and AI",
+        "type": "blog",
+        "keywords": ["blog", "tutorials", "web development", "performance"],
+        "priority": 0.8
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/videos/",
+        "title": "Video Portfolio",
+        "description": "Video tutorials and demonstrations",
+        "type": "media",
+        "keywords": ["videos", "tutorials", "youtube"],
+        "priority": 0.7
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/gallery/",
+        "title": "Photo Gallery",
+        "description": "Optimized image gallery with AVIF/WebP",
+        "type": "media",
+        "keywords": ["gallery", "images", "photography"],
+        "priority": 0.6
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/about/",
+        "title": "About & CV",
+        "description": "Professional background and skills",
+        "type": "about",
+        "keywords": ["about", "cv", "resume", "skills"],
+        "priority": 0.7
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/contact/",
+        "title": "Contact",
+        "description": "Get in touch",
+        "type": "contact",
+        "keywords": ["contact", "email", "form"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/datenschutz/",
+        "title": "Datenschutzerklärung",
+        "description": "Datenschutzinformationen gemäß DSGVO",
+        "type": "legal",
+        "keywords": ["datenschutz", "privacy", "dsgvo"],
+        "priority": 0.45
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/impressum/",
+        "title": "Impressum",
+        "description": "Rechtliche Anbieterkennzeichnung und Kontaktdaten",
+        "type": "legal",
+        "keywords": ["impressum", "legal", "anbieterkennzeichnung"],
+        "priority": 0.45
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/abdul-sesli/",
+        "title": "Abdul Sesli (Alias)",
+        "description": "Alias-Route und alternative Namensschreibweise",
+        "type": "about",
+        "keywords": ["abdul sesli", "alias", "name", "profil"],
+        "priority": 0.42
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/pages/projekte/apps-config.json",
+        "title": "Project Apps Config",
+        "description": "Kanonische JSON-Quelle fuer Projekt-App-Metadaten",
+        "type": "data",
+        "keywords": ["apps", "config", "json", "projekte", "index"],
+        "priority": 0.55
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/pages/blog/posts/index.json",
+        "title": "Blog Posts Index",
+        "description": "Kanonische JSON-Quelle fuer alle Blog-Posts",
+        "type": "data",
+        "keywords": ["blog", "posts", "index", "json", "artikel"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/calculator/",
+        "title": "Calculator",
+        "description": "Moderner Taschenrechner mit erweiterten Funktionen. Grundrechenarten und wissenschaftliche Operationen.",
+        "type": "project-app",
+        "keywords": [
+          "calculator",
+          "utility",
+          "math",
+          "tool",
+          "scientific",
+          "computation",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.54
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/color-changer/",
+        "title": "Color Changer",
+        "description": "Dynamische Hintergrundfarben per Klick. Entdecke schöne Farbkombinationen und Gradienten.",
+        "type": "project-app",
+        "keywords": [
+          "color-changer",
+          "color",
+          "changer",
+          "ui",
+          "design",
+          "css",
+          "theme",
+          "gradient",
+          "interactive",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/ip-info/",
+        "title": "Ip Info",
+        "description": "Zeigt deine öffentliche IP-Adresse und Standortinformationen an. Optimiert für Cloudflare Workers/Pages.",
+        "type": "project-app",
+        "keywords": [
+          "ip-info",
+          "ip",
+          "info",
+          "utility",
+          "network",
+          "geo",
+          "location",
+          "cloudflare",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.54
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/memory-game/",
+        "title": "Memory Game",
+        "description": "Klassisches Memory-Spiel mit verschiedenen Schwierigkeitsgraden. Trainiere dein Gedächtnis!",
+        "type": "project-app",
+        "keywords": [
+          "memory-game",
+          "memory",
+          "game",
+          "cards",
+          "brain-training",
+          "puzzle",
+          "concentration",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/paint-app/",
+        "title": "Paint App",
+        "description": "Einfaches Zeichenprogramm mit verschiedenen Farben und Pinselgrößen.",
+        "type": "project-app",
+        "keywords": [
+          "paint-app",
+          "paint",
+          "app",
+          "ui",
+          "drawing",
+          "canvas",
+          "art",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/password-generator/",
+        "title": "Password Generator",
+        "description": "Sicherer Passwort-Generator mit anpassbaren Optionen. Erstelle starke Passwörter für maximale Sicherheit.",
+        "type": "project-app",
+        "keywords": [
+          "password-generator",
+          "password",
+          "generator",
+          "utility",
+          "security",
+          "encryption",
+          "safety",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.54
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/pong-game/",
+        "title": "Pong Game",
+        "description": "Klassisches Pong-Spiel mit KI-Gegner, Physics Engine und Canvas-Rendering",
+        "type": "project-app",
+        "keywords": [
+          "pong-game",
+          "pong",
+          "game",
+          "canvas",
+          "retro",
+          "arcade",
+          "ai",
+          "physics",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/quiz-app/",
+        "title": "Quiz App",
+        "description": "Interaktive Quiz-App mit verschiedenen Kategorien und Schwierigkeitsgraden",
+        "type": "project-app",
+        "keywords": [
+          "quiz-app",
+          "quiz",
+          "app",
+          "game",
+          "trivia",
+          "education",
+          "javascript",
+          "wissen",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/schere-stein-papier/",
+        "title": "Schere Stein Papier",
+        "description": "Der Klassiker gegen den Computer! Wähle Schere, Stein oder Papier und tritt gegen die KI an.",
+        "type": "project-app",
+        "keywords": [
+          "schere-stein-papier",
+          "schere",
+          "stein",
+          "papier",
+          "game",
+          "spiel",
+          "rock-paper-scissors",
+          "javascript",
+          "entertainment",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/schluesselweite/",
+        "title": "Schluesselweite",
+        "description": "ISO/DIN Schlüsselweite und Gewinde Tabelle",
+        "type": "project-app",
+        "keywords": [
+          "schluesselweite",
+          "utility",
+          "mechanic",
+          "tool",
+          "iso",
+          "din",
+          "thread",
+          "bolt",
+          "schlüsselweite",
+          "gewinde",
+          "steigung"
+        ],
+        "priority": 0.54
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/snake-game/",
+        "title": "Snake Game",
+        "description": "Klassisches Snake-Spiel mit Canvas, Game Loop und fortgeschrittener Kollisionserkennung",
+        "type": "project-app",
+        "keywords": [
+          "snake-game",
+          "snake",
+          "game",
+          "canvas",
+          "retro",
+          "arcade",
+          "javascript",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/tic-tac-toe/",
+        "title": "Tic Tac Toe",
+        "description": "Klassisches Tic-Tac-Toe Spiel für zwei Spieler.",
+        "type": "project-app",
+        "keywords": [
+          "tic-tac-toe",
+          "tic",
+          "tac",
+          "toe",
+          "game",
+          "strategy",
+          "2-player",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/timer-app/",
+        "title": "Timer App",
+        "description": "Vielseitige Timer-App mit Countdown, Stoppuhr und Pomodoro-Technik",
+        "type": "project-app",
+        "keywords": [
+          "timer-app",
+          "timer",
+          "app",
+          "utility",
+          "countdown",
+          "stopwatch",
+          "pomodoro",
+          "productivity",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.54
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/todo-liste/",
+        "title": "Todo Liste",
+        "description": "Produktivitäts-Tool zum Verwalten von Aufgaben. Erstelle, bearbeite und organisiere deine To-Dos.",
+        "type": "project-app",
+        "keywords": [
+          "todo-liste",
+          "todo",
+          "liste",
+          "productivity",
+          "tasks",
+          "crud",
+          "organization",
+          "planner",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.52
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/typing-speed-test/",
+        "title": "Typing Speed Test",
+        "description": "Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.",
+        "type": "project-app",
+        "keywords": [
+          "typing-speed-test",
+          "typing",
+          "speed",
+          "test",
+          "productivity",
+          "wpm",
+          "speed-test",
+          "keyboard",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.52
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/weather-app/",
+        "title": "Weather App",
+        "description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
+        "type": "project-app",
+        "keywords": [
+          "weather-app",
+          "weather",
+          "app",
+          "web",
+          "api",
+          "forecast",
+          "location",
+          "temperature",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.54
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/zahlen-raten/",
+        "title": "Zahlen Raten",
+        "description": "Finde die geheime Zahl zwischen 1 und 100. Ein klassisches Ratespiel mit Hinweisen.",
+        "type": "project-app",
+        "keywords": [
+          "zahlen-raten",
+          "zahlen",
+          "raten",
+          "puzzle",
+          "logic",
+          "guessing",
+          "numbers",
+          "math",
+          "brain",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.5
+      }
+    ],
+    "apis": [
+      {
+        "endpoint": "/api/search",
+        "method": "POST",
+        "description": "Deterministic search over static content and sitemap data",
+        "technology": "Cloudflare Pages Functions"
+      },
+      {
+        "endpoint": "/api/ai-agent",
+        "method": "POST",
+        "description": "Streaming AI assistant with memory and tool-calling",
+        "technology": "Cloudflare Workers AI"
+      },
+      {
+        "endpoint": "/api/contact",
+        "method": "POST",
+        "description": "Contact form submission",
+        "technology": "Resend API"
+      }
+    ]
+  },
+  "technologies": {
+    "frontend": [
+      "JavaScript ES2023+",
+      "Three.js 0.183.2",
+      "Web Components",
+      "CSS3 (Container Queries, Nesting)"
+    ],
+    "backend": ["Cloudflare Pages Functions", "Cloudflare Workers AI", "Resend API"],
+    "infrastructure": ["Cloudflare Pages", "R2 Storage", "KV Storage", "Edge Computing"],
+    "tools": ["npm", "Wrangler", "Chrome DevTools", "GitHub Actions"]
+  },
+  "features": {
+    "ai": {
+      "search": {
+        "enabled": true,
+        "technology": "Cloudflare Pages Functions",
+        "type": "deterministic",
+        "source": "static content and sitemaps"
+      },
+      "chat": {
+        "enabled": true,
+        "technology": "Cloudflare Workers AI",
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "features": ["context-aware", "markdown-rendering", "memory", "tool-calling"]
+      }
+    },
+    "3d": {
+      "enabled": true,
+      "technology": "Three.js",
+      "features": ["interactive-globe", "day-night-textures", "normal-maps"]
+    },
+    "performance": {
+      "bundleSize": "~240 kB gzipped",
+      "lighthouseScore": "95+",
+      "coreWebVitals": "optimized"
+    }
+  },
+  "sitemaps": [
+    {
+      "url": "https://www.abdulkerimsesli.de/sitemap.xml",
+      "type": "main"
+    },
+    {
+      "url": "https://www.abdulkerimsesli.de/sitemap-images.xml",
+      "type": "images"
+    },
+    {
+      "url": "https://www.abdulkerimsesli.de/sitemap-videos.xml",
+      "type": "videos"
+    }
+  ],
+  "feeds": [
+    {
+      "url": "https://www.abdulkerimsesli.de/blog/feed.xml",
+      "type": "rss",
+      "format": "RSS 2.0"
+    }
+  ],
+  "documentation": {
+    "llms": "https://www.abdulkerimsesli.de/llms.txt",
+    "llmsFull": "https://www.abdulkerimsesli.de/llms-full.txt",
+    "bio": "https://www.abdulkerimsesli.de/bio.md",
+    "person": "https://www.abdulkerimsesli.de/person.jsonld",
+    "aiIndex": "https://www.abdulkerimsesli.de/ai-index.json",
+    "openapi": "https://www.abdulkerimsesli.de/.well-known/openapi.json",
+    "aiPlugin": "https://www.abdulkerimsesli.de/.well-known/ai-plugin.json"
+  },
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/aKs030/iweb/blob/main/LICENSE",
+    "attribution": "required"
+  },
+  "contact": {
+    "email": "kontakt@abdulkerimsesli.de",
+    "github": "https://github.com/aKs030",
+    "linkedin": "https://linkedin.com/in/abdulkerim-s"
+  }
 }

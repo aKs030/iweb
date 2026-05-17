@@ -183,31 +183,31 @@ const FOOTER_SHELL_MARKUP = `
  * Handles injecting the header right after the skip-link.
  */
 export class HeaderInjector {
-	constructor(url) {
-		// Some routes (e.g. ?menuShadow=1) need shadow dom marker
-		let shadowDom = false;
-		try {
-			if (url.searchParams.get("menuShadow") === "1") {
-				shadowDom = true;
-			}
-		} catch {
-			/* ignore */
-		}
-		this.markup = `
+  constructor(url) {
+    // Some routes (e.g. ?menuShadow=1) need shadow dom marker
+    let shadowDom = false;
+    try {
+      if (url.searchParams.get("menuShadow") === "1") {
+        shadowDom = true;
+      }
+    } catch {
+      /* ignore */
+    }
+    this.markup = `
 <header class="site-header">
   <site-menu data-injected-by="edge-middleware" data-shell="true" ${shadowDom ? 'data-shadow-dom="true"' : ""}>
 		${MENU_SHELL_MARKUP}
   </site-menu>
 </header>
 `;
-		this.injected = false;
-	}
+    this.injected = false;
+  }
 
-	element(el) {
-		if (this.injected) return;
-		this.injected = true;
-		el.after(this.markup, { html: true });
-	}
+  element(el) {
+    if (this.injected) return;
+    this.injected = true;
+    el.after(this.markup, { html: true });
+  }
 }
 
 /**
@@ -215,15 +215,15 @@ export class HeaderInjector {
  * (If element matches body, we append it inside the body at the end).
  */
 export class FooterInjector {
-	constructor() {
-		this.markup = `
+  constructor() {
+    this.markup = `
 <site-footer data-shell="true" data-injected-by="edge-middleware">
   ${FOOTER_SHELL_MARKUP}
 </site-footer>
 `;
-	}
+  }
 
-	element(el) {
-		el.append(this.markup, { html: true });
-	}
+  element(el) {
+    el.append(this.markup, { html: true });
+  }
 }

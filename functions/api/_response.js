@@ -1,7 +1,7 @@
 import { mergeHeaders } from "../_shared/http-headers.js";
 
 const DEFAULT_JSON_HEADERS = {
-	"Content-Type": "application/json; charset=utf-8",
+  "Content-Type": "application/json; charset=utf-8",
 };
 
 /**
@@ -9,7 +9,7 @@ const DEFAULT_JSON_HEADERS = {
  * @returns {Headers}
  */
 function createHeaders(headers) {
-	return mergeHeaders(DEFAULT_JSON_HEADERS, headers);
+  return mergeHeaders(DEFAULT_JSON_HEADERS, headers);
 }
 
 /**
@@ -18,10 +18,10 @@ function createHeaders(headers) {
  * @returns {Response}
  */
 export function jsonResponse(payload, options = {}) {
-	return new Response(JSON.stringify(payload), {
-		status: options.status || 200,
-		headers: createHeaders(options.headers),
-	});
+  return new Response(JSON.stringify(payload), {
+    status: options.status || 200,
+    headers: createHeaders(options.headers),
+  });
 }
 
 /**
@@ -30,14 +30,14 @@ export function jsonResponse(payload, options = {}) {
  * @returns {Response}
  */
 export function errorJsonResponse(error, options = {}) {
-	/** @type {Record<string, unknown>} */
-	const payload = typeof error === "string" ? { error } : { ...error };
-	if (options.code && !("code" in payload)) {
-		payload.code = options.code;
-	}
+  /** @type {Record<string, unknown>} */
+  const payload = typeof error === "string" ? { error } : { ...error };
+  if (options.code && !("code" in payload)) {
+    payload.code = options.code;
+  }
 
-	return jsonResponse(payload, {
-		status: options.status || 500,
-		headers: options.headers,
-	});
+  return jsonResponse(payload, {
+    status: options.status || 500,
+    headers: options.headers,
+  });
 }

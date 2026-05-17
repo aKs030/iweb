@@ -14,10 +14,10 @@ const log = createLogger("YouTubeAPI");
  * @param {string} channelId - YouTube channel ID
  * @returns {Promise<string|null>} - Uploads playlist ID or null
  */
-export const fetchUploadsPlaylist = async (channelId) => {
-	const url = `/api/youtube/channels?part=contentDetails&id=${channelId}`;
-	const json = await fetchJSON(url);
-	return json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads || null;
+export const fetchUploadsPlaylist = async channelId => {
+  const url = `/api/youtube/channels?part=contentDetails&id=${channelId}`;
+  const json = await fetchJSON(url);
+  return json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads || null;
 };
 
 /**
@@ -27,43 +27,36 @@ export const fetchUploadsPlaylist = async (channelId) => {
  * @param {number} maxResults - Max results per page
  * @returns {Promise<Array>} - Array of playlist items
  */
-export const fetchPlaylistItems = async (
-	playlistId,
-	onProgress = null,
-	maxResults = 50,
-) => {
-	const allItems = [];
-	let pageToken = "";
-	let page = 0;
+export const fetchPlaylistItems = async (playlistId, onProgress = null, maxResults = 50) => {
+  const allItems = [];
+  let pageToken = "";
+  let page = 0;
 
-	do {
-		const url = `/api/youtube/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=${maxResults}${
-			pageToken ? `&pageToken=${pageToken}` : ""
-		}`;
+  do {
+    const url = `/api/youtube/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=${maxResults}${
+      pageToken ? `&pageToken=${pageToken}` : ""
+    }`;
 
-		try {
-			const json = await fetchJSON(url);
-			allItems.push(...(json.items || []));
-			pageToken = json.nextPageToken;
-			page++;
+    try {
+      const json = await fetchJSON(url);
+      allItems.push(...(json.items || []));
+      pageToken = json.nextPageToken;
+      page++;
 
-			if (onProgress) {
-				const progress = pageToken ? 0.5 : 1;
-				onProgress(progress, `Lade Videos (Seite ${page})...`);
-			}
-		} catch (e) {
-			if (
-				e?.status === 404 &&
-				/playlistNotFound|playlistId/.test(e?.body || "")
-			) {
-				log.warn(`Uploads playlist not found: ${playlistId}`);
-				return [];
-			}
-			throw e;
-		}
-	} while (pageToken);
+      if (onProgress) {
+        const progress = pageToken ? 0.5 : 1;
+        onProgress(progress, `Lade Videos (Seite ${page})...`);
+      }
+    } catch (e) {
+      if (e?.status === 404 && /playlistNotFound|playlistId/.test(e?.body || "")) {
+        log.warn(`Uploads playlist not found: ${playlistId}`);
+        return [];
+      }
+      throw e;
+    }
+  } while (pageToken);
 
-	return allItems;
+  return allItems;
 };
 
 /**
@@ -73,37 +66,37 @@ export const fetchPlaylistItems = async (
  * @returns {Promise<Array>} - Array of video items
  */
 export const searchChannelVideos = async (channelId, maxResults = 50) => {
-	const items = [];
-	let pageToken = "";
+  const items = [];
+  let pageToken = "";
 
-	do {
-		const url = `/api/youtube/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${
-			pageToken ? `&pageToken=${pageToken}` : ""
-		}`;
+  do {
+    const url = `/api/youtube/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${
+      pageToken ? `&pageToken=${pageToken}` : ""
+    }`;
 
-		try {
-			const json = await fetchJSON(url);
-			(json.items || []).forEach((it) => {
-				if (it?.id?.videoId) {
-					items.push({
-						snippet: {
-							resourceId: { videoId: it.id.videoId },
-							title: it.snippet.title,
-							description: it.snippet.description,
-							thumbnails: it.snippet.thumbnails,
-							publishedAt: it.snippet.publishedAt,
-						},
-					});
-				}
-			});
-			pageToken = json.nextPageToken;
-		} catch (e) {
-			log.warn("searchChannelVideos failed:", e);
-			return items;
-		}
-	} while (pageToken);
+    try {
+      const json = await fetchJSON(url);
+      (json.items || []).forEach(it => {
+        if (it?.id?.videoId) {
+          items.push({
+            snippet: {
+              resourceId: { videoId: it.id.videoId },
+              title: it.snippet.title,
+              description: it.snippet.description,
+              thumbnails: it.snippet.thumbnails,
+              publishedAt: it.snippet.publishedAt,
+            },
+          });
+        }
+      });
+      pageToken = json.nextPageToken;
+    } catch (e) {
+      log.warn("searchChannelVideos failed:", e);
+      return items;
+    }
+  } while (pageToken);
 
-	return items;
+  return items;
 };
 
 /**
@@ -111,24 +104,22 @@ export const searchChannelVideos = async (channelId, maxResults = 50) => {
  * @param {Array<string>} videoIds - Array of video IDs
  * @returns {Promise<Object>} - Map of video ID to video details
  */
-export const fetchVideoDetailsMap = async (videoIds) => {
-	const map = {};
-	if (!videoIds.length) return map;
+export const fetchVideoDetailsMap = async videoIds => {
+  const map = {};
+  if (!videoIds.length) return map;
 
-	const url = `/api/youtube/videos?part=snippet,contentDetails,statistics&id=${videoIds.join(
-		",",
-	)}`;
+  const url = `/api/youtube/videos?part=snippet,contentDetails,statistics&id=${videoIds.join(",")}`;
 
-	try {
-		const json = await fetchJSON(url);
-		(json.items || []).forEach((v) => {
-			if (v.id) {
-				map[v.id] = v;
-			}
-		});
-	} catch (e) {
-		log.warn("Could not fetch video details:", e);
-	}
+  try {
+    const json = await fetchJSON(url);
+    (json.items || []).forEach(v => {
+      if (v.id) {
+        map[v.id] = v;
+      }
+    });
+  } catch (e) {
+    log.warn("Could not fetch video details:", e);
+  }
 
-	return map;
+  return map;
 };

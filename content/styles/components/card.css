@@ -1,43 +1,39 @@
 /* ===== CARD COMPONENT (Base) ===== */
 
 .card {
-	--card-padding-responsive: clamp(
-		var(--space-4),
-		calc(var(--space-2) + 2vw),
-		var(--card-pad)
-	);
+  --card-padding-responsive: clamp(var(--space-4), calc(var(--space-2) + 2vw), var(--card-pad));
 
-	padding: var(--card-padding-responsive);
-	background: var(--bg-secondary);
-	border-radius: var(--radius-lg);
-	border: var(--size-1) solid var(--border-color);
-	transition:
-		transform var(--card-transition-smooth),
-		box-shadow var(--card-transition-smooth),
-		border-color var(--card-transition-smooth);
-	position: relative;
-	overflow: hidden;
-	container-type: inline-size;
-	container-name: card;
+  padding: var(--card-padding-responsive);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: var(--size-1) solid var(--border-color);
+  transition:
+    transform var(--card-transition-smooth),
+    box-shadow var(--card-transition-smooth),
+    border-color var(--card-transition-smooth);
+  position: relative;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: card;
 
-	&:hover {
-		transform: var(--transform-hover-card-subtle);
-		border-color: var(--primary-color);
-		box-shadow: var(--card-shadow-hover);
-	}
+  &:hover {
+    transform: var(--transform-hover-card-subtle);
+    border-color: var(--primary-color);
+    box-shadow: var(--card-shadow-hover);
+  }
 
-	&:focus-visible {
-		outline: var(--btn-focus-outline);
-		outline-offset: var(--space-1);
-	}
+  &:focus-visible {
+    outline: var(--btn-focus-outline);
+    outline-offset: var(--space-1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.card {
-		transition: none;
-	}
+  .card {
+    transition: none;
+  }
 
-	.card:hover {
-		transform: none;
-	}
+  .card:hover {
+    transform: none;
+  }
 }

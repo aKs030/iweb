@@ -213,12 +213,7 @@ Content-Security-Policy: default-src 'self'
 <style>
   /* Critical CSS */
 </style>
-<link
-  rel="preload"
-  href="/styles.css"
-  as="style"
-  onload="this.onload=null;this.rel='stylesheet'"
-/>
+<link rel="preload" href="/styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
 ```
 
 ### Monitoring und Maintenance

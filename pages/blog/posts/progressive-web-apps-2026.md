@@ -27,16 +27,16 @@ Service Workers sind Proxy-Scripts zwischen App und Netzwerk. Sie ermöglichen O
 
 ```javascript
 // Registrierung
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
 }
 
 // sw.js - Installation
-self.addEventListener('install', (event) => {
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open('v1').then((cache) => {
-      return cache.addAll(['/', '/styles.css', '/app.js', '/offline.html']);
-    }),
+    caches.open("v1").then(cache => {
+      return cache.addAll(["/", "/styles.css", "/app.js", "/offline.html"]);
+    })
   );
 });
 ```
@@ -46,11 +46,11 @@ Beim ersten Besuch cached der Service Worker kritische Ressourcen. Die App funkt
 **Fetch-Interception** für intelligentes Caching:
 
 ```javascript
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
+    caches.match(event.request).then(response => {
       return response || fetch(event.request);
-    }),
+    })
   );
 });
 ```
@@ -67,15 +67,15 @@ Cache-First-Strategie: Wenn verfügbar, nutze Cache. Sonst: Netzwerk-Request.
 
 ```javascript
 const strategies = {
-  cacheFirst: async (request) => {
+  cacheFirst: async request => {
     const cached = await caches.match(request);
     return cached || fetch(request);
   },
 
-  networkFirst: async (request) => {
+  networkFirst: async request => {
     try {
       const response = await fetch(request);
-      const cache = await caches.open('dynamic');
+      const cache = await caches.open("dynamic");
       cache.put(request, response.clone());
       return response;
     } catch {
@@ -83,11 +83,11 @@ const strategies = {
     }
   },
 
-  staleWhileRevalidate: async (request) => {
+  staleWhileRevalidate: async request => {
     const cached = await caches.match(request);
-    const fetchPromise = fetch(request).then((response) => {
-      const cache = caches.open('dynamic');
-      cache.then((c) => c.put(request, response.clone()));
+    const fetchPromise = fetch(request).then(response => {
+      const cache = caches.open("dynamic");
+      cache.then(c => c.put(request, response.clone()));
       return response;
     });
     return cached || fetchPromise;
@@ -131,13 +131,13 @@ Das Manifest definiert, wie die App installiert aussieht:
 ```javascript
 let deferredPrompt;
 
-window.addEventListener('beforeinstallprompt', (e) => {
+window.addEventListener("beforeinstallprompt", e => {
   e.preventDefault();
   deferredPrompt = e;
   showInstallButton();
 });
 
-installButton.addEventListener('click', async () => {
+installButton.addEventListener("click", async () => {
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
   console.log(`User ${outcome} the install`);
@@ -156,7 +156,7 @@ Push Notifications halten Nutzer engaged. Voraussetzung: User-Permission und Ser
 ```javascript
 const requestNotificationPermission = async () => {
   const permission = await Notification.requestPermission();
-  if (permission === 'granted') {
+  if (permission === "granted") {
     subscribeUserToPush();
   }
 };
@@ -172,10 +172,10 @@ const subscribeUserToPush = async () => {
     applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
   });
 
-  await fetch('/api/subscribe', {
-    method: 'POST',
+  await fetch("/api/subscribe", {
+    method: "POST",
     body: JSON.stringify(subscription),
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
   });
 };
 ```
@@ -183,19 +183,19 @@ const subscribeUserToPush = async () => {
 **Notifications im Service Worker empfangen**:
 
 ```javascript
-self.addEventListener('push', (event) => {
+self.addEventListener("push", event => {
   const data = event.data.json();
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: '/icon.png',
-      badge: '/badge.png',
+      icon: "/icon.png",
+      badge: "/badge.png",
       data: { url: data.url },
-    }),
+    })
   );
 });
 
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener("notificationclick", event => {
   event.notification.close();
   event.waitUntil(clients.openWindow(event.notification.data.url));
 });
@@ -210,15 +210,15 @@ Background Sync garantiert, dass Aktionen ausgeführt werden – auch bei schlec
 **Sync registrieren**:
 
 ```javascript
-const sendMessage = async (message) => {
+const sendMessage = async message => {
   try {
-    await fetch('/api/messages', {
-      method: 'POST',
+    await fetch("/api/messages", {
+      method: "POST",
       body: JSON.stringify(message),
     });
   } catch {
     const registration = await navigator.serviceWorker.ready;
-    await registration.sync.register('send-message');
+    await registration.sync.register("send-message");
     saveMessageLocally(message);
   }
 };
@@ -229,8 +229,8 @@ Kein Netz? Speichere lokal und registriere Sync. Sobald Verbindung besteht, feue
 **Sync-Event im Service Worker**:
 
 ```javascript
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'send-message') {
+self.addEventListener("sync", event => {
+  if (event.tag === "send-message") {
     event.waitUntil(sendPendingMessages());
   }
 });
@@ -238,8 +238,8 @@ self.addEventListener('sync', (event) => {
 const sendPendingMessages = async () => {
   const messages = await getLocalMessages();
   for (const message of messages) {
-    await fetch('/api/messages', {
-      method: 'POST',
+    await fetch("/api/messages", {
+      method: "POST",
       body: JSON.stringify(message),
     });
     await deleteLocalMessage(message.id);

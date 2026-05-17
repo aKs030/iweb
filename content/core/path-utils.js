@@ -13,28 +13,28 @@
  * @returns {string} Canonicalized path
  */
 export function canonicalizeUrlPath(path) {
-	if (!path) return "/";
+  if (!path) return "/";
 
-	let normalized = String(path).trim();
-	if (!normalized.startsWith("/")) {
-		normalized = "/" + normalized;
-	}
+  let normalized = String(path).trim();
+  if (!normalized.startsWith("/")) {
+    normalized = "/" + normalized;
+  }
 
-	if (normalized.endsWith("/index.html")) {
-		normalized = normalized.substring(0, normalized.length - 11);
-	} else if (normalized.endsWith(".html")) {
-		normalized = normalized.substring(0, normalized.length - 5);
-	}
+  if (normalized.endsWith("/index.html")) {
+    normalized = normalized.substring(0, normalized.length - 11);
+  } else if (normalized.endsWith(".html")) {
+    normalized = normalized.substring(0, normalized.length - 5);
+  }
 
-	if (normalized === "") {
-		return "/";
-	}
+  if (normalized === "") {
+    return "/";
+  }
 
-	if (normalized !== "/" && normalized.endsWith("/")) {
-		normalized = normalized.slice(0, -1);
-	}
+  if (normalized !== "/" && normalized.endsWith("/")) {
+    normalized = normalized.slice(0, -1);
+  }
 
-	return normalized;
+  return normalized;
 }
 
 /**
@@ -43,5 +43,22 @@ export function canonicalizeUrlPath(path) {
  * @returns {string} Normalized path
  */
 export function normalizePath(path) {
-	return canonicalizeUrlPath(path);
+  return canonicalizeUrlPath(path);
+}
+
+/**
+ * Normalize pathname by removing query strings, hashes, multiple slashes, and trailing slashes
+ * Used for route matching and canonical path normalization
+ * @param {string|null|undefined} pathname - Pathname to normalize
+ * @returns {string} Normalized pathname (or "/" if empty)
+ */
+export function normalizePathname(pathname) {
+  let source = String(pathname || "/");
+  // Remove query string and hash
+  const noQuery = source.split("?")[0] || "";
+  const noHash = noQuery.split("#")[0] || "";
+  // Normalize multiple slashes to single slash
+  const normalized = noHash.replace(/\/+/g, "/");
+  // Remove trailing slashes (except root "/")
+  return normalized === "" || normalized === "/" ? "/" : normalized.replace(/\/$/, "");
 }

@@ -1,30 +1,30 @@
 {
-	"version": 1,
-	"include": ["/*"],
-	"exclude": [
-		"/robots.txt",
-		"/sw.js",
-		"/llms.txt",
-		"/llms-full.txt",
-		"/person.jsonld",
-		"/ai-index.json",
-		"/bio.md",
-		"/_redirects",
-		"/content/*",
-		"/pages/*",
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/robots.txt",
+    "/sw.js",
+    "/llms.txt",
+    "/llms-full.txt",
+    "/person.jsonld",
+    "/ai-index.json",
+    "/bio.md",
+    "/_redirects",
+    "/content/*",
+    "/pages/*",
 
-		"/*.woff",
-		"/*.woff2",
-		"/*.ttf",
-		"/*.eot",
-		"/*.png",
-		"/*.jpg",
-		"/*.webp",
-		"/*.gif",
-		"/*.avif",
+    "/*.woff",
+    "/*.woff2",
+    "/*.ttf",
+    "/*.eot",
+    "/*.png",
+    "/*.jpg",
+    "/*.webp",
+    "/*.gif",
+    "/*.avif",
 
-		"/.well-known/*",
+    "/.well-known/*",
 
-		"/*.map"
-	]
+    "/*.map"
+  ]
 }

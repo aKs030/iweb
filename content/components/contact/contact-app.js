@@ -4,6 +4,6 @@ import ContactForm from "./contact-component.js";
 
 const rootEl = document.getElementById("main-content");
 if (rootEl) {
-	const root = createRoot(rootEl);
-	root.render(React.createElement(ContactForm));
+  const root = createRoot(rootEl);
+  root.render(React.createElement(ContactForm));
 }

@@ -7,52 +7,49 @@ const log = createLogger("AnalyticsManager");
  * Analytics Manager
  */
 export class AnalyticsManager {
-	#loaded = false;
+  #loaded = false;
 
-	load() {
-		if (this.#loaded) return;
+  load() {
+    if (this.#loaded) return;
 
-		document
-			.querySelectorAll('script[data-consent="required"]')
-			.forEach((script) => {
-				const newScript = document.createElement("script");
-				for (const attr of script.attributes) {
-					const name = attr.name === "data-src" ? "src" : attr.name;
-					if (!["data-consent", "type"].includes(attr.name)) {
-						newScript.setAttribute(name, attr.value);
-					}
-				}
-				applyCspNonce(newScript);
-				if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
-				script.replaceWith(newScript);
-			});
+    document.querySelectorAll('script[data-consent="required"]').forEach(script => {
+      const newScript = document.createElement("script");
+      for (const attr of script.attributes) {
+        const name = attr.name === "data-src" ? "src" : attr.name;
+        if (!["data-consent", "type"].includes(attr.name)) {
+          newScript.setAttribute(name, attr.value);
+        }
+      }
+      applyCspNonce(newScript);
+      const inlineScript = script.textContent || "";
+      if (inlineScript.trim()) newScript.textContent = inlineScript;
+      script.replaceWith(newScript);
+    });
 
-		this.#loaded = true;
-		log.info("Analytics loaded");
-	}
+    this.#loaded = true;
+    log.info("Analytics loaded");
+  }
 
-	/**
-	 * @param {boolean | { analytics?: boolean, ads?: boolean }} granted
-	 */
-	updateConsent(granted) {
-		const win = /** @type {import('#core/types.js').GlobalWindow} */ (window);
+  /**
+   * @param {boolean | { analytics?: boolean, ads?: boolean }} granted
+   */
+  updateConsent(granted) {
+    const win = /** @type {import('#core/types.js').GlobalWindow} */ (window);
 
-		if (typeof win.gtag !== "function") return;
+    if (typeof win.gtag !== "function") return;
 
-		const analyticsGranted =
-			typeof granted === "boolean" ? granted : Boolean(granted?.analytics);
-		const adsGranted =
-			typeof granted === "boolean" ? granted : Boolean(granted?.ads);
+    const analyticsGranted = typeof granted === "boolean" ? granted : Boolean(granted?.analytics);
+    const adsGranted = typeof granted === "boolean" ? granted : Boolean(granted?.ads);
 
-		try {
-			win.gtag("consent", "update", {
-				ad_storage: adsGranted ? "granted" : "denied",
-				analytics_storage: analyticsGranted ? "granted" : "denied",
-				ad_user_data: adsGranted ? "granted" : "denied",
-				ad_personalization: adsGranted ? "granted" : "denied",
-			});
-		} catch (e) {
-			log.error("Consent update failed", e);
-		}
-	}
+    try {
+      win.gtag("consent", "update", {
+        ad_storage: adsGranted ? "granted" : "denied",
+        analytics_storage: analyticsGranted ? "granted" : "denied",
+        ad_user_data: adsGranted ? "granted" : "denied",
+        ad_personalization: adsGranted ? "granted" : "denied",
+      });
+    } catch (e) {
+      log.error("Consent update failed", e);
+    }
+  }
 }

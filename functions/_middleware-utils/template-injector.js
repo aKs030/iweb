@@ -25,7 +25,7 @@ const SECTION_CACHE_VERSION = "20260305-1";
  * @returns {string}
  */
 function sectionKvKey(sectionPath) {
-	return `section:${SECTION_CACHE_VERSION}:${sectionPath}`;
+  return `section:${SECTION_CACHE_VERSION}:${sectionPath}`;
 }
 
 /**
@@ -35,14 +35,14 @@ function sectionKvKey(sectionPath) {
  * @returns {Promise<string>} Template content
  */
 export async function loadTemplateFromURL(context, path) {
-	try {
-		const url = new URL(path, context.request.url);
-		const response = await context.env.ASSETS.fetch(url);
-		if (!response.ok) return "";
-		return await response.text();
-	} catch {
-		return "";
-	}
+  try {
+    const url = new URL(path, context.request.url);
+    const response = await context.env.ASSETS.fetch(url);
+    if (!response.ok) return "";
+    return await response.text();
+  } catch {
+    return "";
+  }
 }
 
 /**
@@ -58,36 +58,36 @@ export async function loadTemplateFromURL(context, path) {
  * @returns {Promise<string>} Section HTML
  */
 async function loadSectionCached(context, sectionPath) {
-	const kv = context.env?.SITEMAP_CACHE_KV;
-	const fetchUrl = `${sectionPath}.html`;
+  const kv = context.env?.SITEMAP_CACHE_KV;
+  const fetchUrl = `${sectionPath}.html`;
 
-	// Graceful degradation: no KV → direct fetch
-	if (!kv) {
-		return loadTemplateFromURL(context, fetchUrl);
-	}
+  // Graceful degradation: no KV → direct fetch
+  if (!kv) {
+    return loadTemplateFromURL(context, fetchUrl);
+  }
 
-	const kvKey = sectionKvKey(sectionPath);
-	let cachedItem = null;
+  const kvKey = sectionKvKey(sectionPath);
+  let cachedItem = null;
 
-	try {
-		cachedItem = await kv.get(kvKey, "json");
-	} catch (err) {
-		log.warn(`Section KV error for ${kvKey}:`, err);
-	}
+  try {
+    cachedItem = await kv.get(kvKey, "json");
+  } catch (err) {
+    log.warn(`Section KV error for ${kvKey}:`, err);
+  }
 
-	const now = Date.now();
+  const now = Date.now();
 
-	// Cache hit
-	if (cachedItem?.html) {
-		// SWR: If stale, refresh in background
-		if (now - cachedItem.timestamp > SECTION_TTL_MS) {
-			context.waitUntil(refreshSectionInKV(context, kvKey, fetchUrl));
-		}
-		return cachedItem.html;
-	}
+  // Cache hit
+  if (cachedItem?.html) {
+    // SWR: If stale, refresh in background
+    if (now - cachedItem.timestamp > SECTION_TTL_MS) {
+      context.waitUntil(refreshSectionInKV(context, kvKey, fetchUrl));
+    }
+    return cachedItem.html;
+  }
 
-	// Cache miss: blocking fetch + store
-	return refreshSectionInKV(context, kvKey, fetchUrl);
+  // Cache miss: blocking fetch + store
+  return refreshSectionInKV(context, kvKey, fetchUrl);
 }
 
 /**
@@ -98,19 +98,19 @@ async function loadSectionCached(context, sectionPath) {
  * @returns {Promise<string>}
  */
 async function refreshSectionInKV(context, kvKey, fetchUrl) {
-	try {
-		const html = await loadTemplateFromURL(context, fetchUrl);
-		if (html) {
-			await context.env.SITEMAP_CACHE_KV.put(
-				kvKey,
-				JSON.stringify({ timestamp: Date.now(), html }),
-			);
-		}
-		return html;
-	} catch (err) {
-		log.error(`Section cache refresh failed for ${kvKey}:`, err);
-		return "";
-	}
+  try {
+    const html = await loadTemplateFromURL(context, fetchUrl);
+    if (html) {
+      await context.env.SITEMAP_CACHE_KV.put(
+        kvKey,
+        JSON.stringify({ timestamp: Date.now(), html })
+      );
+    }
+    return html;
+  } catch (err) {
+    log.error(`Section cache refresh failed for ${kvKey}:`, err);
+    return "";
+  }
 }
 
 /**
@@ -120,29 +120,29 @@ async function refreshSectionInKV(context, kvKey, fetchUrl) {
  * Uses KV-backed caching to avoid repeated ASSETS.fetch() calls per request.
  */
 export class SectionInjector {
-	/**
-	 * @param {Object} context - Cloudflare Pages context
-	 */
-	constructor(context) {
-		this.context = context;
-	}
+  /**
+   * @param {Object} context - Cloudflare Pages context
+   */
+  constructor(context) {
+    this.context = context;
+  }
 
-	/**
-	 * @param {Element} el - HTMLRewriter element
-	 */
-	async element(el) {
-		const src = el.getAttribute("data-section-src");
-		if (!src) return;
+  /**
+   * @param {Element} el - HTMLRewriter element
+   */
+  async element(el) {
+    const src = el.getAttribute("data-section-src");
+    if (!src) return;
 
-		// Only inject known partials to avoid arbitrary edge bloat
-		if (src.endsWith("/hero") || src.endsWith("/section3")) {
-			const htmlStr = await loadSectionCached(this.context, src);
-			if (htmlStr) {
-				el.setInnerContent(htmlStr, { html: true });
-				el.setAttribute("data-ssr-loaded", "true");
-				// Remove the data-section-src to prevent client-side re-fetch
-				el.removeAttribute("data-section-src");
-			}
-		}
-	}
+    // Only inject known partials to avoid arbitrary edge bloat
+    if (src.endsWith("/hero") || src.endsWith("/section3")) {
+      const htmlStr = await loadSectionCached(this.context, src);
+      if (htmlStr) {
+        el.setInnerContent(htmlStr, { html: true });
+        el.setAttribute("data-ssr-loaded", "true");
+        // Remove the data-section-src to prevent client-side re-fetch
+        el.removeAttribute("data-section-src");
+      }
+    }
+  }
 }

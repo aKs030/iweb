@@ -11,12 +11,12 @@
 import { createLogger } from "./logger.js";
 import { waitForReadyState } from "./async-utils.js";
 import {
-	batch,
-	computed,
-	effect,
-	signal,
-	subscribe as signalSubscribe,
-	untracked,
+  batch,
+  computed,
+  effect,
+  signal,
+  subscribe as signalSubscribe,
+  untracked,
 } from "./signals.js";
 
 const log = createLogger("AppLoadManager");
@@ -29,171 +29,164 @@ const hideScheduledSignal = signal(false);
 const hideCompletedSignal = signal(false);
 
 export const loadSignals = Object.freeze({
-	progress: progressSignal,
-	message: messageSignal,
-	pending: pendingSignal,
-	hideScheduled: hideScheduledSignal,
-	done: hideCompletedSignal,
-	blocked: computed(() => pendingSignal.value.length > 0),
+  progress: progressSignal,
+  message: messageSignal,
+  pending: pendingSignal,
+  hideScheduled: hideScheduledSignal,
+  done: hideCompletedSignal,
+  blocked: computed(() => pendingSignal.value.length > 0),
 });
 
 const toPendingList = () => Object.freeze(Array.from(pending));
 
 function getLoadSnapshot() {
-	const pendingList = loadSignals.pending.value;
+  const pendingList = loadSignals.pending.value;
 
-	return Object.freeze({
-		blocked: pendingList.length > 0,
-		pending: [...pendingList],
-		progress: loadSignals.progress.value,
-		message: loadSignals.message.value,
-		hideScheduled: loadSignals.hideScheduled.value,
-		done: loadSignals.done.value,
-	});
+  return Object.freeze({
+    blocked: pendingList.length > 0,
+    pending: [...pendingList],
+    progress: loadSignals.progress.value,
+    message: loadSignals.message.value,
+    hideScheduled: loadSignals.hideScheduled.value,
+    done: loadSignals.done.value,
+  });
 }
 
 export function subscribeLoadState(listener, options = {}) {
-	return signalSubscribe(getLoadSnapshot, listener, options);
+  return signalSubscribe(getLoadSnapshot, listener, options);
 }
 
 export function whenAppReady(options = {}) {
-	const { timeout = 0, abortSignal = null } = options;
-	return waitForReadyState({
-		getSnapshot: getLoadSnapshot,
-		isReady: (snapshot) => !snapshot.blocked && snapshot.done,
-		subscribe: (listener) => subscribeLoadState(listener),
-		timeout,
-		abortSignal,
-		abortMessage: "App readiness wait aborted",
-		timeoutMessage: `Timed out waiting for app readiness after ${timeout}ms`,
-	});
+  const { timeout = 0, abortSignal = null } = options;
+  return waitForReadyState({
+    getSnapshot: getLoadSnapshot,
+    isReady: snapshot => !snapshot.blocked && snapshot.done,
+    subscribe: listener => subscribeLoadState(listener),
+    timeout,
+    abortSignal,
+    abortMessage: "App readiness wait aborted",
+    timeoutMessage: `Timed out waiting for app readiness after ${timeout}ms`,
+  });
 }
 
-// ---------------------------------------------------------------------------
-// Legacy DOM event bridge — fires `app-ready` on globalThis exactly once
-// when loading completes, so external consumers (GTM, analytics, third-party
-// scripts) keep working without coupling to our signal system.
-// ---------------------------------------------------------------------------
-effect(() => {
-	if (!loadSignals.done.value || loadSignals.blocked.value) return;
+let stopAppReadyBridge = () => {};
+stopAppReadyBridge = effect(() => {
+  if (!loadSignals.done.value || loadSignals.blocked.value) return;
 
-	untracked(() => {
-		try {
-			globalThis.dispatchEvent(new Event("app-ready"));
-		} catch {
-			// SSR / test environments may not have dispatchEvent
-		}
-	});
-
-	// Return a dispose callback — effect auto-disposes after first emission
-	// because `done` transitions from false→true exactly once per app lifecycle.
+  untracked(() => {
+    try {
+      globalThis.dispatchEvent(new Event("app-ready"));
+    } catch {
+      // SSR / test environments may not have dispatchEvent
+    }
+    queueMicrotask(stopAppReadyBridge);
+  });
 });
 
 export const AppLoadManager = (() => {
-	const toPercent = (value) =>
-		Math.round(Math.max(0, Math.min(100, Number(value || 0) * 100)));
+  const toPercent = value => Math.round(Math.max(0, Math.min(100, Number(value || 0) * 100)));
 
-	return {
-		/**
-		 * Block loading for a specific component.
-		 * @param {string} name
-		 */
-		block(name) {
-			const key = String(name || "").trim();
-			if (!key || pending.has(key)) return;
-			pending.add(key);
-			pendingSignal.value = toPendingList();
-			log.debug(`Blocked: ${name}`);
-		},
+  return {
+    /**
+     * Block loading for a specific component.
+     * @param {string} name
+     */
+    block(name) {
+      const key = String(name || "").trim();
+      if (!key || pending.has(key)) return;
+      pending.add(key);
+      pendingSignal.value = toPendingList();
+      log.debug(`Blocked: ${name}`);
+    },
 
-		/**
-		 * Unblock loading for a specific component.
-		 * @param {string} name
-		 */
-		unblock(name) {
-			const key = String(name || "").trim();
-			if (!key || !pending.has(key)) return;
+    /**
+     * Unblock loading for a specific component.
+     * @param {string} name
+     */
+    unblock(name) {
+      const key = String(name || "").trim();
+      if (!key || !pending.has(key)) return;
 
-			pending.delete(key);
-			pendingSignal.value = toPendingList();
-			log.debug(`Unblocked: ${name}`);
-		},
+      pending.delete(key);
+      pendingSignal.value = toPendingList();
+      log.debug(`Unblocked: ${name}`);
+    },
 
-		/**
-		 * Check if loading is currently blocked.
-		 * @returns {boolean}
-		 */
-		isBlocked() {
-			return loadSignals.pending.value.length > 0;
-		},
+    /**
+     * Check if loading is currently blocked.
+     * @returns {boolean}
+     */
+    isBlocked() {
+      return loadSignals.pending.value.length > 0;
+    },
 
-		/**
-		 * Get list of pending blockers.
-		 * @returns {string[]}
-		 */
-		getPending() {
-			return [...loadSignals.pending.value];
-		},
+    /**
+     * Get list of pending blockers.
+     * @returns {string[]}
+     */
+    getPending() {
+      return [...loadSignals.pending.value];
+    },
 
-		/**
-		 * Update app loading progress.
-		 * @param {number} progress - Progress in range 0..1
-		 * @param {string} message
-		 * @param {{ silent?: boolean }} [options]
-		 */
-		updateLoader(progress, message, options = {}) {
-			try {
-				const pct = toPercent(progress);
-				const text = String(message || "");
+    /**
+     * Update app loading progress.
+     * @param {number} progress - Progress in range 0..1
+     * @param {string} message
+     * @param {{ silent?: boolean }} [options]
+     */
+    updateLoader(progress, message, options = {}) {
+      try {
+        const pct = toPercent(progress);
+        const text = String(message || "");
 
-				batch(() => {
-					progressSignal.value = pct;
-					messageSignal.value = text;
-				});
+        batch(() => {
+          progressSignal.value = pct;
+          messageSignal.value = text;
+        });
 
-				if (!options.silent) {
-					log.debug(`Loading state: ${pct}% - ${text}`);
-				}
-			} catch (err) {
-				log.warn("Could not update loading state:", err);
-			}
-		},
+        if (!options.silent) {
+          log.debug(`Loading state: ${pct}% - ${text}`);
+        }
+      } catch (err) {
+        log.warn("Could not update loading state:", err);
+      }
+    },
 
-		/**
-		 * Mark loading as completed.
-		 * @param {number} [delay=0]
-		 */
-		hideLoader(delay = 0) {
-			if (loadSignals.done.value || loadSignals.hideScheduled.value) return;
-			hideScheduledSignal.value = true;
+    /**
+     * Mark loading as completed.
+     * @param {number} [delay=0]
+     */
+    hideLoader(delay = 0) {
+      if (loadSignals.done.value || loadSignals.hideScheduled.value) return;
+      hideScheduledSignal.value = true;
 
-			const run = () => {
-				if (loadSignals.done.value) {
-					hideScheduledSignal.value = false;
-					return;
-				}
+      const run = () => {
+        if (loadSignals.done.value) {
+          hideScheduledSignal.value = false;
+          return;
+        }
 
-				batch(() => {
-					hideScheduledSignal.value = false;
-					hideCompletedSignal.value = true;
-					pending.clear();
-					pendingSignal.value = Object.freeze([]);
-				});
-			};
+        batch(() => {
+          hideScheduledSignal.value = false;
+          hideCompletedSignal.value = true;
+          pending.clear();
+          pendingSignal.value = Object.freeze([]);
+        });
+      };
 
-			if (delay > 0) {
-				setTimeout(run, delay);
-			} else {
-				run();
-			}
-		},
+      if (delay > 0) {
+        setTimeout(run, delay);
+      } else {
+        run();
+      }
+    },
 
-		/**
-		 * Read-only snapshot for debugging and telemetry.
-		 * @returns {{ blocked: boolean, pending: string[], progress: number, message: string, done: boolean }}
-		 */
-		getSnapshot() {
-			return getLoadSnapshot();
-		},
-	};
+    /**
+     * Read-only snapshot for debugging and telemetry.
+     * @returns {{ blocked: boolean, pending: string[], progress: number, message: string, done: boolean }}
+     */
+    getSnapshot() {
+      return getLoadSnapshot();
+    },
+  };
 })();

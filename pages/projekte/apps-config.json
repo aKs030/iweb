@@ -1,394 +1,339 @@
 {
-	"apps": [
-		{
-			"name": "calculator",
-			"title": "calculator",
-			"description": "Moderner Taschenrechner mit erweiterten Funktionen. Grundrechenarten und wissenschaftliche Operationen.",
-			"tags": [
-				"utility",
-				"calculator",
-				"math",
-				"tool",
-				"scientific",
-				"computation",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "utility",
-			"version": "1.0.0",
-			"caseStudy": {
-				"problem": "Standard-Taschenrechner im Browser bieten oft nur Grundrechenarten und sind visuell wenig ansprechend.",
-				"solution": "Ein moderner, responsive Taschenrechner mit wissenschaftlichen Funktionen (sin, cos, tan, log), Klammern-Support und einer intuitiven Tastatur-Navigation.",
-				"techStack": ["Vanilla JS", "CSS Grid", "eval()-freie Berechnung"],
-				"results": "Vollständig funktionaler Rechner mit Keyboard-Support, Fehlerbehandlung und History-Funktion."
-			},
-			"previewUrl": "https://img.abdulkerimsesli.de/app/calculator.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Calculator",
-			"appPath": "/api/project-apps/calculator/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/calculator"
-		},
-		{
-			"name": "color-changer",
-			"title": "color-changer",
-			"description": "Dynamische Hintergrundfarben per Klick. Entdecke schöne Farbkombinationen und Gradienten.",
-			"tags": [
-				"ui",
-				"design",
-				"color",
-				"css",
-				"theme",
-				"gradient",
-				"interactive",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "ui",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/color-changer.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Color Changer",
-			"appPath": "/api/project-apps/color-changer/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/color-changer"
-		},
-		{
-			"name": "ip-info",
-			"title": "ip-info",
-			"previewMedia": null,
-			"description": "Zeigt deine öffentliche IP-Adresse und Standortinformationen an. Optimiert für Cloudflare Workers/Pages.",
-			"tags": [
-				"utility",
-				"ip",
-				"network",
-				"geo",
-				"location",
-				"cloudflare",
-				"info",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "utility",
-			"version": "1.0.0",
-			"appPath": "/api/project-apps/ip-info/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/ip-info"
-		},
-		{
-			"name": "memory-game",
-			"title": "memory-game",
-			"description": "Klassisches Memory-Spiel mit verschiedenen Schwierigkeitsgraden. Trainiere dein Gedächtnis!",
-			"tags": [
-				"game",
-				"memory",
-				"cards",
-				"brain-training",
-				"puzzle",
-				"concentration",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "game",
-			"version": "1.0.0",
-			"caseStudy": {
-				"problem": "Klassische Memory-Spiele im Browser sind oft langweilig und bieten kaum Variation.",
-				"solution": "Ein dynamisches Memory-Spiel mit mehreren Schwierigkeitsgraden, Timer, Punktesystem und verschiedenen Kartensets.",
-				"techStack": ["Vanilla JS", "CSS Animations", "Fisher-Yates Shuffle"],
-				"results": "Drei Schwierigkeitsgrade, Highscore-System mit localStorage, und flüssige Karten-Flip-Animationen."
-			},
-			"previewUrl": "https://img.abdulkerimsesli.de/app/memory-game.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Memory Game",
-			"appPath": "/api/project-apps/memory-game/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/memory-game"
-		},
-		{
-			"name": "paint-app",
-			"title": "paint-app",
-			"description": "Einfaches Zeichenprogramm mit verschiedenen Farben und Pinselgrößen.",
-			"tags": [
-				"ui",
-				"drawing",
-				"canvas",
-				"paint",
-				"art",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "ui",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/paint-app.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Paint App",
-			"appPath": "/api/project-apps/paint-app/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/paint-app"
-		},
-		{
-			"name": "password-generator",
-			"title": "password-generator",
-			"description": "Sicherer Passwort-Generator mit anpassbaren Optionen. Erstelle starke Passwörter für maximale Sicherheit.",
-			"tags": [
-				"utility",
-				"security",
-				"password",
-				"generator",
-				"encryption",
-				"safety",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "utility",
-			"version": "1.0.0",
-			"caseStudy": {
-				"problem": "Nutzer verwenden oft schwache, wiederverwendete Passwörter, weil sichere Passwörter schwer zu erstellen und zu merken sind.",
-				"solution": "Ein kryptographisch sicherer Generator mit anpassbarer Länge, Zeichensatz-Auswahl und Copy-to-Clipboard Funktion.",
-				"techStack": ["Web Crypto API", "Vanilla JS", "CSS Custom Properties"],
-				"results": "Generiert Passwörter mit konfigurierbarer Entropie. Prüft Passwortstärke in Echtzeit und zeigt geschätzte Crack-Zeit an."
-			},
-			"previewUrl": "https://img.abdulkerimsesli.de/app/password-generator.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Password Generator",
-			"appPath": "/api/project-apps/password-generator/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/password-generator"
-		},
-		{
-			"name": "pong-game",
-			"title": "pong-game",
-			"description": "Klassisches Pong-Spiel mit KI-Gegner, Physics Engine und Canvas-Rendering",
-			"tags": [
-				"pong",
-				"game",
-				"canvas",
-				"retro",
-				"arcade",
-				"ai",
-				"physics",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "game",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/pong-game.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Pong Game",
-			"appPath": "/api/project-apps/pong-game/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/pong-game"
-		},
-		{
-			"name": "quiz-app",
-			"title": "quiz-app",
-			"description": "Interaktive Quiz-App mit verschiedenen Kategorien und Schwierigkeitsgraden",
-			"tags": [
-				"quiz",
-				"game",
-				"trivia",
-				"education",
-				"javascript",
-				"wissen",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "game",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/quiz-app.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Quiz App",
-			"appPath": "/api/project-apps/quiz-app/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/quiz-app"
-		},
-		{
-			"name": "schere-stein-papier",
-			"title": "schere-stein-papier",
-			"description": "Der Klassiker gegen den Computer! Wähle Schere, Stein oder Papier und tritt gegen die KI an.",
-			"tags": [
-				"game",
-				"spiel",
-				"rock-paper-scissors",
-				"javascript",
-				"entertainment",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "game",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/schere-stein-papier.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Schere Stein Papier",
-			"appPath": "/api/project-apps/schere-stein-papier/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/schere-stein-papier"
-		},
-		{
-			"name": "schluesselweite",
-			"title": "schluesselweite",
-			"previewMedia": null,
-			"description": "ISO/DIN Schlüsselweite und Gewinde Tabelle",
-			"tags": [
-				"mechanic",
-				"tool",
-				"iso",
-				"din",
-				"thread",
-				"bolt",
-				"schlüsselweite",
-				"gewinde",
-				"steigung"
-			],
-			"category": "utility",
-			"version": "1.0.0",
-			"appPath": "/api/project-apps/schluesselweite/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/schluesselweite"
-		},
-		{
-			"name": "snake-game",
-			"title": "snake-game",
-			"description": "Klassisches Snake-Spiel mit Canvas, Game Loop und fortgeschrittener Kollisionserkennung",
-			"tags": [
-				"snake",
-				"game",
-				"canvas",
-				"retro",
-				"arcade",
-				"javascript",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "game",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/snake-game.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Snake Game",
-			"appPath": "/api/project-apps/snake-game/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/snake-game"
-		},
-		{
-			"name": "tic-tac-toe",
-			"title": "tic-tac-toe",
-			"description": "Klassisches Tic-Tac-Toe Spiel für zwei Spieler.",
-			"tags": [
-				"game",
-				"strategy",
-				"tic-tac-toe",
-				"2-player",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "game",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/tic-tac-toe.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Tic Tac Toe",
-			"appPath": "/api/project-apps/tic-tac-toe/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/tic-tac-toe"
-		},
-		{
-			"name": "timer-app",
-			"title": "timer-app",
-			"description": "Vielseitige Timer-App mit Countdown, Stoppuhr und Pomodoro-Technik",
-			"tags": [
-				"timer",
-				"countdown",
-				"stopwatch",
-				"pomodoro",
-				"productivity",
-				"utility",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "utility",
-			"version": "1.0.0",
-			"caseStudy": {
-				"problem": "Mehrere Timer-Apps für verschiedene Zwecke (Countdown, Stoppuhr, Pomodoro) — warum nicht alles in einer?",
-				"solution": "Ein All-in-One Timer mit drei Modi: klassischer Countdown, präziser Stoppuhr und Pomodoro-Timer mit konfigurierbaren Arbeits/Pause-Intervallen.",
-				"techStack": [
-					"Vanilla JS",
-					"requestAnimationFrame",
-					"Notifications API"
-				],
-				"results": "Drei Timer-Modi, akustische Benachrichtigungen, Session-Tracking und eine clean, ablenkungsfreie Oberfläche."
-			},
-			"previewUrl": "https://img.abdulkerimsesli.de/app/timer-app.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Timer App",
-			"appPath": "/api/project-apps/timer-app/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/timer-app"
-		},
-		{
-			"name": "todo-liste",
-			"title": "todo-liste",
-			"description": "Produktivitäts-Tool zum Verwalten von Aufgaben. Erstelle, bearbeite und organisiere deine To-Dos.",
-			"tags": [
-				"productivity",
-				"todo",
-				"tasks",
-				"crud",
-				"organization",
-				"planner",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "productivity",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/todo-liste.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Todo Liste",
-			"appPath": "/api/project-apps/todo-liste/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/todo-liste"
-		},
-		{
-			"name": "typing-speed-test",
-			"title": "typing-speed-test",
-			"description": "Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.",
-			"tags": [
-				"productivity",
-				"typing",
-				"wpm",
-				"speed-test",
-				"keyboard",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "productivity",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/typing-speed-test.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Typing Speed Test",
-			"appPath": "/api/project-apps/typing-speed-test/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/typing-speed-test"
-		},
-		{
-			"name": "weather-app",
-			"title": "weather-app",
-			"description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
-			"tags": [
-				"web",
-				"weather",
-				"api",
-				"forecast",
-				"location",
-				"temperature",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "web",
-			"version": "1.0.0",
-			"caseStudy": {
-				"problem": "Einfache Wetter-Anzeige ohne Kontext: Nutzer wollen nicht nur Zahlen, sondern verständliche Prognosen.",
-				"solution": "Eine moderne Wetter-App mit Standorterkennung, 5-Tage-Vorhersage, animierten Wettericonsund Gradientenhintergründen je nach Wetterlage.",
-				"techStack": ["OpenWeatherMap API", "Geolocation API", "CSS Gradients"],
-				"results": "Standortbasierte Wetteranzeige mit Temperatur, Luftfeuchtigkeit, Wind und 5-Tage-Forecast. Automatische Hintergrundanpassung."
-			},
-			"previewUrl": "https://img.abdulkerimsesli.de/app/weather-app.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Weather App",
-			"appPath": "/api/project-apps/weather-app/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/weather-app"
-		},
-		{
-			"name": "zahlen-raten",
-			"title": "zahlen-raten",
-			"description": "Finde die geheime Zahl zwischen 1 und 100. Ein klassisches Ratespiel mit Hinweisen.",
-			"tags": [
-				"puzzle",
-				"logic",
-				"guessing",
-				"numbers",
-				"math",
-				"brain",
-				"Abdulkerim",
-				"Sesli"
-			],
-			"category": "puzzle",
-			"version": "1.0.0",
-			"previewUrl": "https://img.abdulkerimsesli.de/app/zahlen-raten.svg?v=20260221",
-			"previewAlt": "Vorschaubild Projekt Zahlen Raten",
-			"appPath": "/api/project-apps/zahlen-raten/index.html",
-			"githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/zahlen-raten"
-		}
-	],
-	"lastUpdated": "2026-03-24T21:56:32.338Z",
-	"source": "canonical-apps-config"
+  "apps": [
+    {
+      "name": "calculator",
+      "title": "calculator",
+      "description": "Moderner Taschenrechner mit erweiterten Funktionen. Grundrechenarten und wissenschaftliche Operationen.",
+      "tags": [
+        "utility",
+        "calculator",
+        "math",
+        "tool",
+        "scientific",
+        "computation",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "utility",
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Standard-Taschenrechner im Browser bieten oft nur Grundrechenarten und sind visuell wenig ansprechend.",
+        "solution": "Ein moderner, responsive Taschenrechner mit wissenschaftlichen Funktionen (sin, cos, tan, log), Klammern-Support und einer intuitiven Tastatur-Navigation.",
+        "techStack": ["Vanilla JS", "CSS Grid", "eval()-freie Berechnung"],
+        "results": "Vollständig funktionaler Rechner mit Keyboard-Support, Fehlerbehandlung und History-Funktion."
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/calculator.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Calculator",
+      "appPath": "/api/project-apps/calculator/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/calculator"
+    },
+    {
+      "name": "color-changer",
+      "title": "color-changer",
+      "description": "Dynamische Hintergrundfarben per Klick. Entdecke schöne Farbkombinationen und Gradienten.",
+      "tags": [
+        "ui",
+        "design",
+        "color",
+        "css",
+        "theme",
+        "gradient",
+        "interactive",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "ui",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/color-changer.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Color Changer",
+      "appPath": "/api/project-apps/color-changer/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/color-changer"
+    },
+    {
+      "name": "ip-info",
+      "title": "ip-info",
+      "previewMedia": null,
+      "description": "Zeigt deine öffentliche IP-Adresse und Standortinformationen an. Optimiert für Cloudflare Workers/Pages.",
+      "tags": [
+        "utility",
+        "ip",
+        "network",
+        "geo",
+        "location",
+        "cloudflare",
+        "info",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "utility",
+      "version": "1.0.0",
+      "appPath": "/api/project-apps/ip-info/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/ip-info"
+    },
+    {
+      "name": "memory-game",
+      "title": "memory-game",
+      "description": "Klassisches Memory-Spiel mit verschiedenen Schwierigkeitsgraden. Trainiere dein Gedächtnis!",
+      "tags": [
+        "game",
+        "memory",
+        "cards",
+        "brain-training",
+        "puzzle",
+        "concentration",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "game",
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Klassische Memory-Spiele im Browser sind oft langweilig und bieten kaum Variation.",
+        "solution": "Ein dynamisches Memory-Spiel mit mehreren Schwierigkeitsgraden, Timer, Punktesystem und verschiedenen Kartensets.",
+        "techStack": ["Vanilla JS", "CSS Animations", "Fisher-Yates Shuffle"],
+        "results": "Drei Schwierigkeitsgrade, Highscore-System mit localStorage, und flüssige Karten-Flip-Animationen."
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/memory-game.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Memory Game",
+      "appPath": "/api/project-apps/memory-game/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/memory-game"
+    },
+    {
+      "name": "paint-app",
+      "title": "paint-app",
+      "description": "Einfaches Zeichenprogramm mit verschiedenen Farben und Pinselgrößen.",
+      "tags": ["ui", "drawing", "canvas", "paint", "art", "Abdulkerim", "Sesli"],
+      "category": "ui",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/paint-app.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Paint App",
+      "appPath": "/api/project-apps/paint-app/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/paint-app"
+    },
+    {
+      "name": "password-generator",
+      "title": "password-generator",
+      "description": "Sicherer Passwort-Generator mit anpassbaren Optionen. Erstelle starke Passwörter für maximale Sicherheit.",
+      "tags": [
+        "utility",
+        "security",
+        "password",
+        "generator",
+        "encryption",
+        "safety",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "utility",
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Nutzer verwenden oft schwache, wiederverwendete Passwörter, weil sichere Passwörter schwer zu erstellen und zu merken sind.",
+        "solution": "Ein kryptographisch sicherer Generator mit anpassbarer Länge, Zeichensatz-Auswahl und Copy-to-Clipboard Funktion.",
+        "techStack": ["Web Crypto API", "Vanilla JS", "CSS Custom Properties"],
+        "results": "Generiert Passwörter mit konfigurierbarer Entropie. Prüft Passwortstärke in Echtzeit und zeigt geschätzte Crack-Zeit an."
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/password-generator.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Password Generator",
+      "appPath": "/api/project-apps/password-generator/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/password-generator"
+    },
+    {
+      "name": "pong-game",
+      "title": "pong-game",
+      "description": "Klassisches Pong-Spiel mit KI-Gegner, Physics Engine und Canvas-Rendering",
+      "tags": ["pong", "game", "canvas", "retro", "arcade", "ai", "physics", "Abdulkerim", "Sesli"],
+      "category": "game",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/pong-game.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Pong Game",
+      "appPath": "/api/project-apps/pong-game/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/pong-game"
+    },
+    {
+      "name": "quiz-app",
+      "title": "quiz-app",
+      "description": "Interaktive Quiz-App mit verschiedenen Kategorien und Schwierigkeitsgraden",
+      "tags": [
+        "quiz",
+        "game",
+        "trivia",
+        "education",
+        "javascript",
+        "wissen",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "game",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/quiz-app.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Quiz App",
+      "appPath": "/api/project-apps/quiz-app/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/quiz-app"
+    },
+    {
+      "name": "schere-stein-papier",
+      "title": "schere-stein-papier",
+      "description": "Der Klassiker gegen den Computer! Wähle Schere, Stein oder Papier und tritt gegen die KI an.",
+      "tags": [
+        "game",
+        "spiel",
+        "rock-paper-scissors",
+        "javascript",
+        "entertainment",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "game",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/schere-stein-papier.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Schere Stein Papier",
+      "appPath": "/api/project-apps/schere-stein-papier/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/schere-stein-papier"
+    },
+    {
+      "name": "schluesselweite",
+      "title": "schluesselweite",
+      "previewMedia": null,
+      "description": "ISO/DIN Schlüsselweite und Gewinde Tabelle",
+      "tags": [
+        "mechanic",
+        "tool",
+        "iso",
+        "din",
+        "thread",
+        "bolt",
+        "schlüsselweite",
+        "gewinde",
+        "steigung"
+      ],
+      "category": "utility",
+      "version": "1.0.0",
+      "appPath": "/api/project-apps/schluesselweite/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/schluesselweite"
+    },
+    {
+      "name": "snake-game",
+      "title": "snake-game",
+      "description": "Klassisches Snake-Spiel mit Canvas, Game Loop und fortgeschrittener Kollisionserkennung",
+      "tags": ["snake", "game", "canvas", "retro", "arcade", "javascript", "Abdulkerim", "Sesli"],
+      "category": "game",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/snake-game.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Snake Game",
+      "appPath": "/api/project-apps/snake-game/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/snake-game"
+    },
+    {
+      "name": "tic-tac-toe",
+      "title": "tic-tac-toe",
+      "description": "Klassisches Tic-Tac-Toe Spiel für zwei Spieler.",
+      "tags": ["game", "strategy", "tic-tac-toe", "2-player", "Abdulkerim", "Sesli"],
+      "category": "game",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/tic-tac-toe.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Tic Tac Toe",
+      "appPath": "/api/project-apps/tic-tac-toe/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/tic-tac-toe"
+    },
+    {
+      "name": "timer-app",
+      "title": "timer-app",
+      "description": "Vielseitige Timer-App mit Countdown, Stoppuhr und Pomodoro-Technik",
+      "tags": [
+        "timer",
+        "countdown",
+        "stopwatch",
+        "pomodoro",
+        "productivity",
+        "utility",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "utility",
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Mehrere Timer-Apps für verschiedene Zwecke (Countdown, Stoppuhr, Pomodoro) — warum nicht alles in einer?",
+        "solution": "Ein All-in-One Timer mit drei Modi: klassischer Countdown, präziser Stoppuhr und Pomodoro-Timer mit konfigurierbaren Arbeits/Pause-Intervallen.",
+        "techStack": ["Vanilla JS", "requestAnimationFrame", "Notifications API"],
+        "results": "Drei Timer-Modi, akustische Benachrichtigungen, Session-Tracking und eine clean, ablenkungsfreie Oberfläche."
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/timer-app.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Timer App",
+      "appPath": "/api/project-apps/timer-app/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/timer-app"
+    },
+    {
+      "name": "todo-liste",
+      "title": "todo-liste",
+      "description": "Produktivitäts-Tool zum Verwalten von Aufgaben. Erstelle, bearbeite und organisiere deine To-Dos.",
+      "tags": [
+        "productivity",
+        "todo",
+        "tasks",
+        "crud",
+        "organization",
+        "planner",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "productivity",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/todo-liste.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Todo Liste",
+      "appPath": "/api/project-apps/todo-liste/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/todo-liste"
+    },
+    {
+      "name": "typing-speed-test",
+      "title": "typing-speed-test",
+      "description": "Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.",
+      "tags": ["productivity", "typing", "wpm", "speed-test", "keyboard", "Abdulkerim", "Sesli"],
+      "category": "productivity",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/typing-speed-test.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Typing Speed Test",
+      "appPath": "/api/project-apps/typing-speed-test/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/typing-speed-test"
+    },
+    {
+      "name": "weather-app",
+      "title": "weather-app",
+      "description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
+      "tags": [
+        "web",
+        "weather",
+        "api",
+        "forecast",
+        "location",
+        "temperature",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "web",
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Einfache Wetter-Anzeige ohne Kontext: Nutzer wollen nicht nur Zahlen, sondern verständliche Prognosen.",
+        "solution": "Eine moderne Wetter-App mit Standorterkennung, 5-Tage-Vorhersage, animierten Wettericonsund Gradientenhintergründen je nach Wetterlage.",
+        "techStack": ["OpenWeatherMap API", "Geolocation API", "CSS Gradients"],
+        "results": "Standortbasierte Wetteranzeige mit Temperatur, Luftfeuchtigkeit, Wind und 5-Tage-Forecast. Automatische Hintergrundanpassung."
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/weather-app.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Weather App",
+      "appPath": "/api/project-apps/weather-app/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/weather-app"
+    },
+    {
+      "name": "zahlen-raten",
+      "title": "zahlen-raten",
+      "description": "Finde die geheime Zahl zwischen 1 und 100. Ein klassisches Ratespiel mit Hinweisen.",
+      "tags": ["puzzle", "logic", "guessing", "numbers", "math", "brain", "Abdulkerim", "Sesli"],
+      "category": "puzzle",
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/zahlen-raten.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Zahlen Raten",
+      "appPath": "/api/project-apps/zahlen-raten/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/zahlen-raten"
+    }
+  ],
+  "lastUpdated": "2026-03-24T21:56:32.338Z",
+  "source": "canonical-apps-config"
 }

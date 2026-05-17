@@ -311,7 +311,6 @@
       <div class="footer-cards">
         <article class="footer-card">
           <h2 data-i18n="footer.about.title">Profil</h2>
-          <address class="footer-contact">
             <p class="name">Abdulkerim Sesli</p>
             <p class="role">Developer • Photographer</p>
           </address>
@@ -319,7 +318,20 @@
             Portfolio für Code, 3D, AI und visuelle Experimente.
           </p>
           <div class="footer-card-actions">
-            <a href="/contact/" class="footer-cta">Kontakt</a>
+            <a href="/contact/" class="footer-cta" aria-label="Kontakt öffnen">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <use href="#footer-icon-user"></use>
+              </svg>
+              <span>Kontakt</span>
+            </a>
           </div>
         </article>
 

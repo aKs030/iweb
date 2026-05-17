@@ -1,19 +1,12 @@
-import {
-	formatSlug,
-	normalizeText,
-	sanitizeDiscoveryText,
-} from "../../content/core/text-utils.js";
+import { formatSlug, normalizeText, sanitizeDiscoveryText } from "../../content/core/text-utils.js";
 import { loadJsonFile, toISODate } from "./_xml-utils.js";
 import { buildProjectDetailPath } from "../../content/core/project-paths.js";
 import {
-	fetchPlaylistItemsPage,
-	fetchUploadsPlaylistId,
-	getBestYouTubeThumbnail,
+  fetchPlaylistItemsPage,
+  fetchUploadsPlaylistId,
+  getBestYouTubeThumbnail,
 } from "./_youtube-utils.js";
-import {
-	buildProjectPreviewUrl,
-	buildR2Url,
-} from "../../content/config/media-urls.js";
+import { buildProjectPreviewUrl, buildR2Url } from "../../content/config/media-urls.js";
 import { isImageMediaPath } from "../_shared/media-assets.js";
 
 export const BLOG_INDEX_PATH = "/pages/blog/posts/index.json";
@@ -23,38 +16,38 @@ export const MAX_SITEMAP_YOUTUBE_RESULTS = 200;
 const GALLERY_PREFIX = "Gallery/";
 // Keep a small static fallback so image discovery still works without bucket access.
 const FALLBACK_GALLERY_KEYS = [
-	"Gallery/Mond.webp",
-	"Gallery/Urbanes Kaleidoskop.webp",
-	"Gallery/Wald-Schienen.webp",
-	"Gallery/abdulkerim-sesli-01.webp",
+  "Gallery/Mond.webp",
+  "Gallery/Urbanes Kaleidoskop.webp",
+  "Gallery/Wald-Schienen.webp",
+  "Gallery/abdulkerim-sesli-01.webp",
 ];
 
 function formatAppTitle(name, title) {
-	return sanitizeDiscoveryText(title, formatSlug(name));
+  return sanitizeDiscoveryText(title, formatSlug(name));
 }
 
 function formatAppDescription(name, description) {
-	return sanitizeDiscoveryText(description, formatSlug(name));
+  return sanitizeDiscoveryText(description, formatSlug(name));
 }
 
 export function buildProjectAppPath(name) {
-	return buildProjectDetailPath(name);
+  return buildProjectDetailPath(name);
 }
 
 export function buildProjectPreviewImageUrl(project) {
-	return normalizeText(project?.previewUrl) || buildProjectPreviewUrl(project);
+  return normalizeText(project?.previewUrl) || buildProjectPreviewUrl(project);
 }
 
 export function buildBlogPath(id) {
-	return `/blog/${encodeURIComponent(id)}/`;
+  return `/blog/${encodeURIComponent(id)}/`;
 }
 
 export function buildVideoPath(videoId) {
-	return `/videos/${encodeURIComponent(videoId)}/`;
+  return `/videos/${encodeURIComponent(videoId)}/`;
 }
 
 export function buildYouTubeEmbedUrl(videoId) {
-	return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+  return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
 }
 
 /**
@@ -64,40 +57,40 @@ export function buildYouTubeEmbedUrl(videoId) {
  * @returns {Promise<Array<{name: string, title: string, description: string, lastmod: string|null}>>}
  */
 export async function loadProjectApps(context) {
-	const payload = await loadJsonFile(context, PROJECT_APPS_PATH);
-	const rawApps = Array.isArray(payload?.apps) ? payload.apps : [];
-	const payloadLastmod = toISODate(payload?.lastUpdated);
-	const appsByName = new Map();
+  const payload = await loadJsonFile(context, PROJECT_APPS_PATH);
+  const rawApps = Array.isArray(payload?.apps) ? payload.apps : [];
+  const payloadLastmod = toISODate(payload?.lastUpdated);
+  const appsByName = new Map();
 
-	for (const app of rawApps) {
-		const name = normalizeText(app?.name);
-		if (!name) continue;
+  for (const app of rawApps) {
+    const name = normalizeText(app?.name);
+    if (!name) continue;
 
-		const dedupeKey = name.toLowerCase();
-		if (appsByName.has(dedupeKey)) continue;
+    const dedupeKey = name.toLowerCase();
+    if (appsByName.has(dedupeKey)) continue;
 
-		appsByName.set(dedupeKey, {
-			name,
-			title: formatAppTitle(name, app?.title),
-			description: formatAppDescription(name, app?.description),
-			lastmod: toISODate(app?.lastUpdated) || payloadLastmod || null,
-			previewUrl: normalizeText(app?.previewUrl),
-			previewAlt: normalizeText(app?.previewAlt),
-		});
-	}
+    appsByName.set(dedupeKey, {
+      name,
+      title: formatAppTitle(name, app?.title),
+      description: formatAppDescription(name, app?.description),
+      lastmod: toISODate(app?.lastUpdated) || payloadLastmod || null,
+      previewUrl: normalizeText(app?.previewUrl),
+      previewAlt: normalizeText(app?.previewAlt),
+    });
+  }
 
-	return [...appsByName.values()];
+  return [...appsByName.values()];
 }
 
 function formatBlogTitle(id, title) {
-	return sanitizeDiscoveryText(title, formatSlug(id));
+  return sanitizeDiscoveryText(title, formatSlug(id));
 }
 
 function formatBlogDescription(post, fallbackTitle) {
-	return sanitizeDiscoveryText(
-		post?.seoDescription || post?.excerpt,
-		`${fallbackTitle} - Blogbeitrag`,
-	);
+  return sanitizeDiscoveryText(
+    post?.seoDescription || post?.excerpt,
+    `${fallbackTitle} - Blogbeitrag`
+  );
 }
 
 /**
@@ -107,68 +100,68 @@ function formatBlogDescription(post, fallbackTitle) {
  * @returns {Promise<Array<{id: string, title: string, description: string, image: string, lastmod: string|null, keywords: string[]}>>}
  */
 export async function loadBlogPosts(context) {
-	const payload = await loadJsonFile(context, BLOG_INDEX_PATH);
-	const rawPosts = Array.isArray(payload) ? payload : [];
-	const postsById = new Map();
+  const payload = await loadJsonFile(context, BLOG_INDEX_PATH);
+  const rawPosts = Array.isArray(payload) ? payload : [];
+  const postsById = new Map();
 
-	for (const post of rawPosts) {
-		const id = normalizeText(post?.id);
-		if (!id) continue;
+  for (const post of rawPosts) {
+    const id = normalizeText(post?.id);
+    if (!id) continue;
 
-		const dedupeKey = id.toLowerCase();
-		if (postsById.has(dedupeKey)) continue;
+    const dedupeKey = id.toLowerCase();
+    if (postsById.has(dedupeKey)) continue;
 
-		const title = formatBlogTitle(id, post?.title);
-		const description = formatBlogDescription(post, title);
-		const keywords = Array.isArray(post?.keywords)
-			? post.keywords.map((keyword) => normalizeText(keyword)).filter(Boolean)
-			: String(post?.keywords || "")
-					.split(",")
-					.map((keyword) => normalizeText(keyword))
-					.filter(Boolean);
+    const title = formatBlogTitle(id, post?.title);
+    const description = formatBlogDescription(post, title);
+    const keywords = Array.isArray(post?.keywords)
+      ? post.keywords.map(keyword => normalizeText(keyword)).filter(Boolean)
+      : String(post?.keywords || "")
+          .split(",")
+          .map(keyword => normalizeText(keyword))
+          .filter(Boolean);
 
-		postsById.set(dedupeKey, {
-			id,
-			title,
-			description,
-			image: normalizeText(post?.image),
-			lastmod: toISODate(post?.date) || null,
-			keywords,
-		});
-	}
+    postsById.set(dedupeKey, {
+      id,
+      title,
+      description,
+      image: normalizeText(post?.image),
+      lastmod: toISODate(post?.date) || null,
+      keywords,
+    });
+  }
 
-	return [...postsById.values()];
+  return [...postsById.values()];
 }
 
 function toGalleryImageRecord(objectLike) {
-	const key = normalizeText(objectLike?.key);
-	if (!key || !isImageMediaPath(key)) return null;
+  const key = normalizeText(objectLike?.key);
+  if (!key || !isImageMediaPath(key)) return null;
 
-	const filename = key.split("/").pop() || key;
-	const title = sanitizeDiscoveryText(formatSlug(filename), "Gallery Image");
+  const filename = key.split("/").pop() || key;
+  const title = sanitizeDiscoveryText(formatSlug(filename), "Gallery Image");
 
-	return {
-		key,
-		loc: buildR2Url(key),
-		title,
-		caption: `${title} - Fotoinhalt aus der Bildgalerie von Abdulkerim Sesli`,
-		lastmod: toISODate(objectLike?.uploaded) || null,
-	};
+  return {
+    key,
+    loc: buildR2Url(key),
+    title,
+    caption: `${title} - Fotoinhalt aus der Bildgalerie von Abdulkerim Sesli`,
+    lastmod: toISODate(objectLike?.uploaded) || null,
+  };
 }
 
 async function listGalleryObjects(bucket) {
-	if (!bucket) return [];
+  if (!bucket) return [];
 
-	const objects = [];
-	let cursor;
+  const objects = [];
+  let cursor;
 
-	do {
-		const list = await bucket.list({ prefix: GALLERY_PREFIX, cursor });
-		objects.push(...(Array.isArray(list?.objects) ? list.objects : []));
-		cursor = list?.truncated ? list.cursor : undefined;
-	} while (cursor);
+  do {
+    const list = await bucket.list({ prefix: GALLERY_PREFIX, cursor });
+    objects.push(...(Array.isArray(list?.objects) ? list.objects : []));
+    cursor = list?.truncated ? list.cursor : undefined;
+  } while (cursor);
 
-	return objects;
+  return objects;
 }
 
 /**
@@ -178,30 +171,28 @@ async function listGalleryObjects(bucket) {
  * @returns {Promise<Array<{key: string, loc: string, title: string, caption: string, lastmod: string|null}>>}
  */
 export async function loadGalleryImages(context) {
-	let dynamicObjects = [];
+  let dynamicObjects = [];
 
-	try {
-		dynamicObjects = await listGalleryObjects(context.env?.GALLERY_BUCKET);
-	} catch {}
+  try {
+    dynamicObjects = await listGalleryObjects(context.env?.GALLERY_BUCKET);
+  } catch {}
 
-	const fallbackObjects = FALLBACK_GALLERY_KEYS.map((key) => ({
-		key,
-		uploaded: null,
-	}));
+  const fallbackObjects = FALLBACK_GALLERY_KEYS.map(key => ({
+    key,
+    uploaded: null,
+  }));
 
-	const allImageRecords = [...dynamicObjects, ...fallbackObjects]
-		.map((entry) => toGalleryImageRecord(entry))
-		.filter(Boolean);
+  const allImageRecords = [...dynamicObjects, ...fallbackObjects]
+    .map(entry => toGalleryImageRecord(entry))
+    .filter(Boolean);
 
-	const imageByLoc = new Map();
-	for (const image of allImageRecords) {
-		if (imageByLoc.has(image.loc)) continue;
-		imageByLoc.set(image.loc, image);
-	}
+  const imageByLoc = new Map();
+  for (const image of allImageRecords) {
+    if (imageByLoc.has(image.loc)) continue;
+    imageByLoc.set(image.loc, image);
+  }
 
-	return [...imageByLoc.values()].sort((a, b) =>
-		a.loc.localeCompare(b.loc, "en"),
-	);
+  return [...imageByLoc.values()].sort((a, b) => a.loc.localeCompare(b.loc, "en"));
 }
 
 /**
@@ -211,65 +202,55 @@ export async function loadGalleryImages(context) {
  * @param {number} [maxResults=MAX_SITEMAP_YOUTUBE_RESULTS] - Max video items
  * @returns {Promise<Array<{videoId: string, path: string, title: string, description: string, thumbnail: string, channelTitle: string, publishedAt: string, lastmod: string|null}>>}
  */
-export async function loadYouTubeVideos(
-	env,
-	maxResults = MAX_SITEMAP_YOUTUBE_RESULTS,
-) {
-	const channelId = normalizeText(env?.YOUTUBE_CHANNEL_ID);
-	const apiKey = normalizeText(env?.YOUTUBE_API_KEY);
-	if (!channelId || !apiKey) return [];
+export async function loadYouTubeVideos(env, maxResults = MAX_SITEMAP_YOUTUBE_RESULTS) {
+  const channelId = normalizeText(env?.YOUTUBE_CHANNEL_ID);
+  const apiKey = normalizeText(env?.YOUTUBE_API_KEY);
+  if (!channelId || !apiKey) return [];
 
-	const uploadsPlaylistId = await fetchUploadsPlaylistId(channelId, apiKey);
-	if (!uploadsPlaylistId) return [];
+  const uploadsPlaylistId = await fetchUploadsPlaylistId(channelId, apiKey);
+  if (!uploadsPlaylistId) return [];
 
-	const videosById = new Map();
-	let nextPageToken = null;
-	let collected = 0;
+  const videosById = new Map();
+  let nextPageToken = null;
+  let collected = 0;
 
-	do {
-		const payload = await fetchPlaylistItemsPage(
-			uploadsPlaylistId,
-			apiKey,
-			nextPageToken,
-		);
-		const items = Array.isArray(payload?.items) ? payload.items : [];
+  do {
+    const payload = await fetchPlaylistItemsPage(uploadsPlaylistId, apiKey, nextPageToken);
+    const items = Array.isArray(payload?.items) ? payload.items : [];
 
-		for (const item of items) {
-			const snippet = item?.snippet || {};
-			const videoId = normalizeText(snippet?.resourceId?.videoId);
-			if (!videoId) continue;
-			if (videosById.has(videoId)) continue;
+    for (const item of items) {
+      const snippet = item?.snippet || {};
+      const videoId = normalizeText(snippet?.resourceId?.videoId);
+      if (!videoId) continue;
+      if (videosById.has(videoId)) continue;
 
-			const title = sanitizeDiscoveryText(snippet?.title, `Video ${videoId}`);
-			const description = sanitizeDiscoveryText(
-				snippet?.description,
-				`${title} - Videoinhalt von Abdulkerim Sesli`,
-			);
-			const publishedAt = normalizeText(snippet?.publishedAt);
-			const channelTitle = sanitizeDiscoveryText(
-				snippet?.channelTitle,
-				"Abdulkerim Sesli",
-			);
+      const title = sanitizeDiscoveryText(snippet?.title, `Video ${videoId}`);
+      const description = sanitizeDiscoveryText(
+        snippet?.description,
+        `${title} - Videoinhalt von Abdulkerim Sesli`
+      );
+      const publishedAt = normalizeText(snippet?.publishedAt);
+      const channelTitle = sanitizeDiscoveryText(snippet?.channelTitle, "Abdulkerim Sesli");
 
-			videosById.set(videoId, {
-				videoId,
-				path: buildVideoPath(videoId),
-				title,
-				description,
-				thumbnail: getBestYouTubeThumbnail(snippet),
-				channelTitle,
-				publishedAt,
-				lastmod: toISODate(publishedAt),
-			});
+      videosById.set(videoId, {
+        videoId,
+        path: buildVideoPath(videoId),
+        title,
+        description,
+        thumbnail: getBestYouTubeThumbnail(snippet),
+        channelTitle,
+        publishedAt,
+        lastmod: toISODate(publishedAt),
+      });
 
-			collected += 1;
-			if (collected >= maxResults) {
-				return [...videosById.values()];
-			}
-		}
+      collected += 1;
+      if (collected >= maxResults) {
+        return [...videosById.values()];
+      }
+    }
 
-		nextPageToken = payload?.nextPageToken || null;
-	} while (nextPageToken && collected < maxResults);
+    nextPageToken = payload?.nextPageToken || null;
+  } while (nextPageToken && collected < maxResults);
 
-	return [...videosById.values()];
+  return [...videosById.values()];
 }

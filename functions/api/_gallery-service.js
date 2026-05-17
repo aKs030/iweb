@@ -9,18 +9,18 @@ let cacheExpiresAt = 0;
 let pendingLoadPromise = null;
 
 async function listGalleryObjects(bucket) {
-	const listResults = [];
-	let cursor;
+  const listResults = [];
+  let cursor;
 
-	do {
-		const list = await bucket.list({ prefix: GALLERY_PREFIX, cursor });
-		if (list.objects) {
-			listResults.push(...list.objects);
-		}
-		cursor = list.truncated ? list.cursor : undefined;
-	} while (cursor);
+  do {
+    const list = await bucket.list({ prefix: GALLERY_PREFIX, cursor });
+    if (list.objects) {
+      listResults.push(...list.objects);
+    }
+    cursor = list.truncated ? list.cursor : undefined;
+  } while (cursor);
 
-	return listResults;
+  return listResults;
 }
 
 /**
@@ -28,39 +28,39 @@ async function listGalleryObjects(bucket) {
  * @returns {Promise<any[]>}
  */
 export async function listGalleryObjectsWithMetadata(bucket) {
-	const now = Date.now();
+  const now = Date.now();
 
-	if (cachedObjects && now < cacheExpiresAt) {
-		return cachedObjects;
-	}
+  if (cachedObjects && now < cacheExpiresAt) {
+    return cachedObjects;
+  }
 
-	if (pendingLoadPromise) {
-		return pendingLoadPromise;
-	}
+  if (pendingLoadPromise) {
+    return pendingLoadPromise;
+  }
 
-	pendingLoadPromise = (async () => {
-		try {
-			const listResults = await listGalleryObjects(bucket);
-			const filtered = listResults
-				.filter((obj) => isGalleryMediaPath(obj.key))
-				.map((obj) => ({
-					...obj,
-					uploadedTime: new Date(obj.uploaded).getTime(),
-				}));
+  pendingLoadPromise = (async () => {
+    try {
+      const listResults = await listGalleryObjects(bucket);
+      const filtered = listResults
+        .filter(obj => isGalleryMediaPath(obj.key))
+        .map(obj => ({
+          ...obj,
+          uploadedTime: new Date(obj.uploaded).getTime(),
+        }));
 
-			filtered.sort((a, b) => b.uploadedTime - a.uploadedTime);
+      filtered.sort((a, b) => b.uploadedTime - a.uploadedTime);
 
-			const enrichedObjects = await Promise.all(
-				filtered.map((obj) => enrichGalleryObject(bucket, obj)),
-			);
+      const enrichedObjects = await Promise.all(
+        filtered.map(obj => enrichGalleryObject(bucket, obj))
+      );
 
-			cachedObjects = enrichedObjects;
-			cacheExpiresAt = Date.now() + CACHE_TTL_MS;
-			return enrichedObjects;
-		} finally {
-			pendingLoadPromise = null;
-		}
-	})();
+      cachedObjects = enrichedObjects;
+      cacheExpiresAt = Date.now() + CACHE_TTL_MS;
+      return enrichedObjects;
+    } finally {
+      pendingLoadPromise = null;
+    }
+  })();
 
-	return pendingLoadPromise;
+  return pendingLoadPromise;
 }

@@ -27,34 +27,34 @@ This directory contains shared browser runtime modules used by pages, components
 ## Typical Usage
 
 ```javascript
-import { createLogger } from '#core/logger.js';
+import { createLogger } from "#core/logger.js";
 import {
   AppLoadManager,
   loadSignals,
   subscribeLoadState,
   whenAppReady,
-} from '#core/load-manager.js';
-import { i18n } from '#core/i18n.js';
+} from "#core/load-manager.js";
+import { i18n } from "#core/i18n.js";
 
-const log = createLogger('Example');
+const log = createLogger("Example");
 
 await i18n.init();
-AppLoadManager.block('example-init');
-AppLoadManager.updateLoader(0.25, 'Initialisiere Beispiel');
-AppLoadManager.unblock('example-init');
-AppLoadManager.updateLoader(0.75, 'Daten vorbereitet');
+AppLoadManager.block("example-init");
+AppLoadManager.updateLoader(0.25, "Initialisiere Beispiel");
+AppLoadManager.unblock("example-init");
+AppLoadManager.updateLoader(0.75, "Daten vorbereitet");
 AppLoadManager.hideLoader(0);
 
-const stop = subscribeLoadState((state) => {
+const stop = subscribeLoadState(state => {
   if (!state.blocked && state.done) {
-    log.info('App ready', state);
+    log.info("App ready", state);
   }
 });
 
 await whenAppReady({ timeout: 5000 });
 
 console.log(loadSignals.progress.value);
-log.info('Core initialized');
+log.info("Core initialized");
 ```
 
 ## Notes

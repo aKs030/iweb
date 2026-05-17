@@ -65,43 +65,42 @@ let _meshoptReady = false;
  * @returns {Promise<import('three/addons/loaders/GLTFLoader.js').GLTFLoader>} Configured GLTFLoader instance
  */
 async function getConfiguredGLTFLoader(loadingManager) {
-	if (_gltfLoader) return _gltfLoader;
+  if (_gltfLoader) return _gltfLoader;
 
-	log.info("Initializing GLTFLoader with Draco & Meshopt support…");
+  log.info("Initializing GLTFLoader with Draco & Meshopt support…");
 
-	// Dynamic imports — resolved via the import map `three/addons/…`
-	const [{ GLTFLoader }, { DRACOLoader }, { MeshoptDecoder }] =
-		await Promise.all([
-			import("three/addons/loaders/GLTFLoader.js"),
-			import("three/addons/loaders/DRACOLoader.js"),
-			import("three/addons/libs/meshopt_decoder.module.js"),
-		]);
+  // Dynamic imports — resolved via the import map `three/addons/…`
+  const [{ GLTFLoader }, { DRACOLoader }, { MeshoptDecoder }] = await Promise.all([
+    import("three/addons/loaders/GLTFLoader.js"),
+    import("three/addons/loaders/DRACOLoader.js"),
+    import("three/addons/libs/meshopt_decoder.module.js"),
+  ]);
 
-	// ── Draco ──────────────────────────────
-	_dracoLoader = new DRACOLoader(loadingManager);
-	_dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
-	_dracoLoader.setDecoderConfig({ type: "js" }); // JS fallback; WASM auto-detected
-	_dracoLoader.preload();
-	log.info("Draco decoder configured", { path: DRACO_DECODER_PATH });
+  // ── Draco ──────────────────────────────
+  _dracoLoader = new DRACOLoader(loadingManager);
+  _dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
+  _dracoLoader.setDecoderConfig({ type: "js" }); // JS fallback; WASM auto-detected
+  _dracoLoader.preload();
+  log.info("Draco decoder configured", { path: DRACO_DECODER_PATH });
 
-	// ── GLTFLoader ─────────────────────────
-	_gltfLoader = new GLTFLoader(loadingManager);
-	_gltfLoader.setDRACOLoader(_dracoLoader);
+  // ── GLTFLoader ─────────────────────────
+  _gltfLoader = new GLTFLoader(loadingManager);
+  _gltfLoader.setDRACOLoader(_dracoLoader);
 
-	// ── Meshopt ────────────────────────────
-	if (MeshoptDecoder) {
-		// MeshoptDecoder.ready is a Promise that resolves when WASM is compiled
-		if (typeof MeshoptDecoder.ready === "function") {
-			await MeshoptDecoder.ready();
-		} else if (MeshoptDecoder.ready instanceof Promise) {
-			await MeshoptDecoder.ready;
-		}
-		_gltfLoader.setMeshoptDecoder(MeshoptDecoder);
-		_meshoptReady = true;
-		log.info("Meshopt decoder ready");
-	}
+  // ── Meshopt ────────────────────────────
+  if (MeshoptDecoder) {
+    // MeshoptDecoder.ready is a Promise that resolves when WASM is compiled
+    if (typeof MeshoptDecoder.ready === "function") {
+      await MeshoptDecoder.ready();
+    } else if (MeshoptDecoder.ready instanceof Promise) {
+      await MeshoptDecoder.ready;
+    }
+    _gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+    _meshoptReady = true;
+    log.info("Meshopt decoder ready");
+  }
 
-	return _gltfLoader;
+  return _gltfLoader;
 }
 
 // ───────────────────────────────────────────
@@ -135,42 +134,42 @@ async function getConfiguredGLTFLoader(loadingManager) {
  * ```
  */
 async function loadCompressedModel(url, options = {}) {
-	const { loadingManager, timeout = 15000, onProgress } = options;
+  const { loadingManager, timeout = 15000, onProgress } = options;
 
-	const loader = await getConfiguredGLTFLoader(loadingManager);
+  const loader = await getConfiguredGLTFLoader(loadingManager);
 
-	log.info(`Loading model: ${url}`);
-	const start = performance.now();
+  log.info(`Loading model: ${url}`);
+  const start = performance.now();
 
-	return new Promise((resolve, reject) => {
-		/** @type {ReturnType<typeof setTimeout>|undefined} */
-		let timer;
+  return new Promise((resolve, reject) => {
+    /** @type {ReturnType<typeof setTimeout>|undefined} */
+    let timer;
 
-		if (timeout > 0) {
-			timer = setTimeout(() => {
-				reject(new Error(`Model loading timeout after ${timeout}ms: ${url}`));
-			}, timeout);
-		}
+    if (timeout > 0) {
+      timer = setTimeout(() => {
+        reject(new Error(`Model loading timeout after ${timeout}ms: ${url}`));
+      }, timeout);
+    }
 
-		loader.load(
-			url,
-			(gltf) => {
-				if (timer) clearTimeout(timer);
-				const elapsed = (performance.now() - start).toFixed(0);
-				log.info(`Model loaded in ${elapsed}ms: ${url}`, {
-					animations: gltf.animations?.length ?? 0,
-					scenes: gltf.scenes?.length ?? 0,
-				});
-				resolve(gltf);
-			},
-			onProgress,
-			(error) => {
-				if (timer) clearTimeout(timer);
-				log.error(`Failed to load model: ${url}`, error);
-				reject(error);
-			},
-		);
-	});
+    loader.load(
+      url,
+      gltf => {
+        if (timer) clearTimeout(timer);
+        const elapsed = (performance.now() - start).toFixed(0);
+        log.info(`Model loaded in ${elapsed}ms: ${url}`, {
+          animations: gltf.animations?.length ?? 0,
+          scenes: gltf.scenes?.length ?? 0,
+        });
+        resolve(gltf);
+      },
+      onProgress,
+      error => {
+        if (timer) clearTimeout(timer);
+        log.error(`Failed to load model: ${url}`, error);
+        reject(error);
+      }
+    );
+  });
 }
 
 /**
@@ -182,12 +181,12 @@ async function loadCompressedModel(url, options = {}) {
  * @returns {Promise<void>}
  */
 export async function preloadModel(url, options = {}) {
-	try {
-		await loadCompressedModel(url, options);
-		log.info(`Model preloaded: ${url}`);
-	} catch (err) {
-		log.warn(`Model preload failed (non-critical): ${url}`, err);
-	}
+  try {
+    await loadCompressedModel(url, options);
+    log.info(`Model preloaded: ${url}`);
+  } catch (err) {
+    log.warn(`Model preload failed (non-critical): ${url}`, err);
+  }
 }
 
 /**
@@ -195,13 +194,13 @@ export async function preloadModel(url, options = {}) {
  * Call this when 3D content is permanently removed from the page.
  */
 export function disposeModelLoader() {
-	if (_dracoLoader) {
-		_dracoLoader.dispose();
-		_dracoLoader = null;
-		log.info("Draco decoder disposed");
-	}
-	_gltfLoader = null;
-	_meshoptReady = false;
+  if (_dracoLoader) {
+    _dracoLoader.dispose();
+    _dracoLoader = null;
+    log.info("Draco decoder disposed");
+  }
+  _gltfLoader = null;
+  _meshoptReady = false;
 }
 
 /**
@@ -209,5 +208,5 @@ export function disposeModelLoader() {
  * @returns {boolean}
  */
 export function isMeshoptReady() {
-	return _meshoptReady;
+  return _meshoptReady;
 }

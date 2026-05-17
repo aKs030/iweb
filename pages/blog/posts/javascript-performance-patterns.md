@@ -25,11 +25,11 @@ Performance ist kein Nice-to-have mehr – es ist ein Feature. Langsame Apps ver
 
 ```javascript
 // Statt statischem Import
-import { HeavyComponent } from './heavy-component.js';
+import { HeavyComponent } from "./heavy-component.js";
 
 // Dynamischer Import bei Bedarf
 const loadHeavyComponent = async () => {
-  const { HeavyComponent } = await import('./heavy-component.js');
+  const { HeavyComponent } = await import("./heavy-component.js");
   return HeavyComponent;
 };
 ```
@@ -40,12 +40,12 @@ Der Browser lädt `heavy-component.js` erst, wenn die Funktion aufgerufen wird. 
 
 ```javascript
 const routes = {
-  '/dashboard': () => import('./pages/dashboard.js'),
-  '/profile': () => import('./pages/profile.js'),
-  '/settings': () => import('./pages/settings.js'),
+  "/dashboard": () => import("./pages/dashboard.js"),
+  "/profile": () => import("./pages/profile.js"),
+  "/settings": () => import("./pages/settings.js"),
 };
 
-const loadRoute = async (path) => {
+const loadRoute = async path => {
   const module = await routes[path]();
   return module.default;
 };
@@ -58,7 +58,7 @@ Nutzer auf der Dashboard-Seite laden nicht den Settings-Code. Das spart Bandbrei
 ```javascript
 class LazyComponent extends HTMLElement {
   connectedCallback() {
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
         this.loadComponent();
         observer.disconnect();
@@ -68,7 +68,7 @@ class LazyComponent extends HTMLElement {
   }
 
   async loadComponent() {
-    const { Component } = await import('./component.js');
+    const { Component } = await import("./component.js");
     this.innerHTML = Component.render();
   }
 }
@@ -81,7 +81,7 @@ Komponenten außerhalb des Viewports werden nicht geladen. Perfekt für lange Se
 **Function Memoization** speichert Ergebnisse basierend auf Input-Parametern:
 
 ```javascript
-const memoize = (fn) => {
+const memoize = fn => {
   const cache = new Map();
   return (...args) => {
     const key = JSON.stringify(args);
@@ -92,7 +92,7 @@ const memoize = (fn) => {
   };
 };
 
-const expensiveCalculation = memoize((n) => {
+const expensiveCalculation = memoize(n => {
   // Komplexe Berechnung
   return n * n * n;
 });
@@ -107,7 +107,7 @@ const memoComponent = (component, propsEqual = shallowEqual) => {
   let lastProps = null;
   let lastResult = null;
 
-  return (props) => {
+  return props => {
     if (lastProps && propsEqual(props, lastProps)) {
       return lastResult;
     }
@@ -133,12 +133,12 @@ const debounce = (fn, delay) => {
   };
 };
 
-const searchInput = document.querySelector('#search');
-const debouncedSearch = debounce((query) => {
+const searchInput = document.querySelector("#search");
+const debouncedSearch = debounce(query => {
   fetch(`/api/search?q=${query}`);
 }, 300);
 
-searchInput.addEventListener('input', (e) => {
+searchInput.addEventListener("input", e => {
   debouncedSearch(e.target.value);
 });
 ```
@@ -160,10 +160,10 @@ const throttle = (fn, limit) => {
 };
 
 const throttledScroll = throttle(() => {
-  console.log('Scroll position:', window.scrollY);
+  console.log("Scroll position:", window.scrollY);
 }, 100);
 
-window.addEventListener('scroll', throttledScroll);
+window.addEventListener("scroll", throttledScroll);
 ```
 
 Scroll-Handler läuft maximal alle 100ms. Das verhindert Performance-Probleme bei schnellem Scrollen.
@@ -174,16 +174,16 @@ Scroll-Handler läuft maximal alle 100ms. Das verhindert Performance-Probleme be
 
 ```javascript
 // worker.js
-self.addEventListener('message', (e) => {
+self.addEventListener("message", e => {
   const result = heavyCalculation(e.data);
   self.postMessage(result);
 });
 
 // main.js
-const worker = new Worker('worker.js');
+const worker = new Worker("worker.js");
 worker.postMessage(largeDataset);
-worker.addEventListener('message', (e) => {
-  console.log('Result:', e.data);
+worker.addEventListener("message", e => {
+  console.log("Result:", e.data);
 });
 ```
 
@@ -192,9 +192,9 @@ Der Main Thread bleibt responsive, während der Worker rechnet. Perfekt für Dat
 **Shared Workers** für Tab-übergreifende Kommunikation:
 
 ```javascript
-const worker = new SharedWorker('shared-worker.js');
+const worker = new SharedWorker("shared-worker.js");
 worker.port.start();
-worker.port.postMessage({ type: 'sync', data: userData });
+worker.port.postMessage({ type: "sync", data: userData });
 ```
 
 Mehrere Tabs teilen sich einen Worker. Das spart Ressourcen und ermöglicht Echtzeit-Synchronisation.
@@ -225,9 +225,9 @@ class VirtualScroller {
         <div style="position: absolute; top: ${(startIndex + i) * this.itemHeight}px">
           ${item}
         </div>
-      `,
+      `
       )
-      .join('');
+      .join("");
   }
 }
 ```
@@ -241,7 +241,7 @@ Nicht-kritische Tasks in Idle-Zeiten verschieben:
 ```javascript
 const tasks = [task1, task2, task3];
 
-const runIdleTasks = (deadline) => {
+const runIdleTasks = deadline => {
   while (deadline.timeRemaining() > 0 && tasks.length > 0) {
     const task = tasks.shift();
     task();
@@ -270,15 +270,15 @@ DNS-Lookup, TCP-Handshake und TLS-Negotiation passieren früh. API-Requests sind
 **Prefetch** für wahrscheinlich benötigte Ressourcen:
 
 ```javascript
-const prefetchRoute = (path) => {
-  const link = document.createElement('link');
-  link.rel = 'prefetch';
+const prefetchRoute = path => {
+  const link = document.createElement("link");
+  link.rel = "prefetch";
   link.href = path;
   document.head.appendChild(link);
 };
 
 // User hovert über Link? Prefetch die Seite
-link.addEventListener('mouseenter', () => {
+link.addEventListener("mouseenter", () => {
   prefetchRoute(link.href);
 });
 ```
@@ -300,8 +300,8 @@ const measureTask = async (name, task) => {
   console.log(`${name}: ${measure.duration}ms`);
 };
 
-measureTask('data-fetch', async () => {
-  await fetch('/api/data');
+measureTask("data-fetch", async () => {
+  await fetch("/api/data");
 });
 ```
 
@@ -310,13 +310,13 @@ Echte Daten statt Vermutungen. Identifiziere Bottlenecks mit Zahlen.
 **Core Web Vitals** tracken:
 
 ```javascript
-const reportWebVitals = (metric) => {
+const reportWebVitals = metric => {
   console.log(metric.name, metric.value);
   // An Analytics senden
 };
 
 // LCP, FID, CLS messen
-import { getCLS, getFID, getLCP } from 'web-vitals';
+import { getCLS, getFID, getLCP } from "web-vitals";
 getCLS(reportWebVitals);
 getFID(reportWebVitals);
 getLCP(reportWebVitals);

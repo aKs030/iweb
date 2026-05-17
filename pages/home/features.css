@@ -1,22 +1,22 @@
 .section.features {
-	position: relative;
-	display: block;
-	min-block-size: var(--full-section-viewport-height);
-	block-size: var(--full-section-viewport-height);
-	padding-block: clamp(3.7rem, 6.5vw, 5.8rem);
-	padding-inline: max(clamp(0.95rem, 3vw, 2.2rem), var(--safe-left))
-		max(clamp(0.95rem, 3vw, 2.2rem), var(--safe-right));
-	overflow: clip;
-	isolation: isolate;
+  position: relative;
+  display: block;
+  min-block-size: var(--full-section-viewport-height);
+  block-size: var(--full-section-viewport-height);
+  padding-block: clamp(3.7rem, 6.5vw, 5.8rem);
+  padding-inline: max(clamp(0.95rem, 3vw, 2.2rem), var(--safe-left))
+    max(clamp(0.95rem, 3vw, 2.2rem), var(--safe-right));
+  overflow: clip;
+  isolation: isolate;
 }
 
 .section.features::before {
-	content: none;
+  content: none;
 }
 
 @media (width <= 560px) {
-	.section.features {
-		padding-inline: max(1rem, var(--safe-left)) max(1rem, var(--safe-right));
-		padding-block: clamp(3.4rem, 9vw, 4.8rem);
-	}
+  .section.features {
+    padding-inline: max(1rem, var(--safe-left)) max(1rem, var(--safe-right));
+    padding-block: clamp(3.4rem, 9vw, 4.8rem);
+  }
 }

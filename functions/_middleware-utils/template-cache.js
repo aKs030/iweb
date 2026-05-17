@@ -9,7 +9,7 @@ const TEMPLATE_TTL_SECONDS = 3600;
 export const DEPLOY_VERSION = "20260419-CSP-04";
 
 export const KV_KEYS = {
-	GLOBAL_HEAD: `template:${DEPLOY_VERSION}:global-head-v2`,
+  GLOBAL_HEAD: `template:${DEPLOY_VERSION}:global-head-v2`,
 };
 
 /**
@@ -17,10 +17,7 @@ export const KV_KEYS = {
  * @returns {string}
  */
 export function applyBuildVersion(template) {
-	return String(template || "").replaceAll(
-		"{{DEPLOY_VERSION}}",
-		DEPLOY_VERSION,
-	);
+  return String(template || "").replaceAll("{{DEPLOY_VERSION}}", DEPLOY_VERSION);
 }
 
 /**
@@ -31,33 +28,33 @@ export function applyBuildVersion(template) {
  * @param {any} ctx
  */
 export async function loadTemplateWithCache(env, kvKey, fetchUrl, ctx) {
-	const url = new URL(fetchUrl);
-	const isLocal = isLocalhost(url.hostname);
+  const url = new URL(fetchUrl);
+  const isLocal = isLocalhost(url.hostname);
 
-	if (!env.SITEMAP_CACHE_KV || isLocal) {
-		const fallbackRes = await env.ASSETS.fetch(url);
-		return fallbackRes.ok ? await fallbackRes.text() : "";
-	}
+  if (!env.SITEMAP_CACHE_KV || isLocal) {
+    const fallbackRes = await env.ASSETS.fetch(url);
+    return fallbackRes.ok ? await fallbackRes.text() : "";
+  }
 
-	let cachedItem = null;
-	try {
-		cachedItem = await env.SITEMAP_CACHE_KV.get(kvKey, "json");
-	} catch (err) {
-		log.warn(`KV Error bei Key ${kvKey}:`, err);
-	}
+  let cachedItem = null;
+  try {
+    cachedItem = await env.SITEMAP_CACHE_KV.get(kvKey, "json");
+  } catch (err) {
+    log.warn(`KV Error bei Key ${kvKey}:`, err);
+  }
 
-	const now = Date.now();
-	const ttlMs = TEMPLATE_TTL_SECONDS * 1000;
+  const now = Date.now();
+  const ttlMs = TEMPLATE_TTL_SECONDS * 1000;
 
-	if (cachedItem && cachedItem.html) {
-		if (now - cachedItem.timestamp > ttlMs) {
-			ctx.waitUntil(refreshTemplateInKV(env, kvKey, fetchUrl));
-		}
+  if (cachedItem && cachedItem.html) {
+    if (now - cachedItem.timestamp > ttlMs) {
+      ctx.waitUntil(refreshTemplateInKV(env, kvKey, fetchUrl));
+    }
 
-		return cachedItem.html;
-	}
+    return cachedItem.html;
+  }
 
-	return await refreshTemplateInKV(env, kvKey, fetchUrl);
+  return await refreshTemplateInKV(env, kvKey, fetchUrl);
 }
 
 /**
@@ -67,22 +64,19 @@ export async function loadTemplateWithCache(env, kvKey, fetchUrl, ctx) {
  * @param {string} fetchUrl
  */
 async function refreshTemplateInKV(env, kvKey, fetchUrl) {
-	try {
-		const res = await env.ASSETS.fetch(new URL(fetchUrl));
-		if (!res.ok) {
-			log.error(`Template fetch failed: ${fetchUrl} → ${res.status}`);
-			return "";
-		}
-		const html = await res.text();
+  try {
+    const res = await env.ASSETS.fetch(new URL(fetchUrl));
+    if (!res.ok) {
+      log.error(`Template fetch failed: ${fetchUrl} → ${res.status}`);
+      return "";
+    }
+    const html = await res.text();
 
-		await env.SITEMAP_CACHE_KV.put(
-			kvKey,
-			JSON.stringify({ timestamp: Date.now(), html }),
-		);
+    await env.SITEMAP_CACHE_KV.put(kvKey, JSON.stringify({ timestamp: Date.now(), html }));
 
-		return html;
-	} catch (err) {
-		log.error(`Template refresh failed for ${kvKey}:`, err);
-		return "";
-	}
+    return html;
+  } catch (err) {
+    log.error(`Template refresh failed for ${kvKey}:`, err);
+    return "";
+  }
 }

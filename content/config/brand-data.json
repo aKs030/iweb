@@ -1,58 +1,54 @@
 {
-	"name": "Abdulkerim Sesli",
-	"legalName": "Abdulkerim Sesli",
-	"alternateName": ["Abdülkerim Sesli", "Abdul Sesli"],
-	"logo": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
-	"image": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
-	"jobTitle": [
-		"Full-Stack Web Developer",
-		"Performance Engineer",
-		"AI Integration Specialist"
-	],
-	"email": "kontakt@abdulkerimsesli.de",
-	"areaServed": "Germany",
-	"knowsLanguage": [
-		{
-			"name": "Deutsch",
-			"alternateName": "German"
-		},
-		{
-			"name": "Englisch",
-			"alternateName": "English"
-		},
-		{
-			"name": "Türkisch",
-			"alternateName": "Turkish"
-		}
-	],
-	"hasOccupation": [
-		{
-			"name": "Full-Stack Web Developer",
-			"description": "Modern web applications with JavaScript ES2023+, Three.js, Web Components, and edge-ready architectures",
-			"skills": "JavaScript, Three.js, Web Components, API Integration, Technical SEO, Web Performance"
-		},
-		{
-			"name": "Creative Technologist",
-			"description": "Combining engineering quality with visual design for interactive digital products",
-			"skills": "Interaction Design, Prototyping, UI Systems, Creative Development"
-		}
-	],
-	"sameAs": [
-		"https://github.com/aKs030",
-		"https://linkedin.com/in/abdulkerim-s",
-		"https://x.com/kRm_030",
-		"https://instagram.com/abdul.codes",
-		"https://www.youtube.com/@aks.030",
-		"https://www.behance.net/abdulkerimsesli",
-		"https://dribbble.com/abdulkerimsesli"
-	],
-	"contactPoint": [
-		{
-			"contactType": "general inquiries",
-			"email": "kontakt@abdulkerimsesli.de"
-		}
-	],
-	"licensePage": "https://www.abdulkerimsesli.de/#image-license",
-	"creditPrefix": "Photo: ",
-	"copyrightHolder": "Abdulkerim Sesli"
+  "name": "Abdulkerim Sesli",
+  "legalName": "Abdulkerim Sesli",
+  "alternateName": ["Abdülkerim Sesli", "Abdul Sesli"],
+  "logo": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
+  "image": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
+  "jobTitle": ["Full-Stack Web Developer", "Performance Engineer", "AI Integration Specialist"],
+  "email": "kontakt@abdulkerimsesli.de",
+  "areaServed": "Germany",
+  "knowsLanguage": [
+    {
+      "name": "Deutsch",
+      "alternateName": "German"
+    },
+    {
+      "name": "Englisch",
+      "alternateName": "English"
+    },
+    {
+      "name": "Türkisch",
+      "alternateName": "Turkish"
+    }
+  ],
+  "hasOccupation": [
+    {
+      "name": "Full-Stack Web Developer",
+      "description": "Modern web applications with JavaScript ES2023+, Three.js, Web Components, and edge-ready architectures",
+      "skills": "JavaScript, Three.js, Web Components, API Integration, Technical SEO, Web Performance"
+    },
+    {
+      "name": "Creative Technologist",
+      "description": "Combining engineering quality with visual design for interactive digital products",
+      "skills": "Interaction Design, Prototyping, UI Systems, Creative Development"
+    }
+  ],
+  "sameAs": [
+    "https://github.com/aKs030",
+    "https://linkedin.com/in/abdulkerim-s",
+    "https://x.com/kRm_030",
+    "https://instagram.com/abdul.codes",
+    "https://www.youtube.com/@aks.030",
+    "https://www.behance.net/abdulkerimsesli",
+    "https://dribbble.com/abdulkerimsesli"
+  ],
+  "contactPoint": [
+    {
+      "contactType": "general inquiries",
+      "email": "kontakt@abdulkerimsesli.de"
+    }
+  ],
+  "licensePage": "https://www.abdulkerimsesli.de/#image-license",
+  "creditPrefix": "Photo: ",
+  "copyrightHolder": "Abdulkerim Sesli"
 }

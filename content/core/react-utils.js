@@ -21,17 +21,35 @@ import { i18n } from "./i18n.js";
  * }
  */
 export const createUseTranslation = () => {
-	return () => {
-		const [lang, setLang] = React.useState(i18n.currentLang);
+  return () => {
+    const [state, setState] = React.useState({
+      lang: i18n.currentLang,
+      version: 0,
+    });
 
-		React.useEffect(() => {
-			const onLangChange = (e) => setLang(e.detail.lang);
-			i18n.addEventListener("language-changed", onLangChange);
-			return () => i18n.removeEventListener("language-changed", onLangChange);
-		}, []);
+    React.useEffect(() => {
+      let mounted = true;
+      const update = (lang = i18n.currentLang) => {
+        if (!mounted) return;
+        setState(prev => ({
+          lang,
+          version: prev.version + 1,
+        }));
+      };
+      const onLangChange = e => update(e.detail.lang);
+      i18n.addEventListener("language-changed", onLangChange);
+      i18n
+        .init()
+        .then(() => update(i18n.currentLang))
+        .catch(() => update(i18n.currentLang));
+      return () => {
+        mounted = false;
+        i18n.removeEventListener("language-changed", onLangChange);
+      };
+    }, []);
 
-		const t = React.useCallback((key, params) => i18n.t(key, params), [lang]);
+    const t = React.useCallback((key, params) => i18n.t(key, params), [state.lang, state.version]);
 
-		return React.useMemo(() => ({ t, lang }), [t, lang]);
-	};
+    return React.useMemo(() => ({ t, lang: state.lang }), [t, state.lang]);
+  };
 };

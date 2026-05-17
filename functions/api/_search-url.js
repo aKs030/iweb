@@ -3,43 +3,39 @@
  * Normalization, canonicalization, and category detection.
  */
 
-import {
-	buildProjectDetailPath,
-	extractProjectSlug,
-} from "../../content/core/project-paths.js";
+import { buildProjectDetailPath, extractProjectSlug } from "../../content/core/project-paths.js";
 import { humanizeSlug } from "../../content/core/text-utils.js";
 import { canonicalizeUrlPath } from "../../content/core/path-utils.js";
 
 const TOP_LEVEL_TITLE_MAP = {
-	projekte: "Projekte Übersicht",
-	blog: "Blog Übersicht",
-	gallery: "Galerie",
-	videos: "Videos Übersicht",
-	about: "Über mich",
-	contact: "Kontakt",
+  projekte: "Projekte Übersicht",
+  blog: "Blog Übersicht",
+  gallery: "Galerie",
+  videos: "Videos Übersicht",
+  about: "Über mich",
+  contact: "Kontakt",
 };
 
 const URL_DESCRIPTION_FALLBACKS = {
-	"/": "Startseite mit 3D-Visualisierung, Portfolio und AI-Funktionen.",
-	"/about":
-		"Profil, Tech-Stack und beruflicher Hintergrund von Abdulkerim Sesli.",
-	"/contact": "Kontaktseite mit E-Mail und Formular fuer Anfragen.",
-	"/projekte": "Uebersicht interaktiver Web-Apps, Spiele und Tools.",
-	"/blog": "Technischer Blog zu Webentwicklung, Performance und AI.",
-	"/gallery": "Fotogalerie mit optimierten Bildformaten und Serien.",
-	"/videos": "Video-Portfolio mit Tutorials und Demonstrationen.",
-	"/datenschutz": "Datenschutzinformationen gemaess DSGVO.",
-	"/cookies": "Informationen zu Cookies, Browser-Speichern und Consent.",
-	"/impressum": "Rechtliche Anbieterkennzeichnung und Kontaktdaten.",
+  "/": "Startseite mit 3D-Visualisierung, Portfolio und AI-Funktionen.",
+  "/about": "Profil, Tech-Stack und beruflicher Hintergrund von Abdulkerim Sesli.",
+  "/contact": "Kontaktseite mit E-Mail und Formular fuer Anfragen.",
+  "/projekte": "Uebersicht interaktiver Web-Apps, Spiele und Tools.",
+  "/blog": "Technischer Blog zu Webentwicklung, Performance und AI.",
+  "/gallery": "Fotogalerie mit optimierten Bildformaten und Serien.",
+  "/videos": "Video-Portfolio mit Tutorials und Demonstrationen.",
+  "/datenschutz": "Datenschutzinformationen gemaess DSGVO.",
+  "/cookies": "Informationen zu Cookies, Browser-Speichern und Consent.",
+  "/impressum": "Rechtliche Anbieterkennzeichnung und Kontaktdaten.",
 };
 
 export function extractAppSlugFromUrl(url) {
-	try {
-		const parsed = new URL(String(url || ""), "https://example.com");
-		return extractProjectSlug(parsed.pathname, parsed.search);
-	} catch {
-		return "";
-	}
+  try {
+    const parsed = new URL(String(url || ""), "https://example.com");
+    return extractProjectSlug(parsed.pathname, parsed.search);
+  } catch {
+    return "";
+  }
 }
 
 /**
@@ -49,31 +45,31 @@ export function extractAppSlugFromUrl(url) {
  * @returns {string} Normalized URL path
  */
 export function normalizeUrl(url) {
-	if (!url) return "/";
+  if (!url) return "/";
 
-	let normalized = String(url).replace(/^https?:\/\/[^/]+/i, "");
-	if (!normalized.startsWith("/")) {
-		normalized = "/" + normalized;
-	}
+  let normalized = String(url).replace(/^https?:\/\/[^/]+/i, "");
+  if (!normalized.startsWith("/")) {
+    normalized = "/" + normalized;
+  }
 
-	const hashIndex = normalized.indexOf("#");
-	if (hashIndex >= 0) {
-		normalized = normalized.slice(0, hashIndex);
-	}
+  const hashIndex = normalized.indexOf("#");
+  if (hashIndex >= 0) {
+    normalized = normalized.slice(0, hashIndex);
+  }
 
-	const [rawPath, rawQuery = ""] = normalized.split("?");
-	const path = canonicalizeUrlPath(rawPath);
-	const appSlug = extractAppSlugFromUrl(`${path}?${rawQuery}`);
-	if (appSlug) {
-		return buildProjectDetailPath(appSlug);
-	}
+  const [rawPath, rawQuery = ""] = normalized.split("?");
+  const path = canonicalizeUrlPath(rawPath);
+  const appSlug = extractAppSlugFromUrl(`${path}?${rawQuery}`);
+  if (appSlug) {
+    return buildProjectDetailPath(appSlug);
+  }
 
-	return path;
+  return path;
 }
 
 function toBasePath(url) {
-	const [path] = String(url || "").split("?");
-	return canonicalizeUrlPath(path);
+  const [path] = String(url || "").split("?");
+  return canonicalizeUrlPath(path);
 }
 
 /**
@@ -82,15 +78,15 @@ function toBasePath(url) {
  * @returns {string}
  */
 export function detectCategory(url) {
-	const path = toBasePath(url);
-	if (path.includes("/projekte")) return "Projekte";
-	if (path.includes("/blog")) return "Blog";
-	if (path.includes("/gallery")) return "Galerie";
-	if (path.includes("/videos")) return "Videos";
-	if (path.includes("/about")) return "Über mich";
-	if (path.includes("/contact")) return "Kontakt";
-	if (path === "/") return "Home";
-	return "Seite";
+  const path = toBasePath(url);
+  if (path.includes("/projekte")) return "Projekte";
+  if (path.includes("/blog")) return "Blog";
+  if (path.includes("/gallery")) return "Galerie";
+  if (path.includes("/videos")) return "Videos";
+  if (path.includes("/about")) return "Über mich";
+  if (path.includes("/contact")) return "Kontakt";
+  if (path === "/") return "Home";
+  return "Seite";
 }
 
 /**
@@ -100,41 +96,41 @@ export function detectCategory(url) {
  * @returns {string}
  */
 export function extractTitle(filename, url) {
-	const appSlug = extractAppSlugFromUrl(url);
-	if (appSlug) {
-		return humanizeSlug(appSlug);
-	}
+  const appSlug = extractAppSlugFromUrl(url);
+  if (appSlug) {
+    return humanizeSlug(appSlug);
+  }
 
-	const title = filename?.split("/").pop()?.replace(".html", "") || "";
+  const title = filename?.split("/").pop()?.replace(".html", "") || "";
 
-	if (title === "index" || title === "" || !title) {
-		const basePath = toBasePath(url);
-		const segments = basePath.split("/").filter(Boolean);
+  if (title === "index" || title === "" || !title) {
+    const basePath = toBasePath(url);
+    const segments = basePath.split("/").filter(Boolean);
 
-		if (basePath === "/") {
-			return "Startseite";
-		}
+    if (basePath === "/") {
+      return "Startseite";
+    }
 
-		if (segments.length === 1) {
-			return (
-				TOP_LEVEL_TITLE_MAP[segments[0]] ||
-				segments[0].charAt(0).toUpperCase() + segments[0].slice(1)
-			);
-		}
+    if (segments.length === 1) {
+      return (
+        TOP_LEVEL_TITLE_MAP[segments[0]] ||
+        segments[0].charAt(0).toUpperCase() + segments[0].slice(1)
+      );
+    }
 
-		if (segments.length >= 2) {
-			const lastSegment = segments[segments.length - 1];
-			return lastSegment
-				.split("-")
-				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-				.join(" ");
-		}
-	}
+    if (segments.length >= 2) {
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    }
+  }
 
-	return title
-		.split("-")
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(" ");
+  return title
+    .split("-")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 /**
@@ -143,7 +139,7 @@ export function extractTitle(filename, url) {
  * @returns {boolean}
  */
 export function looksLikeVideoId(value) {
-	return /^[a-zA-Z0-9_-]{11}$/.test(String(value || "").trim());
+  return /^[a-zA-Z0-9_-]{11}$/.test(String(value || "").trim());
 }
 
 /**
@@ -154,27 +150,26 @@ export function looksLikeVideoId(value) {
  * @returns {string}
  */
 export function chooseBestTitle(item, fallbackTitle, url) {
-	const aiTitle =
-		typeof item?.title === "string" ? String(item.title).trim() : "";
+  const aiTitle = typeof item?.title === "string" ? String(item.title).trim() : "";
 
-	if (aiTitle && aiTitle.length > 2 && !looksLikeVideoId(aiTitle)) {
-		return aiTitle;
-	}
+  if (aiTitle && aiTitle.length > 2 && !looksLikeVideoId(aiTitle)) {
+    return aiTitle;
+  }
 
-	const fallback = String(fallbackTitle || "").trim();
-	if (url.includes("/videos/") && looksLikeVideoId(fallback)) {
-		return `Video ${fallback}`;
-	}
+  const fallback = String(fallbackTitle || "").trim();
+  if (url.includes("/videos/") && looksLikeVideoId(fallback)) {
+    return `Video ${fallback}`;
+  }
 
-	return fallback || "Unbenannt";
+  return fallback || "Unbenannt";
 }
 
 export function buildFallbackDescription(url, title, category) {
-	const appSlug = extractAppSlugFromUrl(url);
-	if (appSlug) {
-		return `${title} · Interaktive Projekt-App mit eigenem Funktionsumfang.`;
-	}
+  const appSlug = extractAppSlugFromUrl(url);
+  if (appSlug) {
+    return `${title} · Interaktive Projekt-App mit eigenem Funktionsumfang.`;
+  }
 
-	const basePath = toBasePath(url);
-	return URL_DESCRIPTION_FALLBACKS[basePath] || `${title} · ${category}`;
+  const basePath = toBasePath(url);
+  return URL_DESCRIPTION_FALLBACKS[basePath] || `${title} · ${category}`;
 }

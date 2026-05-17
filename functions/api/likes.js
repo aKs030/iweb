@@ -8,118 +8,116 @@ import { errorJsonResponse, jsonResponse } from "./_response.js";
 import { getRequestClientIp } from "./_request-utils.js";
 
 export async function onRequestGet(context) {
-	const { request, env } = context;
-	const url = new URL(request.url);
-	const projectId = url.searchParams.get("project_id");
+  const { request, env } = context;
+  const url = new URL(request.url);
+  const projectId = url.searchParams.get("project_id");
 
-	if (!projectId) {
-		return errorJsonResponse("Missing project_id", {
-			status: 400,
-		});
-	}
+  if (!projectId) {
+    return errorJsonResponse("Missing project_id", {
+      status: 400,
+    });
+  }
 
-	try {
-		const db = env.DB_LIKES;
+  try {
+    const db = env.DB_LIKES;
 
-		// Fail hard if DB binding is missing so UI can react correctly.
-		if (!db) {
-			log.warn("DB_LIKES binding is missing. Ensure D1 is configured.");
-			return errorJsonResponse("DB_LIKES binding missing", {
-				status: 503,
-			});
-		}
+    // Fail hard if DB binding is missing so UI can react correctly.
+    if (!db) {
+      log.warn("DB_LIKES binding is missing. Ensure D1 is configured.");
+      return errorJsonResponse("DB_LIKES binding missing", {
+        status: 503,
+      });
+    }
 
-		const result = await db
-			.prepare("SELECT likes FROM project_likes WHERE project_id = ?")
-			.bind(projectId)
-			.first();
+    const result = await db
+      .prepare("SELECT likes FROM project_likes WHERE project_id = ?")
+      .bind(projectId)
+      .first();
 
-		const likes = result ? result.likes : 0;
+    const likes = result ? result.likes : 0;
 
-		return jsonResponse({ likes });
-	} catch (error) {
-		log.error("Error fetching likes:", error);
-		return errorJsonResponse(
-			{
-				error: "Internal Server Error",
-				details: error.message,
-			},
-			{ status: 500 },
-		);
-	}
+    return jsonResponse({ likes });
+  } catch (error) {
+    log.error("Error fetching likes:", error);
+    return errorJsonResponse(
+      {
+        error: "Internal Server Error",
+        details: error.message,
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function onRequestPost(context) {
-	const { request, env } = context;
-	const url = new URL(request.url);
-	let projectId = url.searchParams.get("project_id");
+  const { request, env } = context;
+  const url = new URL(request.url);
+  let projectId = url.searchParams.get("project_id");
 
-	if (!projectId) {
-		try {
-			const body = await request.json();
-			if (body.project_id) {
-				projectId = body.project_id;
-			}
-		} catch {
-			// ignore
-		}
-	}
+  if (!projectId) {
+    try {
+      const body = await request.json();
+      if (body.project_id) {
+        projectId = body.project_id;
+      }
+    } catch {
+      // ignore
+    }
+  }
 
-	if (!projectId) {
-		return errorJsonResponse("Missing project_id in query or body", {
-			status: 400,
-		});
-	}
+  if (!projectId) {
+    return errorJsonResponse("Missing project_id in query or body", {
+      status: 400,
+    });
+  }
 
-	try {
-		const db = env.DB_LIKES;
-		const sourceIp = getRequestClientIp(request);
-		const userAgent = String(request.headers.get("User-Agent") || "").trim();
-		const requestId = String(
-			request.headers.get("CF-Ray") || crypto.randomUUID(),
-		).trim();
+  try {
+    const db = env.DB_LIKES;
+    const sourceIp = getRequestClientIp(request);
+    const userAgent = String(request.headers.get("User-Agent") || "").trim();
+    const requestId = String(request.headers.get("CF-Ray") || crypto.randomUUID()).trim();
 
-		if (!db) {
-			log.warn("DB_LIKES binding is missing. Ensure D1 is configured.");
-			return errorJsonResponse("DB_LIKES binding missing", {
-				status: 503,
-			});
-		}
+    if (!db) {
+      log.warn("DB_LIKES binding is missing. Ensure D1 is configured.");
+      return errorJsonResponse("DB_LIKES binding missing", {
+        status: 503,
+      });
+    }
 
-		await db.batch([
-			db
-				.prepare(
-					`
+    await db.batch([
+      db
+        .prepare(
+          `
             INSERT INTO project_like_events (
               project_id,
               source_ip,
               user_agent,
               request_id
             ) VALUES (?, ?, ?, ?)
-          `,
-				)
-				.bind(projectId, sourceIp, userAgent, requestId),
-			db
-				.prepare(
-					`
+          `
+        )
+        .bind(projectId, sourceIp, userAgent, requestId),
+      db
+        .prepare(
+          `
             INSERT INTO project_likes (project_id, likes)
             VALUES (?, 1)
             ON CONFLICT(project_id) DO UPDATE SET likes = likes + 1
-          `,
-				)
-				.bind(projectId),
-		]);
+          `
+        )
+        .bind(projectId),
+    ]);
 
-		const result = await db
-			.prepare("SELECT likes FROM project_likes WHERE project_id = ?")
-			.bind(projectId)
-			.first();
+    const result = await db
+      .prepare("SELECT likes FROM project_likes WHERE project_id = ?")
+      .bind(projectId)
+      .first();
 
-		return jsonResponse({ likes: Number(result?.likes) || 0 });
-	} catch (error) {
-		log.error("Error adding like:", error);
-		return errorJsonResponse("Internal Server Error", {
-			status: 500,
-		});
-	}
+    return jsonResponse({ likes: Number(result?.likes) || 0 });
+  } catch (error) {
+    log.error("Error adding like:", error);
+    return errorJsonResponse("Internal Server Error", {
+      status: 500,
+    });
+  }
 }

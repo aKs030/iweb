@@ -16,224 +16,228 @@ import { i18n } from "#core/i18n.js";
  */
 
 export class MenuRenderer {
-	/**
-	 * @param {MenuState} state
-	 * @param {MenuComponentConfigInput} [config]
-	 */
-	constructor(state, config = {}) {
-		this.state = state;
-		this.config = config;
-		this.template = new MenuTemplate(config);
-		this.container = null;
-		this.iconTimeout = null; // used by initializeIcons
-		this._i18nUnsub = null; // cleaned up in destroy
-		this._stateCleanupFns = [];
-	}
+  /**
+   * @param {MenuState} state
+   * @param {MenuComponentConfigInput} [config]
+   */
+  constructor(state, config = {}) {
+    this.state = state;
+    this.config = config;
+    this.template = new MenuTemplate(config);
+    this.container = null;
+    this.iconTimeout = null; // used by initializeIcons
+    this._i18nUnsub = null; // cleaned up in destroy
+    this._stateCleanupFns = [];
+  }
 
-	/**
-	 * Renders the initial menu structure
-	 * @param {HTMLElement} container
-	 */
-	render(container) {
-		this.container = container;
-		container.innerHTML = this.template.getHTML();
+  /**
+   * Renders the initial menu structure
+   * @param {HTMLElement} container
+   */
+  render(container) {
+    this.container = container;
+    container.replaceChildren(...this.parseTemplate(this.template.getHTML()));
 
-		// wire state subscriptions _before_ syncing so changes apply immediately
-		this.setupStateSubscriptions();
+    // wire state subscriptions _before_ syncing so changes apply immediately
+    this.setupStateSubscriptions();
 
-		// Initial Language Sync
-		const currentLang = /** @type {any} */ (i18n).getCurrentLanguage
-			? /** @type {any} */ (i18n).getCurrentLanguage()
-			: "de";
-		this.updateLanguage(currentLang);
-	}
+    // Initial Language Sync
+    const currentLang = /** @type {any} */ (i18n).getCurrentLanguage
+      ? /** @type {any} */ (i18n).getCurrentLanguage()
+      : "de";
+    this.updateLanguage(currentLang);
+  }
 
-	initializeIcons() {
-		const delay = this.config.ICON_CHECK_DELAY || 100;
-		this.iconTimeout = setTimeout(() => {
-			// clear reference early to avoid leaks when container is removed during delay
-			this.iconTimeout = null;
-			if (!this.container) return;
+  parseTemplate(html) {
+    const parsed = new DOMParser().parseFromString(html, "text/html");
+    return Array.from(parsed.body.childNodes);
+  }
 
-			const icons = this.container.querySelectorAll(".nav-icon use");
-			icons.forEach((use) => {
-				const href = use.getAttribute("href");
-				if (!href) return;
+  initializeIcons() {
+    const delay = this.config.ICON_CHECK_DELAY || 100;
+    this.iconTimeout = setTimeout(() => {
+      // clear reference early to avoid leaks when container is removed during delay
+      this.iconTimeout = null;
+      if (!this.container) return;
 
-				const targetId = href.substring(1);
-				const target = this.container.querySelector(`#${targetId}`);
-				const svg = use.closest("svg");
-				const fallback = svg
-					?.closest("a, button")
-					?.querySelector(".icon-fallback");
+      const icons = this.container.querySelectorAll(".nav-icon use");
+      icons.forEach(use => {
+        const href = use.getAttribute("href");
+        if (!href) return;
 
-				// If SVG symbol is missing, show fallback emoji/text
-				if (!target && fallback) {
-					if (svg instanceof SVGElement) {
-						svg.setAttribute("hidden", "");
-					}
-					fallback.classList.remove("icon-fallback--hidden");
-				}
-			});
-		}, delay);
-	}
+        const targetId = href.substring(1);
+        const target = this.container.querySelector(`#${targetId}`);
+        const svg = use.closest("svg");
+        const fallback = svg?.closest("a, button")?.querySelector(".icon-fallback");
 
-	setupStateSubscriptions() {
-		this._stateCleanupFns.forEach((cleanup) => cleanup());
-		this._stateCleanupFns = [];
+        // If SVG symbol is missing, show fallback emoji/text
+        if (!target && fallback) {
+          if (svg instanceof SVGElement) {
+            svg.setAttribute("hidden", "");
+          }
+          fallback.classList.remove("icon-fallback--hidden");
+        }
+      });
+    }, delay);
+  }
 
-		// Open/Close State
-		this._stateCleanupFns.push(
-			this.state.signals.open.subscribe((isOpen) => {
-				const toggle = this.container.querySelector(".site-menu__toggle");
-				const menu = this.container.querySelector(".site-menu");
+  setupStateSubscriptions() {
+    this._stateCleanupFns.forEach(cleanup => cleanup());
+    this._stateCleanupFns = [];
 
-				if (menu) menu.classList.toggle("open", isOpen);
-				if (toggle) toggle.classList.toggle("active", isOpen);
+    // Open/Close State
+    this._stateCleanupFns.push(
+      this.state.signals.open.subscribe(isOpen => {
+        const toggle = this.container.querySelector(".site-menu__toggle");
+        const menu = this.container.querySelector(".site-menu");
 
-				// Accessibility update
-				if (toggle) toggle.setAttribute("aria-expanded", String(isOpen));
-			}),
-		);
+        if (menu) {
+          menu.classList.toggle("open", isOpen);
+          menu.setAttribute("aria-hidden", String(!isOpen));
+        }
+        if (toggle) toggle.classList.toggle("active", isOpen);
 
-		// Active Link State
-		this._stateCleanupFns.push(
-			this.state.signals.activeLink.subscribe((activeHref) => {
-				this.updateActiveLink(activeHref);
-			}),
-		);
+        // Accessibility update
+        if (toggle) toggle.setAttribute("aria-expanded", String(isOpen));
+      })
+    );
 
-		// Title State
-		this._stateCleanupFns.push(
-			this.state.signals.title.subscribe(({ title, subtitle }) => {
-				this.updateTitle(title, subtitle);
-			}),
-		);
+    // Active Link State
+    this._stateCleanupFns.push(
+      this.state.signals.activeLink.subscribe(activeHref => {
+        this.updateActiveLink(activeHref);
+      })
+    );
 
-		// Language State
-		// keep unsubscribe function for cleanup
-		this._i18nUnsub = i18n.subscribe((lang) => {
-			this.updateLanguage(lang);
-		});
-	}
+    // Title State
+    this._stateCleanupFns.push(
+      this.state.signals.title.subscribe(({ title, subtitle }) => {
+        this.updateTitle(title, subtitle);
+      })
+    );
 
-	updateActiveLink(activeHref) {
-		if (!this.container) return;
+    // Language State
+    // keep unsubscribe function for cleanup
+    this._i18nUnsub = i18n.subscribe(lang => {
+      this.updateLanguage(lang);
+    });
+  }
 
-		const links = this.container.querySelectorAll(".site-menu a");
-		links.forEach((link) => {
-			const href = link.getAttribute("href");
-			// Simple string comparison usually works due to normalization in Events
-			const isActive = href === activeHref;
+  updateActiveLink(activeHref) {
+    if (!this.container) return;
 
-			if (isActive) {
-				link.classList.add("active");
-				link.setAttribute("aria-current", "page");
-			} else {
-				link.classList.remove("active");
-				link.removeAttribute("aria-current");
-			}
-		});
-	}
+    const links = this.container.querySelectorAll(".site-menu a");
+    links.forEach(link => {
+      const href = link.getAttribute("href");
+      // Simple string comparison usually works due to normalization in Events
+      const isActive = href === activeHref;
 
-	updateLanguage(lang) {
-		if (typeof lang !== "string") return;
-		if (!this.container) return;
+      if (isActive) {
+        link.classList.add("active");
+        link.setAttribute("aria-current", "page");
+      } else {
+        link.classList.remove("active");
+        link.removeAttribute("aria-current");
+      }
+    });
+  }
 
-		// Update Toggle Text
-		const langText = this.container.querySelector(".lang-text");
-		if (langText) {
-			langText.textContent = lang.toUpperCase();
-		}
+  updateLanguage(lang) {
+    if (typeof lang !== "string") return;
+    if (!this.container) return;
 
-		const textElements = this.container.querySelectorAll("[data-i18n]");
-		textElements.forEach((el) => {
-			const key = el.getAttribute("data-i18n");
-			if (key) {
-				el.textContent = i18n.t(key);
-			}
-		});
+    // Update Toggle Text
+    const langText = this.container.querySelector(".lang-text");
+    if (langText) {
+      langText.textContent = lang.toUpperCase();
+    }
 
-		const ariaElements = this.container.querySelectorAll("[data-i18n-aria]");
-		ariaElements.forEach((el) => {
-			const key = el.getAttribute("data-i18n-aria");
-			if (key) {
-				el.setAttribute("aria-label", i18n.t(key));
-			}
-		});
+    const textElements = this.container.querySelectorAll("[data-i18n]");
+    textElements.forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      if (key) {
+        el.textContent = i18n.t(key);
+      }
+    });
 
-		const titleElements = this.container.querySelectorAll("[data-i18n-title]");
-		titleElements.forEach((el) => {
-			const key = el.getAttribute("data-i18n-title");
-			if (key) {
-				el.setAttribute("title", i18n.t(key));
-			}
-		});
+    const ariaElements = this.container.querySelectorAll("[data-i18n-aria]");
+    ariaElements.forEach(el => {
+      const key = el.getAttribute("data-i18n-aria");
+      if (key) {
+        el.setAttribute("aria-label", i18n.t(key));
+      }
+    });
 
-		const placeholderElements = this.container.querySelectorAll(
-			"[data-i18n-placeholder]",
-		);
-		placeholderElements.forEach((el) => {
-			const key = el.getAttribute("data-i18n-placeholder");
-			if (key) {
-				el.setAttribute("placeholder", i18n.t(key));
-			}
-		});
+    const titleElements = this.container.querySelectorAll("[data-i18n-title]");
+    titleElements.forEach(el => {
+      const key = el.getAttribute("data-i18n-title");
+      if (key) {
+        el.setAttribute("title", i18n.t(key));
+      }
+    });
 
-		// Re-render title with new language
-		if (this.state) {
-			this.updateTitle(this.state.currentTitle, this.state.currentSubtitle);
-		}
-	}
+    const placeholderElements = this.container.querySelectorAll("[data-i18n-placeholder]");
+    placeholderElements.forEach(el => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (key) {
+        el.setAttribute("placeholder", i18n.t(key));
+      }
+    });
 
-	updateTitle(title, subtitle = "") {
-		if (!this.container) return;
+    // Re-render title with new language
+    if (this.state) {
+      this.updateTitle(this.state.currentTitle, this.state.currentSubtitle);
+    }
+  }
 
-		const siteTitleEl = this.container.querySelector(".site-title");
-		const siteSubtitleEl = this.container.querySelector(".site-subtitle");
+  updateTitle(title, subtitle = "") {
+    if (!this.container) return;
 
-		if (!siteTitleEl) return;
+    const siteTitleEl = this.container.querySelector(".site-title");
+    const siteSubtitleEl = this.container.querySelector(".site-subtitle");
 
-		const translatedTitle = i18n.t(title);
-		let translatedSubtitle = i18n.t(subtitle);
+    if (!siteTitleEl) return;
 
-		// Prevent duplicate subtitle
-		if (translatedTitle === translatedSubtitle) {
-			translatedSubtitle = "";
-		}
+    const translatedTitle = i18n.t(title);
+    let translatedSubtitle = i18n.t(subtitle);
 
-		// Optimize: Check if text content is already correct
-		if (
-			siteTitleEl.textContent === translatedTitle &&
-			(!siteSubtitleEl || siteSubtitleEl.textContent === translatedSubtitle)
-		) {
-			// Just ensure subtitle visibility is correct
-			if (siteSubtitleEl) {
-				if (translatedSubtitle) siteSubtitleEl.classList.add("show");
-				else siteSubtitleEl.classList.remove("show");
-			}
-			return;
-		}
+    // Prevent duplicate subtitle
+    if (translatedTitle === translatedSubtitle) {
+      translatedSubtitle = "";
+    }
 
-		siteTitleEl.textContent = translatedTitle;
+    // Optimize: Check if text content is already correct
+    if (
+      siteTitleEl.textContent === translatedTitle &&
+      (!siteSubtitleEl || siteSubtitleEl.textContent === translatedSubtitle)
+    ) {
+      // Just ensure subtitle visibility is correct
+      if (siteSubtitleEl) {
+        if (translatedSubtitle) siteSubtitleEl.classList.add("show");
+        else siteSubtitleEl.classList.remove("show");
+      }
+      return;
+    }
 
-		if (siteSubtitleEl) {
-			siteSubtitleEl.textContent = translatedSubtitle;
-			siteSubtitleEl.classList.toggle("show", Boolean(translatedSubtitle));
-		}
-	}
+    siteTitleEl.textContent = translatedTitle;
 
-	destroy() {
-		if (this.iconTimeout) {
-			clearTimeout(this.iconTimeout);
-			this.iconTimeout = null;
-		}
-		this._stateCleanupFns.forEach((cleanup) => cleanup());
-		this._stateCleanupFns = [];
-		if (typeof this._i18nUnsub === "function") {
-			this._i18nUnsub();
-			this._i18nUnsub = null;
-		}
-		this.container = null;
-	}
+    if (siteSubtitleEl) {
+      siteSubtitleEl.textContent = translatedSubtitle;
+      siteSubtitleEl.classList.toggle("show", Boolean(translatedSubtitle));
+    }
+  }
+
+  destroy() {
+    if (this.iconTimeout) {
+      clearTimeout(this.iconTimeout);
+      this.iconTimeout = null;
+    }
+    this._stateCleanupFns.forEach(cleanup => cleanup());
+    this._stateCleanupFns = [];
+    if (typeof this._i18nUnsub === "function") {
+      this._i18nUnsub();
+      this._i18nUnsub = null;
+    }
+    this.container = null;
+  }
 }

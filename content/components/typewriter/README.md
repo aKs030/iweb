@@ -31,28 +31,28 @@ Animated text typing effect with multi-line support and smart line breaking.
 </type-writer>
 
 <script type="module">
-  import './typewriter-web-component.js';
+  import "./typewriter-web-component.js";
 </script>
 ```
 
 ### As Class Instance
 
 ```javascript
-import { TypeWriter } from './TypeWriter.js';
+import { TypeWriter } from "./TypeWriter.js";
 
 const typeWriter = new TypeWriter({
-  textEl: document.querySelector('.text'),
-  authorEl: document.querySelector('.author'),
+  textEl: document.querySelector(".text"),
+  authorEl: document.querySelector(".author"),
   quotes: [
-    { text: 'Hello World', author: 'Developer' },
-    { text: 'Type fast, code faster', author: 'Programmer' },
+    { text: "Hello World", author: "Developer" },
+    { text: "Type fast, code faster", author: "Programmer" },
   ],
   typeSpeed: 85,
   deleteSpeed: 40,
   wait: 2400,
   shuffle: true,
   loop: true,
-  onBeforeType: (text) => {
+  onBeforeType: text => {
     // Optional: Transform text before typing
     return text;
   },
@@ -65,7 +65,7 @@ typeWriter.destroy();
 ### Hero Subtitle Integration
 
 ```javascript
-import { initHeroSubtitle, stopHeroSubtitle } from './TypeWriter.js';
+import { initHeroSubtitle, stopHeroSubtitle } from "./TypeWriter.js";
 
 // Initialize with quotes from JSON
 const typeWriter = await initHeroSubtitle({
@@ -113,9 +113,9 @@ stopHeroSubtitle();
 Dispatched when typing animation completes:
 
 ```javascript
-document.addEventListener('hero:typingEnd', (event) => {
-  console.log('Typed:', event.detail.text);
-  console.log('Author:', event.detail.author);
+document.addEventListener("hero:typingEnd", event => {
+  console.log("Typed:", event.detail.text);
+  console.log("Author:", event.detail.author);
 });
 ```
 
@@ -124,7 +124,7 @@ document.addEventListener('hero:typingEnd', (event) => {
 Dispatched when Web Component initializes:
 
 ```javascript
-document.addEventListener('typewriter:loaded', (event) => {
+document.addEventListener("typewriter:loaded", event => {
   const typeWriter = event.detail.typeWriter;
 });
 ```
@@ -178,11 +178,11 @@ The TypeWriter sets CSS variables for layout:
 
 ```javascript
 new TypeWriter({
-  textEl: document.querySelector('.quote'),
-  authorEl: document.querySelector('.author'),
+  textEl: document.querySelector(".quote"),
+  authorEl: document.querySelector(".author"),
   quotes: [
-    { text: 'Code is poetry', author: 'WordPress' },
-    { text: 'Keep it simple', author: 'KISS' },
+    { text: "Code is poetry", author: "WordPress" },
+    { text: "Keep it simple", author: "KISS" },
   ],
 });
 ```

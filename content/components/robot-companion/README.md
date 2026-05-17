@@ -36,7 +36,7 @@ robot-companion/
 ## Verwendung
 
 ```js
-import { RobotCompanion } from './robot-companion.js';
+import { RobotCompanion } from "./robot-companion.js";
 
 const robot = new RobotCompanion();
 await robot.initialize();
@@ -46,20 +46,20 @@ await robot.initialize();
 
 ```js
 ROBOT_ACTIONS = {
-  START: 'start',
-  SUMMARIZE_PAGE: 'summarizePage',
-  UPLOAD_IMAGE: 'uploadImage',
-  TOGGLE_THEME: 'toggleTheme',
-  SEARCH_WEBSITE: 'searchWebsite',
-  SCROLL_FOOTER: 'scrollFooter',
-  OPEN_MENU: 'openMenu',
-  CLOSE_MENU: 'closeMenu',
-  OPEN_SEARCH: 'openSearch',
-  CLOSE_SEARCH: 'closeSearch',
-  SCROLL_TOP: 'scrollTop',
-  COPY_CURRENT_URL: 'copyCurrentUrl',
-  CLEAR_CHAT: 'clearChat',
-  EXPORT_CHAT: 'exportChat',
+  START: "start",
+  SUMMARIZE_PAGE: "summarizePage",
+  UPLOAD_IMAGE: "uploadImage",
+  TOGGLE_THEME: "toggleTheme",
+  SEARCH_WEBSITE: "searchWebsite",
+  SCROLL_FOOTER: "scrollFooter",
+  OPEN_MENU: "openMenu",
+  CLOSE_MENU: "closeMenu",
+  OPEN_SEARCH: "openSearch",
+  CLOSE_SEARCH: "closeSearch",
+  SCROLL_TOP: "scrollTop",
+  COPY_CURRENT_URL: "copyCurrentUrl",
+  CLEAR_CHAT: "clearChat",
+  EXPORT_CHAT: "exportChat",
 };
 ```
 

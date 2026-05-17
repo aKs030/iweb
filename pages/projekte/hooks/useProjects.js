@@ -20,76 +20,69 @@ const log = createLogger("useProjects");
  *   error: string
  * }}
  */
-export const useProjects = (icons) => {
-	const [projects, setProjects] = useState(/** @type {any[]} */ ([]));
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
+export const useProjects = icons => {
+  const [projects, setProjects] = useState(/** @type {any[]} */ ([]));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-	useEffect(() => {
-		let isActive = true;
+  useEffect(() => {
+    let isActive = true;
 
-		const withTimeout = (promise, timeoutMs) =>
-			new Promise((resolve, reject) => {
-				const timeoutId = setTimeout(
-					() =>
-						reject(
-							new Error(`Loading timeout after ${timeoutMs / 1000} seconds`),
-						),
-					timeoutMs,
-				);
+    const withTimeout = (promise, timeoutMs) =>
+      new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(
+          () => reject(new Error(`Loading timeout after ${timeoutMs / 1000} seconds`)),
+          timeoutMs
+        );
 
-				promise.then(
-					(value) => {
-						clearTimeout(timeoutId);
-						resolve(value);
-					},
-					(err) => {
-						clearTimeout(timeoutId);
-						reject(err);
-					},
-				);
-			});
+        promise.then(
+          value => {
+            clearTimeout(timeoutId);
+            resolve(value);
+          },
+          err => {
+            clearTimeout(timeoutId);
+            reject(err);
+          }
+        );
+      });
 
-		const loadProjects = async () => {
-			try {
-				log.info("Loading projects data...");
-				if (!isActive) return;
-				setLoading(true);
-				setError("");
+    const loadProjects = async () => {
+      try {
+        log.info("Loading projects data...");
+        if (!isActive) return;
+        setLoading(true);
+        setError("");
 
-				const loadedProjects = await withTimeout(
-					createProjectsData(icons),
-					30000,
-				);
-				if (!isActive) return;
+        const loadedProjects = await withTimeout(createProjectsData(icons), 30000);
+        if (!isActive) return;
 
-				log.info(`Successfully loaded ${loadedProjects.length} projects`);
+        log.info(`Successfully loaded ${loadedProjects.length} projects`);
 
-				setProjects(loadedProjects);
+        setProjects(loadedProjects);
 
-				// Final update
-				setTimeout(() => {
-					if (!isActive) return;
-					AppLoadManager.updateLoader(1, i18n.t("loader.ready_system"));
-				}, 100);
-			} catch (err) {
-				if (!isActive) return;
-				log.error("Failed to load projects:", err);
-				const errorMessage =
-					err instanceof Error ? err.message : i18n.t("error.unknown");
-				setError(`${i18n.t("error.load_failed_title")}: ${errorMessage}`);
-				AppLoadManager.updateLoader(1, i18n.t("loader.failed"));
-			} finally {
-				if (isActive) setLoading(false);
-			}
-		};
+        // Final update
+        setTimeout(() => {
+          if (!isActive) return;
+          AppLoadManager.updateLoader(1, i18n.t("loader.ready_system"));
+        }, 100);
+      } catch (err) {
+        if (!isActive) return;
+        log.error("Failed to load projects:", err);
+        const errorMessage = err instanceof Error ? err.message : i18n.t("error.unknown");
+        setError(`${i18n.t("error.load_failed_title")}: ${errorMessage}`);
+        AppLoadManager.updateLoader(1, i18n.t("loader.failed"));
+      } finally {
+        if (isActive) setLoading(false);
+      }
+    };
 
-		loadProjects();
+    loadProjects();
 
-		return () => {
-			isActive = false;
-		};
-	}, [icons]);
+    return () => {
+      isActive = false;
+    };
+  }, [icons]);
 
-	return { projects, loading, error };
+  return { projects, loading, error };
 };
