@@ -14,17 +14,17 @@ import {
   loadSignals,
   subscribeLoadState,
   whenAppReady,
-} from '#core/load-manager.js';
+} from "#core/load-manager.js";
 
-AppLoadManager.block('data-fetch');
-AppLoadManager.updateLoader(0.4, 'Lade Daten...');
+AppLoadManager.block("data-fetch");
+AppLoadManager.updateLoader(0.4, "Lade Daten...");
 
 // ... async work
 
-AppLoadManager.unblock('data-fetch');
+AppLoadManager.unblock("data-fetch");
 AppLoadManager.hideLoader(200);
 
-const unsubscribe = subscribeLoadState((state) => {
+const unsubscribe = subscribeLoadState(state => {
   console.log(state.progress, state.message, state.pending);
 });
 

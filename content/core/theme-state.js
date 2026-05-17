@@ -13,62 +13,57 @@ const SYSTEM = "system";
 const MEDIA_QUERY = "(prefers-color-scheme: light)";
 const THEME_PREFERENCE_STORAGE_KEY = "iweb-theme-preference";
 
-const normalizeTheme = (value) => (value === LIGHT ? LIGHT : DARK);
-const normalizePreference = (value) => {
-	if (value === LIGHT || value === DARK || value === SYSTEM) return value;
-	return SYSTEM;
+const normalizeTheme = value => (value === LIGHT ? LIGHT : DARK);
+const normalizePreference = value => {
+  if (value === LIGHT || value === DARK || value === SYSTEM) return value;
+  return SYSTEM;
 };
 
 const readSystemTheme = () => {
-	try {
-		return globalThis.matchMedia?.(MEDIA_QUERY).matches ? LIGHT : DARK;
-	} catch {
-		return DARK;
-	}
+  try {
+    return globalThis.matchMedia?.(MEDIA_QUERY).matches ? LIGHT : DARK;
+  } catch {
+    return DARK;
+  }
 };
 
 const readStoredPreference = () => {
-	try {
-		return normalizePreference(
-			globalThis.localStorage?.getItem(THEME_PREFERENCE_STORAGE_KEY),
-		);
-	} catch {
-		return SYSTEM;
-	}
+  try {
+    return normalizePreference(globalThis.localStorage?.getItem(THEME_PREFERENCE_STORAGE_KEY));
+  } catch {
+    return SYSTEM;
+  }
 };
 
 const readForcedDocumentTheme = () => {
-	try {
-		const forcedTheme =
-			document?.documentElement?.getAttribute("data-force-theme");
-		return forcedTheme === LIGHT || forcedTheme === DARK ? forcedTheme : null;
-	} catch {
-		return null;
-	}
+  try {
+    const forcedTheme = document?.documentElement?.getAttribute("data-force-theme");
+    return forcedTheme === LIGHT || forcedTheme === DARK ? forcedTheme : null;
+  } catch {
+    return null;
+  }
 };
 
-const persistPreference = (preference) => {
-	try {
-		const storage = globalThis.localStorage;
-		if (!storage) return;
+const persistPreference = preference => {
+  try {
+    const storage = globalThis.localStorage;
+    if (!storage) return;
 
-		if (preference === SYSTEM) {
-			storage.removeItem(THEME_PREFERENCE_STORAGE_KEY);
-			return;
-		}
+    if (preference === SYSTEM) {
+      storage.removeItem(THEME_PREFERENCE_STORAGE_KEY);
+      return;
+    }
 
-		storage.setItem(THEME_PREFERENCE_STORAGE_KEY, preference);
-	} catch {
-		/* keep theme persistence best-effort */
-	}
+    storage.setItem(THEME_PREFERENCE_STORAGE_KEY, preference);
+  } catch {
+    /* keep theme persistence best-effort */
+  }
 };
 
 const systemTheme = signal(readSystemTheme());
 const themePreference = signal(readStoredPreference());
 export const resolvedTheme = computed(() =>
-	themePreference.value === SYSTEM
-		? systemTheme.value
-		: normalizeTheme(themePreference.value),
+  themePreference.value === SYSTEM ? systemTheme.value : normalizeTheme(themePreference.value)
 );
 
 let _initialized = false;
@@ -77,37 +72,37 @@ let _cleanupThemeSync = null;
 let _handleSystemChange = null;
 
 function applyThemeToDocument(theme) {
-	if (typeof document === "undefined") return;
+  if (typeof document === "undefined") return;
 
-	const nextTheme = readForcedDocumentTheme() || normalizeTheme(theme);
-	const root = document.documentElement;
-	if (root.getAttribute("data-theme") === nextTheme) return;
-	root.setAttribute("data-theme", nextTheme);
+  const nextTheme = readForcedDocumentTheme() || normalizeTheme(theme);
+  const root = document.documentElement;
+  if (root.getAttribute("data-theme") === nextTheme) return;
+  root.setAttribute("data-theme", nextTheme);
 }
 
 export function initThemeState() {
-	if (_initialized) return;
-	_initialized = true;
+  if (_initialized) return;
+  _initialized = true;
 
-	systemTheme.value = readSystemTheme();
-	themePreference.value = readStoredPreference();
-	applyThemeToDocument(resolvedTheme.value);
-	_cleanupThemeSync = resolvedTheme.subscribe((theme) => {
-		applyThemeToDocument(theme);
-	});
+  systemTheme.value = readSystemTheme();
+  themePreference.value = readStoredPreference();
+  applyThemeToDocument(resolvedTheme.value);
+  _cleanupThemeSync = resolvedTheme.subscribe(theme => {
+    applyThemeToDocument(theme);
+  });
 
-	if (typeof globalThis.matchMedia !== "function") return;
+  if (typeof globalThis.matchMedia !== "function") return;
 
-	_mediaQueryList = globalThis.matchMedia(MEDIA_QUERY);
-	systemTheme.value = _mediaQueryList.matches ? LIGHT : DARK;
+  _mediaQueryList = globalThis.matchMedia(MEDIA_QUERY);
+  systemTheme.value = _mediaQueryList.matches ? LIGHT : DARK;
 
-	_handleSystemChange = (event) => {
-		systemTheme.value = event.matches ? LIGHT : DARK;
-	};
+  _handleSystemChange = event => {
+    systemTheme.value = event.matches ? LIGHT : DARK;
+  };
 
-	if (typeof _mediaQueryList.addEventListener === "function") {
-		_mediaQueryList.addEventListener("change", _handleSystemChange);
-	}
+  if (typeof _mediaQueryList.addEventListener === "function") {
+    _mediaQueryList.addEventListener("change", _handleSystemChange);
+  }
 }
 
 /**
@@ -115,39 +110,39 @@ export function initThemeState() {
  * Useful for testing or isolated environments.
  */
 export function destroyThemeState() {
-	if (!_initialized) return;
+  if (!_initialized) return;
 
-	if (_mediaQueryList && _handleSystemChange) {
-		if (typeof _mediaQueryList.removeEventListener === "function") {
-			_mediaQueryList.removeEventListener("change", _handleSystemChange);
-		}
-	}
+  if (_mediaQueryList && _handleSystemChange) {
+    if (typeof _mediaQueryList.removeEventListener === "function") {
+      _mediaQueryList.removeEventListener("change", _handleSystemChange);
+    }
+  }
 
-	if (typeof _cleanupThemeSync === "function") {
-		_cleanupThemeSync();
-	}
+  if (typeof _cleanupThemeSync === "function") {
+    _cleanupThemeSync();
+  }
 
-	_initialized = false;
-	_mediaQueryList = null;
-	_handleSystemChange = null;
-	_cleanupThemeSync = null;
+  _initialized = false;
+  _mediaQueryList = null;
+  _handleSystemChange = null;
+  _cleanupThemeSync = null;
 }
 
 function setThemePreference(preference = SYSTEM) {
-	const nextPreference = normalizePreference(preference);
-	themePreference.value = nextPreference;
-	persistPreference(nextPreference);
-	return getResolvedTheme();
+  const nextPreference = normalizePreference(preference);
+  themePreference.value = nextPreference;
+  persistPreference(nextPreference);
+  return getResolvedTheme();
 }
 
 export function setTheme(theme) {
-	return setThemePreference(normalizeTheme(theme));
+  return setThemePreference(normalizeTheme(theme));
 }
 
 export function toggleTheme() {
-	return setTheme(resolvedTheme.value === DARK ? LIGHT : DARK);
+  return setTheme(resolvedTheme.value === DARK ? LIGHT : DARK);
 }
 
 export function getResolvedTheme() {
-	return readForcedDocumentTheme() || resolvedTheme.value;
+  return readForcedDocumentTheme() || resolvedTheme.value;
 }

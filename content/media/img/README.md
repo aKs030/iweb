@@ -62,12 +62,7 @@ hero-640.avif
 
 ```html
 <!-- Lazy Loading mit nativem Browser-Feature -->
-<img
-  src="/content/media/img/photo.jpg"
-  alt="Beschreibung"
-  loading="lazy"
-  decoding="async"
-/>
+<img src="/content/media/img/photo.jpg" alt="Beschreibung" loading="lazy" decoding="async" />
 
 <!-- Kritische Bilder mit Fetchpriority -->
 <img src="/content/media/img/hero.jpg" alt="Hero" fetchpriority="high" />
@@ -92,12 +87,7 @@ hero-640.avif
     "
     sizes="(max-width: 768px) 100vw, 50vw"
   />
-  <img
-    src="/content/media/img/photo.jpg"
-    alt="Beschreibung"
-    loading="lazy"
-    decoding="async"
-  />
+  <img src="/content/media/img/photo.jpg" alt="Beschreibung" loading="lazy" decoding="async" />
 </picture>
 ```
 

@@ -30,8 +30,8 @@ const UNCACHEABLE_EXACT_PATHS = new Set(["/"]);
  * @returns {boolean}
  */
 function isCacheablePath(pathname) {
-	if (UNCACHEABLE_EXACT_PATHS.has(pathname)) return false;
-	return !UNCACHEABLE_PATTERNS.some((p) => pathname.startsWith(p));
+  if (UNCACHEABLE_EXACT_PATHS.has(pathname)) return false;
+  return !UNCACHEABLE_PATTERNS.some(p => pathname.startsWith(p));
 }
 
 /**
@@ -42,12 +42,12 @@ function isCacheablePath(pathname) {
  * @returns {string}
  */
 function normalizeLanguageVariant(acceptLanguage) {
-	return String(acceptLanguage || "")
-		.trim()
-		.toLowerCase()
-		.startsWith("en")
-		? "en"
-		: "default";
+  return String(acceptLanguage || "")
+    .trim()
+    .toLowerCase()
+    .startsWith("en")
+    ? "en"
+    : "default";
 }
 
 /**
@@ -57,16 +57,16 @@ function normalizeLanguageVariant(acceptLanguage) {
  * @param {URL} cacheUrl
  */
 function copyCacheRelevantQueryParams(sourceUrl, cacheUrl) {
-	for (const paramName of CACHE_KEY_QUERY_ALLOWLIST) {
-		const values = sourceUrl.searchParams
-			.getAll(paramName)
-			.filter((value) => value !== "")
-			.sort();
+  for (const paramName of CACHE_KEY_QUERY_ALLOWLIST) {
+    const values = sourceUrl.searchParams
+      .getAll(paramName)
+      .filter(value => value !== "")
+      .sort();
 
-		for (const value of values) {
-			cacheUrl.searchParams.append(paramName, value);
-		}
-	}
+    for (const value of values) {
+      cacheUrl.searchParams.append(paramName, value);
+    }
+  }
 }
 
 /**
@@ -78,17 +78,17 @@ function copyCacheRelevantQueryParams(sourceUrl, cacheUrl) {
  * @returns {Request} Cache key as Request object
  */
 export function buildCacheKey(request) {
-	const requestUrl = new URL(request.url);
-	const cacheUrl = new URL(requestUrl.origin + requestUrl.pathname);
+  const requestUrl = new URL(request.url);
+  const cacheUrl = new URL(requestUrl.origin + requestUrl.pathname);
 
-	copyCacheRelevantQueryParams(requestUrl, cacheUrl);
-	cacheUrl.searchParams.set("__cv", EDGE_CACHE_KEY_VERSION);
-	cacheUrl.searchParams.set(
-		"__hl",
-		normalizeLanguageVariant(request.headers.get("Accept-Language")),
-	);
+  copyCacheRelevantQueryParams(requestUrl, cacheUrl);
+  cacheUrl.searchParams.set("__cv", EDGE_CACHE_KEY_VERSION);
+  cacheUrl.searchParams.set(
+    "__hl",
+    normalizeLanguageVariant(request.headers.get("Accept-Language"))
+  );
 
-	return new Request(cacheUrl.href, { method: "GET" });
+  return new Request(cacheUrl.href, { method: "GET" });
 }
 
 /**
@@ -98,35 +98,35 @@ export function buildCacheKey(request) {
  * @returns {Promise<Response|null>} Cached response or null
  */
 export async function matchEdgeCache(request) {
-	if (request.method !== "GET") return null;
+  if (request.method !== "GET") return null;
 
-	const url = new URL(request.url);
-	if (!isCacheablePath(url.pathname)) return null;
+  const url = new URL(request.url);
+  if (!isCacheablePath(url.pathname)) return null;
 
-	try {
-		const cache = caches.default;
-		const key = buildCacheKey(request);
-		const cached = await cache.match(key);
+  try {
+    const cache = caches.default;
+    const key = buildCacheKey(request);
+    const cached = await cache.match(key);
 
-		if (cached) {
-			if (cached.status !== 200 || cached.body === null) {
-				return null;
-			}
+    if (cached) {
+      if (cached.status !== 200 || cached.body === null) {
+        return null;
+      }
 
-			// Add cache-hit indicator
-			const headers = new Headers(cached.headers);
-			headers.set("X-Edge-Cache", "HIT");
-			return new Response(cached.body, {
-				status: cached.status,
-				statusText: cached.statusText,
-				headers,
-			});
-		}
-	} catch {
-		// Cache API unavailable (e.g. local dev) — continue to pipeline
-	}
+      // Add cache-hit indicator
+      const headers = new Headers(cached.headers);
+      headers.set("X-Edge-Cache", "HIT");
+      return new Response(cached.body, {
+        status: cached.status,
+        statusText: cached.statusText,
+        headers,
+      });
+    }
+  } catch {
+    // Cache API unavailable (e.g. local dev) — continue to pipeline
+  }
 
-	return null;
+  return null;
 }
 
 /**
@@ -141,29 +141,29 @@ export async function matchEdgeCache(request) {
  * @param {any} ctx - For waitUntil
  */
 export function storeInEdgeCache(request, response, ctx) {
-	if (request.method !== "GET") return;
+  if (request.method !== "GET") return;
 
-	const url = new URL(request.url);
-	if (!isCacheablePath(url.pathname)) return;
-	if (response.status !== 200 || !response.body) return;
+  const url = new URL(request.url);
+  if (!isCacheablePath(url.pathname)) return;
+  if (response.status !== 200 || !response.body) return;
 
-	try {
-		const cache = caches.default;
-		const key = buildCacheKey(request);
+  try {
+    const cache = caches.default;
+    const key = buildCacheKey(request);
 
-		// Clone and add cache-control for edge TTL
-		const headers = new Headers(response.headers);
-		headers.set("Cache-Control", `public, s-maxage=${EDGE_HTML_TTL_S}`);
-		headers.set("X-Edge-Cache", "MISS");
+    // Clone and add cache-control for edge TTL
+    const headers = new Headers(response.headers);
+    headers.set("Cache-Control", `public, s-maxage=${EDGE_HTML_TTL_S}`);
+    headers.set("X-Edge-Cache", "MISS");
 
-		const cacheableResponse = new Response(response.body, {
-			status: response.status,
-			statusText: response.statusText,
-			headers,
-		});
+    const cacheableResponse = new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
 
-		ctx.waitUntil(cache.put(key, cacheableResponse));
-	} catch {
-		// Silently ignore cache storage failures
-	}
+    ctx.waitUntil(cache.put(key, cacheableResponse));
+  } catch {
+    // Silently ignore cache storage failures
+  }
 }

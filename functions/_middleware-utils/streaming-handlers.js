@@ -21,30 +21,26 @@
  * buffering the entire document.
  */
 export class TemplateCommentHandler {
-	/**
-	 * @param {{ globalHead?: string, nonce?: string | null }} templates
-	 */
-	constructor(templates) {
-		this.templates = templates;
-	}
+  /**
+   * @param {{ globalHead?: string, nonce?: string | null }} templates
+   */
+  constructor(templates) {
+    this.templates = templates;
+  }
 
-	/** @param {Comment} comment */
-	comments(comment) {
-		const payload = parseTemplateComment(comment.text);
+  /** @param {Comment} comment */
+  comments(comment) {
+    const payload = parseTemplateComment(comment.text);
 
-		if (payload.name === "INJECT:GLOBAL-HEAD" && this.templates.globalHead) {
-			comment.replace(
-				renderGlobalHeadTemplate(
-					this.templates.globalHead,
-					payload,
-					this.templates.nonce || null,
-				),
-				{
-					html: true,
-				},
-			);
-		}
-	}
+    if (payload.name === "INJECT:GLOBAL-HEAD" && this.templates.globalHead) {
+      comment.replace(
+        renderGlobalHeadTemplate(this.templates.globalHead, payload, this.templates.nonce || null),
+        {
+          html: true,
+        }
+      );
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -56,21 +52,21 @@ export class TemplateCommentHandler {
  * that don't already have one, using HTMLRewriter streaming.
  */
 export class NonceInjector {
-	/** @param {string} nonce */
-	constructor(nonce) {
-		this.nonce = nonce;
-	}
+  /** @param {string} nonce */
+  constructor(nonce) {
+    this.nonce = nonce;
+  }
 
-	/** @param {Element} el */
-	element(el) {
-		const tag = el.tagName.toLowerCase();
+  /** @param {Element} el */
+  element(el) {
+    const tag = el.tagName.toLowerCase();
 
-		if (tag === "script") {
-			el.setAttribute("nonce", this.nonce);
-		} else if (tag === "style") {
-			el.setAttribute("nonce", this.nonce);
-		}
-	}
+    if (tag === "script") {
+      el.setAttribute("nonce", this.nonce);
+    } else if (tag === "style") {
+      el.setAttribute("nonce", this.nonce);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -87,139 +83,135 @@ export class NonceInjector {
  * right before the closing </head> tag.
  */
 export class SeoMetaHandler {
-	/**
-	 * @param {Object} meta - Route meta data from buildRouteMeta()
-	 * @param {string | null} [nonce]
-	 * @param {(() => string) | string | null} [extraHeadEndHtml]
-	 */
-	constructor(meta, nonce = null, extraHeadEndHtml = null) {
-		this.meta = meta;
-		this.nonce = nonce;
-		this.extraHeadEndHtml = extraHeadEndHtml;
-		/** @type {Set<string>} Track which fields were already upserted in-place */
-		this._handledKeys = new Set();
-		/** @type {string[]} Extra tags to append before </head> */
-		this._pendingAppend = [];
-	}
+  /**
+   * @param {Object} meta - Route meta data from buildRouteMeta()
+   * @param {string | null} [nonce]
+   * @param {(() => string) | string | null} [extraHeadEndHtml]
+   */
+  constructor(meta, nonce = null, extraHeadEndHtml = null) {
+    this.meta = meta;
+    this.nonce = nonce;
+    this.extraHeadEndHtml = extraHeadEndHtml;
+    /** @type {Set<string>} Track which fields were already upserted in-place */
+    this._handledKeys = new Set();
+    /** @type {string[]} Extra tags to append before </head> */
+    this._pendingAppend = [];
+  }
 
-	/** @param {Element} el */
-	element(el) {
-		const tag = el.tagName.toLowerCase();
-		const m = this.meta;
+  /** @param {Element} el */
+  element(el) {
+    const tag = el.tagName.toLowerCase();
+    const m = this.meta;
 
-		if (tag === "title" && m.title) {
-			el.setInnerContent(escapeForHtml(m.title));
-			this._handledKeys.add("title");
-			return;
-		}
+    if (tag === "title" && m.title) {
+      el.setInnerContent(escapeForHtml(m.title));
+      this._handledKeys.add("title");
+      return;
+    }
 
-		if (tag === "meta") {
-			const name = el.getAttribute("name");
-			const prop = el.getAttribute("property");
+    if (tag === "meta") {
+      const name = el.getAttribute("name");
+      const prop = el.getAttribute("property");
 
-			if (name) this._handleMetaName(el, name);
-			if (prop) this._handleMetaProp(el, prop);
-			return;
-		}
+      if (name) this._handleMetaName(el, name);
+      if (prop) this._handleMetaProp(el, prop);
+      return;
+    }
 
-		if (tag === "link") {
-			const rel = el.getAttribute("rel");
-			if (rel === "canonical" && m.canonicalUrl) {
-				el.setAttribute("href", m.canonicalUrl);
-				this._handledKeys.add("canonical");
-			}
-			return;
-		}
+    if (tag === "link") {
+      const rel = el.getAttribute("rel");
+      if (rel === "canonical" && m.canonicalUrl) {
+        el.setAttribute("href", m.canonicalUrl);
+        this._handledKeys.add("canonical");
+      }
+      return;
+    }
 
-		// Append remaining tags before </head>
-		if (tag === "head") {
-			// onEndTag is called when the </head> closing tag is encountered
-			el.onEndTag((endTag) => {
-				const remaining = this._buildRemainingTags();
-				const extra =
-					typeof this.extraHeadEndHtml === "function"
-						? this.extraHeadEndHtml()
-						: this.extraHeadEndHtml || "";
-				const html = `${remaining || ""}${extra || ""}`;
-				if (html) {
-					endTag.before(html, { html: true });
-				}
-			});
-		}
-	}
+    // Append remaining tags before </head>
+    if (tag === "head") {
+      // onEndTag is called when the </head> closing tag is encountered
+      el.onEndTag(endTag => {
+        const remaining = this._buildRemainingTags();
+        const extra =
+          typeof this.extraHeadEndHtml === "function"
+            ? this.extraHeadEndHtml()
+            : this.extraHeadEndHtml || "";
+        const html = `${remaining || ""}${extra || ""}`;
+        if (html) {
+          endTag.before(html, { html: true });
+        }
+      });
+    }
+  }
 
-	/** @private */
-	_handleMetaName(el, name) {
-		const map = buildSeoMetaNameMap(this.meta);
+  /** @private */
+  _handleMetaName(el, name) {
+    const map = buildSeoMetaNameMap(this.meta);
 
-		if (name in map && map[name]) {
-			el.setAttribute("content", map[name]);
-			this._handledKeys.add(`name:${name}`);
-		}
-	}
+    if (name in map && map[name]) {
+      el.setAttribute("content", map[name]);
+      this._handledKeys.add(`name:${name}`);
+    }
+  }
 
-	/** @private */
-	_handleMetaProp(el, prop) {
-		const map = buildSeoMetaPropertyMap(this.meta);
+  /** @private */
+  _handleMetaProp(el, prop) {
+    const map = buildSeoMetaPropertyMap(this.meta);
 
-		if (prop in map && map[prop]) {
-			el.setAttribute("content", map[prop]);
-			this._handledKeys.add(`prop:${prop}`);
-		}
-	}
+    if (prop in map && map[prop]) {
+      el.setAttribute("content", map[prop]);
+      this._handledKeys.add(`prop:${prop}`);
+    }
+  }
 
-	/** @private */
-	_buildRemainingTags() {
-		const m = this.meta;
-		const parts = [];
+  /** @private */
+  _buildRemainingTags() {
+    const m = this.meta;
+    const parts = [];
 
-		if (m.title && !this._handledKeys.has("title")) {
-			parts.push(`<title>${escapeForHtml(m.title)}</title>`);
-		}
-		if (m.canonicalUrl && !this._handledKeys.has("canonical")) {
-			parts.push(
-				`<link rel="canonical" href="${escapeForHtml(m.canonicalUrl)}" />`,
-			);
-		}
+    if (m.title && !this._handledKeys.has("title")) {
+      parts.push(`<title>${escapeForHtml(m.title)}</title>`);
+    }
+    if (m.canonicalUrl && !this._handledKeys.has("canonical")) {
+      parts.push(`<link rel="canonical" href="${escapeForHtml(m.canonicalUrl)}" />`);
+    }
 
-		// Meta name tags
-		const nameDefaults = buildSeoMetaNameMap(m);
+    // Meta name tags
+    const nameDefaults = buildSeoMetaNameMap(m);
 
-		for (const [name, content] of Object.entries(nameDefaults)) {
-			if (content && !this._handledKeys.has(`name:${name}`)) {
-				parts.push(
-					`<meta name="${escapeForHtml(name)}" content="${escapeForHtml(content)}" />`,
-				);
-			}
-		}
+    for (const [name, content] of Object.entries(nameDefaults)) {
+      if (content && !this._handledKeys.has(`name:${name}`)) {
+        parts.push(`<meta name="${escapeForHtml(name)}" content="${escapeForHtml(content)}" />`);
+      }
+    }
 
-		// Meta property tags
-		const propDefaults = buildSeoMetaPropertyMap(m);
+    // Meta property tags
+    const propDefaults = buildSeoMetaPropertyMap(m);
 
-		for (const [prop, content] of Object.entries(propDefaults)) {
-			if (content && !this._handledKeys.has(`prop:${prop}`)) {
-				parts.push(
-					`<meta property="${escapeForHtml(prop)}" content="${escapeForHtml(content)}" />`,
-				);
-			}
-		}
+    for (const [prop, content] of Object.entries(propDefaults)) {
+      if (content && !this._handledKeys.has(`prop:${prop}`)) {
+        parts.push(
+          `<meta property="${escapeForHtml(prop)}" content="${escapeForHtml(content)}" />`
+        );
+      }
+    }
 
-		// JSON-LD schema
-		if (m.schema && typeof m.schema === "object") {
-			parts.push(
-				`<script type="application/ld+json" id="edge-route-schema"${buildNonceAttribute(this.nonce)}>${JSON.stringify(m.schema)}</script>`,
-			);
-		}
+    // JSON-LD schema
+    if (m.schema && typeof m.schema === "object") {
+      parts.push(
+        `<script type="application/ld+json" id="edge-route-schema"${buildNonceAttribute(this.nonce)}>${JSON.stringify(m.schema)}</script>`
+      );
+    }
 
-		// Partial meta
-		if (m.partialMeta && typeof m.partialMeta === "object") {
-			parts.push(
-				`<script type="application/json" id="edge-partial-meta" data-partial-meta${buildNonceAttribute(this.nonce)}>${JSON.stringify(m.partialMeta)}</script>`,
-			);
-		}
+    // Partial meta
+    if (m.partialMeta && typeof m.partialMeta === "object") {
+      parts.push(
+        `<script type="application/json" id="edge-partial-meta" data-partial-meta${buildNonceAttribute(this.nonce)}>${JSON.stringify(m.partialMeta)}</script>`
+      );
+    }
 
-		return parts.length ? "\n  " + parts.join("\n  ") + "\n" : "";
-	}
+    return parts.length ? "\n  " + parts.join("\n  ") + "\n" : "";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -227,134 +219,133 @@ export class SeoMetaHandler {
 // ---------------------------------------------------------------------------
 
 function escapeForHtml(str) {
-	return String(str)
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;");
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function buildSeoMetaNameMap(meta) {
-	const m = meta || {};
-	const map = {
-		description: m.description,
-		robots: m.robots || "index, follow, max-image-preview:large",
-		keywords: m.keywords,
-		"twitter:card": m.twitterCard || "summary_large_image",
-		"twitter:title": m.twitterTitle || m.title,
-		"twitter:description": m.twitterDescription || m.description,
-		"twitter:url": m.canonicalUrl,
-		"twitter:image": m.image,
-		"twitter:image:width": m.imageWidth,
-		"twitter:image:height": m.imageHeight,
-		"twitter:image:type": m.imageType,
-		"twitter:image:alt": m.imageAlt,
-	};
+  const m = meta || {};
+  const map = {
+    description: m.description,
+    robots: m.robots || "index, follow, max-image-preview:large",
+    keywords: m.keywords,
+    "twitter:card": m.twitterCard || "summary_large_image",
+    "twitter:title": m.twitterTitle || m.title,
+    "twitter:description": m.twitterDescription || m.description,
+    "twitter:url": m.canonicalUrl,
+    "twitter:image": m.image,
+    "twitter:image:width": m.imageWidth,
+    "twitter:image:height": m.imageHeight,
+    "twitter:image:type": m.imageType,
+    "twitter:image:alt": m.imageAlt,
+  };
 
-	if (!m.keywords) {
-		delete map.keywords;
-	}
+  if (!m.keywords) {
+    delete map.keywords;
+  }
 
-	return map;
+  return map;
 }
 
 function buildSeoMetaPropertyMap(meta) {
-	const m = meta || {};
-	const map = {
-		"og:type": m.ogType || "website",
-		"og:title": m.ogTitle || m.title,
-		"og:description": m.ogDescription || m.description,
-		"og:url": m.canonicalUrl,
-		"og:image": m.image,
-		"og:image:width": m.imageWidth,
-		"og:image:height": m.imageHeight,
-		"og:image:type": m.imageType,
-		"og:image:alt": m.imageAlt,
-		"og:site_name": m.siteName,
-		"og:locale": m.locale,
-		"article:published_time": m.publishedTime,
-		"article:modified_time": m.modifiedTime,
-	};
+  const m = meta || {};
+  const map = {
+    "og:type": m.ogType || "website",
+    "og:title": m.ogTitle || m.title,
+    "og:description": m.ogDescription || m.description,
+    "og:url": m.canonicalUrl,
+    "og:image": m.image,
+    "og:image:width": m.imageWidth,
+    "og:image:height": m.imageHeight,
+    "og:image:type": m.imageType,
+    "og:image:alt": m.imageAlt,
+    "og:site_name": m.siteName,
+    "og:locale": m.locale,
+    "article:published_time": m.publishedTime,
+    "article:modified_time": m.modifiedTime,
+  };
 
-	if (!m.publishedTime) {
-		delete map["article:published_time"];
-	}
-	if (!m.modifiedTime) {
-		delete map["article:modified_time"];
-	}
+  if (!m.publishedTime) {
+    delete map["article:published_time"];
+  }
+  if (!m.modifiedTime) {
+    delete map["article:modified_time"];
+  }
 
-	return map;
+  return map;
 }
 
 function parseTemplateComment(value = "") {
-	const text = String(value || "").trim();
-	const [name = "", ...rest] = text.split(/\s+/);
-	const attrs = {};
-	const attrText = rest.join(" ");
-	const attrPattern = /([a-zA-Z][\w-]*)=(?:"([^"]*)"|'([^']*)')/g;
-	let match;
+  const text = String(value || "").trim();
+  const [name = "", ...rest] = text.split(/\s+/);
+  const attrs = {};
+  const attrText = rest.join(" ");
+  const attrPattern = /([a-zA-Z][\w-]*)=(?:"([^"]*)"|'([^']*)')/g;
+  let match;
 
-	while ((match = attrPattern.exec(attrText))) {
-		attrs[match[1]] = match[2] ?? match[3] ?? "";
-	}
+  while ((match = attrPattern.exec(attrText))) {
+    attrs[match[1]] = match[2] ?? match[3] ?? "";
+  }
 
-	return { name, attrs };
+  return { name, attrs };
 }
 
 function renderGlobalHeadTemplate(template, payload, nonce = null) {
-	const attrs = payload?.attrs || {};
-	const mode = attrs.mode === "standalone" ? "standalone" : "base";
-	const useRouteTitle = attrs["title-source"] === "route";
-	const replacements = {
-		TITLE: attrs.title || "Standalone",
-		THEME_COLOR: attrs["theme-color"] || "#030303",
-		COLOR_SCHEME: attrs["color-scheme"] || "dark",
-	};
+  const attrs = payload?.attrs || {};
+  const mode = attrs.mode === "standalone" ? "standalone" : "base";
+  const useRouteTitle = attrs["title-source"] === "route";
+  const replacements = {
+    TITLE: attrs.title || "Standalone",
+    THEME_COLOR: attrs["theme-color"] || "#030303",
+    COLOR_SCHEME: attrs["color-scheme"] || "dark",
+  };
 
-	const nextTemplate = template
-		.replace(
-			/<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->([\s\S]*?)<!-- GLOBAL-HEAD:BASE-ONLY:END -->/g,
-			(_match, block) => (mode === "base" ? block : ""),
-		)
-		.replace(
-			/<!-- GLOBAL-HEAD:STANDALONE-ONLY:BEGIN -->([\s\S]*?)<!-- GLOBAL-HEAD:STANDALONE-ONLY:END -->/g,
-			(_match, block) => (mode === "standalone" ? block : ""),
-		);
-	let routeManagedTemplate = nextTemplate;
-	if (useRouteTitle) {
-		routeManagedTemplate = routeManagedTemplate.replace(
-			/\s*<title>\{\{TITLE\}\}<\/title>\s*/g,
-			"\n",
-		);
-	}
+  const nextTemplate = template
+    .replace(
+      /<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->([\s\S]*?)<!-- GLOBAL-HEAD:BASE-ONLY:END -->/g,
+      (_match, block) => (mode === "base" ? block : "")
+    )
+    .replace(
+      /<!-- GLOBAL-HEAD:STANDALONE-ONLY:BEGIN -->([\s\S]*?)<!-- GLOBAL-HEAD:STANDALONE-ONLY:END -->/g,
+      (_match, block) => (mode === "standalone" ? block : "")
+    );
+  let routeManagedTemplate = nextTemplate;
+  if (useRouteTitle) {
+    routeManagedTemplate = routeManagedTemplate.replace(
+      /\s*<title>\{\{TITLE\}\}<\/title>\s*/g,
+      "\n"
+    );
+  }
 
-	const resolvedTemplate = routeManagedTemplate.replace(
-		/\{\{([A-Z_]+)\}\}/g,
-		(_match, key) => escapeForHtml(replacements[key] || ""),
-	);
+  const resolvedTemplate = routeManagedTemplate.replace(/\{\{([A-Z_]+)\}\}/g, (_match, key) =>
+    escapeForHtml(replacements[key] || "")
+  );
 
-	return applyNonceToHtml(resolvedTemplate, nonce);
+  return applyNonceToHtml(resolvedTemplate, nonce);
 }
 
 function applyNonceToHtml(html, nonce) {
-	if (!nonce) return html;
+  if (!nonce) return html;
 
-	return String(html || "")
-		.replace(/<script\b([^>]*)>/gi, (_match, attrs = "") => {
-			const nextAttrs = stripNonceAttribute(attrs);
-			return `<script${nextAttrs}${buildNonceAttribute(nonce)}>`;
-		})
-		.replace(/<style\b([^>]*)>/gi, (_match, attrs = "") => {
-			const nextAttrs = stripNonceAttribute(attrs);
-			return `<style${nextAttrs}${buildNonceAttribute(nonce)}>`;
-		});
+  return String(html || "")
+    .replace(/<script\b([^>]*)>/gi, (_match, attrs = "") => {
+      const nextAttrs = stripNonceAttribute(attrs);
+      return `<script${nextAttrs}${buildNonceAttribute(nonce)}>`;
+    })
+    .replace(/<style\b([^>]*)>/gi, (_match, attrs = "") => {
+      const nextAttrs = stripNonceAttribute(attrs);
+      return `<style${nextAttrs}${buildNonceAttribute(nonce)}>`;
+    });
 }
 
 function stripNonceAttribute(attrs = "") {
-	return String(attrs || "").replace(/\snonce\s*=\s*(?:"[^"]*"|'[^']*')/gi, "");
+  return String(attrs || "").replace(/\snonce\s*=\s*(?:"[^"]*"|'[^']*')/gi, "");
 }
 
 function buildNonceAttribute(nonce) {
-	if (!nonce) return "";
-	return ` nonce="${escapeForHtml(nonce)}"`;
+  if (!nonce) return "";
+  return ` nonce="${escapeForHtml(nonce)}"`;
 }

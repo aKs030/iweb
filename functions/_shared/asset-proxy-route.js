@@ -2,14 +2,14 @@ import { createLogger } from "../../content/core/logger.js";
 
 const log = createLogger("asset-proxy-route");
 import {
-	buildConditionalProxyRequestHeaders,
-	buildNotModifiedHeaders,
-	buildProxyErrorResponse,
-	buildProxyNotFoundResponse,
-	buildProxyResponseHeaders,
-	matchAssetProxyCache,
-	maybeBuildNotModifiedResponse,
-	storeAssetProxyCache,
+  buildConditionalProxyRequestHeaders,
+  buildNotModifiedHeaders,
+  buildProxyErrorResponse,
+  buildProxyNotFoundResponse,
+  buildProxyResponseHeaders,
+  matchAssetProxyCache,
+  maybeBuildNotModifiedResponse,
+  storeAssetProxyCache,
 } from "./asset-proxy.js";
 
 /**
@@ -17,14 +17,12 @@ import {
  * @returns {Record<string, string>}
  */
 function toHeaderRecord(source) {
-	if (!source) return {};
-	if (source instanceof Headers) {
-		return Object.fromEntries(source.entries());
-	}
+  if (!source) return {};
+  if (source instanceof Headers) {
+    return Object.fromEntries(source.entries());
+  }
 
-	return Object.fromEntries(
-		Object.entries(source).map(([key, value]) => [key, String(value)]),
-	);
+  return Object.fromEntries(Object.entries(source).map(([key, value]) => [key, String(value)]));
 }
 
 /**
@@ -40,11 +38,11 @@ function toHeaderRecord(source) {
  * @returns {Record<string, string>}
  */
 function resolveExtraHeaders(resolver, args) {
-	if (typeof resolver === "function") {
-		return toHeaderRecord(resolver(args));
-	}
+  if (typeof resolver === "function") {
+    return toHeaderRecord(resolver(args));
+  }
 
-	return toHeaderRecord(resolver);
+  return toHeaderRecord(resolver);
 }
 
 /**
@@ -52,9 +50,9 @@ function resolveExtraHeaders(resolver, args) {
  * @param {Headers} headers
  */
 function appendHeaders(extraHeaders, headers) {
-	Object.entries(extraHeaders).forEach(([key, value]) => {
-		headers.set(key, value);
-	});
+  Object.entries(extraHeaders).forEach(([key, value]) => {
+    headers.set(key, value);
+  });
 }
 
 /**
@@ -78,38 +76,35 @@ function appendHeaders(extraHeaders, headers) {
  * @returns {Response}
  */
 function buildLocalAssetResponse(localAsset, options) {
-	const headers = buildProxyResponseHeaders({
-		pathname: options.pathname,
-		contentTypes: options.contentTypes,
-		sourceHeaders: localAsset.sourceHeaders || undefined,
-		extraHeaders: resolveExtraHeaders(
-			options.extraHeaders,
-			options.resolverContext,
-		),
-	});
+  const headers = buildProxyResponseHeaders({
+    pathname: options.pathname,
+    contentTypes: options.contentTypes,
+    sourceHeaders: localAsset.sourceHeaders || undefined,
+    extraHeaders: resolveExtraHeaders(options.extraHeaders, options.resolverContext),
+  });
 
-	if (typeof localAsset.populateHeaders === "function") {
-		localAsset.populateHeaders(headers);
-	}
-	appendHeaders(toHeaderRecord(localAsset.extraHeaders), headers);
+  if (typeof localAsset.populateHeaders === "function") {
+    localAsset.populateHeaders(headers);
+  }
+  appendHeaders(toHeaderRecord(localAsset.extraHeaders), headers);
 
-	const cacheStatus = String(localAsset.cacheStatus || "BYPASS");
-	headers.set(options.cacheHeaderName, cacheStatus);
+  const cacheStatus = String(localAsset.cacheStatus || "BYPASS");
+  headers.set(options.cacheHeaderName, cacheStatus);
 
-	const notModified = maybeBuildNotModifiedResponse(
-		options.request,
-		headers,
-		options.cacheHeaderName,
-		cacheStatus,
-	);
-	if (notModified) {
-		return notModified;
-	}
+  const notModified = maybeBuildNotModifiedResponse(
+    options.request,
+    headers,
+    options.cacheHeaderName,
+    cacheStatus
+  );
+  if (notModified) {
+    return notModified;
+  }
 
-	return new Response(options.includeBody ? (localAsset.body ?? null) : null, {
-		status: localAsset.status || 200,
-		headers,
-	});
+  return new Response(options.includeBody ? (localAsset.body ?? null) : null, {
+    status: localAsset.status || 200,
+    headers,
+  });
 }
 
 /**
@@ -171,145 +166,125 @@ function buildLocalAssetResponse(localAsset, options) {
  * }}
  */
 export function createAssetProxyHandlers(options) {
-	async function handle(context, includeBody) {
-		const requestUrl = new URL(context.request.url);
-		const proxyPath = options.normalizePath(requestUrl.pathname, requestUrl);
-		const isLocal = options.isLocalRequest(requestUrl, context);
-		const resolverContext = {
-			context,
-			includeBody,
-			isLocal,
-			proxyPath,
-			requestUrl,
-		};
+  async function handle(context, includeBody) {
+    const requestUrl = new URL(context.request.url);
+    const proxyPath = options.normalizePath(requestUrl.pathname, requestUrl);
+    const isLocal = options.isLocalRequest(requestUrl, context);
+    const resolverContext = {
+      context,
+      includeBody,
+      isLocal,
+      proxyPath,
+      requestUrl,
+    };
 
-		if (!proxyPath) {
-			return new Response(
-				options.invalidPathMessage || "Invalid asset proxy path",
-				{ status: 400 },
-			);
-		}
+    if (!proxyPath) {
+      return new Response(options.invalidPathMessage || "Invalid asset proxy path", {
+        status: 400,
+      });
+    }
 
-		if (!isLocal) {
-			const cachedResponse = await matchAssetProxyCache(requestUrl, {
-				cacheHeaderName: options.cacheHeaderName,
-				includeBody,
-				request: context.request,
-			});
-			if (cachedResponse) {
-				return cachedResponse;
-			}
-		}
+    if (!isLocal) {
+      const cachedResponse = await matchAssetProxyCache(requestUrl, {
+        cacheHeaderName: options.cacheHeaderName,
+        includeBody,
+        request: context.request,
+      });
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+    }
 
-		if (typeof options.resolveLocalAsset === "function") {
-			const localAsset = await options.resolveLocalAsset(resolverContext);
-			if (localAsset) {
-				return buildLocalAssetResponse(localAsset, {
-					cacheHeaderName: options.cacheHeaderName,
-					contentTypes: options.contentTypes,
-					extraHeaders: options.extraHeaders,
-					includeBody,
-					pathname: proxyPath,
-					request: context.request,
-					resolverContext,
-				});
-			}
-		}
+    if (typeof options.resolveLocalAsset === "function") {
+      const localAsset = await options.resolveLocalAsset(resolverContext);
+      if (localAsset) {
+        return buildLocalAssetResponse(localAsset, {
+          cacheHeaderName: options.cacheHeaderName,
+          contentTypes: options.contentTypes,
+          extraHeaders: options.extraHeaders,
+          includeBody,
+          pathname: proxyPath,
+          request: context.request,
+          resolverContext,
+        });
+      }
+    }
 
-		try {
-			const upstreamUrl = await options.buildUpstreamUrl(resolverContext);
-			const upstreamResponse = await fetch(String(upstreamUrl), {
-				method: includeBody ? "GET" : "HEAD",
-				headers: buildConditionalProxyRequestHeaders(
-					context.request,
-					resolveExtraHeaders(options.requestHeaders, resolverContext),
-				),
-			});
+    try {
+      const upstreamUrl = await options.buildUpstreamUrl(resolverContext);
+      const upstreamResponse = await fetch(String(upstreamUrl), {
+        method: includeBody ? "GET" : "HEAD",
+        headers: buildConditionalProxyRequestHeaders(
+          context.request,
+          resolveExtraHeaders(options.requestHeaders, resolverContext)
+        ),
+      });
 
-			const upstreamHeaderContext = {
-				...resolverContext,
-				upstreamResponse,
-			};
-			if (upstreamResponse.status === 304) {
-				const headers = buildProxyResponseHeaders({
-					pathname: proxyPath,
-					contentTypes: options.contentTypes,
-					sourceHeaders: upstreamResponse.headers,
-					extraHeaders: resolveExtraHeaders(
-						options.extraHeaders,
-						upstreamHeaderContext,
-					),
-				});
-				return new Response(null, {
-					status: 304,
-					headers: buildNotModifiedHeaders(
-						headers,
-						options.cacheHeaderName,
-						"MISS",
-					),
-				});
-			}
+      const upstreamHeaderContext = {
+        ...resolverContext,
+        upstreamResponse,
+      };
+      if (upstreamResponse.status === 304) {
+        const headers = buildProxyResponseHeaders({
+          pathname: proxyPath,
+          contentTypes: options.contentTypes,
+          sourceHeaders: upstreamResponse.headers,
+          extraHeaders: resolveExtraHeaders(options.extraHeaders, upstreamHeaderContext),
+        });
+        return new Response(null, {
+          status: 304,
+          headers: buildNotModifiedHeaders(headers, options.cacheHeaderName, "MISS"),
+        });
+      }
 
-			if (!upstreamResponse.ok) {
-				return buildProxyNotFoundResponse(
-					options.notFoundMessage,
-					upstreamResponse.status,
-				);
-			}
+      if (!upstreamResponse.ok) {
+        return buildProxyNotFoundResponse(options.notFoundMessage, upstreamResponse.status);
+      }
 
-			const headers = buildProxyResponseHeaders({
-				pathname: proxyPath,
-				contentTypes: options.contentTypes,
-				sourceHeaders: upstreamResponse.headers,
-				extraHeaders: resolveExtraHeaders(
-					options.extraHeaders,
-					upstreamHeaderContext,
-				),
-			});
-			headers.set(options.cacheHeaderName, "MISS");
+      const headers = buildProxyResponseHeaders({
+        pathname: proxyPath,
+        contentTypes: options.contentTypes,
+        sourceHeaders: upstreamResponse.headers,
+        extraHeaders: resolveExtraHeaders(options.extraHeaders, upstreamHeaderContext),
+      });
+      headers.set(options.cacheHeaderName, "MISS");
 
-			const notModified = maybeBuildNotModifiedResponse(
-				context.request,
-				headers,
-				options.cacheHeaderName,
-				"MISS",
-			);
-			if (notModified) {
-				return notModified;
-			}
+      const notModified = maybeBuildNotModifiedResponse(
+        context.request,
+        headers,
+        options.cacheHeaderName,
+        "MISS"
+      );
+      if (notModified) {
+        return notModified;
+      }
 
-			const response = new Response(
-				includeBody ? upstreamResponse.body : null,
-				{
-					status: upstreamResponse.status,
-					headers,
-				},
-			);
+      const response = new Response(includeBody ? upstreamResponse.body : null, {
+        status: upstreamResponse.status,
+        headers,
+      });
 
-			if (!isLocal && includeBody && upstreamResponse.status === 200) {
-				storeAssetProxyCache(requestUrl, response.clone(), context);
-			}
+      if (!isLocal && includeBody && upstreamResponse.status === 200) {
+        storeAssetProxyCache(requestUrl, response.clone(), context);
+      }
 
-			return response;
-		} catch (error) {
-			log.error(options.errorMessage || "asset proxy failed", error);
-			return buildProxyErrorResponse(
-				options.errorMessage || "Asset proxy failed",
-				502,
-			);
-		}
-	}
+      return response;
+    } catch (error) {
+      log.error(options.errorMessage || "asset proxy failed", error);
+      return buildProxyErrorResponse(options.errorMessage || "Asset proxy failed", 502);
+    }
+  }
 
-	return {
-		async onRequestGet(context) {
-			return handle(context, true);
-		},
-		async onRequestHead(context) {
-			const response = await handle(context, false);
-			return new Response(null, {
-				status: response.status,
-				headers: response.headers,
-			});
-		},
-	};
+  return {
+    async onRequestGet(context) {
+      return handle(context, true);
+    },
+    async onRequestHead(context) {
+      const response = await handle(context, false);
+      return new Response(null, {
+        status: response.status,
+        headers: response.headers,
+      });
+    },
+  };
 }

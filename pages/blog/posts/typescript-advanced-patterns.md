@@ -33,17 +33,15 @@ type B = IsString<number>; // false
 **Praktischer Anwendungsfall**: API-Response-Typen basierend auf Request-Parametern:
 
 ```typescript
-type ApiResponse<T extends 'user' | 'post'> = T extends 'user' ? User : Post;
+type ApiResponse<T extends "user" | "post"> = T extends "user" ? User : Post;
 
-const fetchData = async <T extends 'user' | 'post'>(
-  type: T,
-): Promise<ApiResponse<T>> => {
+const fetchData = async <T extends "user" | "post">(type: T): Promise<ApiResponse<T>> => {
   const response = await fetch(`/api/${type}`);
   return response.json();
 };
 
 // TypeScript weiß: result ist User
-const result = await fetchData('user');
+const result = await fetchData("user");
 ```
 
 Der Return-Type ändert sich basierend auf dem Parameter. Keine Type Assertions nötig.
@@ -55,21 +53,21 @@ Template Literals ermöglichen dynamische String-Typen:
 ```typescript
 type EventName<T extends string> = `on${Capitalize<T>}`;
 
-type ClickEvent = EventName<'click'>; // 'onClick'
-type HoverEvent = EventName<'hover'>; // 'onHover'
+type ClickEvent = EventName<"click">; // 'onClick'
+type HoverEvent = EventName<"hover">; // 'onHover'
 ```
 
 **CSS-in-JS mit Typsicherheit**:
 
 ```typescript
-type CSSProperty = 'margin' | 'padding' | 'border';
-type CSSDirection = 'top' | 'right' | 'bottom' | 'left';
+type CSSProperty = "margin" | "padding" | "border";
+type CSSDirection = "top" | "right" | "bottom" | "left";
 type CSSPropertyWithDirection = `${CSSProperty}-${CSSDirection}`;
 
 // 'margin-top' | 'margin-right' | ... | 'border-left'
 const style: Record<CSSPropertyWithDirection, string> = {
-  'margin-top': '10px',
-  'padding-left': '20px',
+  "margin-top": "10px",
+  "padding-left": "20px",
   // TypeScript erzwingt alle Kombinationen
 };
 ```
@@ -103,7 +101,7 @@ type User = {
   email: string;
 };
 
-type UserUpdate = Partial<Omit<User, 'id'>>;
+type UserUpdate = Partial<Omit<User, "id">>;
 // { name?: string; email?: string; }
 ```
 
@@ -114,8 +112,8 @@ Update-Requests brauchen keine ID und alle Felder sind optional. Ein Typ, keine 
 Branded Types verhindern Verwechslungen zwischen gleichen Primitives:
 
 ```typescript
-type UserId = number & { __brand: 'UserId' };
-type ProductId = number & { __brand: 'ProductId' };
+type UserId = number & { __brand: "UserId" };
+type ProductId = number & { __brand: "ProductId" };
 
 const createUserId = (id: number): UserId => id as UserId;
 const createProductId = (id: number): ProductId => id as ProductId;
@@ -141,19 +139,19 @@ Beide sind `number`, aber TypeScript unterscheidet sie. Keine versehentlichen Ve
 Discriminated Unions modellieren Zustände präzise:
 
 ```typescript
-type LoadingState = { status: 'loading' };
-type SuccessState<T> = { status: 'success'; data: T };
-type ErrorState = { status: 'error'; error: Error };
+type LoadingState = { status: "loading" };
+type SuccessState<T> = { status: "success"; data: T };
+type ErrorState = { status: "error"; error: Error };
 
 type AsyncState<T> = LoadingState | SuccessState<T> | ErrorState;
 
 const handleState = <T>(state: AsyncState<T>) => {
   switch (state.status) {
-    case 'loading':
-      return 'Loading...';
-    case 'success':
+    case "loading":
+      return "Loading...";
+    case "success":
       return state.data; // TypeScript weiß: data existiert
-    case 'error':
+    case "error":
       return state.error.message; // TypeScript weiß: error existiert
   }
 };
@@ -166,20 +164,14 @@ Kein `data` im Loading-State, kein `error` im Success-State. TypeScript erzwingt
 Recursive Types für Baumstrukturen oder verschachtelte Objekte:
 
 ```typescript
-type JSONValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JSONValue[]
-  | { [key: string]: JSONValue };
+type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
 
 const data: JSONValue = {
-  name: 'John',
+  name: "John",
   age: 30,
-  hobbies: ['reading', 'coding'],
+  hobbies: ["reading", "coding"],
   address: {
-    city: 'Berlin',
+    city: "Berlin",
     coordinates: [52.52, 13.405],
   },
 };
@@ -225,15 +217,15 @@ type User = {
   password: string;
 };
 
-type PublicUser = Omit<User, 'password'>;
-type UserCredentials = Pick<User, 'email' | 'password'>;
+type PublicUser = Omit<User, "password">;
+type UserCredentials = Pick<User, "email" | "password">;
 ```
 
 **ReturnType und Parameters** für Funktions-Typen:
 
 ```typescript
 const fetchUser = async (id: number) => {
-  return { id, name: 'John' };
+  return { id, name: "John" };
 };
 
 type FetchUserReturn = ReturnType<typeof fetchUser>;
@@ -251,32 +243,30 @@ Type Guards kombinieren Runtime-Checks mit Typ-Inferenz:
 
 ```typescript
 const isString = (value: unknown): value is string => {
-  return typeof value === 'string';
+  return typeof value === "string";
 };
 
 const processValue = (value: unknown) => {
   if (isString(value)) {
     return value.toUpperCase(); // TypeScript weiß: value ist string
   }
-  return 'Not a string';
+  return "Not a string";
 };
 ```
 
 **User-Defined Type Guards** für komplexe Typen:
 
 ```typescript
-type User = { type: 'user'; name: string };
-type Admin = { type: 'admin'; name: string; permissions: string[] };
+type User = { type: "user"; name: string };
+type Admin = { type: "admin"; name: string; permissions: string[] };
 
 const isAdmin = (user: User | Admin): user is Admin => {
-  return user.type === 'admin';
+  return user.type === "admin";
 };
 
 const greet = (user: User | Admin) => {
   if (isAdmin(user)) {
-    console.log(
-      `Admin ${user.name} with ${user.permissions.length} permissions`,
-    );
+    console.log(`Admin ${user.name} with ${user.permissions.length} permissions`);
   } else {
     console.log(`User ${user.name}`);
   }
@@ -292,14 +282,14 @@ Const Assertions machen Typen spezifischer:
 ```typescript
 // Ohne const assertion
 const config = {
-  apiUrl: 'https://api.example.com',
+  apiUrl: "https://api.example.com",
   timeout: 5000,
 };
 // Type: { apiUrl: string; timeout: number; }
 
 // Mit const assertion
 const config = {
-  apiUrl: 'https://api.example.com',
+  apiUrl: "https://api.example.com",
   timeout: 5000,
 } as const;
 // Type: { readonly apiUrl: 'https://api.example.com'; readonly timeout: 5000; }
@@ -328,10 +318,10 @@ const getProperty = <T, K extends keyof T>(obj: T, key: K): T[K] => {
   return obj[key];
 };
 
-const user = { name: 'John', age: 30 };
-const name = getProperty(user, 'name'); // Type: string
-const age = getProperty(user, 'age'); // Type: number
-const invalid = getProperty(user, 'invalid'); // Error
+const user = { name: "John", age: 30 };
+const name = getProperty(user, "name"); // Type: string
+const age = getProperty(user, "age"); // Type: number
+const invalid = getProperty(user, "invalid"); // Error
 ```
 
 `K extends keyof T` garantiert: `key` existiert in `obj`. Keine Runtime-Errors.

@@ -43,13 +43,11 @@ Entwickler profitieren von kürzeren Ladezeiten im Development und einem bessere
 
 ```javascript
 // Beispiel für eine React-Komponente ohne Build-Step
-import { html, render, useState } from 'https://unpkg.com/htm/react';
+import { html, render, useState } from "https://unpkg.com/htm/react";
 
 function Counter() {
   const [count, setCount] = useState(0);
-  return html`
-    <button onClick=${() => setCount(count + 1)}>Klicks: ${count}</button>
-  `;
+  return html` <button onClick=${() => setCount(count + 1)}>Klicks: ${count}</button> `;
 }
 
 render(html`<${Counter} />`, document.body);

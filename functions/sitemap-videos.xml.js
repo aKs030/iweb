@@ -1,28 +1,25 @@
 import { escapeXml, resolveOrigin } from "./api/_xml-utils.js";
-import {
-	buildYouTubeEmbedUrl,
-	loadYouTubeVideos,
-} from "./api/_sitemap-data.js";
+import { buildYouTubeEmbedUrl, loadYouTubeVideos } from "./api/_sitemap-data.js";
 import { respondWithSnapshotOr503 } from "./api/_sitemap-snapshot.js";
 import {
-	dedupeBy,
-	respondWithSnapshotOrFallback,
-	saveAndRespondSitemapXml,
+  dedupeBy,
+  respondWithSnapshotOrFallback,
+  saveAndRespondSitemapXml,
 } from "./api/_sitemap-response.js";
 
 const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400";
 const SNAPSHOT_NAME = "sitemap-videos.xml";
 
 function toVideoNode(video, channelId) {
-	if (!video?.videoId || !video?.thumbnail) return "";
+  if (!video?.videoId || !video?.thumbnail) return "";
 
-	const uploader = escapeXml(video.channelTitle || "Abdulkerim Sesli");
-	const publicationDate = video.publishedAt || "";
-	const publicationNode = publicationDate
-		? `\n      <video:publication_date>${escapeXml(publicationDate)}</video:publication_date>`
-		: "";
+  const uploader = escapeXml(video.channelTitle || "Abdulkerim Sesli");
+  const publicationDate = video.publishedAt || "";
+  const publicationNode = publicationDate
+    ? `\n      <video:publication_date>${escapeXml(publicationDate)}</video:publication_date>`
+    : "";
 
-	return `  <url>
+  return `  <url>
     <loc>${escapeXml(video.path)}</loc>
     <video:video>
       <video:thumbnail_loc>${escapeXml(video.thumbnail)}</video:thumbnail_loc>
@@ -38,7 +35,7 @@ function toVideoNode(video, channelId) {
 }
 
 function buildFallbackXml(origin) {
-	return `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
@@ -48,61 +45,59 @@ function buildFallbackXml(origin) {
 }
 
 export async function onRequest(context) {
-	const origin = resolveOrigin(context.request.url);
-	const channelId = String(context.env?.YOUTUBE_CHANNEL_ID || "").trim();
-	const apiKey = String(context.env?.YOUTUBE_API_KEY || "").trim();
+  const origin = resolveOrigin(context.request.url);
+  const channelId = String(context.env?.YOUTUBE_CHANNEL_ID || "").trim();
+  const apiKey = String(context.env?.YOUTUBE_API_KEY || "").trim();
 
-	if (!channelId || !apiKey) {
-		return respondWithSnapshotOrFallback({
-			env: context.env,
-			name: SNAPSHOT_NAME,
-			cacheControl: CACHE_CONTROL,
-			fallbackXml: buildFallbackXml(origin),
-			fallbackSource: "fallback-no-credentials",
-		});
-	}
+  if (!channelId || !apiKey) {
+    return respondWithSnapshotOrFallback({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      cacheControl: CACHE_CONTROL,
+      fallbackXml: buildFallbackXml(origin),
+      fallbackSource: "fallback-no-credentials",
+    });
+  }
 
-	try {
-		const videos = await loadYouTubeVideos(context.env);
-		if (!videos.length) {
-			return respondWithSnapshotOrFallback({
-				env: context.env,
-				name: SNAPSHOT_NAME,
-				cacheControl: CACHE_CONTROL,
-				fallbackXml: buildFallbackXml(origin),
-				fallbackSource: "fallback-empty-video-feed",
-			});
-		}
+  try {
+    const videos = await loadYouTubeVideos(context.env);
+    if (!videos.length) {
+      return respondWithSnapshotOrFallback({
+        env: context.env,
+        name: SNAPSHOT_NAME,
+        cacheControl: CACHE_CONTROL,
+        fallbackXml: buildFallbackXml(origin),
+        fallbackSource: "fallback-empty-video-feed",
+      });
+    }
 
-		const uniqueVideos = dedupeBy(
-			videos.map((video) => ({
-				...video,
-				path: `${origin}${video.path}`,
-			})),
-			(video) => video.path,
-		);
+    const uniqueVideos = dedupeBy(
+      videos.map(video => ({
+        ...video,
+        path: `${origin}${video.path}`,
+      })),
+      video => video.path
+    );
 
-		const xml = [
-			'<?xml version="1.0" encoding="UTF-8"?>',
-			'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
-			'        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">',
-			...uniqueVideos
-				.map((video) => toVideoNode(video, channelId))
-				.filter(Boolean),
-			"</urlset>",
-		].join("\n");
+    const xml = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+      '        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">',
+      ...uniqueVideos.map(video => toVideoNode(video, channelId)).filter(Boolean),
+      "</urlset>",
+    ].join("\n");
 
-		return saveAndRespondSitemapXml({
-			env: context.env,
-			name: SNAPSHOT_NAME,
-			xml,
-			cacheControl: CACHE_CONTROL,
-		});
-	} catch {
-		return respondWithSnapshotOr503({
-			env: context.env,
-			name: SNAPSHOT_NAME,
-			cacheControl: CACHE_CONTROL,
-		});
-	}
+    return saveAndRespondSitemapXml({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      xml,
+      cacheControl: CACHE_CONTROL,
+    });
+  } catch {
+    return respondWithSnapshotOr503({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      cacheControl: CACHE_CONTROL,
+    });
+  }
 }

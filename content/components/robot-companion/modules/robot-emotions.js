@@ -5,264 +5,258 @@
  */
 
 export class RobotEmotions {
-	constructor(robot) {
-		this.robot = robot;
-	}
+  constructor(robot) {
+    this.robot = robot;
+  }
 
-	destroy() {
-		// No owned listeners or timers; nothing to tear down here.
-	}
+  destroy() {
+    // No owned listeners or timers; nothing to tear down here.
+  }
 
-	/**
-	 * Set mouth expression
-	 * @param {'neutral'|'happy'|'sad'|'surprised'} expression
-	 */
-	setMouthExpression(expression) {
-		if (!this.robot.dom.mouth) return;
+  /**
+   * Set mouth expression
+   * @param {'neutral'|'happy'|'sad'|'surprised'} expression
+   */
+  setMouthExpression(expression) {
+    if (!this.robot.dom.mouth) return;
 
-		this.robot.dom.mouth.classList.remove(
-			"happy",
-			"sad",
-			"surprised",
-			"talking",
-		);
+    this.robot.dom.mouth.classList.remove("happy", "sad", "surprised", "talking");
 
-		if (expression !== "neutral") {
-			this.robot.dom.mouth.classList.add(expression);
-		}
-	}
+    if (expression !== "neutral") {
+      this.robot.dom.mouth.classList.add(expression);
+    }
+  }
 
-	/**
-	 * Show thumbs up gesture
-	 * @param {number} duration - Duration in ms
-	 */
-	showThumbsUp(duration = 1500) {
-		const rightHand =
-			this.robot.dom.container?.querySelector(".robot-hand.right");
-		if (!rightHand) return;
+  /**
+   * Show thumbs up gesture
+   * @param {number} duration - Duration in ms
+   */
+  showThumbsUp(duration = 1500) {
+    const rightHand = this.robot.dom.container?.querySelector(".robot-hand.right");
+    if (!rightHand) return;
 
-		rightHand.classList.add("thumbs-up");
-		this.setMouthExpression("happy");
+    rightHand.classList.add("thumbs-up");
+    this.setMouthExpression("happy");
 
-		this.robot._setTimeout(() => {
-			rightHand.classList.remove("thumbs-up");
-			this.setMouthExpression("neutral");
-		}, duration);
-	}
+    this.robot._setTimeout(() => {
+      rightHand.classList.remove("thumbs-up");
+      this.setMouthExpression("neutral");
+    }, duration);
+  }
 
-	/**
-	 * Head shake "No"
-	 */
-	shakeNo() {
-		if (!this.robot.dom.avatar) return;
+  /**
+   * Head shake "No"
+   */
+  shakeNo() {
+    if (!this.robot.dom.avatar) return;
 
-		this.robot.dom.avatar.classList.add("shake-no");
-		this.setMouthExpression("sad");
+    this.robot.dom.avatar.classList.add("shake-no");
+    this.setMouthExpression("sad");
 
-		this.robot._setTimeout(() => {
-			this.robot.dom.avatar?.classList.remove("shake-no");
-			this.setMouthExpression("neutral");
-		}, 500);
-	}
+    this.robot._setTimeout(() => {
+      this.robot.dom.avatar?.classList.remove("shake-no");
+      this.setMouthExpression("neutral");
+    }, 500);
+  }
 
-	/**
-	 * Head nod "Yes"
-	 */
-	nodYes() {
-		if (!this.robot.dom.avatar) return;
+  /**
+   * Head nod "Yes"
+   */
+  nodYes() {
+    if (!this.robot.dom.avatar) return;
 
-		this.robot.dom.avatar.classList.add("nod-yes");
-		this.setMouthExpression("happy");
+    this.robot.dom.avatar.classList.add("nod-yes");
+    this.setMouthExpression("happy");
 
-		this.robot._setTimeout(() => {
-			this.robot.dom.avatar?.classList.remove("nod-yes");
-			this.setMouthExpression("neutral");
-		}, 600);
-	}
+    this.robot._setTimeout(() => {
+      this.robot.dom.avatar?.classList.remove("nod-yes");
+      this.setMouthExpression("neutral");
+    }, 600);
+  }
 
-	/**
-	 * Dance animation
-	 * @param {number} duration - Duration in ms
-	 */
-	dance(duration = 3000) {
-		if (!this.robot.dom.avatar) return;
+  /**
+   * Dance animation
+   * @param {number} duration - Duration in ms
+   */
+  dance(duration = 3000) {
+    if (!this.robot.dom.avatar) return;
 
-		this.robot.dom.avatar.classList.add("dancing");
-		this.setMouthExpression("happy");
+    this.robot.dom.avatar.classList.add("dancing");
+    this.setMouthExpression("happy");
 
-		this.robot._setTimeout(() => {
-			this.robot.dom.avatar?.classList.remove("dancing");
-			this.setMouthExpression("neutral");
-		}, duration);
-	}
+    this.robot._setTimeout(() => {
+      this.robot.dom.avatar?.classList.remove("dancing");
+      this.setMouthExpression("neutral");
+    }, duration);
+  }
 
-	/**
-	 * Salute gesture
-	 */
-	salute() {
-		if (!this.robot.dom.avatar) return;
+  /**
+   * Salute gesture
+   */
+  salute() {
+    if (!this.robot.dom.avatar) return;
 
-		this.robot.dom.avatar.classList.add("saluting");
-		this.setMouthExpression("happy");
+    this.robot.dom.avatar.classList.add("saluting");
+    this.setMouthExpression("happy");
 
-		this.robot._setTimeout(() => {
-			this.robot.dom.avatar?.classList.remove("saluting");
-			this.setMouthExpression("neutral");
-		}, 800);
-	}
+    this.robot._setTimeout(() => {
+      this.robot.dom.avatar?.classList.remove("saluting");
+      this.setMouthExpression("neutral");
+    }, 800);
+  }
 
-	/**
-	 * Sleep animation
-	 * @param {number} duration - Duration in ms
-	 */
-	sleep(duration = 5000) {
-		if (!this.robot.dom.avatar) return;
+  /**
+   * Sleep animation
+   * @param {number} duration - Duration in ms
+   */
+  sleep(duration = 5000) {
+    if (!this.robot.dom.avatar) return;
 
-		this.robot.dom.avatar.classList.add("sleeping");
+    this.robot.dom.avatar.classList.add("sleeping");
 
-		this.robot._setTimeout(() => {
-			this.robot.dom.avatar?.classList.remove("sleeping");
-		}, duration);
-	}
+    this.robot._setTimeout(() => {
+      this.robot.dom.avatar?.classList.remove("sleeping");
+    }, duration);
+  }
 
-	/**
-	 * Applause animation
-	 * @param {number} duration - Duration in ms
-	 */
-	applaud(duration = 2000) {
-		if (!this.robot.dom.avatar) return;
+  /**
+   * Applause animation
+   * @param {number} duration - Duration in ms
+   */
+  applaud(duration = 2000) {
+    if (!this.robot.dom.avatar) return;
 
-		this.robot.dom.avatar.classList.add("applauding");
-		this.setMouthExpression("happy");
+    this.robot.dom.avatar.classList.add("applauding");
+    this.setMouthExpression("happy");
 
-		this.robot._setTimeout(() => {
-			this.robot.dom.avatar?.classList.remove("applauding");
-			this.setMouthExpression("neutral");
-		}, duration);
-	}
+    this.robot._setTimeout(() => {
+      this.robot.dom.avatar?.classList.remove("applauding");
+      this.setMouthExpression("neutral");
+    }, duration);
+  }
 
-	/**
-	 * Spawn star particles (success)
-	 * @param {number} count - Number of stars
-	 */
-	spawnStars(count = 5) {
-		if (!this.robot.dom.container) return;
+  /**
+   * Spawn star particles (success)
+   * @param {number} count - Number of stars
+   */
+  spawnStars(count = 5) {
+    if (!this.robot.dom.container) return;
 
-		const rect = this.robot.dom.container.getBoundingClientRect();
+    const rect = this.robot.dom.container.getBoundingClientRect();
 
-		for (let i = 0; i < count; i++) {
-			const star = document.createElement("div");
-			star.className = "robot-particle-star";
-			star.textContent = "⭐";
-			star.style.left = `${rect.left + rect.width / 2}px`;
-			star.style.top = `${rect.top + rect.height / 2}px`;
+    for (let i = 0; i < count; i++) {
+      const star = document.createElement("div");
+      star.className = "robot-particle-star";
+      star.textContent = "⭐";
+      star.style.left = `${rect.left + rect.width / 2}px`;
+      star.style.top = `${rect.top + rect.height / 2}px`;
 
-			const angle = (Math.PI * 2 * i) / count;
-			const distance = 40 + Math.random() * 20;
-			const tx = Math.cos(angle) * distance;
-			const ty = Math.sin(angle) * distance;
+      const angle = (Math.PI * 2 * i) / count;
+      const distance = 40 + Math.random() * 20;
+      const tx = Math.cos(angle) * distance;
+      const ty = Math.sin(angle) * distance;
 
-			star.style.setProperty("--tx", `${tx}px`);
-			star.style.setProperty("--ty", `${ty}px`);
+      star.style.setProperty("--tx", `${tx}px`);
+      star.style.setProperty("--ty", `${ty}px`);
 
-			document.body.appendChild(star);
+      document.body.appendChild(star);
 
-			this.robot._setTimeout(() => star.remove(), 1000);
-		}
-	}
+      this.robot._setTimeout(() => star.remove(), 1000);
+    }
+  }
 
-	/**
-	 * Spawn heart particles (positive interaction)
-	 * @param {number} count - Number of hearts
-	 */
-	spawnHearts(count = 3) {
-		if (!this.robot.dom.container) return;
+  /**
+   * Spawn heart particles (positive interaction)
+   * @param {number} count - Number of hearts
+   */
+  spawnHearts(count = 3) {
+    if (!this.robot.dom.container) return;
 
-		const rect = this.robot.dom.container.getBoundingClientRect();
+    const rect = this.robot.dom.container.getBoundingClientRect();
 
-		for (let i = 0; i < count; i++) {
-			this.robot._setTimeout(() => {
-				const heart = document.createElement("div");
-				heart.className = "robot-particle-heart";
-				heart.textContent = "❤️";
-				heart.style.left = `${rect.left + rect.width / 2 + (Math.random() - 0.5) * 30}px`;
-				heart.style.top = `${rect.top + rect.height / 2}px`;
+    for (let i = 0; i < count; i++) {
+      this.robot._setTimeout(() => {
+        const heart = document.createElement("div");
+        heart.className = "robot-particle-heart";
+        heart.textContent = "❤️";
+        heart.style.left = `${rect.left + rect.width / 2 + (Math.random() - 0.5) * 30}px`;
+        heart.style.top = `${rect.top + rect.height / 2}px`;
 
-				document.body.appendChild(heart);
+        document.body.appendChild(heart);
 
-				this.robot._setTimeout(() => heart.remove(), 1500);
-			}, i * 200);
-		}
-	}
+        this.robot._setTimeout(() => heart.remove(), 1500);
+      }, i * 200);
+    }
+  }
 
-	/**
-	 * Spawn question mark (confused)
-	 */
-	spawnQuestionMark() {
-		if (!this.robot.dom.container) return;
+  /**
+   * Spawn question mark (confused)
+   */
+  spawnQuestionMark() {
+    if (!this.robot.dom.container) return;
 
-		const rect = this.robot.dom.container.getBoundingClientRect();
+    const rect = this.robot.dom.container.getBoundingClientRect();
 
-		const question = document.createElement("div");
-		question.className = "robot-particle-question";
-		question.textContent = "❓";
-		question.style.left = `${rect.left + rect.width / 2}px`;
-		question.style.top = `${rect.top}px`;
+    const question = document.createElement("div");
+    question.className = "robot-particle-question";
+    question.textContent = "❓";
+    question.style.left = `${rect.left + rect.width / 2}px`;
+    question.style.top = `${rect.top}px`;
 
-		document.body.appendChild(question);
+    document.body.appendChild(question);
 
-		this.robot._setTimeout(() => question.remove(), 1000);
-	}
+    this.robot._setTimeout(() => question.remove(), 1000);
+  }
 
-	/**
-	 * Spawn sweat drop (difficult task)
-	 */
-	spawnSweatDrop() {
-		if (!this.robot.dom.container) return;
+  /**
+   * Spawn sweat drop (difficult task)
+   */
+  spawnSweatDrop() {
+    if (!this.robot.dom.container) return;
 
-		const rect = this.robot.dom.container.getBoundingClientRect();
+    const rect = this.robot.dom.container.getBoundingClientRect();
 
-		const sweat = document.createElement("div");
-		sweat.className = "robot-particle-sweat";
-		sweat.textContent = "💧";
-		sweat.style.left = `${rect.left + rect.width * 0.7}px`;
-		sweat.style.top = `${rect.top + 20}px`;
+    const sweat = document.createElement("div");
+    sweat.className = "robot-particle-sweat";
+    sweat.textContent = "💧";
+    sweat.style.left = `${rect.left + rect.width * 0.7}px`;
+    sweat.style.top = `${rect.top + 20}px`;
 
-		document.body.appendChild(sweat);
+    document.body.appendChild(sweat);
 
-		this.robot._setTimeout(() => sweat.remove(), 800);
-	}
+    this.robot._setTimeout(() => sweat.remove(), 800);
+  }
 
-	/**
-	 * Show confused state
-	 */
-	showConfused() {
-		this.setMouthExpression("surprised");
-		this.spawnQuestionMark();
+  /**
+   * Show confused state
+   */
+  showConfused() {
+    this.setMouthExpression("surprised");
+    this.spawnQuestionMark();
 
-		this.robot._setTimeout(() => {
-			this.setMouthExpression("neutral");
-		}, 2000);
-	}
+    this.robot._setTimeout(() => {
+      this.setMouthExpression("neutral");
+    }, 2000);
+  }
 
-	/**
-	 * Show working hard state
-	 */
-	showWorkingHard() {
-		this.setMouthExpression("neutral");
-		this.spawnSweatDrop();
+  /**
+   * Show working hard state
+   */
+  showWorkingHard() {
+    this.setMouthExpression("neutral");
+    this.spawnSweatDrop();
 
-		// Spawn multiple sweat drops
-		this.robot._setTimeout(() => this.spawnSweatDrop(), 400);
-		this.robot._setTimeout(() => this.spawnSweatDrop(), 800);
-	}
+    // Spawn multiple sweat drops
+    this.robot._setTimeout(() => this.spawnSweatDrop(), 400);
+    this.robot._setTimeout(() => this.spawnSweatDrop(), 800);
+  }
 
-	/**
-	 * Celebrate success
-	 */
-	celebrate() {
-		this.setMouthExpression("happy");
-		this.spawnStars(6);
-		this.dance(2000);
-	}
+  /**
+   * Celebrate success
+   */
+  celebrate() {
+    this.setMouthExpression("happy");
+    this.spawnStars(6);
+    this.dance(2000);
+  }
 }

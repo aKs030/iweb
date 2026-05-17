@@ -12,11 +12,11 @@ const SNAPSHOT_TTL_SECONDS = 60 * 60 * 24 * 45; // 45 days
 const RETRY_AFTER_SECONDS = 300; // 5 minutes
 
 function getSnapshotStore(env) {
-	return env?.SITEMAP_CACHE_KV || null;
+  return env?.SITEMAP_CACHE_KV || null;
 }
 
 function getSnapshotKey(name) {
-	return `${SNAPSHOT_KEY_PREFIX}${String(name || "").trim()}`;
+  return `${SNAPSHOT_KEY_PREFIX}${String(name || "").trim()}`;
 }
 
 /**
@@ -28,22 +28,22 @@ function getSnapshotKey(name) {
  * @returns {Promise<boolean>}
  */
 export async function saveSitemapSnapshot(env, name, xml) {
-	const store = getSnapshotStore(env);
-	if (!store || !xml || !name) return false;
+  const store = getSnapshotStore(env);
+  if (!store || !xml || !name) return false;
 
-	const payload = JSON.stringify({
-		xml: String(xml),
-		updatedAt: new Date().toISOString(),
-	});
+  const payload = JSON.stringify({
+    xml: String(xml),
+    updatedAt: new Date().toISOString(),
+  });
 
-	try {
-		await store.put(getSnapshotKey(name), payload, {
-			expirationTtl: SNAPSHOT_TTL_SECONDS,
-		});
-		return true;
-	} catch {
-		return false;
-	}
+  try {
+    await store.put(getSnapshotKey(name), payload, {
+      expirationTtl: SNAPSHOT_TTL_SECONDS,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -54,23 +54,23 @@ export async function saveSitemapSnapshot(env, name, xml) {
  * @returns {Promise<{xml: string, updatedAt: string}|null>}
  */
 export async function loadSitemapSnapshot(env, name) {
-	const store = getSnapshotStore(env);
-	if (!store || !name) return null;
+  const store = getSnapshotStore(env);
+  if (!store || !name) return null;
 
-	try {
-		const raw = await store.get(getSnapshotKey(name));
-		if (!raw) return null;
+  try {
+    const raw = await store.get(getSnapshotKey(name));
+    if (!raw) return null;
 
-		const parsed = JSON.parse(raw);
-		if (!parsed?.xml) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.xml) return null;
 
-		return {
-			xml: String(parsed.xml),
-			updatedAt: String(parsed.updatedAt || ""),
-		};
-	} catch {
-		return null;
-	}
+    return {
+      xml: String(parsed.xml),
+      updatedAt: String(parsed.updatedAt || ""),
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -80,12 +80,12 @@ export async function loadSitemapSnapshot(env, name) {
  * @returns {Record<string, string>}
  */
 export function buildSitemapHeaders(cacheControl, extraHeaders = {}) {
-	return {
-		"Content-Type": "application/xml; charset=utf-8",
-		"Cache-Control": cacheControl,
-		"X-Robots-Tag": "index, follow",
-		...extraHeaders,
-	};
+  return {
+    "Content-Type": "application/xml; charset=utf-8",
+    "Cache-Control": cacheControl,
+    "X-Robots-Tag": "index, follow",
+    ...extraHeaders,
+  };
 }
 
 /**
@@ -95,12 +95,10 @@ export function buildSitemapHeaders(cacheControl, extraHeaders = {}) {
  * @returns {Record<string, string>}
  */
 export function buildSnapshotStaleHeaders(snapshot, cacheControl) {
-	return buildSitemapHeaders(cacheControl, {
-		"X-Sitemap-Source": "snapshot-stale",
-		...(snapshot?.updatedAt
-			? { "X-Sitemap-Snapshot-At": String(snapshot.updatedAt) }
-			: {}),
-	});
+  return buildSitemapHeaders(cacheControl, {
+    "X-Sitemap-Source": "snapshot-stale",
+    ...(snapshot?.updatedAt ? { "X-Sitemap-Snapshot-At": String(snapshot.updatedAt) } : {}),
+  });
 }
 
 /**
@@ -110,10 +108,10 @@ export function buildSnapshotStaleHeaders(snapshot, cacheControl) {
  * @returns {Response}
  */
 export function createSnapshotStaleResponse(snapshot, cacheControl) {
-	return new Response(snapshot.xml, {
-		status: 200,
-		headers: buildSnapshotStaleHeaders(snapshot, cacheControl),
-	});
+  return new Response(snapshot.xml, {
+    status: 200,
+    headers: buildSnapshotStaleHeaders(snapshot, cacheControl),
+  });
 }
 
 /**
@@ -125,17 +123,17 @@ export function createSnapshotStaleResponse(snapshot, cacheControl) {
  * @returns {Promise<Response>}
  */
 export async function respondWithSnapshotOr503({ env, name, cacheControl }) {
-	const snapshot = await loadSitemapSnapshot(env, name);
-	if (snapshot?.xml) {
-		return createSnapshotStaleResponse(snapshot, cacheControl);
-	}
+  const snapshot = await loadSitemapSnapshot(env, name);
+  if (snapshot?.xml) {
+    return createSnapshotStaleResponse(snapshot, cacheControl);
+  }
 
-	return new Response("Sitemap temporarily unavailable", {
-		status: 503,
-		headers: {
-			"Content-Type": "text/plain; charset=utf-8",
-			"Cache-Control": CACHE_CONTROL_NO_STORE,
-			"Retry-After": String(RETRY_AFTER_SECONDS),
-		},
-	});
+  return new Response("Sitemap temporarily unavailable", {
+    status: 503,
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": CACHE_CONTROL_NO_STORE,
+      "Retry-After": String(RETRY_AFTER_SECONDS),
+    },
+  });
 }

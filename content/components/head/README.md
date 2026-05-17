@@ -20,7 +20,7 @@ globalThis.__HEAD_INLINE_READY = true;
 
 // head-manager.js
 if (!globalThis.__HEAD_INLINE_READY) {
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     const checkInterval = setInterval(() => {
       if (globalThis.__HEAD_INLINE_READY) {
         clearInterval(checkInterval);
@@ -35,11 +35,11 @@ if (!globalThis.__HEAD_INLINE_READY) {
 
 ```javascript
 // head-inline.js
-import { headState } from './head-state.js';
+import { headState } from "./head-state.js";
 headState.setInlineReady();
 
 // head-manager.js
-import { headState } from './head-state.js';
+import { headState } from "./head-state.js";
 await headState.waitForInlineReady(5000);
 ```
 
@@ -83,7 +83,7 @@ Subscribe to ready state. Returns unsubscribe function.
 
 ```javascript
 const unsubscribe = headState.onReady(() => {
-  console.log('Head inline is ready!');
+  console.log("Head inline is ready!");
 });
 ```
 
@@ -108,27 +108,27 @@ headState.reset();
 ### Waiting for Initialization
 
 ```javascript
-import { headState } from '#components/head/head-state.js';
+import { headState } from "#components/head/head-state.js";
 
 // Wait with timeout
 await headState.waitForInlineReady(5000);
 
 // Or subscribe to ready event
 headState.onReady(() => {
-  console.log('Ready to proceed!');
+  console.log("Ready to proceed!");
 });
 ```
 
 ### Testing
 
 ```javascript
-import { headState } from '#components/head/head-state.js';
+import { headState } from "#components/head/head-state.js";
 
 beforeEach(() => {
   headState.reset();
 });
 
-test('should wait for inline ready', async () => {
+test("should wait for inline ready", async () => {
   const promise = headState.waitForInlineReady(1000);
   headState.setInlineReady();
   await promise; // Resolves immediately

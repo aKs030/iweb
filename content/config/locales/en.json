@@ -1,412 +1,384 @@
 {
-	"menu": {
-		"home": "Home",
-		"projects": "Projects",
-		"gallery": "Photos",
-		"videos": "Videos",
-		"blog": "Journal",
-		"about": "About Me",
-		"contact": "Contact",
-		"home_sub": "Start",
-		"projects_sub": "Portfolio",
-		"gallery_sub": "Impressions",
-		"videos_sub": "Motion",
-		"blog_sub": "Notes",
-		"about_sub": "Profile",
-		"contact_sub": "Exchange",
-		"toggle": "Open menu",
-		"main_nav": "Main navigation",
-		"skip_main": "Skip to main content",
-		"skip_nav": "Skip to navigation",
-		"search_label": "Open search",
-		"search_tooltip": "Search website",
-		"search_close": "Close search",
-		"search_input_label": "Search",
-		"search_placeholder": "Search website...",
-		"search_loading": "Searching...",
-		"search_no_results": "No results found",
-		"search_timeout": "Search is taking too long",
-		"search_unavailable": "Search is currently unavailable",
-		"lang_toggle": "Switch language",
-		"theme_toggle": "Switch theme (Light/Dark)"
-	},
-	"footer": {
-		"about": {
-			"title": "Profile",
-			"text": "Portfolio for code, 3D, AI, and visual experiments with a focus on speed, clarity, and atmosphere."
-		},
-		"work": {
-			"title": "Work",
-			"portfolio": "Portfolio",
-			"projects": "Projects",
-			"blog": "Journal",
-			"github": "GitHub"
-		},
-		"skills": {
-			"title": "Skills"
-		},
-		"quick_links": {
-			"title": "Quick Links",
-			"gallery": "Gallery",
-			"videos": "Videos",
-			"about": "Profile",
-			"sitemap": "Sitemap"
-		},
-		"legal": {
-			"impressum": "Legal Notice",
-			"privacy": "Privacy",
-			"cookies": "Cookies"
-		},
-		"cookie_banner": {
-			"text": "We use analytics",
-			"text_short": "Analytics?",
-			"accept": "Accept",
-			"accept_short": "✓",
-			"decline": "Decline",
-			"decline_short": "✗"
-		},
-		"cookie_settings": {
-			"title": "Cookie Settings",
-			"close": "Close",
-			"intro": "We use necessary cookies and optional analytics.",
-			"required": {
-				"title": "Required",
-				"status": "Active",
-				"desc": "For basic functions of this site."
-			},
-			"analytics": {
-				"title": "Analytics",
-				"desc": "Helps us improve content."
-			},
-			"ads": {
-				"title": "Ads",
-				"desc": "Allows personalized ads."
-			},
-			"buttons": {
-				"necessary": "Necessary only",
-				"save": "Save",
-				"all": "All"
-			}
-		},
-		"messages": {
-			"accepted": "Cookies accepted",
-			"rejected": "Cookies rejected",
-			"necessary_only": "Necessary cookies only",
-			"saved": "Settings saved",
-			"all_accepted": "All cookies accepted",
-			"opened": "Cookie settings opened",
-			"closed": "Cookie settings closed"
-		},
-		"actions": {
-			"expand": "Expand footer",
-			"minimize": "Footer minimized",
-			"expanded": "Footer expanded"
-		}
-	},
-	"projects": {
-		"hero": {
-			"text": "Discover my interactive web projects – from experimental prototypes to full applications. The project catalog is served from one maintained app configuration.",
-			"loading": "Loading projects...",
-			"stats_projects": "Projects",
-			"stats_project": "Project",
-			"stats_tech": "Technologies",
-			"stats_apps": "Apps open",
-			"stats_source": "Source",
-			"stat_open_fallback": "Open",
-			"btn_view": "View Projects",
-			"btn_github": "All on GitHub"
-		},
-		"card": {
-			"btn_open": "Open App",
-			"btn_code": "Code",
-			"preview_unavailable": "No preview available"
-		},
-		"app": {
-			"fullscreen": "Fullscreen",
-			"close": "Close",
-			"popup_title": "App popup",
-			"open_tab": "Open in new tab"
-		},
-		"launch": {
-			"badge": "3D Project Gallery",
-			"title": "Starting project view",
-			"subtitle": "Apps are loaded from the maintained project catalog and prepared for 3D navigation.",
-			"loading": "Loading projects and preparing the scene...",
-			"scene": "Initializing 3D scene...",
-			"hint": "After startup you can explore the apps by scrolling.",
-			"scroll_hint": "SCROLL TO EXPLORE",
-			"source": "Curated app catalog",
-			"error_title": "Projects could not be loaded",
-			"retry": "Reload page"
-		},
-		"discovery": {
-			"eyebrow": "Product Catalog",
-			"title": "Filter and compare projects",
-			"subtitle": "Search by use case, tags, and stack signals, sort the catalog, and jump straight into focused project collections.",
-			"search_label": "Search projects",
-			"search_placeholder": "Search by project name, tag, or stack...",
-			"sort_label": "Sorting",
-			"sort_featured": "Featured",
-			"sort_latest": "Latest first",
-			"sort_alpha": "A to Z",
-			"sort_category": "By category",
-			"clear": "Reset filters",
-			"showing": "{{visible}} of {{total}} apps visible",
-			"category_all": "All categories",
-			"case_studies_only": "Case studies only",
-			"live_only": "Live demos only",
-			"tags_label": "Popular tags",
-			"stack_label": "Stack focus",
-			"active_filters": "Active filters",
-			"empty_title": "No projects match this selection",
-			"empty_text": "Adjust the search or filters to see results again.",
-			"back_to_collection": "Back to collection",
-			"results_count": "{{count}} results",
-			"stats_total": "Apps",
-			"stats_live": "Live demos",
-			"stats_case": "Case studies",
-			"stats_source": "Code links",
-			"match_stack": "Shared stack: {{value}}",
-			"match_tag": "Shared tag: {{value}}",
-			"match_category": "Same category",
-			"open_detail": "Open product profile"
-		}
-	},
-	"gallery": {
-		"title": "Premium Photo Gallery",
-		"subtitle": "Professional photography in highest quality",
-		"search_placeholder": "Search by title, tags or location...",
-		"found": "{{count}} photo found",
-		"found_plural": "{{count}} photos found",
-		"loading": {
-			"init": "Initializing gallery...",
-			"images": "Loading images...",
-			"prepare": "Preparing view...",
-			"almost": "Almost ready...",
-			"ready": "Gallery ready!",
-			"error": "Error loading"
-		},
-		"sort": {
-			"label": "Select sorting",
-			"latest": "Latest",
-			"title": "Title",
-			"popular": "Popular"
-		},
-		"categories": {
-			"all": "All",
-			"nature": "Nature",
-			"urban": "Urban",
-			"travel": "Travel",
-			"landscape": "Landscape"
-		},
-		"details": {
-			"title": "Photo Details",
-			"camera": "Camera",
-			"aperture": "Aperture",
-			"iso": "ISO",
-			"location": "Location",
-			"date": "Date",
-			"tags": "Tags"
-		},
-		"actions": {
-			"toggle_info": "Toggle photo details",
-			"toggle_slideshow": "Toggle slideshow",
-			"close": "Close",
-			"prev": "Previous image",
-			"next": "Next image",
-			"zoom_out": "Zoom out",
-			"zoom_in": "Zoom in",
-			"share": "Share",
-			"download": "Download",
-			"favorite_add": "Add to favorites",
-			"favorite_remove": "Remove from favorites"
-		},
-		"instructions": "Scroll to explore • Click to view"
-	},
-	"videos": {
-		"local_mode": "Local mode",
-		"loading": "Loading videos...",
-		"connecting": "Connecting to YouTube...",
-		"not_found": "No videos found",
-		"processing": "Processing {{count}} videos...",
-		"ready": "Videos ready!",
-		"error": "Error loading videos",
-		"open_youtube": "Open on YouTube",
-		"open_page": "Open page",
-		"open_landing": "Open landing page for this video"
-	},
-	"blog": {
-		"title": "Journal",
-		"subtitle": "Notes on frontend, 3D, AI, and web experiments",
-		"headline": "Build Notes & Journal",
-		"subline": "Short entries on frontend architecture, 3D interfaces, AI features, and things learned along the way.",
-		"read_more": "Read more",
-		"back": "Back",
-		"back_to_overview": "Back to overview",
-		"render_error": "Error rendering the article",
-		"related_title": "You might also be interested in",
-		"cta_title": "Explore more?",
-		"cta_text": "More projects, visual work, and active experiments live across the portfolio and archive.",
-		"cta_btn": "Open portfolio",
-		"filter_all": "All",
-		"not_found": "Article not found."
-	},
-	"common": {
-		"loading": "Loading...",
-		"error": "Error",
-		"share_text": "Check out this channel",
-		"link_copied": "Link copied",
-		"copy_link": "Copy link"
-	},
-	"loader": {
-		"init": "Initializing projects...",
-		"loading_app": "Loading Projects App...",
-		"config_3d": "Configuring 3D view...",
-		"almost_ready": "Almost ready...",
-		"ready": "Projects ready!",
-		"failed": "Loading failed",
-		"processing": "Processing project data...",
-		"fallback_local": "Loading project catalog...",
-		"projects_ready": "{{count}} projects ready",
-		"logo": "AKS | WEB",
-		"status_init": "Initializing System...",
-		"ready_system": "Ready!",
-		"resources": "Loading resources...",
-		"modules_core": "Loading core modules...",
-		"hero_init": "Initializing Hero...",
-		"system_3d": "Loading 3D system...",
-		"optimize_images": "Optimizing images...",
-		"modules_loaded": "Modules loaded",
-		"timeout": "Timeout reached",
-		"app_loaded": "Application loaded",
-		"loading_page": "Loading page...",
-		"init_components": "Initializing components...",
-		"loading_icons": "Loading icons...",
-		"animating": "Animating elements...",
-		"activating": "Activating interactions...",
-		"page_ready": "Page ready",
-		"loading_3d": "Loading 3D view… {{pct}}%",
-		"init_3d_engine": "Initializing 3D engine...",
-		"init_3d_system": "Initializing 3D system...",
-		"loading_blog": "Loading blog data...",
-		"articles_found": "{{count}} articles found...",
-		"loading_article": "Loading article {{current}}/{{total}}...",
-		"processing_articles": "Processing articles...",
-		"articles_loaded": "{{count}} articles loaded",
-		"blog_ready": "Blog ready!",
-		"videos_loaded": "{{count}} videos loaded"
-	},
-	"error": {
-		"load_failed_title": "Error loading projects",
-		"app_load_failed": "Error loading app",
-		"retry": "Try again",
-		"reload_page": "Reload page",
-		"details": "Details",
-		"time": "Time",
-		"unknown": "Unknown error",
-		"no_content": "No project content available"
-	},
-	"app": {
-		"no_url": "No URL found",
-		"opened": "{{title}} opened",
-		"closed": "{{title}} closed"
-	},
-	"meta": {
-		"title": "Portfolio for Code, 3D, AI & Digital Experiments",
-		"description": "Personal portfolio with web projects, 3D interfaces, photography, videos, and build notes."
-	},
-	"hero": {
-		"greeting": "Welcome",
-		"btn_next": "Selected Work",
-		"aria_next": "Scroll to the selected work section",
-		"btn_contact": "Contact"
-	},
-	"home": {
-		"hero_title": "Glad you're here.",
-		"hero_lede": "Welcome to my digital world. Here I collect interfaces, web experiments, photography, videos, and build notes.",
-		"hero_meta_code": "JavaScript ES2023+",
-		"hero_meta_3d": "Three.js / WebGL",
-		"hero_meta_ai": "AI Search & Chat",
-		"hero_meta_media": "Photo / Motion / Journal",
-		"hero_profile": "Profile",
-		"hero_profile_aria": "Go to the profile page",
-		"closing_eyebrow": "Portfolio Notes",
-		"closing_title": "Not a pitch. More like an open archive.",
-		"closing_p1": "This site is my public working field between engineering, image-making, and AI. Some parts are finished, others intentionally still in motion.",
-		"closing_p2": "If something catches your attention, there is more in the projects, the journal, or directly through the linked channels.",
-		"closing_focus_label": "Current focus",
-		"closing_focus_1": "Three.js interfaces",
-		"closing_focus_2": "AI search and chat",
-		"closing_focus_3": "Performance-first frontends",
-		"closing_inside_label": "Inside the portfolio",
-		"closing_inside_1": "Selected work and experiments",
-		"closing_inside_2": "Photography and motion",
-		"closing_inside_3": "Build notes and journal",
-		"closing_nav_aria": "More ways through the portfolio",
-		"closing_cta_projects": "All projects",
-		"closing_cta_blog": "Journal",
-		"closing_cta_contact": "Contact"
-	},
-	"farewell": {
-		"heading": "Goodbye!",
-		"p1": "Thank you very much for taking the time to visit my website! I am <strong>Abdulkerim Sesli</strong>, a passionate web developer from Berlin who loves turning digital visions into reality.",
-		"p2": "As a Digital Creator, I combine modern technologies with creative design to create websites that not only work efficiently but also delight and inspire visitors. My mission is to make the internet more accessible and aesthetic.",
-		"p3": "I hope my projects and ideas have fascinated you. Every line of code I write carries a piece of my passion - from the first idea to the final release.",
-		"p4": "Do you have questions, interest in a collaboration, or just want to chat? Do not hesitate to contact me via my channels. It was a real pleasure having you here!",
-		"strong": "Thank you for your interest – I look forward to your next visit!",
-		"nav_aria": "Navigation options",
-		"btn_top": "To Top",
-		"aria_top": "To Hero Section",
-		"btn_about": "About Me",
-		"aria_about": "Go to About"
-	},
-	"contact": {
-		"title": "Get in touch",
-		"subtitle": "Questions, feedback, or just want to connect? Send a message and I will get back to you.",
-		"form": {
-			"name": "Name",
-			"name_placeholder": "John Doe",
-			"email": "Email",
-			"email_placeholder": "john@example.com",
-			"subject": "Subject",
-			"subject_placeholder": "Short topic...",
-			"message": "Message",
-			"message_placeholder": "What is it about?",
-			"submit": "Send Message",
-			"submitting": "Sending..."
-		},
-		"success": {
-			"title": "Message sent!",
-			"message": "Thank you for your message. I will get back to you as soon as possible.",
-			"new_message": "Send new message"
-		},
-		"error": {
-			"generic": "An error occurred.",
-			"network": "Network error. Please check your connection.",
-			"required": "Please fill in all required fields.",
-			"email": "Please enter a valid email address.",
-			"server_format": "Server responded with invalid format."
-		}
-	},
-	"enhancements": {
-		"theme_toggle": "Switch theme",
-		"theme_light": "Light mode",
-		"theme_dark": "Dark mode",
-		"scroll_progress": "Scroll progress",
-		"skill_radar": "Tech Skills",
-		"skill_frontend": "Frontend",
-		"skill_backend": "Backend",
-		"voice_start": "Start voice input",
-		"voice_stop": "Stop voice input",
-		"voice_listening": "Listening…",
-		"tts_read": "Read aloud",
-		"tts_stop": "Stop reading",
-		"search_filter_all": "All",
-		"search_filter_projects": "Projects",
-		"search_filter_blog": "Blog",
-		"search_filter_pages": "Pages",
-		"toc_title": "Contents",
-		"reading_time": "{{min}} min read",
-		"easter_egg_activated": "Easter egg activated! 🐰"
-	}
+  "menu": {
+    "home": "Home",
+    "projects": "Projects",
+    "gallery": "Photos",
+    "videos": "Videos",
+    "blog": "Journal",
+    "about": "About Me",
+    "contact": "Contact",
+    "home_sub": "Start",
+    "projects_sub": "Portfolio",
+    "gallery_sub": "Impressions",
+    "videos_sub": "Motion",
+    "blog_sub": "Notes",
+    "about_sub": "Profile",
+    "contact_sub": "Exchange",
+    "toggle": "Open menu",
+    "main_nav": "Main navigation",
+    "skip_main": "Skip to main content",
+    "skip_nav": "Skip to navigation",
+    "search_label": "Open search",
+    "search_tooltip": "Search website",
+    "search_close": "Close search",
+    "search_input_label": "Search",
+    "search_placeholder": "Search website...",
+    "search_loading": "Searching...",
+    "search_no_results": "No results found",
+    "search_timeout": "Search is taking too long",
+    "search_unavailable": "Search is currently unavailable",
+    "lang_toggle": "Switch language",
+    "theme_toggle": "Switch theme (Light/Dark)"
+  },
+  "footer": {
+    "about": {
+      "title": "Profile",
+      "text": "Portfolio for code, 3D, AI, and visual experiments with a focus on speed, clarity, and atmosphere."
+    },
+    "work": {
+      "title": "Work",
+      "portfolio": "Portfolio",
+      "projects": "Projects",
+      "blog": "Journal",
+      "github": "GitHub"
+    },
+    "skills": {
+      "title": "Skills"
+    },
+    "quick_links": {
+      "title": "Quick Links",
+      "gallery": "Gallery",
+      "videos": "Videos",
+      "about": "Profile",
+      "sitemap": "Sitemap"
+    },
+    "legal": {
+      "impressum": "Legal Notice",
+      "privacy": "Privacy",
+      "cookies": "Cookies"
+    },
+    "cookie_banner": {
+      "text": "We use analytics",
+      "text_short": "Analytics?",
+      "accept": "Accept",
+      "accept_short": "✓",
+      "decline": "Decline",
+      "decline_short": "✗"
+    },
+    "cookie_settings": {
+      "title": "Cookie Settings",
+      "close": "Close",
+      "intro": "We use necessary cookies and optional analytics.",
+      "required": {
+        "title": "Required",
+        "status": "Active",
+        "desc": "For basic functions of this site."
+      },
+      "analytics": {
+        "title": "Analytics",
+        "desc": "Helps us improve content."
+      },
+      "ads": {
+        "title": "Ads",
+        "desc": "Allows personalized ads."
+      },
+      "buttons": {
+        "necessary": "Necessary only",
+        "save": "Save",
+        "all": "All"
+      }
+    },
+    "messages": {
+      "accepted": "Cookies accepted",
+      "rejected": "Cookies rejected",
+      "necessary_only": "Necessary cookies only",
+      "saved": "Settings saved",
+      "all_accepted": "All cookies accepted",
+      "opened": "Cookie settings opened",
+      "closed": "Cookie settings closed"
+    },
+    "actions": {
+      "expand": "Expand footer",
+      "minimize": "Footer minimized",
+      "expanded": "Footer expanded"
+    }
+  },
+  "projects": {
+    "hero": {
+      "text": "Discover my interactive web projects – from experimental prototypes to full applications. The project catalog is served from one maintained app configuration.",
+      "loading": "Loading projects...",
+      "stats_projects": "Projects",
+      "stats_project": "Project",
+      "stats_tech": "Technologies",
+      "stats_apps": "Apps open",
+      "stats_source": "Source",
+      "stat_open_fallback": "Open",
+      "btn_view": "View Projects",
+      "btn_github": "All on GitHub"
+    },
+    "card": {
+      "btn_open": "Open App",
+      "btn_code": "Code",
+      "preview_unavailable": "No preview available"
+    },
+    "app": {
+      "fullscreen": "Fullscreen",
+      "close": "Close",
+      "popup_title": "App popup",
+      "open_tab": "Open in new tab"
+    },
+    "launch": {
+      "badge": "3D Project Gallery",
+      "title": "Starting project view",
+      "subtitle": "Apps are loaded from the maintained project catalog and prepared for 3D navigation.",
+      "loading": "Loading projects and preparing the scene...",
+      "scene": "Initializing 3D scene...",
+      "hint": "After startup you can explore the apps by scrolling.",
+      "scroll_hint": "SCROLL TO EXPLORE",
+      "source": "Curated app catalog",
+      "error_title": "Projects could not be loaded",
+      "retry": "Reload page"
+    },
+    "discovery": {
+      "eyebrow": "Product Catalog",
+      "title": "Filter and compare projects",
+      "subtitle": "Search by use case, tags, and stack signals, sort the catalog, and jump straight into focused project collections.",
+      "search_label": "Search projects",
+      "search_placeholder": "Search by project name, tag, or stack...",
+      "sort_label": "Sorting",
+      "sort_featured": "Featured",
+      "sort_latest": "Latest first",
+      "sort_alpha": "A to Z",
+      "sort_category": "By category",
+      "clear": "Reset filters",
+      "showing": "{{visible}} of {{total}} apps visible",
+      "category_all": "All categories",
+      "case_studies_only": "Case studies only",
+      "live_only": "Live demos only",
+      "tags_label": "Popular tags",
+      "stack_label": "Stack focus",
+      "active_filters": "Active filters",
+      "empty_title": "No projects match this selection",
+      "empty_text": "Adjust the search or filters to see results again.",
+      "back_to_collection": "Back to collection",
+      "results_count": "{{count}} results",
+      "stats_total": "Apps",
+      "stats_live": "Live demos",
+      "stats_case": "Case studies",
+      "stats_source": "Code links",
+      "match_stack": "Shared stack: {{value}}",
+      "match_tag": "Shared tag: {{value}}",
+      "match_category": "Same category",
+      "open_detail": "Open product profile"
+    }
+  },
+  "gallery": {
+    "title": "Premium Photo Gallery",
+    "subtitle": "Professional photography in highest quality",
+    "search_placeholder": "Search by title, tags or location...",
+    "found": "{{count}} photo found",
+    "found_plural": "{{count}} photos found",
+    "loading": {
+      "init": "Initializing gallery...",
+      "images": "Loading images...",
+      "prepare": "Preparing view...",
+      "almost": "Almost ready...",
+      "ready": "Gallery ready!",
+      "error": "Error loading"
+    },
+    "sort": {
+      "label": "Select sorting",
+      "latest": "Latest",
+      "title": "Title",
+      "popular": "Popular"
+    },
+    "categories": {
+      "all": "All",
+      "nature": "Nature",
+      "urban": "Urban",
+      "travel": "Travel",
+      "landscape": "Landscape"
+    },
+    "details": {
+      "title": "Photo Details",
+      "camera": "Camera",
+      "aperture": "Aperture",
+      "iso": "ISO",
+      "location": "Location",
+      "date": "Date",
+      "tags": "Tags"
+    },
+    "actions": {
+      "toggle_info": "Toggle photo details",
+      "toggle_slideshow": "Toggle slideshow",
+      "close": "Close",
+      "prev": "Previous image",
+      "next": "Next image",
+      "zoom_out": "Zoom out",
+      "zoom_in": "Zoom in",
+      "share": "Share",
+      "download": "Download",
+      "favorite_add": "Add to favorites",
+      "favorite_remove": "Remove from favorites"
+    },
+    "instructions": "Scroll to explore • Click to view"
+  },
+  "videos": {
+    "local_mode": "Local mode",
+    "loading": "Loading videos...",
+    "connecting": "Connecting to YouTube...",
+    "not_found": "No videos found",
+    "processing": "Processing {{count}} videos...",
+    "ready": "Videos ready!",
+    "error": "Error loading videos",
+    "open_youtube": "Open on YouTube",
+    "open_page": "Open page",
+    "open_landing": "Open landing page for this video"
+  },
+  "blog": {
+    "title": "Journal",
+    "subtitle": "Notes on frontend, 3D, AI, and web experiments",
+    "headline": "Build Notes & Journal",
+    "subline": "Short entries on frontend architecture, 3D interfaces, AI features, and things learned along the way.",
+    "read_more": "Read more",
+    "back": "Back",
+    "back_to_overview": "Back to overview",
+    "render_error": "Error rendering the article",
+    "related_title": "You might also be interested in",
+    "cta_title": "Explore more?",
+    "cta_text": "More projects, visual work, and active experiments live across the portfolio and archive.",
+    "cta_btn": "Open portfolio",
+    "filter_all": "All",
+    "not_found": "Article not found."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "share_text": "Check out this channel",
+    "link_copied": "Link copied",
+    "copy_link": "Copy link"
+  },
+  "loader": {
+    "init": "Initializing projects...",
+    "loading_app": "Loading Projects App...",
+    "config_3d": "Configuring 3D view...",
+    "almost_ready": "Almost ready...",
+    "ready": "Projects ready!",
+    "failed": "Loading failed",
+    "processing": "Processing project data...",
+    "fallback_local": "Loading project catalog...",
+    "projects_ready": "{{count}} projects ready",
+    "logo": "AKS | WEB",
+    "status_init": "Initializing System...",
+    "ready_system": "Ready!",
+    "resources": "Loading resources...",
+    "modules_core": "Loading core modules...",
+    "hero_init": "Initializing Hero...",
+    "system_3d": "Loading 3D system...",
+    "optimize_images": "Optimizing images...",
+    "modules_loaded": "Modules loaded",
+    "timeout": "Timeout reached",
+    "app_loaded": "Application loaded",
+    "loading_page": "Loading page...",
+    "init_components": "Initializing components...",
+    "loading_icons": "Loading icons...",
+    "animating": "Animating elements...",
+    "activating": "Activating interactions...",
+    "page_ready": "Page ready",
+    "loading_3d": "Loading 3D view… {{pct}}%",
+    "init_3d_engine": "Initializing 3D engine...",
+    "init_3d_system": "Initializing 3D system...",
+    "loading_blog": "Loading blog data...",
+    "articles_found": "{{count}} articles found...",
+    "loading_article": "Loading article {{current}}/{{total}}...",
+    "processing_articles": "Processing articles...",
+    "articles_loaded": "{{count}} articles loaded",
+    "blog_ready": "Blog ready!",
+    "videos_loaded": "{{count}} videos loaded"
+  },
+  "error": {
+    "load_failed_title": "Error loading projects",
+    "app_load_failed": "Error loading app",
+    "retry": "Try again",
+    "reload_page": "Reload page",
+    "details": "Details",
+    "time": "Time",
+    "unknown": "Unknown error",
+    "no_content": "No project content available"
+  },
+  "app": {
+    "no_url": "No URL found",
+    "opened": "{{title}} opened",
+    "closed": "{{title}} closed"
+  },
+  "meta": {
+    "title": "Portfolio for Code, 3D, AI & Digital Experiments",
+    "description": "Personal portfolio with web projects, 3D interfaces, photography, videos, and build notes."
+  },
+  "hero": {
+    "greeting": "Welcome",
+    "btn_next": "Selected Work",
+    "aria_next": "Scroll to the selected work section",
+    "btn_contact": "Contact"
+  },
+  "home": {
+    "hero_title": "Glad you're here.",
+    "hero_lede": "Welcome to my digital world. Here I collect interfaces, web experiments, photography, videos, and build notes.",
+    "hero_meta_code": "JavaScript ES2023+",
+    "hero_meta_3d": "Three.js / WebGL",
+    "hero_meta_ai": "AI Search & Chat",
+    "hero_meta_media": "Photo / Motion / Journal",
+    "hero_profile": "Profile",
+    "hero_profile_aria": "Go to the profile page",
+    "closing_eyebrow": "Portfolio Notes",
+    "closing_title": "Not a pitch. More like an open archive.",
+    "closing_p1": "This site is my public working field between engineering, image-making, and AI. Some parts are finished, others intentionally still in motion.",
+    "closing_p2": "If something catches your attention, there is more in the projects, the journal, or directly through the linked channels.",
+    "closing_focus_label": "Current focus",
+    "closing_focus_1": "Three.js interfaces",
+    "closing_focus_2": "AI search and chat",
+    "closing_focus_3": "Performance-first frontends",
+    "closing_inside_label": "Inside the portfolio",
+    "closing_inside_1": "Selected work and experiments",
+    "closing_inside_2": "Photography and motion",
+    "closing_inside_3": "Build notes and journal",
+    "closing_nav_aria": "More ways through the portfolio",
+    "closing_cta_projects": "All projects",
+    "closing_cta_blog": "Journal",
+    "closing_cta_contact": "Contact"
+  },
+  "farewell": {
+    "heading": "Goodbye!",
+    "p1": "Thank you very much for taking the time to visit my website! I am <strong>Abdulkerim Sesli</strong>, a passionate web developer from Berlin who loves turning digital visions into reality.",
+    "p2": "As a Digital Creator, I combine modern technologies with creative design to create websites that not only work efficiently but also delight and inspire visitors. My mission is to make the internet more accessible and aesthetic.",
+    "p3": "I hope my projects and ideas have fascinated you. Every line of code I write carries a piece of my passion - from the first idea to the final release.",
+    "p4": "Do you have questions, interest in a collaboration, or just want to chat? Do not hesitate to contact me via my channels. It was a real pleasure having you here!",
+    "strong": "Thank you for your interest – I look forward to your next visit!",
+    "nav_aria": "Navigation options",
+    "btn_top": "To Top",
+    "aria_top": "To Hero Section",
+    "btn_about": "About Me",
+    "aria_about": "Go to About"
+  },
+  "enhancements": {
+    "theme_toggle": "Switch theme",
+    "theme_light": "Light mode",
+    "theme_dark": "Dark mode",
+    "scroll_progress": "Scroll progress",
+    "skill_radar": "Tech Skills",
+    "skill_frontend": "Frontend",
+    "skill_backend": "Backend",
+    "voice_start": "Start voice input",
+    "voice_stop": "Stop voice input",
+    "voice_listening": "Listening…",
+    "tts_read": "Read aloud",
+    "tts_stop": "Stop reading",
+    "search_filter_all": "All",
+    "search_filter_projects": "Projects",
+    "search_filter_blog": "Blog",
+    "search_filter_pages": "Pages",
+    "toc_title": "Contents",
+    "reading_time": "{{min}} min read",
+    "easter_egg_activated": "Easter egg activated! 🐰"
+  }
 }

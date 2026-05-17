@@ -21,7 +21,7 @@ globalThis.__threeEarthCleanup();
 ### After (✅)
 
 ```javascript
-import { threeEarthState } from '#components/particles/three-earth-state.js';
+import { threeEarthState } from "#components/particles/three-earth-state.js";
 
 threeEarthState.setCameraPresets({
   myCustomPreset: {
@@ -136,7 +136,7 @@ console.log(config.forceEnable, config.cameraPresets);
 ### Custom Camera Presets
 
 ```javascript
-import { threeEarthState } from '#components/particles/three-earth-state.js';
+import { threeEarthState } from "#components/particles/three-earth-state.js";
 
 threeEarthState.setCameraPresets({
   projectsHero: {
@@ -150,7 +150,7 @@ threeEarthState.setCameraPresets({
 ### Testing
 
 ```javascript
-import { threeEarthState } from '#components/particles/three-earth-state.js';
+import { threeEarthState } from "#components/particles/three-earth-state.js";
 
 beforeAll(() => threeEarthState.setForceEnable(true));
 afterAll(() => threeEarthState.reset());
@@ -160,7 +160,7 @@ afterAll(() => threeEarthState.reset());
 
 ```javascript
 const unsubscribe = threeEarthState.subscribe((key, config) => {
-  console.log('State changed:', key);
+  console.log("State changed:", key);
 });
 ```
 

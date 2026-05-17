@@ -1,6 +1,6 @@
 import {
-	BACKDROP_SENSITIVE_TRANSITION_TYPES,
-	VIEW_TRANSITION_TIMINGS_MS,
+  BACKDROP_SENSITIVE_TRANSITION_TYPES,
+  VIEW_TRANSITION_TIMINGS_MS,
 } from "./view-transition-constants.js";
 
 const MAX_TOKEN_COUNT = 8;
@@ -12,9 +12,9 @@ const DEBUG_FLAG = "__VT_DEBUG__";
 const BACKDROP_SENSITIVE_TYPES = new Set(BACKDROP_SENSITIVE_TRANSITION_TYPES);
 
 const VT_EVENTS = Object.freeze({
-	START: "viewtransition:start",
-	FINISH: "viewtransition:finish",
-	ERROR: "viewtransition:error",
+  START: "viewtransition:start",
+  FINISH: "viewtransition:finish",
+  ERROR: "viewtransition:error",
 });
 
 /** @type {Promise<void>} */
@@ -40,24 +40,22 @@ let prefersReducedMotion = false;
  * @returns {boolean}
  */
 export const isSupported = () =>
-	typeof document !== "undefined" &&
-	typeof document.startViewTransition === "function";
+  typeof document !== "undefined" && typeof document.startViewTransition === "function";
 
 /**
  * @returns {boolean}
  */
-const supportsTypedTransitions = () =>
-	isSupported() && typeof ViewTransition !== "undefined";
+const supportsTypedTransitions = () => isSupported() && typeof ViewTransition !== "undefined";
 
 /**
  * @param {unknown} value
  * @returns {boolean}
  */
-const isTruthyValue = (value) => {
-	const token = String(value ?? "")
-		.trim()
-		.toLowerCase();
-	return token === "1" || token === "true" || token === "yes" || token === "on";
+const isTruthyValue = value => {
+  const token = String(value ?? "")
+    .trim()
+    .toLowerCase();
+  return token === "1" || token === "true" || token === "yes" || token === "on";
 };
 
 /**
@@ -68,20 +66,19 @@ const isTruthyValue = (value) => {
  * @returns {boolean}
  */
 const isViewTransitionDebugEnabled = () => {
-	const runtimeFlag =
-		typeof globalThis !== "undefined" ? globalThis[DEBUG_FLAG] : undefined;
-	if (isTruthyValue(runtimeFlag)) return true;
+  const runtimeFlag = typeof globalThis !== "undefined" ? globalThis[DEBUG_FLAG] : undefined;
+  if (isTruthyValue(runtimeFlag)) return true;
 
-	try {
-		const params = new URLSearchParams(globalThis.location?.search || "");
-		if (isTruthyValue(params.get("vt_debug"))) {
-			return true;
-		}
-	} catch {
-		/* ignore URL parsing/runtime restrictions */
-	}
+  try {
+    const params = new URLSearchParams(globalThis.location?.search || "");
+    if (isTruthyValue(params.get("vt_debug"))) {
+      return true;
+    }
+  } catch {
+    /* ignore URL parsing/runtime restrictions */
+  }
 
-	return false;
+  return false;
 };
 
 /**
@@ -89,59 +86,54 @@ const isViewTransitionDebugEnabled = () => {
  * @param {Record<string, unknown>} [detail]
  */
 export const debugViewTransition = (message, detail = {}) => {
-	if (!isViewTransitionDebugEnabled()) return;
-	try {
-		console.debug("[view-transitions]", message, detail);
-	} catch {
-		/* noop */
-	}
+  if (!isViewTransitionDebugEnabled()) return;
+  try {
+    console.debug("[view-transitions]", message, detail);
+  } catch {
+    /* noop */
+  }
 };
 
 /**
  * @param {string} query
  * @returns {MediaQueryList|null}
  */
-const getMediaQueryList = (query) => {
-	if (typeof globalThis.matchMedia === "function") {
-		return globalThis.matchMedia(query);
-	}
-	if (
-		typeof window !== "undefined" &&
-		typeof window.matchMedia === "function"
-	) {
-		return window.matchMedia(query);
-	}
-	return null;
+const getMediaQueryList = query => {
+  if (typeof globalThis.matchMedia === "function") {
+    return globalThis.matchMedia(query);
+  }
+  if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+    return window.matchMedia(query);
+  }
+  return null;
 };
 
 /**
  * @param {unknown} error
  * @returns {boolean}
  */
-const isAbortError = (error) =>
-	!!error &&
-	typeof error === "object" &&
-	"name" in error &&
-	(error.name === "AbortError" || error.name === "TimeoutError");
+const isAbortError = error =>
+  !!error &&
+  typeof error === "object" &&
+  "name" in error &&
+  (error.name === "AbortError" || error.name === "TimeoutError");
 
 /**
  * @param {unknown} error
  * @returns {string}
  */
-const getErrorMessage = (error) =>
-	error && typeof error === "object" && "message" in error
-		? String(error.message)
-		: String(error);
+const getErrorMessage = error =>
+  error && typeof error === "object" && "message" in error ? String(error.message) : String(error);
 
 /**
  * @param {ViewTransition|undefined} transition
  */
-const skipTransitionSafely = (transition) => {
-	try {
-		transition?.skipTransition?.();
-	} catch {
-		/* noop */
-	}
+const skipTransitionSafely = transition => {
+  try {
+    transition?.skipTransition?.();
+  } catch {
+    /* noop */
+  }
 };
 
 /**
@@ -150,180 +142,179 @@ const skipTransitionSafely = (transition) => {
  * @returns {string[]}
  */
 const normalizeTokens = (value, maxCount = MAX_TOKEN_COUNT) => {
-	if (!Array.isArray(value)) return [];
-	const unique = new Set();
+  if (!Array.isArray(value)) return [];
+  const unique = new Set();
 
-	for (const entry of value) {
-		if (typeof entry !== "string") continue;
-		const token = entry.trim().toLowerCase();
-		if (!token) continue;
-		if (!/^[a-z0-9_-]{1,48}$/i.test(token)) continue;
-		unique.add(token);
-		if (unique.size >= maxCount) break;
-	}
+  for (const entry of value) {
+    if (typeof entry !== "string") continue;
+    const token = entry.trim().toLowerCase();
+    if (!token) continue;
+    if (!/^[a-z0-9_-]{1,48}$/i.test(token)) continue;
+    unique.add(token);
+    if (unique.size >= maxCount) break;
+  }
 
-	return [...unique];
+  return [...unique];
 };
 
 /**
  * @param {unknown} value
  * @returns {string[]}
  */
-export const normalizeTypes = (value) => normalizeTokens(value);
+export const normalizeTypes = value => normalizeTokens(value);
 
 /**
  * @param {unknown} value
  * @returns {string[]}
  */
-export const normalizeClassTokens = (value) => normalizeTokens(value);
+export const normalizeClassTokens = value => normalizeTokens(value);
 
 /**
  * @param {unknown} value
  * @returns {number}
  */
-export const normalizeTimeout = (value) => {
-	const timeout = Number(value);
-	if (!Number.isFinite(timeout) || timeout <= 0) {
-		return VIEW_TRANSITION_TIMINGS_MS.DEFAULT_TIMEOUT;
-	}
-	return Math.max(250, Math.min(Math.round(timeout), 20000));
+export const normalizeTimeout = value => {
+  const timeout = Number(value);
+  if (!Number.isFinite(timeout) || timeout <= 0) {
+    return VIEW_TRANSITION_TIMINGS_MS.DEFAULT_TIMEOUT;
+  }
+  return Math.max(250, Math.min(Math.round(timeout), 20000));
 };
 
 /**
  * @param {Promise<unknown>|undefined|null} promise
  */
-const silencePromiseRejection = (promise) => {
-	promise?.catch(() => {});
+const silencePromiseRejection = promise => {
+  promise?.catch(() => {});
 };
 
 /**
  * @param {ViewTransition|undefined} transition
  */
-const guardTransitionPromises = (transition) => {
-	silencePromiseRejection(transition?.ready);
-	silencePromiseRejection(transition?.updateCallbackDone);
+const guardTransitionPromises = transition => {
+  silencePromiseRejection(transition?.ready);
+  silencePromiseRejection(transition?.updateCallbackDone);
 };
 
 /**
  * @returns {void}
  */
 const ensureReducedMotionObserver = () => {
-	if (reducedMotionMql) return;
-	const mql = getMediaQueryList(REDUCED_MOTION_QUERY);
-	if (!mql) return;
+  if (reducedMotionMql) return;
+  const mql = getMediaQueryList(REDUCED_MOTION_QUERY);
+  if (!mql) return;
 
-	prefersReducedMotion = !!mql.matches;
-	reducedMotionMql = mql;
+  prefersReducedMotion = !!mql.matches;
+  reducedMotionMql = mql;
 
-	const onChange = (event) => {
-		prefersReducedMotion = !!event.matches;
-	};
+  const onChange = event => {
+    prefersReducedMotion = !!event.matches;
+  };
 
-	if (typeof mql.addEventListener === "function") {
-		mql.addEventListener("change", onChange);
-		reducedMotionCleanup = () => mql.removeEventListener("change", onChange);
-	}
+  if (typeof mql.addEventListener === "function") {
+    mql.addEventListener("change", onChange);
+    reducedMotionCleanup = () => mql.removeEventListener("change", onChange);
+  }
 };
 
 /**
  * @param {TransitionOptions} options
  * @returns {boolean}
  */
-const shouldUseTransitions = (options) => {
-	if (!isSupported()) return false;
-	if (options.force) return true;
+const shouldUseTransitions = options => {
+  if (!isSupported()) return false;
+  if (options.force) return true;
 
-	ensureReducedMotionObserver();
+  ensureReducedMotionObserver();
 
-	if (options.respectReducedMotion !== false && prefersReducedMotion) {
-		return false;
-	}
+  if (options.respectReducedMotion !== false && prefersReducedMotion) {
+    return false;
+  }
 
-	if (document.hidden) return false;
-	return true;
+  if (document.hidden) return false;
+  return true;
 };
 
 /**
  * @returns {boolean}
  */
 const isMobileViewport = () => {
-	const mql = getMediaQueryList(MOBILE_MENU_QUERY);
-	if (!mql) return false;
-	return !!mql.matches;
+  const mql = getMediaQueryList(MOBILE_MENU_QUERY);
+  if (!mql) return false;
+  return !!mql.matches;
 };
 
 /**
  * @param {string} value
  * @returns {boolean}
  */
-const isNoneBackdropFilter = (value) => {
-	const normalized = String(value || "")
-		.trim()
-		.toLowerCase();
+const isNoneBackdropFilter = value => {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
 
-	if (!normalized || normalized === "none") return true;
-	return /^blur\(\s*0(?:px)?\s*\)$/.test(normalized);
+  if (!normalized || normalized === "none") return true;
+  return /^blur\(\s*0(?:px)?\s*\)$/.test(normalized);
 };
 
 /**
  * @param {CSSStyleDeclaration} style
  * @returns {boolean}
  */
-const hasActiveBackdropEffect = (style) => {
-	const standard = style.backdropFilter || "";
-	const webkit =
-		/** @type {{ webkitBackdropFilter?: string }} */ (style)
-			.webkitBackdropFilter || "";
-	return !isNoneBackdropFilter(standard) || !isNoneBackdropFilter(webkit);
+const hasActiveBackdropEffect = style => {
+  const standard = style.backdropFilter || "";
+  const webkit =
+    /** @type {{ webkitBackdropFilter?: string }} */ (style).webkitBackdropFilter || "";
+  return !isNoneBackdropFilter(standard) || !isNoneBackdropFilter(webkit);
 };
 
 /**
  * @returns {HTMLElement[]}
  */
 const getMenuPanels = () => {
-	if (typeof document === "undefined") return [];
+  if (typeof document === "undefined") return [];
 
-	/** @type {Set<HTMLElement>} */
-	const panels = new Set();
+  /** @type {Set<HTMLElement>} */
+  const panels = new Set();
 
-	document.querySelectorAll(MENU_PANEL_SELECTOR).forEach((node) => {
-		if (node instanceof HTMLElement) panels.add(node);
-	});
+  document.querySelectorAll(MENU_PANEL_SELECTOR).forEach(node => {
+    if (node instanceof HTMLElement) panels.add(node);
+  });
 
-	document.querySelectorAll(MENU_HOST_SELECTOR).forEach((host) => {
-		const root = host.shadowRoot || host;
-		const panel = root.querySelector(MENU_PANEL_SELECTOR);
-		if (panel instanceof HTMLElement) panels.add(panel);
-	});
+  document.querySelectorAll(MENU_HOST_SELECTOR).forEach(host => {
+    const root = host.shadowRoot || host;
+    const panel = root.querySelector(MENU_PANEL_SELECTOR);
+    if (panel instanceof HTMLElement) panels.add(panel);
+  });
 
-	return [...panels];
+  return [...panels];
 };
 
 /**
  * @param {(style: CSSStyleDeclaration) => boolean} predicate
  * @returns {boolean}
  */
-const anyMenuPanelStyleMatches = (predicate) => {
-	if (typeof globalThis.getComputedStyle !== "function") return false;
-	for (const panel of getMenuPanels()) {
-		const style = globalThis.getComputedStyle(panel);
-		if (predicate(style)) return true;
-	}
-	return false;
+const anyMenuPanelStyleMatches = predicate => {
+  if (typeof globalThis.getComputedStyle !== "function") return false;
+  for (const panel of getMenuPanels()) {
+    const style = globalThis.getComputedStyle(panel);
+    if (predicate(style)) return true;
+  }
+  return false;
 };
 
 /**
  * @returns {boolean}
  */
 const isMenuDrawerLayoutActive = () => {
-	return anyMenuPanelStyleMatches((style) => style.position === "fixed");
+  return anyMenuPanelStyleMatches(style => style.position === "fixed");
 };
 
 /**
  * @returns {boolean}
  */
 const hasMenuBackdropGlassActive = () => {
-	return anyMenuPanelStyleMatches((style) => hasActiveBackdropEffect(style));
+  return anyMenuPanelStyleMatches(style => hasActiveBackdropEffect(style));
 };
 
 /**
@@ -335,22 +326,18 @@ const hasMenuBackdropGlassActive = () => {
  * @returns {boolean}
  */
 const shouldSkipForLiveBackdrop = (types, options) => {
-	if (!types.length) return false;
-	if (options.force) return false;
-	if (options.preserveLiveBackdropOnMobile === false) return false;
-	if (
-		!types.some((type) =>
-			BACKDROP_SENSITIVE_TYPES.has(/** @type {any} */ (type)),
-		)
-	) {
-		return false;
-	}
+  if (!types.length) return false;
+  if (options.force) return false;
+  if (options.preserveLiveBackdropOnMobile === false) return false;
+  if (!types.some(type => BACKDROP_SENSITIVE_TYPES.has(/** @type {any} */ (type)))) {
+    return false;
+  }
 
-	if (isMobileViewport()) return true;
-	if (isMenuDrawerLayoutActive()) return true;
-	if (hasMenuBackdropGlassActive()) return true;
+  if (isMobileViewport()) return true;
+  if (isMenuDrawerLayoutActive()) return true;
+  if (hasMenuBackdropGlassActive()) return true;
 
-	return false;
+  return false;
 };
 
 /**
@@ -359,14 +346,15 @@ const shouldSkipForLiveBackdrop = (types, options) => {
  * @returns {ViewTransition}
  */
 const startTransition = (update, types) => {
-	if (types.length && supportsTypedTransitions()) {
-		return document.startViewTransition({
-			update,
-			types,
-		});
-	}
+  if (types.length && supportsTypedTransitions()) {
+    const transitionInit = /** @type {any} */ ({
+      update,
+      types,
+    });
+    return document.startViewTransition(transitionInit);
+  }
 
-	return document.startViewTransition(update);
+  return document.startViewTransition(update);
 };
 
 /**
@@ -389,22 +377,22 @@ let transitionQueueDepth = 0;
  * @param {() => Promise<void>} task
  * @returns {Promise<void>}
  */
-const runInTransitionQueue = async (task) => {
-	if (transitionQueueDepth >= MAX_TRANSITION_QUEUE_DEPTH) {
-		debugViewTransition("queue:overflow-drop", { depth: transitionQueueDepth });
-		return;
-	}
+const runInTransitionQueue = async task => {
+  if (transitionQueueDepth >= MAX_TRANSITION_QUEUE_DEPTH) {
+    debugViewTransition("queue:overflow-drop", { depth: transitionQueueDepth });
+    return;
+  }
 
-	transitionQueueDepth += 1;
+  transitionQueueDepth += 1;
 
-	const queuedTask = transitionQueue.then(task, task);
-	transitionQueue = queuedTask.catch(() => {});
+  const queuedTask = transitionQueue.then(task, task);
+  transitionQueue = queuedTask.catch(() => {});
 
-	try {
-		await queuedTask;
-	} finally {
-		transitionQueueDepth -= 1;
-	}
+  try {
+    await queuedTask;
+  } finally {
+    transitionQueueDepth -= 1;
+  }
 };
 
 /**
@@ -414,35 +402,35 @@ const runInTransitionQueue = async (task) => {
  * @returns {Promise<void>}
  */
 const withTimeout = (promise, timeoutMs, onTimeout) => {
-	if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) return promise;
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) return promise;
 
-	return new Promise((resolve, reject) => {
-		const timeoutId = setTimeout(() => {
-			try {
-				onTimeout();
-			} catch {
-				/* noop */
-			}
-			const timeoutError = new Error("View transition timed out.");
-			timeoutError.name = "TimeoutError";
-			reject(timeoutError);
-		}, timeoutMs);
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      try {
+        onTimeout();
+      } catch {
+        /* noop */
+      }
+      const timeoutError = new Error("View transition timed out.");
+      timeoutError.name = "TimeoutError";
+      reject(timeoutError);
+    }, timeoutMs);
 
-		Promise.resolve(promise)
-			.then(() => resolve())
-			.catch(reject)
-			.finally(() => clearTimeout(timeoutId));
-	});
+    Promise.resolve(promise)
+      .then(() => resolve())
+      .catch(reject)
+      .finally(() => clearTimeout(timeoutId));
+  });
 };
 
 /**
  * @param {string[]} classTokens
  * @returns {() => void}
  */
-const applyRootClasses = (classTokens) => {
-	if (!classTokens.length || !document.documentElement) return () => {};
-	document.documentElement.classList.add(...classTokens);
-	return () => document.documentElement.classList.remove(...classTokens);
+const applyRootClasses = classTokens => {
+  if (!classTokens.length || !document.documentElement) return () => {};
+  document.documentElement.classList.add(...classTokens);
+  return () => document.documentElement.classList.remove(...classTokens);
 };
 
 /**
@@ -450,11 +438,11 @@ const applyRootClasses = (classTokens) => {
  * @param {Record<string, unknown>} detail
  */
 const dispatchTransitionEvent = (eventName, detail) => {
-	try {
-		document.dispatchEvent(new CustomEvent(eventName, { detail }));
-	} catch {
-		/* keep helper non-throwing */
-	}
+  try {
+    document.dispatchEvent(new CustomEvent(eventName, { detail }));
+  } catch {
+    /* keep helper non-throwing */
+  }
 };
 
 /**
@@ -466,113 +454,110 @@ const dispatchTransitionEvent = (eventName, detail) => {
  * @returns {Promise<void>}
  */
 export async function withViewTransition(callback, options = {}) {
-	if (typeof callback !== "function") return;
+  if (typeof callback !== "function") return;
 
-	await runInTransitionQueue(async () => {
-		try {
-			if (options.signal?.aborted) {
-				debugViewTransition("skip:aborted-signal", {});
-				await callback();
-				return;
-			}
+  await runInTransitionQueue(async () => {
+    try {
+      if (options.signal?.aborted) {
+        debugViewTransition("skip:aborted-signal", {});
+        await callback();
+        return;
+      }
 
-			const types = normalizeTypes(options.types);
+      const types = normalizeTypes(options.types);
 
-			if (shouldSkipForLiveBackdrop(types, options)) {
-				debugViewTransition("skip:live-backdrop", { types });
-				await callback();
-				return;
-			}
+      if (shouldSkipForLiveBackdrop(types, options)) {
+        debugViewTransition("skip:live-backdrop", { types });
+        await callback();
+        return;
+      }
 
-			if (!shouldUseTransitions(options)) {
-				debugViewTransition("skip:transitions-disabled", { types });
-				await callback();
-				return;
-			}
+      if (!shouldUseTransitions(options)) {
+        debugViewTransition("skip:transitions-disabled", { types });
+        await callback();
+        return;
+      }
 
-			const rootClasses = normalizeClassTokens(options.rootClasses);
-			const cleanupRootClasses = applyRootClasses(rootClasses);
-			const timeoutMs = normalizeTimeout(options.timeoutMs);
+      const rootClasses = normalizeClassTokens(options.rootClasses);
+      const cleanupRootClasses = applyRootClasses(rootClasses);
+      const timeoutMs = normalizeTimeout(options.timeoutMs);
 
-			let transition;
-			let updateExecuted = false;
+      let transition;
+      let updateExecuted = false;
 
-			const update = async () => {
-				if (options.signal?.aborted) return;
-				updateExecuted = true;
-				await callback();
-			};
+      const update = async () => {
+        if (options.signal?.aborted) return;
+        updateExecuted = true;
+        await callback();
+      };
 
-			try {
-				transition = startTransition(update, types);
-			} catch (error) {
-				cleanupRootClasses();
-				debugViewTransition("fallback:start-failed", {
-					types,
-					message: getErrorMessage(error),
-				});
-				await callback();
-				return;
-			}
+      try {
+        transition = startTransition(update, types);
+      } catch (error) {
+        cleanupRootClasses();
+        debugViewTransition("fallback:start-failed", {
+          types,
+          message: getErrorMessage(error),
+        });
+        await callback();
+        return;
+      }
 
-			debugViewTransition("start", { types, timeoutMs, rootClasses });
+      debugViewTransition("start", { types, timeoutMs, rootClasses });
 
-			guardTransitionPromises(transition);
+      guardTransitionPromises(transition);
 
-			const finishedPromise = Promise.resolve(transition?.finished);
-			silencePromiseRejection(finishedPromise);
+      const finishedPromise = Promise.resolve(transition?.finished);
+      silencePromiseRejection(finishedPromise);
 
-			if (types.length && transition?.types && transition.types.size === 0) {
-				for (const token of types) {
-					transition.types.add(token);
-				}
-			}
+      const typedTransition = /** @type {ViewTransition & { types?: Set<string> }} */ (transition);
+      if (types.length && typedTransition?.types && typedTransition.types.size === 0) {
+        for (const token of types) {
+          typedTransition.types.add(token);
+        }
+      }
 
-			if (options.signal) {
-				options.signal.addEventListener(
-					"abort",
-					() => skipTransitionSafely(transition),
-					{ once: true },
-				);
-			}
+      if (options.signal) {
+        options.signal.addEventListener("abort", () => skipTransitionSafely(transition), {
+          once: true,
+        });
+      }
 
-			dispatchTransitionEvent(VT_EVENTS.START, {
-				types,
-				ts: Date.now(),
-			});
+      dispatchTransitionEvent(VT_EVENTS.START, {
+        types,
+        ts: Date.now(),
+      });
 
-			try {
-				await withTimeout(finishedPromise, timeoutMs, () =>
-					skipTransitionSafely(transition),
-				);
+      try {
+        await withTimeout(finishedPromise, timeoutMs, () => skipTransitionSafely(transition));
 
-				dispatchTransitionEvent(VT_EVENTS.FINISH, {
-					types,
-					ts: Date.now(),
-				});
-				debugViewTransition("finish", { types });
-			} catch (error) {
-				const message = getErrorMessage(error);
-				dispatchTransitionEvent(VT_EVENTS.ERROR, {
-					types,
-					ts: Date.now(),
-					message,
-				});
-				debugViewTransition("error", {
-					types,
-					message,
-				});
+        dispatchTransitionEvent(VT_EVENTS.FINISH, {
+          types,
+          ts: Date.now(),
+        });
+        debugViewTransition("finish", { types });
+      } catch (error) {
+        const message = getErrorMessage(error);
+        dispatchTransitionEvent(VT_EVENTS.ERROR, {
+          types,
+          ts: Date.now(),
+          message,
+        });
+        debugViewTransition("error", {
+          types,
+          message,
+        });
 
-				if (!updateExecuted && !isAbortError(error)) {
-					await callback();
-				}
-			} finally {
-				cleanupRootClasses();
-			}
-		} catch {
-			/* keep transition helper non-throwing for fire-and-forget call sites */
-		}
-	});
+        if (!updateExecuted && !isAbortError(error)) {
+          await callback();
+        }
+      } finally {
+        cleanupRootClasses();
+      }
+    } catch {
+      /* keep transition helper non-throwing for fire-and-forget call sites */
+    }
+  });
 }
 
 /**
@@ -585,40 +570,35 @@ export async function withViewTransition(callback, options = {}) {
  * @param {TransitionOptions} [options]
  * @returns {Promise<void>}
  */
-export async function withElementViewTransitionName(
-	element,
-	name,
-	callback,
-	options = {},
-) {
-	const token = normalizeTokens([name], 1)[0];
+export async function withElementViewTransitionName(element, name, callback, options = {}) {
+  const token = normalizeTokens([name], 1)[0];
 
-	if (!(element instanceof HTMLElement) || !token) {
-		await withViewTransition(callback, options);
-		return;
-	}
+  if (!(element instanceof HTMLElement) || !token) {
+    await withViewTransition(callback, options);
+    return;
+  }
 
-	const previousInlineName = element.style.viewTransitionName;
-	element.style.viewTransitionName = token;
+  const previousInlineName = element.style.viewTransitionName;
+  element.style.viewTransitionName = token;
 
-	try {
-		await withViewTransition(callback, options);
-	} finally {
-		if (previousInlineName) {
-			element.style.viewTransitionName = previousInlineName;
-		} else {
-			element.style.removeProperty("view-transition-name");
-		}
-	}
+  try {
+    await withViewTransition(callback, options);
+  } finally {
+    if (previousInlineName) {
+      element.style.viewTransitionName = previousInlineName;
+    } else {
+      element.style.removeProperty("view-transition-name");
+    }
+  }
 }
 
 export const destroyViewTransitionCore = () => {
-	if (reducedMotionCleanup) {
-		reducedMotionCleanup();
-		reducedMotionCleanup = null;
-	}
-	reducedMotionMql = null;
-	prefersReducedMotion = false;
-	transitionQueue = Promise.resolve();
-	transitionQueueDepth = 0;
+  if (reducedMotionCleanup) {
+    reducedMotionCleanup();
+    reducedMotionCleanup = null;
+  }
+  reducedMotionMql = null;
+  prefersReducedMotion = false;
+  transitionQueue = Promise.resolve();
+  transitionQueueDepth = 0;
 };

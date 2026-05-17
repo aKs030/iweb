@@ -1,7 +1,7 @@
 import {
-	buildProjectDetailPath,
-	extractProjectSlug,
-	isProjectIndexPath,
+  buildProjectDetailPath,
+  extractProjectSlug,
+  isProjectIndexPath,
 } from "../../content/core/project-paths.js";
 import { FAVICON_ICO_URL } from "../../content/config/media-urls.js";
 
@@ -14,31 +14,31 @@ const FAVICON_REDIRECT_TARGET = FAVICON_ICO_URL;
  * @returns {Response | null}
  */
 export function resolveRequestRedirect(url) {
-	if (LEGACY_FAVICON_PATHS.has(url.pathname)) {
-		return new Response(null, {
-			status: 302,
-			headers: {
-				Location: FAVICON_REDIRECT_TARGET,
-				"Cache-Control": "public, max-age=86400",
-			},
-		});
-	}
+  if (LEGACY_FAVICON_PATHS.has(url.pathname)) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: FAVICON_REDIRECT_TARGET,
+        "Cache-Control": "public, max-age=86400",
+      },
+    });
+  }
 
-	if (url.hostname === "abdulkerimsesli.de") {
-		url.hostname = "www.abdulkerimsesli.de";
-		return Response.redirect(url.href, 301);
-	}
+  if (url.hostname === "abdulkerimsesli.de") {
+    url.hostname = "www.abdulkerimsesli.de";
+    return Response.redirect(url.href, 301);
+  }
 
-	if (isProjectIndexPath(url.pathname)) {
-		const legacyAppSlug = extractProjectSlug(url.pathname, url.search);
-		if (legacyAppSlug) {
-			url.pathname = buildProjectDetailPath(legacyAppSlug);
-			url.search = "";
-			return Response.redirect(url.href, 301);
-		}
-	}
+  if (isProjectIndexPath(url.pathname)) {
+    const legacyAppSlug = extractProjectSlug(url.pathname, url.search);
+    if (legacyAppSlug) {
+      url.pathname = buildProjectDetailPath(legacyAppSlug);
+      url.search = "";
+      return Response.redirect(url.href, 301);
+    }
+  }
 
-	return null;
+  return null;
 }
 
 /**
@@ -52,39 +52,35 @@ export function resolveRequestRedirect(url) {
  * @returns {Request}
  */
 export function prepareDocumentUpstreamRequest(request, url) {
-	if (request.method !== "GET" && request.method !== "HEAD") {
-		return request;
-	}
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return request;
+  }
 
-	const pathname = String(url?.pathname || "");
-	const accept = String(request.headers.get("Accept") || "").toLowerCase();
-	const isDocumentLikeRequest =
-		accept.includes("text/html") ||
-		pathname === "/" ||
-		pathname.endsWith(".html") ||
-		!/\.[a-z0-9]+$/i.test(pathname);
+  const pathname = String(url?.pathname || "");
+  const accept = String(request.headers.get("Accept") || "").toLowerCase();
+  const isDocumentLikeRequest =
+    accept.includes("text/html") ||
+    pathname === "/" ||
+    pathname.endsWith(".html") ||
+    !/\.[a-z0-9]+$/i.test(pathname);
 
-	if (
-		!isDocumentLikeRequest ||
-		pathname.startsWith("/api/") ||
-		pathname.startsWith("/r2-proxy/")
-	) {
-		return request;
-	}
+  if (!isDocumentLikeRequest || pathname.startsWith("/api/") || pathname.startsWith("/r2-proxy/")) {
+    return request;
+  }
 
-	const headers = new Headers(request.headers);
-	let mutated = false;
+  const headers = new Headers(request.headers);
+  let mutated = false;
 
-	for (const headerName of CONDITIONAL_REQUEST_HEADERS) {
-		if (headers.has(headerName)) {
-			headers.delete(headerName);
-			mutated = true;
-		}
-	}
+  for (const headerName of CONDITIONAL_REQUEST_HEADERS) {
+    if (headers.has(headerName)) {
+      headers.delete(headerName);
+      mutated = true;
+    }
+  }
 
-	if (!mutated) {
-		return request;
-	}
+  if (!mutated) {
+    return request;
+  }
 
-	return new Request(request, { headers });
+  return new Request(request, { headers });
 }

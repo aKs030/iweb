@@ -23,32 +23,32 @@ const _batchedSubscribers = new Set();
  * }}
  */
 export function signal(initialValue) {
-	let _value = initialValue;
-	const _subscribers = new Set();
+  let _value = initialValue;
+  const _subscribers = new Set();
 
-	return {
-		get value() {
-			_track(_subscribers);
-			return _value;
-		},
-		set value(next) {
-			if (Object.is(_value, next)) return;
-			_value = next;
-			_notify(_subscribers);
-		},
-		peek() {
-			return _value;
-		},
-		subscribe(fn) {
-			if (typeof fn !== "function") return () => false;
+  return {
+    get value() {
+      _track(_subscribers);
+      return _value;
+    },
+    set value(next) {
+      if (Object.is(_value, next)) return;
+      _value = next;
+      _notify(_subscribers);
+    },
+    peek() {
+      return _value;
+    },
+    subscribe(fn) {
+      if (typeof fn !== "function") return () => false;
 
-			const wrapper = () => fn(_value);
-			_subscribers.add(wrapper);
-			_safeCall(wrapper);
+      const wrapper = () => fn(_value);
+      _subscribers.add(wrapper);
+      _safeCall(wrapper);
 
-			return () => _subscribers.delete(wrapper);
-		},
-	};
+      return () => _subscribers.delete(wrapper);
+    },
+  };
 }
 
 /**
@@ -62,19 +62,19 @@ export function signal(initialValue) {
  * }}
  */
 export function computed(fn) {
-	const derived = signal(undefined);
+  const derived = signal(undefined);
 
-	effect(() => {
-		derived.value = fn();
-	});
+  effect(() => {
+    derived.value = fn();
+  });
 
-	return {
-		get value() {
-			return derived.value;
-		},
-		peek: () => derived.peek(),
-		subscribe: (listener) => derived.subscribe(listener),
-	};
+  return {
+    get value() {
+      return derived.value;
+    },
+    peek: () => derived.peek(),
+    subscribe: listener => derived.subscribe(listener),
+  };
 }
 
 /**
@@ -85,39 +85,39 @@ export function computed(fn) {
  * @returns {() => void}
  */
 export function effect(fn) {
-	const effectState = {
-		cleanup: undefined,
-		deps: new Set(),
-		disposed: false,
-		run: /** @type {(() => void)|null} */ (null),
-	};
+  const effectState = {
+    cleanup: undefined,
+    deps: new Set(),
+    disposed: false,
+    run: /** @type {(() => void)|null} */ (null),
+  };
 
-	const execute = () => {
-		if (effectState.disposed) return;
+  const execute = () => {
+    if (effectState.disposed) return;
 
-		_cleanupDeps(effectState);
-		_safeCall(effectState.cleanup);
+    _cleanupDeps(effectState);
+    _safeCall(effectState.cleanup);
 
-		const previous = _currentEffect;
-		_currentEffect = effectState;
+    const previous = _currentEffect;
+    _currentEffect = effectState;
 
-		try {
-			effectState.cleanup = fn();
-		} finally {
-			_currentEffect = previous;
-		}
-	};
+    try {
+      effectState.cleanup = fn();
+    } finally {
+      _currentEffect = previous;
+    }
+  };
 
-	effectState.run = execute;
-	execute();
+  effectState.run = execute;
+  execute();
 
-	return () => {
-		if (effectState.disposed) return;
-		effectState.disposed = true;
-		_cleanupDeps(effectState);
-		_safeCall(effectState.cleanup);
-		effectState.cleanup = undefined;
-	};
+  return () => {
+    if (effectState.disposed) return;
+    effectState.disposed = true;
+    _cleanupDeps(effectState);
+    _safeCall(effectState.cleanup);
+    effectState.cleanup = undefined;
+  };
 }
 
 /**
@@ -126,20 +126,20 @@ export function effect(fn) {
  * @param {() => void} fn
  */
 export function batch(fn) {
-	_batchDepth += 1;
+  _batchDepth += 1;
 
-	try {
-		fn();
-	} finally {
-		_batchDepth -= 1;
+  try {
+    fn();
+  } finally {
+    _batchDepth -= 1;
 
-		if (_batchDepth === 0 && _batchedSubscribers.size > 0) {
-			const queue = [..._batchedSubscribers];
-			_batchedSubscribers.clear();
+    if (_batchDepth === 0 && _batchedSubscribers.size > 0) {
+      const queue = [..._batchedSubscribers];
+      _batchedSubscribers.clear();
 
-			queue.forEach((subscriber) => _safeCall(subscriber));
-		}
-	}
+      queue.forEach(subscriber => _safeCall(subscriber));
+    }
+  }
 }
 
 /**
@@ -150,14 +150,14 @@ export function batch(fn) {
  * @returns {T}
  */
 export function untracked(fn) {
-	const previous = _currentEffect;
-	_currentEffect = null;
+  const previous = _currentEffect;
+  _currentEffect = null;
 
-	try {
-		return fn();
-	} finally {
-		_currentEffect = previous;
-	}
+  try {
+    return fn();
+  } finally {
+    _currentEffect = previous;
+  }
 }
 
 /**
@@ -173,62 +173,62 @@ export function untracked(fn) {
  * @returns {() => void} dispose function
  */
 export function subscribe(selector, listener, options = {}) {
-	if (typeof selector !== "function" || typeof listener !== "function") {
-		return () => {};
-	}
+  if (typeof selector !== "function" || typeof listener !== "function") {
+    return () => {};
+  }
 
-	const { emitImmediately = true } = options;
-	let hasRun = false;
+  const { emitImmediately = true } = options;
+  let hasRun = false;
 
-	return effect(() => {
-		const value = selector();
+  return effect(() => {
+    const value = selector();
 
-		if (!emitImmediately && !hasRun) {
-			hasRun = true;
-			return;
-		}
+    if (!emitImmediately && !hasRun) {
+      hasRun = true;
+      return;
+    }
 
-		hasRun = true;
+    hasRun = true;
 
-		try {
-			listener(value);
-		} catch {
-			/* keep subscribers isolated */
-		}
-	});
+    try {
+      listener(value);
+    } catch {
+      /* keep subscribers isolated */
+    }
+  });
 }
 
 function _track(subscribers) {
-	if (!_currentEffect?.run) return;
+  if (!_currentEffect?.run) return;
 
-	subscribers.add(_currentEffect.run);
-	_currentEffect.deps.add(subscribers);
+  subscribers.add(_currentEffect.run);
+  _currentEffect.deps.add(subscribers);
 }
 
 function _notify(subscribers) {
-	const queue = [...subscribers];
+  const queue = [...subscribers];
 
-	if (_batchDepth > 0) {
-		queue.forEach((subscriber) => _batchedSubscribers.add(subscriber));
-		return;
-	}
+  if (_batchDepth > 0) {
+    queue.forEach(subscriber => _batchedSubscribers.add(subscriber));
+    return;
+  }
 
-	queue.forEach((subscriber) => _safeCall(subscriber));
+  queue.forEach(subscriber => _safeCall(subscriber));
 }
 
 function _cleanupDeps(effectState) {
-	effectState.deps.forEach((subscribers) => {
-		subscribers.delete(effectState.run);
-	});
-	effectState.deps.clear();
+  effectState.deps.forEach(subscribers => {
+    subscribers.delete(effectState.run);
+  });
+  effectState.deps.clear();
 }
 
 function _safeCall(fn) {
-	if (typeof fn !== "function") return;
+  if (typeof fn !== "function") return;
 
-	try {
-		fn();
-	} catch {
-		/* keep resilient */
-	}
+  try {
+    fn();
+  } catch {
+    /* keep resilient */
+  }
 }

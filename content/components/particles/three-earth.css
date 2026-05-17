@@ -2,90 +2,90 @@
 
 /* Three.js Container */
 .three-earth-container {
-	position: fixed;
-	inset: 0;
-	z-index: var(--z-behind-deep);
-	pointer-events: auto;
-	overflow: hidden;
-	contain: strict;
-	isolation: isolate;
-	cursor: grab;
-	transition: opacity var(--transition-slow);
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-behind-deep);
+  pointer-events: auto;
+  overflow: hidden;
+  contain: strict;
+  isolation: isolate;
+  cursor: grab;
+  transition: opacity var(--transition-slow);
 }
 
 .three-earth-container canvas {
-	display: block;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	transform: translateZ(0); /* Hardware acceleration */
-	will-change: transform;
-	/* Ensure sharp rendering */
-	image-rendering: -webkit-optimize-contrast;
-	image-rendering: crisp-edges;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translateZ(0); /* Hardware acceleration */
+  will-change: transform;
+  /* Ensure sharp rendering */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Loading & Error States */
 .three-earth-error {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	width: 90%;
-	max-width: var(--three-earth-error-width);
-	text-align: center;
-	color: color-mix(in srgb, var(--clr-white) 90%, transparent);
-	font-family: var(--font-inter);
-	-webkit-backdrop-filter: var(--blur-md);
-	backdrop-filter: var(--blur-md);
-	padding: var(--space-6);
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--three-earth-error-bg) 90%, transparent);
-	border: var(--size-1) solid var(--border-color);
-	box-shadow: var(--component-shadow-depth-2);
-	opacity: 1;
-	transition: opacity var(--transition-base);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: var(--three-earth-error-width);
+  text-align: center;
+  color: color-mix(in srgb, var(--clr-white) 90%, transparent);
+  font-family: var(--font-inter);
+  -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--three-earth-error-bg) 90%, transparent);
+  border: var(--size-1) solid var(--border-color);
+  box-shadow: var(--component-shadow-depth-2);
+  opacity: 1;
+  transition: opacity var(--transition-base);
 }
 
 .three-earth-error.hidden {
-	opacity: 0;
-	pointer-events: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* merged duplicate background definition removed to avoid duplicate selector */
 
 .three-earth-error p {
-	margin: 0 0 var(--size-r-0-5);
+  margin: 0 0 var(--size-r-0-5);
 }
 
 .three-earth-error .retry-btn {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--gap-xs);
-	padding: var(--space-2) var(--space-3);
-	border-radius: var(--radius-sm);
-	background: var(--component-fill-primary);
-	color: var(--clr-white);
-	border: var(--size-1) solid var(--card-border);
-	cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--component-fill-primary);
+  color: var(--clr-white);
+  border: var(--size-1) solid var(--card-border);
+  cursor: pointer;
 }
 
 .three-earth-error .retry-btn:hover {
-	background: var(--component-fill-secondary);
+  background: var(--component-fill-secondary);
 }
 
 /* Section-based Opacity Transitions */
 .three-earth-container[data-section="hero"] {
-	opacity: 1;
+  opacity: 1;
 }
 
 .three-earth-container[data-section="features"] {
-	opacity: 1;
+  opacity: 1;
 }
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-	.three-earth-container {
-		transition: none;
-	}
+  .three-earth-container {
+    transition: none;
+  }
 }

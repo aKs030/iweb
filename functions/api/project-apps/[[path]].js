@@ -9,32 +9,32 @@ const RAW_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/$
 const CACHE_HEADER_NAME = "X-Project-Apps-Cache";
 
 function normalizePath(pathname) {
-	const match = String(pathname || "").match(/^\/api\/project-apps\/?(.*)$/);
-	return normalizeEncodedProxyPath(match ? match[1] : "", {
-		defaultDocument: "index.html",
-		filterEmptySegments: false,
-	});
+  const match = String(pathname || "").match(/^\/api\/project-apps\/?(.*)$/);
+  return normalizeEncodedProxyPath(match ? match[1] : "", {
+    defaultDocument: "index.html",
+    filterEmptySegments: false,
+  });
 }
 
 const handlers = createAssetProxyHandlers({
-	buildUpstreamUrl({ proxyPath }) {
-		return new URL(`${RAW_BASE_URL}/${proxyPath}`);
-	},
-	cacheHeaderName: CACHE_HEADER_NAME,
-	contentTypes: PROJECT_APP_CONTENT_TYPES,
-	errorMessage: "Project app proxy failed",
-	extraHeaders: {
-		"X-Robots-Tag": "noindex, nofollow",
-	},
-	invalidPathMessage: "Invalid project app path",
-	isLocalRequest(requestUrl) {
-		return isLocalDevRuntime(requestUrl);
-	},
-	normalizePath(pathname) {
-		return normalizePath(pathname);
-	},
-	notFoundMessage: "Project app asset not found",
-	requestHeaders: ACCEPT_ANY_HEADERS,
+  buildUpstreamUrl({ proxyPath }) {
+    return new URL(`${RAW_BASE_URL}/${proxyPath}`);
+  },
+  cacheHeaderName: CACHE_HEADER_NAME,
+  contentTypes: PROJECT_APP_CONTENT_TYPES,
+  errorMessage: "Project app proxy failed",
+  extraHeaders: {
+    "X-Robots-Tag": "noindex, nofollow",
+  },
+  invalidPathMessage: "Invalid project app path",
+  isLocalRequest(requestUrl) {
+    return isLocalDevRuntime(requestUrl);
+  },
+  normalizePath(pathname) {
+    return normalizePath(pathname);
+  },
+  notFoundMessage: "Project app asset not found",
+  requestHeaders: ACCEPT_ANY_HEADERS,
 });
 
 export const { onRequestGet, onRequestHead } = handlers;
