@@ -1,7 +1,6 @@
 import { buildRouteMeta } from "./_middleware-utils/route-seo.js";
 import { isLocalhost, normalizeLocalDevHeaders } from "./_middleware-utils/dev-utils.js";
 import {
-  preloadCriticalCss,
   buildCacheHitHtmlResponse,
   buildFinalHtmlResponse,
   createHtmlRewriter,
@@ -56,11 +55,11 @@ export async function onRequest(context) {
   }
 
   // -----------------------------------------------------------------------
-  // Parallel: upstream + templates + route meta + critical CSS
+  // Parallel: upstream + templates + route meta
   // -----------------------------------------------------------------------
   const baseUrl = `${url.protocol}//${url.host}`;
 
-  const [upstreamResult, globalHeadTemplate, routeMeta, criticalCssMap] = await Promise.all([
+  const [upstreamResult, globalHeadTemplate, routeMeta] = await Promise.all([
     context.next(upstreamRequest).catch(() => null),
     loadTemplateWithCache(
       context.env,
@@ -69,7 +68,6 @@ export async function onRequest(context) {
       context
     ),
     buildRouteMeta(context, url).catch(() => null),
-    preloadCriticalCss(context),
   ]);
 
   if (!upstreamResult) {
@@ -96,14 +94,12 @@ export async function onRequest(context) {
   }
 
   const { cspHeader, nonce, rewriter } = createHtmlRewriter(context, url, {
-    criticalCssMap,
     isLocal,
     resolvedGlobalHeadTemplate,
     routeMeta,
   });
   const transformedResponse = rewriter.transform(response);
   const finalResponse = buildFinalHtmlResponse(response, transformedResponse, {
-    criticalCssMap,
     cspHeader,
     deployVersion: DEPLOY_VERSION,
     initialHeaders,

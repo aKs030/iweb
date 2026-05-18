@@ -8,7 +8,6 @@ import {
   addLazyLoadingDefaults,
   ensureFontDisplaySwap,
   injectCoreAssets,
-  injectHeroCriticalCSS,
 } from "./core-assets-bootstrap.js";
 
 const log = createLogger("head-inline");
@@ -73,8 +72,6 @@ const setEarlyCanonical = () => {
 };
 
 setEarlyCanonical();
-
-injectHeroCriticalCSS();
 
 const hideBrandingFromUsers = () => {
   try {

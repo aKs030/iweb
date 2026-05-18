@@ -22,8 +22,9 @@ import {
   OG_PROJECTS_IMAGE_URL,
   OG_VIDEOS_IMAGE_URL,
 } from "../content/config/media-urls.js";
+import { BASE_URL } from "../content/config/constants.js";
 
-const LICENSE_URL = "https://www.abdulkerimsesli.de/#image-license";
+const LICENSE_URL = `${BASE_URL}/#image-license`;
 const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400";
 const SNAPSHOT_NAME = "sitemap-images.xml";
 

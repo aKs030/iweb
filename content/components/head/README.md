@@ -7,7 +7,7 @@ The Head component system uses a centralized state manager (`head-state.js`) to 
 `head-inline.js` is now a thin bootstrap entry and delegates side-effect groups into focused modules:
 
 - `analytics-bootstrap.js`: GTM/GA4 consent defaults and script injection.
-- `core-assets-bootstrap.js`: critical styles, resource hints, fonts, and deferred runtime assets.
+- `core-assets-bootstrap.js`: core styles, resource hints, fonts, and deferred runtime assets.
 - `footer-hydration.js`: menu/footer shell injection and footer lazy hydration.
 
 ## Migration from Global Variables

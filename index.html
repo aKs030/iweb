@@ -21,32 +21,26 @@
 
     <!-- Icons and app metadata are injected by the global head template -->
   </head>
-  <body class="home-page home-page--editorial">
-    <!-- Skip to main content for keyboard/screen reader users -->
+  <body>
     <a href="#main-content" class="skip-link sr-only">Zum Hauptinhalt springen</a>
 
-    <!-- Advanced Three.js Earth System -->
     <div
       id="threeEarthContainer"
       class="three-earth-container"
       data-section="hero"
       aria-describedby="earth-description"
     >
-      <!-- Hidden description for screen readers only (invisible to sighted users) -->
       <div id="earth-description" class="sr-only">
         Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen.
         Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
       </div>
 
-      <!-- WebGL fallback (hidden by default, shown only if WebGL fails) -->
       <div class="three-earth-error hidden">
         <div class="error-icon">🌍</div>
         <p>CSS-Modus</p>
-        <!-- retry button inserted by the module if WebGL fails -->
       </div>
     </div>
 
-    <!-- ARIA Live Regions -->
     <div
       id="live-region-status"
       class="visually-hidden"
@@ -60,7 +54,7 @@
       aria-atomic="true"
     ></div>
 
-    <p class="typewriter-title typewriter-title--fixed" data-offset-mode="full">
+    <p class="typewriter-title typewriter-title--fixed">
       <span id="typedAuthor" class="typed-author"></span>
       <span id="typedText" class="typed-text"></span>
     </p>
@@ -68,15 +62,12 @@
     <main id="main-content" tabindex="-1">
       <section
         id="hero"
-        class="section hero u-center"
+        class="section hero"
         aria-label="Willkommen im Portfolio — Startseite"
         data-section-src="/pages/home/hero"
         data-eager="true"
-      >
-        <div class="section-skeleton" aria-hidden="true"></div>
-      </section>
+      ></section>
 
-      <!-- Card Section — Cinematic Showcase -->
       <section
         id="features"
         class="section features full-screen-section"
@@ -85,7 +76,6 @@
         data-state="loaded"
       ></section>
 
-      <!-- section3 -->
       <section
         id="section3"
         class="section section3"

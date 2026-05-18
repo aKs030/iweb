@@ -10,7 +10,7 @@ import { AppLoadManager } from "./load-manager.js";
 import { TimerManager } from "./timer-manager.js";
 import { threeEarthState } from "../components/particles/three-earth-state.js";
 import {
-  EARTH_CRITICAL_TEXTURE_URL,
+  EARTH_PRIMARY_TEXTURE_URL,
   EARTH_SECONDARY_TEXTURE_URLS,
 } from "../components/particles/earth/texture-paths.js";
 
@@ -61,7 +61,7 @@ export class ThreeEarthManager {
     this.isLoading = true;
     AppLoadManager.block("three-earth");
 
-    // Preload critical textures immediately when earth loading starts
+    // Preload the primary texture immediately when earth loading starts
     this.preloadTextures();
 
     // Set loading timeout to prevent indefinite readiness gating
@@ -103,7 +103,7 @@ export class ThreeEarthManager {
     if (canPreloadNow) {
       upsertHeadLink({
         rel: "preload",
-        href: EARTH_CRITICAL_TEXTURE_URL,
+        href: EARTH_PRIMARY_TEXTURE_URL,
         as: "image",
         crossOrigin: "anonymous",
         dataset: { injectedBy: "three-earth" },

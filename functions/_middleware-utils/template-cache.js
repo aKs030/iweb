@@ -5,7 +5,7 @@ import { isLocalhost } from "./dev-utils.js";
 
 const TEMPLATE_TTL_SECONDS = 3600;
 
-// Bump this whenever injected head/template markup or critical CSS changes.
+// Bump this whenever injected head/template markup changes.
 export const DEPLOY_VERSION = "20260419-CSP-04";
 
 export const KV_KEYS = {

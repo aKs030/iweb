@@ -5,7 +5,8 @@
  * }} ExtendedWindow
  */
 
-import { BASE_URL, FAVICON_512 } from "#config/constants.js";
+import { BASE_URL } from "#config/constants.js";
+import { FAVICON_512_URL } from "#config/media-urls.js";
 import { i18n } from "#core/i18n.js";
 import { getElementById } from "#core/dom-utils.js";
 
@@ -435,8 +436,8 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
       url: `${BASE_URL}/`,
       logo: {
         "@type": "ImageObject",
-        url: FAVICON_512,
-        contentUrl: FAVICON_512,
+        url: FAVICON_512_URL,
+        contentUrl: FAVICON_512_URL,
         creator: { "@type": "Person", name: "Abdulkerim Sesli" },
         license: `${BASE_URL}/#image-license`,
         creditText: "Logo: Abdulkerim Sesli",

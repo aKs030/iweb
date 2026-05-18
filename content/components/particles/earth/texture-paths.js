@@ -14,7 +14,7 @@ export const EARTH_TEXTURES = Object.freeze({
   MOON_BUMP: withTexturePath("moon_bump.webp"),
 });
 
-export const EARTH_CRITICAL_TEXTURE_URL = EARTH_TEXTURES.DAY;
+export const EARTH_PRIMARY_TEXTURE_URL = EARTH_TEXTURES.DAY;
 export const EARTH_SECONDARY_TEXTURE_URLS = Object.freeze([
   EARTH_TEXTURES.NIGHT,
   EARTH_TEXTURES.NORMAL,

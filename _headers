@@ -16,21 +16,21 @@
   X-Content-Type-Options: nosniff
 
 # Nested media directories
-/content/media/*/*
+/content/media/:level1/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: cross-origin
   Timing-Allow-Origin: *
   X-Content-Type-Options: nosniff
 
-/content/media/*/*/*
+/content/media/:level1/:level2/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: cross-origin
   Timing-Allow-Origin: *
   X-Content-Type-Options: nosniff
 
-/content/media/*/*/*/*
+/content/media/:level1/:level2/:level3/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: cross-origin
@@ -58,7 +58,7 @@
   X-Robots-Tag: max-image-preview:large
   X-Content-Type-Options: nosniff
 
-/content/media/img/*/*
+/content/media/img/:level1/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: cross-origin
@@ -66,7 +66,7 @@
   X-Robots-Tag: max-image-preview:large
   X-Content-Type-Options: nosniff
 
-/content/media/img/*/*/*
+/content/media/img/:level1/:level2/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: cross-origin
@@ -146,12 +146,12 @@
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-/pages/*/*.js
+/pages/:section/*.js
   Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-/pages/*/*/*.js
+/pages/:section/:subsection/*.js
   Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
@@ -169,13 +169,13 @@
   X-Content-Type-Options: nosniff
   Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
 
-/content/components/*/*.js
+/content/components/:component/*.js
   Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
   Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
 
-/content/components/*/*/*.js
+/content/components/:component/:module/*.js
   Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
@@ -189,12 +189,12 @@
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-/pages/*/*.css
+/pages/:section/*.css
   Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-/pages/*/*/*.css
+/pages/:section/:subsection/*.css
   Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
@@ -204,7 +204,7 @@
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-/content/components/*/*.css
+/content/components/:component/*.css
   Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff

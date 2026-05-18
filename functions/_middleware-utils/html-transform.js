@@ -1,5 +1,4 @@
 import { buildCspHeader, generateNonce } from "./csp-manager.js";
-import { preloadCriticalCss, CriticalCssInliner } from "./critical-css.js";
 import { EdgeSpeculationRules, StaticSpeculationRemover } from "./edge-speculation.js";
 import { buildResponseLinkHeaders } from "./early-hints.js";
 import { HeaderInjector, FooterInjector } from "./esi-shell.js";
@@ -82,7 +81,6 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
  * @param {any} context
  * @param {URL} url
  * @param {{
- *   criticalCssMap: Map<string, string>,
  *   isLocal: boolean,
  *   resolvedGlobalHeadTemplate: string,
  *   routeMeta: any,
@@ -103,10 +101,6 @@ export function createHtmlRewriter(context, url, options) {
         nonce,
       })
     );
-  }
-
-  if (options.criticalCssMap.size > 0) {
-    rewriter.on('link[rel="stylesheet"]', new CriticalCssInliner(options.criticalCssMap, nonce));
   }
 
   rewriter.on('script[type="speculationrules"]', new StaticSpeculationRemover());
@@ -149,7 +143,6 @@ export function createHtmlRewriter(context, url, options) {
  * @param {Response} response
  * @param {Response} transformedResponse
  * @param {{
- *   criticalCssMap: Map<string, string>,
  *   cspHeader: string,
  *   deployVersion: string,
  *   initialHeaders: Headers,
@@ -180,9 +173,6 @@ export function buildFinalHtmlResponse(response, transformedResponse, options) {
   if (options.resolvedGlobalHeadTemplate) {
     timingParts.push('tpl;desc="html-templates"');
   }
-  if (options.criticalCssMap.size > 0) {
-    timingParts.push(`css;desc="inlined ${options.criticalCssMap.size} CSS"`);
-  }
   if (options.routeMeta) timingParts.push('seo;desc="route-meta"');
   if (options.nonce) timingParts.push('csp;desc="nonce"');
   timingParts.push('spec;desc="edge-speculation"');
@@ -197,4 +187,3 @@ export function buildFinalHtmlResponse(response, transformedResponse, options) {
   });
 }
 
-export { preloadCriticalCss };

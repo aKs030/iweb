@@ -1,10 +1,10 @@
 import { isLocalDevHost } from "#core/runtime-env.js";
+import { BASE_URL } from "../config/constants.js";
 import { createLogger } from "./logger.js";
 import { upsertHeadLink } from "./dom-utils.js";
 import { buildProjectDetailPath, extractProjectSlug } from "./project-paths.js";
 
 const log = createLogger("CanonicalManager");
-const BASE_URL = "https://www.abdulkerimsesli.de";
 
 function isLocalDevelopment() {
   return isLocalDevHost();

@@ -3,7 +3,7 @@
  * @version 5.0.0 - Cleaned up
  */
 
-import { OG_PROJECTS_IMAGE_URL } from "#config/constants.js";
+import { OG_PROJECTS_IMAGE_URL } from "#config/media-urls.js";
 
 // Cache Configuration
 export const CACHE_PREFIX = "github_contents_";

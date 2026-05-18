@@ -3,7 +3,7 @@
  * @version 3.0.0 - Modern & Optimized
  */
 
-import { FAVICON_512_URL } from "#config/constants.js";
+import { FAVICON_512_URL } from "#config/media-urls.js";
 import { injectSchema } from "#core/schema.js";
 import {
   BLOG_BASE_URL,

@@ -115,7 +115,7 @@
   fetchpriority="high"
 />
 
-<!-- Critical CSS - Loaded immediately to prevent FOUC -->
+<!-- Core CSS loaded immediately; page-specific CSS is handled by regular stylesheets -->
 <link rel="stylesheet" href="/content/styles/main.css" fetchpriority="high" />
 <link rel="stylesheet" href="/content/styles/animations.css" media="print" data-async-css />
 <link rel="stylesheet" href="/content/styles/overlays.css" />
@@ -167,69 +167,10 @@
   } catch (e) {}
 </script>
 
-<!-- Hero Critical CSS (inline for fastest FCP on homepage) -->
-<style id="hero-critical-inline">
-  .hero {
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
-    min-height: var(--viewport-height, 100dvh);
-    padding: clamp(5rem, 10vw, 7rem) clamp(1.25rem, 4vw, 3rem) clamp(4rem, 8vw, 6rem);
-    box-sizing: border-box;
-  }
-  .hero__title {
-    font:
-      700 clamp(3rem, 8vw, 7rem) / 0.93 "Space Grotesk",
-      var(--font-inter);
-    margin: 0;
-    max-width: 11ch;
-    color: var(--color-text-main, #fff);
-    text-align: left;
-    letter-spacing: -0.05em;
-  }
-</style>
-<!-- GLOBAL-HEAD:BASE-ONLY:END -->
-
-<!-- Favicons -->
-<link rel="icon" href="https://img.abdulkerimsesli.de/icons/favicon.ico?v=20260221" sizes="48x48" />
-<link
-  rel="icon"
-  type="image/webp"
-  sizes="512x512"
-  href="https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221"
-/>
-<link
-  rel="apple-touch-icon"
-  sizes="180x180"
-  href="https://img.abdulkerimsesli.de/icons/apple-touch-icon.webp?v=20260221"
-/>
-<link
-  rel="mask-icon"
-  href="https://img.abdulkerimsesli.de/icons/safari-pinned-tab.svg?v=20260306"
-  color="#030303"
-/>
-
-<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->
-<link rel="alternate" type="application/rss+xml" title="Journal — Portfolio" href="/api/feed.xml" />
-
-<!-- Sitemap -->
-<link rel="sitemap" href="/sitemap-index.xml" type="application/xml" />
-<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Index" />
-<link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLM Full Index" />
-<link rel="alternate" type="application/json" href="/ai-index.json" title="AI Index" />
-<link rel="alternate" type="text/html" href="/ai-info/" title="AI Profile Hub" />
-
-<!-- Resource Hints: DNS-Prefetch (fallback) + Preconnect (modern) -->
-<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-<link rel="dns-prefetch" href="https://esm.sh" />
-<link rel="dns-prefetch" href="https://img.abdulkerimsesli.de" />
-<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-<link rel="dns-prefetch" href="https://www.google-analytics.com" />
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="preconnect" href="https://esm.sh" crossorigin />
 <link rel="preconnect" href="https://img.abdulkerimsesli.de" crossorigin />
 
-<!-- Preload Critical App JS -->
+<!-- Preload core app JS -->
 <link rel="modulepreload" href="/content/main.js" fetchpriority="high" />
 <link rel="modulepreload" href="/content/components/head/head-inline.js" fetchpriority="high" />
 <link rel="modulepreload" href="/content/components/menu/index.js" />

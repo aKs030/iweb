@@ -1,5 +1,5 @@
 import { ENV } from "../config/env.config.js";
-import { FAVICON_512_URL } from "../config/constants.js";
+import { FAVICON_512_URL } from "../config/media-urls.js";
 import { normalizeSchemaText as normalizeText } from "./text-utils.js";
 
 export const DEFAULT_IMAGE_DIMENSIONS = Object.freeze({

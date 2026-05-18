@@ -138,7 +138,9 @@ const getGreetingSet = (date = new Date(), lang = "de") => {
 const pickGreeting = (lastValue = null, set = null) => {
   const greetingSet = set == null ? getGreetingSet() : set;
   if (!Array.isArray(greetingSet) || greetingSet.length === 0) return "";
-  return greetingSet[randomInt(0, greetingSet.length - 1)];
+  const candidates =
+    greetingSet.length > 1 ? greetingSet.filter(greeting => greeting !== lastValue) : greetingSet;
+  return candidates[randomInt(0, candidates.length - 1)];
 };
 
 const getRandomItem = (obj, lang = "de") => {

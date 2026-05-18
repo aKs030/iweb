@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from "./logger.js";
-import { cancelIdleTask, scheduleIdleTask } from "./async-utils.js";
+import { scheduleIdleTask } from "./async-utils.js";
 import { applyCspNonce } from "./csp-nonce.js";
 import { upsertHeadLink } from "./dom-utils.js";
 import { getAdaptiveResourceHintBudget } from "./resource-hints-matrix.js";
@@ -33,7 +33,6 @@ class ResourceHintsManager {
     this.intentHandler = null;
     this.intentWarmupTimer = null;
     this.intentPrefetchedRoutes = new Set();
-    this.speculationRefreshHandle = null;
     this._cachedProfile = null;
     this._cachedProfilePathname = null;
     // IntersectionObserver-based prefetch state
@@ -123,26 +122,6 @@ class ResourceHintsManager {
   }
 
   /**
-   * Add preconnect hint for early connection to origin
-   * @param {string} origin - Origin URL
-   * @param {Object} options - Options
-   */
-  preconnect(origin, options = {}) {
-    const { crossOrigin = true } = options;
-    this.registerLinkHint({
-      key: `preconnect:${origin}`,
-      linkOptions: {
-        rel: "preconnect",
-        href: origin,
-        crossOrigin: crossOrigin ? "anonymous" : undefined,
-      },
-      hintMeta: { type: "preconnect", origin },
-      successMessage: `Preconnect added: ${origin}`,
-      failureMessage: `Failed to add preconnect for ${origin}:`,
-    });
-  }
-
-  /**
    * Add DNS prefetch hint
    * @param {string} origin - Origin URL
    */
@@ -153,28 +132,6 @@ class ResourceHintsManager {
       hintMeta: { type: "dns-prefetch", origin },
       successMessage: `DNS prefetch added: ${origin}`,
       failureMessage: `Failed to add DNS prefetch for ${origin}:`,
-    });
-  }
-
-  /**
-   * Add preload hint for critical resources
-   * @param {string} href - Resource URL
-   * @param {Object} options - Options
-   */
-  preload(href, options = {}) {
-    const { as = "script", type, crossOrigin = true } = options;
-    this.registerLinkHint({
-      key: `preload:${href}`,
-      linkOptions: {
-        rel: "preload",
-        href,
-        as,
-        crossOrigin: crossOrigin ? "anonymous" : undefined,
-        attrs: type ? { type } : {},
-      },
-      hintMeta: { type: "preload", href, as },
-      successMessage: `Preload added: ${href} (as: ${as})`,
-      failureMessage: `Failed to add preload for ${href}:`,
     });
   }
 
@@ -380,14 +337,6 @@ class ResourceHintsManager {
   }
 
   /**
-   * Adaptive eagerness: home can be more aggressive than deep pages
-   * @returns {'moderate'|'conservative'}
-   */
-  getPrerenderEagerness() {
-    return this.getSpeculationProfile().prerenderEagerness;
-  }
-
-  /**
    * Keep prefetch list small to avoid speculative overfetch
    * @param {string[]} routes
    * @returns {string[]}
@@ -431,7 +380,7 @@ class ResourceHintsManager {
               },
             ],
           },
-          eagerness: this.getPrerenderEagerness(),
+          eagerness: profile.prerenderEagerness,
         },
       ];
     }
@@ -676,7 +625,7 @@ class ResourceHintsManager {
     };
 
     document.addEventListener("menu:loaded", refresh, { once: true });
-    this.speculationRefreshHandle = scheduleIdleTask(refresh, {
+    scheduleIdleTask(refresh, {
       timeout: 2200,
       fallbackDelay: 1200,
     });
@@ -761,37 +710,6 @@ class ResourceHintsManager {
     log.info("Common resource hints initialized");
   }
 
-  /**
-   * Get all active hints
-   * @returns {Array} Array of hints
-   */
-  getHints() {
-    return Array.from(this.hints.values());
-  }
-
-  /**
-   * Clear all hints — removes DOM elements and resets state
-   */
-  clear() {
-    // Remove injected <link> elements from the DOM
-    const injected = document.querySelectorAll('link[data-injected-by="resource-hints"]');
-    injected.forEach(el => el.remove());
-    const injectedRules = document.querySelectorAll(SPECULATION_RULES_SELECTOR);
-    injectedRules.forEach(el => el.remove());
-    if (this.intentHandlersAttached && this.intentHandler) {
-      document.removeEventListener("pointerover", this.intentHandler);
-      document.removeEventListener("pointerdown", this.intentHandler);
-    }
-    if (this.intersectionObserver) {
-      this.intersectionObserver.disconnect();
-      this.intersectionObserver = null;
-    }
-    this.clearIntentWarmupTimer();
-    cancelIdleTask(this.speculationRefreshHandle);
-
-    this.hints.clear();
-    this.resetRuntimeState();
-  }
 }
 
 // Singleton instance
@@ -812,9 +730,7 @@ function getResourceHintsManager() {
  * Quick helper functions
  */
 export const resourceHints = {
-  preconnect: (origin, options) => getResourceHintsManager().preconnect(origin, options),
   dnsPrefetch: origin => getResourceHintsManager().dnsPrefetch(origin),
-  preload: (href, options) => getResourceHintsManager().preload(href, options),
   prefetch: (href, options) => getResourceHintsManager().prefetch(href, options),
   modulePreload: href => getResourceHintsManager().modulePreload(href),
   init: () => getResourceHintsManager().initCommonHints(),
