@@ -17,7 +17,8 @@ const log = createLogger("template-injector");
 // KV-Cache TTL: 1 Stunde (Sections ändern sich selten)
 const SECTION_TTL_MS = 3600 * 1000;
 // Bump when section HTML structure changes.
-const SECTION_CACHE_VERSION = "20260305-1";
+const SECTION_CACHE_VERSION = "20260517-1";
+const ALLOWED_SECTION_PARTIALS = new Set(["/pages/home/hero", "/pages/home/section3"]);
 
 /**
  * Build KV key for section partials.
@@ -134,15 +135,13 @@ export class SectionInjector {
     const src = el.getAttribute("data-section-src");
     if (!src) return;
 
-    // Only inject known partials to avoid arbitrary edge bloat
-    if (src.endsWith("/hero") || src.endsWith("/section3")) {
-      const htmlStr = await loadSectionCached(this.context, src);
-      if (htmlStr) {
-        el.setInnerContent(htmlStr, { html: true });
-        el.setAttribute("data-ssr-loaded", "true");
-        // Remove the data-section-src to prevent client-side re-fetch
-        el.removeAttribute("data-section-src");
-      }
+    if (!ALLOWED_SECTION_PARTIALS.has(src)) return;
+
+    const htmlStr = await loadSectionCached(this.context, src);
+    if (htmlStr) {
+      el.setInnerContent(htmlStr, { html: true });
+      el.setAttribute("data-ssr-loaded", "true");
+      el.removeAttribute("data-section-src");
     }
   }
 }

@@ -14,16 +14,19 @@ const heroTimers = new TimerManager("HeroTimers");
 const HERO_LAZY_FALLBACK_MS = 6000;
 const HERO_LOOKUP_MAX = 3;
 const HERO_LOOKUP_DELAY_MS = 900;
+const HERO_MARKUP_DELAYS_MS = Object.freeze([0, 50, 120, 240, 480, 900, 1500, 2400]);
+const GREETING_LOOKUP_DELAYS_MS = Object.freeze([0, 50, 120, 240, 480]);
 
 const HeroManager = (() => {
   let heroData = null;
   let isInitialized = false;
   let clickHandler = null;
-  let observer = null;
+  let observerCleanup = null;
   let loaded = false;
   let triggerLoad = null;
   let heroLookupAttempts = 0;
   let languageChangeHandler = null;
+  let typingEndHandler = null;
 
   async function loadTyped(heroDataModule) {
     try {
@@ -55,38 +58,10 @@ const HeroManager = (() => {
         loaded = true;
 
         const dataModule = await ensureHeroData().catch(() => ({}));
+        await waitForElement(".hero__poster", HERO_MARKUP_DELAYS_MS);
+        applyRandomHeroContent(dataModule);
+        await setRandomGreetingHTML();
         await loadTyped(dataModule);
-
-        // Randomize all hero content
-        if (dataModule.getHeroContent) {
-          const content = dataModule.getHeroContent(i18n.currentLang);
-          const titleEl = document.querySelector(".hero__title");
-          const ledeEl = document.querySelector(".hero__lede");
-          const metaEls = document.querySelectorAll(".hero__meta li");
-          const btnPrimary = document.querySelector(".hero__button--primary");
-          const btnSecondary = document.querySelector(".hero__button--secondary");
-
-          if (titleEl) titleEl.textContent = content.title;
-          if (ledeEl) ledeEl.textContent = content.lede;
-          if (metaEls.length > 0 && content.meta) {
-            metaEls.forEach((el, i) => {
-              if (content.meta[i]) {
-                el.textContent = content.meta[i];
-                el.removeAttribute("data-i18n");
-              }
-            });
-          }
-          if (btnPrimary && content.primaryBtn) {
-            btnPrimary.textContent = content.primaryBtn;
-            btnPrimary.removeAttribute("data-i18n");
-          }
-          if (btnSecondary && content.secondaryBtn) {
-            btnSecondary.textContent = content.secondaryBtn;
-            btnSecondary.removeAttribute("data-i18n");
-          }
-        }
-
-        setRandomGreetingHTML();
 
         isInitialized = true;
       };
@@ -112,7 +87,7 @@ const HeroManager = (() => {
       return;
     }
 
-    observer = observeOnce(heroEl, triggerLoad);
+    observerCleanup = observeOnce(heroEl, triggerLoad);
     heroTimers.setTimeout(triggerLoad, HERO_LAZY_FALLBACK_MS);
   }
 
@@ -123,17 +98,41 @@ const HeroManager = (() => {
       return {};
     }));
 
-  async function setRandomGreetingHTML() {
-    const delays = [0, 50, 120, 240, 480];
-    let el = null;
+  const waitWithHeroTimer = delay => new Promise(resolve => heroTimers.setTimeout(resolve, delay));
 
-    for (const d of delays) {
-      if (d) {
-        await new Promise(resolve => heroTimers.setTimeout(resolve, d));
-      }
-      el = getElementById("greetingText");
-      if (el) break;
+  async function waitForElement(selector, delays) {
+    for (const delay of delays) {
+      if (delay) await waitWithHeroTimer(delay);
+      const element = document.querySelector(selector);
+      if (element) return element;
     }
+    return null;
+  }
+
+  function applyRandomHeroContent(dataModule) {
+    if (!dataModule?.getHeroContent) return;
+
+    const content = dataModule.getHeroContent(i18n.currentLang);
+    [
+      [".hero__title", content.title],
+      [".hero__lede", content.lede],
+      [".hero__button--primary", content.primaryBtn],
+      [".hero__button--secondary", content.secondaryBtn],
+    ].forEach(([selector, value]) => {
+      const element = document.querySelector(selector);
+      if (element && value) element.textContent = value;
+    });
+
+    const metaEls = document.querySelectorAll(".hero__meta li");
+    if (metaEls.length > 0 && content.meta) {
+      metaEls.forEach((el, i) => {
+        if (content.meta[i]) el.textContent = content.meta[i];
+      });
+    }
+  }
+
+  async function setRandomGreetingHTML() {
+    const el = getElementById("greetingText") || (await waitForElement("#greetingText", GREETING_LOOKUP_DELAYS_MS));
     if (!el) return;
 
     try {
@@ -144,7 +143,6 @@ const HeroManager = (() => {
 
       el.dataset.last = next;
       el.textContent = next;
-      el.dataset.text = next;
     } catch (e) {
       log.warn("Error setting greeting text", e);
     }
@@ -169,13 +167,17 @@ const HeroManager = (() => {
       i18n.removeEventListener("language-changed", languageChangeHandler);
       languageChangeHandler = null;
     }
-    if (observer) {
+    if (typingEndHandler) {
+      document.removeEventListener(ROBOT_EVENTS.HERO_TYPING_END, typingEndHandler);
+      typingEndHandler = null;
+    }
+    if (observerCleanup) {
       try {
-        observer.disconnect();
+        observerCleanup();
       } catch (err) {
         log.warn("HeroManager: observer disconnect failed", err);
       }
-      observer = null;
+      observerCleanup = null;
     }
   }
 
@@ -197,11 +199,22 @@ const HeroManager = (() => {
       if (languageChangeHandler) {
         i18n.removeEventListener("language-changed", languageChangeHandler);
       }
-      languageChangeHandler = () => {
-        // Update greeting when language changes
-        setRandomGreetingHTML();
+      languageChangeHandler = async () => {
+        const dataModule = await ensureHeroData();
+        applyRandomHeroContent(dataModule);
+        await setRandomGreetingHTML();
       };
       i18n.addEventListener("language-changed", languageChangeHandler);
+    },
+    setupTypingEndListener: () => {
+      if (typingEndHandler) {
+        document.removeEventListener(ROBOT_EVENTS.HERO_TYPING_END, typingEndHandler);
+      }
+      typingEndHandler = e => {
+        const detail = /** @type {CustomEvent} */ (e).detail;
+        window.announce?.(`Zitat vollständig: ${detail?.text ?? "Text"}`);
+      };
+      document.addEventListener(ROBOT_EVENTS.HERO_TYPING_END, typingEndHandler);
     },
   };
 })();
@@ -210,18 +223,14 @@ const HeroManager = (() => {
 export const initHeroFeatureBundle = sectionManager => {
   HeroManager.cleanup();
 
-  document.addEventListener(ROBOT_EVENTS.HERO_TYPING_END, e => {
-    const detail = /** @type {CustomEvent} */ (e).detail;
-    window.announce?.(`Zitat vollständig: ${detail?.text ?? "Text"}`);
-  });
-
-  // Setup language change listener
   HeroManager.setupLanguageListener();
+  HeroManager.setupTypingEndListener();
 
   HeroManager.initLazyHeroModules();
 
   const handleHeroClick = async event => {
-    const link = event.target.closest('.hero__buttons a[href^="#"]');
+    const eventTarget = event.target instanceof Element ? event.target : null;
+    const link = eventTarget?.closest('.hero__buttons a[href^="#"]');
     if (!link) return;
 
     const href = link.getAttribute("href") || "";
@@ -231,20 +240,6 @@ export const initHeroFeatureBundle = sectionManager => {
     const targetId = href.slice(1);
     const target = getElementById(targetId) || document.getElementById(targetId);
     if (!target) return;
-
-    // if the hero button points at the footer element we want to expand the
-    // footer rather than just scrolling – makes behavior consistent with the
-    // [data-footer-trigger] mechanism used elsewhere.
-    if (targetId === "footer") {
-      try {
-        const { openFooter } = await import("#footer/index.js");
-        openFooter();
-      } catch {
-        // fallback: simple scroll
-        requestAnimationFrame(doScroll);
-      }
-      return;
-    }
 
     function doScroll() {
       try {

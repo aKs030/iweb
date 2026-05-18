@@ -207,11 +207,11 @@ Content-Security-Policy: default-src 'self'
 - Image-Optimization (WebP, AVIF, lazy loading)
 - Font-Subsetting (nur benötigte Zeichen)
 
-**Critical CSS** inline, Rest async:
+**Core CSS** direkt laden, Rest async:
 
 ```html
 <style>
-  /* Critical CSS */
+  /* Core CSS */
 </style>
 <link rel="preload" href="/styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
 ```

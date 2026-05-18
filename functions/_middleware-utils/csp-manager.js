@@ -51,7 +51,7 @@ export function buildCspHeader(nonce) {
       // Cloudflare Fonts may rewrite Google Fonts into a first-party inline
       // stylesheet after our HTMLRewriter pass, so style nonces cannot cover
       // every production style block. Keep scripts nonce-gated; allow inline
-      // styles deliberately for critical CSS and edge font rewrites.
+      // styles deliberately for edge font rewrites.
       "'unsafe-inline'",
       "https://fonts.googleapis.com",
     ].join(" "),

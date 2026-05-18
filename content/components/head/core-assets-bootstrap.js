@@ -3,7 +3,7 @@ import { applyCspNonce } from "#core/csp-nonce.js";
 import { upsertHeadLink } from "#core/dom-utils.js";
 import { createLogger } from "#core/logger.js";
 import { resourceHints } from "#core/resource-hints.js";
-import { EARTH_CRITICAL_TEXTURE_URL } from "#components/particles/earth/texture-paths.js";
+import { EARTH_PRIMARY_TEXTURE_URL } from "#components/particles/earth/texture-paths.js";
 
 const log = createLogger("head-assets");
 
@@ -42,7 +42,7 @@ function injectHomeLcpHints() {
 
   upsertHeadLink({
     rel: "prefetch",
-    href: EARTH_CRITICAL_TEXTURE_URL,
+    href: EARTH_PRIMARY_TEXTURE_URL,
     as: "image",
     dataset: { injectedBy: "head-inline", lcp: "hero-earth" },
   });
@@ -151,33 +151,5 @@ export function ensureFontDisplaySwap({ runWhenDomReady }) {
     });
   } catch (error) {
     log.warn("ensureFontDisplaySwap failed", error);
-  }
-}
-
-export function injectHeroCriticalCSS() {
-  try {
-    if (getNormalizedPathname() !== "/") return;
-
-    // Check if already exists (from global-head.html inline style)
-    if (document.head.querySelector("#hero-critical-inline")) {
-      return; // Already inlined in global-head.html
-    }
-
-    // Fallback: inject if not found (shouldn't happen in production)
-    if (document.head.querySelector("#hero-critical-css")) return;
-
-    const css = `
-  .hero{display:flex;align-items:flex-end;justify-content:flex-start;min-height:var(--viewport-height,100dvh);padding:clamp(5rem,10vw,7rem) clamp(1.25rem,4vw,3rem) clamp(4rem,8vw,6rem);box-sizing:border-box}
-  .hero__title{font:700 clamp(3rem,8vw,7rem)/.93 'Space Grotesk',var(--font-inter);margin:0;max-width:11ch;color:var(--color-text-main,#fff);text-align:left;letter-spacing:-.05em}
-  `;
-
-    const style = document.createElement("style");
-    style.id = "hero-critical-css";
-    style.dataset.injectedBy = "head-inline";
-    applyCspNonce(style);
-    style.appendChild(document.createTextNode(css));
-    document.head.appendChild(style);
-  } catch (error) {
-    log.warn("injectHeroCriticalCSS failed", error);
   }
 }

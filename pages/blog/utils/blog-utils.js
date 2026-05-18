@@ -3,9 +3,10 @@
  * @version 2.0.0 - Optimized & Minimal
  */
 
-import { OG_HOME_IMAGE_URL } from "#config/constants.js";
+import { OG_HOME_IMAGE_URL } from "#config/media-urls.js";
+import { BASE_URL } from "#config/constants.js";
 
-export const BLOG_BASE_URL = "https://www.abdulkerimsesli.de";
+export const BLOG_BASE_URL = BASE_URL;
 export const BLOG_HOME_URL = `${BLOG_BASE_URL}/blog/`;
 export const BLOG_DEFAULT_TITLE = "Blog — Abdulkerim Sesli";
 export const BLOG_DEFAULT_DESCRIPTION =

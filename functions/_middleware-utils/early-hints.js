@@ -1,7 +1,7 @@
 /**
  * Link-Header Preload Utilities
  *
- * Sends critical CSS, JS, and preconnect hints as HTTP Link headers
+ * Sends CSS, JS, and preconnect hints as HTTP Link headers
  * so the browser can start fetching resources while still receiving
  * the HTML response body — improving FCP by eliminating idle time.
  *
@@ -11,7 +11,7 @@
 import { R2_PUBLIC_ORIGIN } from "../../content/config/media-urls.js";
 
 // ---------------------------------------------------------------------------
-// Critical resources to signal via Link headers
+// Core resources to signal via Link headers
 // ---------------------------------------------------------------------------
 
 /**
@@ -20,12 +20,12 @@ import { R2_PUBLIC_ORIGIN } from "../../content/config/media-urls.js";
  */
 import { normalizePathname } from "../../content/core/path-utils.js";
 
-const CRITICAL_RESOURCES = [
-  // Critical CSS — foundation.css is already streamed inline by middleware
+const CORE_RESOURCES = [
+  // Core CSS is loaded immediately by the document head
   { href: "/content/styles/main.css", rel: "preload", as: "style" },
   { href: "/content/styles/animations.css", rel: "preload", as: "style" },
 
-  // Critical JS modules — start parsing before HTML fully loaded
+  // Core JS modules — start parsing before HTML fully loaded
   { href: "/content/main.js", rel: "modulepreload" },
   { href: "/content/components/head/head-inline.js", rel: "modulepreload" },
   { href: "/content/components/menu/index.js", rel: "modulepreload" },
@@ -53,12 +53,12 @@ function isStandaloneShellPath(pathname = "/") {
   return normalized === "/ai-info" || normalized.startsWith("/pages/ai-info");
 }
 
-function getCriticalResourcesForPath(pathname = "/") {
+function getResourcesForPath(pathname = "/") {
   if (!isStandaloneShellPath(pathname)) {
-    return CRITICAL_RESOURCES;
+    return CORE_RESOURCES;
   }
 
-  return CRITICAL_RESOURCES.filter(({ href }) => !STANDALONE_SHELL_EXCLUSIONS.has(href));
+  return CORE_RESOURCES.filter(({ href }) => !STANDALONE_SHELL_EXCLUSIONS.has(href));
 }
 
 /**
@@ -80,5 +80,5 @@ function formatLinkValue(r) {
  * @returns {string[]} Array of formatted Link header values
  */
 export function buildResponseLinkHeaders(pathname = "/") {
-  return getCriticalResourcesForPath(pathname).map(formatLinkValue);
+  return getResourcesForPath(pathname).map(formatLinkValue);
 }

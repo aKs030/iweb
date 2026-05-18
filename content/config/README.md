@@ -52,17 +52,21 @@ sync manually with the project entries.
 
 ## Shared Constants
 
+`constants.js` is the canonical source for global non-media constants:
+
+- `BASE_URL`, `BASE_URL_DEV`
+- `THREE_VERSION`
+
 `media-urls.js` is the canonical source for shared media URLs and local-dev R2
 resolution:
 
-- `BASE_URL`, `BASE_URL_DEV`
 - public R2 builders (`buildR2Url`, `buildProjectPreviewUrl`)
 - local runtime resolvers (`resolveR2Url`, `resolveProjectPreviewUrl`)
 - direct media URLs (`FAVICON_ICO_URL`, `FAVICON_512_URL`, `OG_HOME_IMAGE_URL`)
 
 ## Static Site Media
 
-Static site-level media URLs are exported from `constants.js` (for example `FAVICON_512`).
+Static site-level media URLs are exported from `media-urls.js`.
 
 Project preview media URLs live in `pages/projekte/apps-config.json` as
 `previewUrl` and `previewAlt`, and project links live there as `appPath` and

@@ -384,7 +384,7 @@ export function generateSchemaGraph(pageData, pageUrl, brandData, options = {}) 
   }
 
   // FAQ handling
-  const faqNodes = extractFAQs(pageUrl, pageData, doc);
+  const faqNodes = extractFAQs(pageUrl, doc);
   if (faqNodes.length > 0) {
     graph.push({
       "@type": "FAQPage",
@@ -747,7 +747,7 @@ function generateImageObject(
  * @param {Document} doc
  * @returns {Array}
  */
-function extractFAQs(pageUrl, pageData, doc) {
+function extractFAQs(pageUrl, doc) {
   // Try to extract from DOM
   const faqNodes = Array.from(doc?.querySelectorAll?.(".faq-item") || [])
     .map((el, i) => {
@@ -804,7 +804,7 @@ export function injectSchema(graph, options = {}) {
       script.id = scriptId;
       applyCspNonce(script);
       script.textContent = payload;
-      document.head.appendChild(script);
+      doc.head.appendChild(script);
     }
 
     if (edgeScript && edgeScript.id !== scriptId) {
