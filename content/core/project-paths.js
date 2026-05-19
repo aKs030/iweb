@@ -24,7 +24,7 @@ export function isProjectIndexPath(pathname) {
   return /^\/projekte\/?$/i.test(normalizePathname(pathname));
 }
 
-export function extractProjectSlugFromPath(pathname) {
+function extractProjectSlugFromPath(pathname) {
   const path = normalizePathname(pathname);
   const match = path.match(/^\/projekte\/([^/]+)\/?$/i);
   if (!match) return "";

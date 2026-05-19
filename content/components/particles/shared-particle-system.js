@@ -8,7 +8,7 @@
  * - Reduced memory footprint
  *
  * OPTIMIZATIONS v2.3.0:
- * - Three.js loading via import map; compressed model support via core/model-loader.js
+ * - Three.js loading via import map
  * @version 2.5.0
  * @last-modified 2026-03-01
  */

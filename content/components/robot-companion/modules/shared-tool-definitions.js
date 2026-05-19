@@ -169,7 +169,7 @@ export const SHARED_ROBOT_TOOL_DEFINITIONS = Object.freeze([
   },
 ]);
 
-export const SHARED_ROBOT_TOOL_DEFINITION_BY_NAME = new Map(
+const SHARED_ROBOT_TOOL_DEFINITION_BY_NAME = new Map(
   SHARED_ROBOT_TOOL_DEFINITIONS.map(tool => [tool.name, tool])
 );
 

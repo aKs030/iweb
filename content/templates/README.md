@@ -9,12 +9,7 @@ Gemeinsame HTML-Bausteine, die in Seiten eingebettet werden.
 ## Loading-State Nutzung
 
 ```javascript
-import {
-  AppLoadManager,
-  loadSignals,
-  subscribeLoadState,
-  whenAppReady,
-} from "#core/load-manager.js";
+import { AppLoadManager, loadSignals } from "#core/load-manager.js";
 
 AppLoadManager.block("data-fetch");
 AppLoadManager.updateLoader(0.4, "Lade Daten...");
@@ -24,12 +19,6 @@ AppLoadManager.updateLoader(0.4, "Lade Daten...");
 AppLoadManager.unblock("data-fetch");
 AppLoadManager.hideLoader(200);
 
-const unsubscribe = subscribeLoadState(state => {
-  console.log(state.progress, state.message, state.pending);
-});
-
-await whenAppReady({ timeout: 5000 });
-
 console.log(loadSignals.blocked.value);
 ```
 
@@ -37,7 +26,7 @@ console.log(loadSignals.blocked.value);
 
 - Loading-State wird über `content/core/load-manager.js` gesteuert.
 - Das Loading-System ist UI-agnostisch und verwendet Signals als Primärzustand.
-- `whenAppReady(...)`, `loadSignals` und `subscribeLoadState(...)` sind der Primärpfad für App-Readiness und Loader-Fortschritt.
+- `loadSignals` ist der Primärpfad für App-Readiness und Loader-Fortschritt.
 - `global-head.html` stellt im `base`-Modus direkt die Import-Map für Vendor-Pakete und interne Aliase (`#core`, `#components`, `#config`, `#pages`) bereit.
 - Das Footer-Web-Component wird nicht mehr im kritischen Pfad geladen, sondern von `head-inline.js` per Intent-/Viewport-/Idle-Hydration nachgezogen.
 - Event-Konstanten liegen in `content/core/events.js`.

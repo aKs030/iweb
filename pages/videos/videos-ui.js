@@ -259,7 +259,7 @@ export function renderFeaturedVideo(target, videoModel, relatedVideos = []) {
   target.appendChild(article);
 }
 
-export function activateThumb(btn) {
+function activateThumb(btn) {
   if (!btn || btn.dataset.loaded) return;
   const vid = btn.dataset.videoId;
   const title = btn.getAttribute("aria-label") || "";

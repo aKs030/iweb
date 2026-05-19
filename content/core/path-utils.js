@@ -38,15 +38,6 @@ export function canonicalizeUrlPath(path) {
 }
 
 /**
- * Normalize URL path (alias for canonicalizeUrlPath)
- * @param {string|null|undefined} path - Path to normalize
- * @returns {string} Normalized path
- */
-export function normalizePath(path) {
-  return canonicalizeUrlPath(path);
-}
-
-/**
  * Normalize pathname by removing query strings, hashes, multiple slashes, and trailing slashes
  * Used for route matching and canonical path normalization
  * @param {string|null|undefined} pathname - Pathname to normalize

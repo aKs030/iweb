@@ -35,7 +35,7 @@ function sectionKvKey(sectionPath) {
  * @param {string} path - Template path
  * @returns {Promise<string>} Template content
  */
-export async function loadTemplateFromURL(context, path) {
+async function loadTemplateFromURL(context, path) {
   try {
     const url = new URL(path, context.request.url);
     const response = await context.env.ASSETS.fetch(url);

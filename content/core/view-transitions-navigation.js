@@ -171,7 +171,7 @@ const shouldHandleInternalNavigation = (link, destination, captureInternalLinks)
  * @param {{ navigationTypes: string[] }} [defaults]
  * @returns {boolean}
  */
-export function navigateWithViewTransition(href, options = {}, defaults = { navigationTypes: [] }) {
+function navigateWithViewTransition(href, options = {}, defaults = { navigationTypes: [] }) {
   const url = toURL(href);
   if (!url) return false;
 

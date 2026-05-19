@@ -1,6 +1,6 @@
-export const IMAGE_EXT_PATTERN = /\.(jpg|jpeg|png|webp|gif|svg)$/i;
-export const VIDEO_EXT_PATTERN = /\.(mp4|webm)$/i;
-export const GALLERY_MEDIA_EXT_PATTERN = /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i;
+const IMAGE_EXT_PATTERN = /\.(jpg|jpeg|png|webp|gif|svg)$/i;
+const VIDEO_EXT_PATTERN = /\.(mp4|webm)$/i;
+const GALLERY_MEDIA_EXT_PATTERN = /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i;
 
 export const PROXY_MEDIA_CONTENT_TYPES = new Map([
   [".svg", "image/svg+xml"],

@@ -1,4 +1,4 @@
-import { CLIENT_TOOL_DEFINITIONS, getToolDefinition } from "./tool-registry.js";
+import { getToolDefinition } from "./tool-registry.js";
 import {
   getRobotAvatarButton,
   getRobotChatWindow,
@@ -54,8 +54,4 @@ export function isClientToolAvailable(name) {
   } catch {
     return false;
   }
-}
-
-export function getAvailableClientToolNames() {
-  return CLIENT_TOOL_DEFINITIONS.map(tool => tool.name).filter(name => isClientToolAvailable(name));
 }

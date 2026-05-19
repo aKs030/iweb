@@ -94,7 +94,7 @@ export function buildSitemapHeaders(cacheControl, extraHeaders = {}) {
  * @param {string} cacheControl
  * @returns {Record<string, string>}
  */
-export function buildSnapshotStaleHeaders(snapshot, cacheControl) {
+function buildSnapshotStaleHeaders(snapshot, cacheControl) {
   return buildSitemapHeaders(cacheControl, {
     "X-Sitemap-Source": "snapshot-stale",
     ...(snapshot?.updatedAt ? { "X-Sitemap-Snapshot-At": String(snapshot.updatedAt) } : {}),

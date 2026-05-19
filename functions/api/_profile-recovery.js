@@ -6,7 +6,7 @@ const FALLBACK_MEMORY_PREFIX = "robot-memory:";
 const MAX_KV_SCAN_PAGES = 100;
 const NAME_MEMORY_KEY = "name";
 
-export function normalizeRecoveryLookupName(rawName) {
+function normalizeRecoveryLookupName(rawName) {
   return normalizeSchemaText(rawName)
     .replace(/[.,;:!?]+$/g, "")
     .toLowerCase()

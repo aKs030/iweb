@@ -160,7 +160,7 @@ async function syncUserNameLookup(kv, userId, nextName = "", previousName = "") 
   }
 }
 
-export async function upsertVectorizeMemory(env, userId, entry) {
+async function upsertVectorizeMemory(env, userId, entry) {
   if (!env?.AI?.run || !env?.JULES_MEMORY?.upsert) return false;
 
   const embeddingModel = env.ROBOT_EMBEDDING_MODEL || DEFAULT_EMBEDDING_MODEL;
@@ -242,7 +242,7 @@ function normalizeAction(raw) {
   return "delete";
 }
 
-export async function deleteUsernameMappingsForUser(kv, userId) {
+async function deleteUsernameMappingsForUser(kv, userId) {
   // Remove all name lookup bindings that still point to this profile.
   if (!kv?.list || !kv?.get || !kv?.delete) {
     return { scanned: 0, deleted: 0 };
@@ -292,7 +292,7 @@ export async function deleteUsernameMappingsForUser(kv, userId) {
   return { scanned, deleted };
 }
 
-export async function deleteVectorizeMemoriesForUser(env, userId) {
+async function deleteVectorizeMemoriesForUser(env, userId) {
   const index = env?.JULES_MEMORY;
   if (!index) {
     return {

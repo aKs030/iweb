@@ -77,7 +77,7 @@ function copyCacheRelevantQueryParams(sourceUrl, cacheUrl) {
  * @param {Request} request
  * @returns {Request} Cache key as Request object
  */
-export function buildCacheKey(request) {
+function buildCacheKey(request) {
   const requestUrl = new URL(request.url);
   const cacheUrl = new URL(requestUrl.origin + requestUrl.pathname);
 

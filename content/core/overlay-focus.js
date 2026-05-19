@@ -352,16 +352,3 @@ export function syncOverlayFocusState(
     );
   }
 }
-
-/**
- * @param {(mode: string, methodName: OverlayFocusResolverName) => HTMLElement|null} getControllerFocusElement
- * @returns {void}
- */
-export function destroyOverlayFocus(getControllerFocusElement) {
-  if (currentFocusedOverlayMode !== OVERLAY_MODES.NONE) {
-    teardownFocusSession({ restoreFocus: false, getControllerFocusElement });
-    currentFocusedOverlayMode = OVERLAY_MODES.NONE;
-  }
-
-  pendingFocusChangeOptions.clear();
-}

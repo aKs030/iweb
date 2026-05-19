@@ -10,20 +10,11 @@
  */
 
 import {
-  destroyViewTransitionCore,
-  isSupported,
   normalizeTypes,
-  withElementViewTransitionName,
   withViewTransition,
 } from "./view-transitions-core.js";
-import {
-  createDocumentClickHandler,
-  navigateWithViewTransition as navigateWithViewTransitionInternal,
-} from "./view-transitions-navigation.js";
-import {
-  injectViewTransitionRuntimeStyles,
-  removeViewTransitionRuntimeStyles,
-} from "./view-transitions-runtime-style.js";
+import { createDocumentClickHandler } from "./view-transitions-navigation.js";
+import { injectViewTransitionRuntimeStyles } from "./view-transitions-runtime-style.js";
 import { applyViewTransitionTimingVars } from "./view-transition-constants.js";
 import { DEFAULT_NAVIGATION_TRANSITION_TYPES } from "./view-transition-constants.js";
 
@@ -32,7 +23,7 @@ import { DEFAULT_NAVIGATION_TRANSITION_TYPES } from "./view-transition-constants
  * @property {boolean} [captureInternalLinks] - Intercept same-origin page links
  * @property {boolean} [enableCrossDocument] - Enable @view-transition navigation:auto
  * @property {boolean} [injectNavigationStyles] - Inject minimal default page transition styles
- * @property {string[]} [navigationTypes] - Types used for navigateWithViewTransition()
+ * @property {string[]} [navigationTypes] - Types used for captured internal-link navigation
  */
 
 const INIT_CONFIG = {
@@ -82,19 +73,6 @@ function configureViewTransitions(options = {}) {
 }
 
 /**
- * Navigate with a transition where possible.
- *
- * @param {string} href
- * @param {import('./view-transitions-core.js').TransitionOptions & { replace?: boolean }} [options]
- * @returns {boolean}
- */
-export function navigateWithViewTransition(href, options = {}) {
-  return navigateWithViewTransitionInternal(href, options, {
-    navigationTypes: INIT_CONFIG.navigationTypes,
-  });
-}
-
-/**
  * Initialize View Transitions support hooks.
  *
  * @param {ViewTransitionInitOptions} [options]
@@ -113,19 +91,4 @@ export function initViewTransitions(options = {}) {
   document.addEventListener("click", clickHandler);
 }
 
-/**
- * Optional teardown (useful in tests or isolated embeds).
- */
-function destroyViewTransitions() {
-  if (isInitialized && clickHandler) {
-    document.removeEventListener("click", clickHandler);
-  }
-
-  clickHandler = null;
-  isInitialized = false;
-
-  destroyViewTransitionCore();
-  removeViewTransitionRuntimeStyles();
-}
-
-export { destroyViewTransitions, isSupported, withElementViewTransitionName, withViewTransition };
+export { withViewTransition };

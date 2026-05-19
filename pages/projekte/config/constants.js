@@ -5,10 +5,6 @@
 
 import { OG_PROJECTS_IMAGE_URL } from "#config/media-urls.js";
 
-// Cache Configuration
-export const CACHE_PREFIX = "github_contents_";
-export const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
-
 // Default OG Image
 export const DEFAULT_OG_IMAGE = OG_PROJECTS_IMAGE_URL;
 

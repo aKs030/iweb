@@ -45,7 +45,7 @@ export function getRobotUserName() {
   return normalizeRobotUserName(getRobotIdentityWindow()?.ROBOT_USER_NAME);
 }
 
-export function readRobotUserNameFromUrl() {
+function readRobotUserNameFromUrl() {
   const robotWindow = getRobotIdentityWindow();
   if (!robotWindow) return "";
 
@@ -104,7 +104,7 @@ export function isNameBasedUserId(userId) {
   return normalizeUserId(userId).startsWith(NAME_USER_ID_PREFIX);
 }
 
-export function getRobotUserNameFromUserId(userId) {
+function getRobotUserNameFromUserId(userId) {
   const normalizedUserId = normalizeUserId(userId);
   if (!normalizedUserId.startsWith(NAME_USER_ID_PREFIX)) return "";
   return normalizeRobotUserName(normalizedUserId.slice(NAME_USER_ID_PREFIX.length));

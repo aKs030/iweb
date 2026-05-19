@@ -10,7 +10,7 @@ const TRANSFORMED_ENTITY_HEADERS = ["Content-Length", "ETag", "Expires", "Last-M
 /**
  * @param {Headers} headers
  */
-export function stripTransformedEntityHeaders(headers) {
+function stripTransformedEntityHeaders(headers) {
   for (const headerName of TRANSFORMED_ENTITY_HEADERS) {
     headers.delete(headerName);
   }
@@ -20,7 +20,7 @@ export function stripTransformedEntityHeaders(headers) {
  * @param {Headers} headers
  * @param {string} value
  */
-export function appendVary(headers, value) {
+function appendVary(headers, value) {
   const current = headers.get("Vary");
   if (!current) {
     headers.set("Vary", value);
@@ -186,4 +186,3 @@ export function buildFinalHtmlResponse(response, transformedResponse, options) {
     headers: newHeaders,
   });
 }
-

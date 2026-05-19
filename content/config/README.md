@@ -39,12 +39,9 @@ YOUTUBE_CHANNEL_ID=UCTGRherjM4iuIn86xxubuPg
 
 `brand-data-loader.js` normalizes this payload for JSON-LD usage.
 
-The media-bearing fields in `brand-data.json`, `person.jsonld`,
-`content/templates/global-head.html`,
-`pages/about/index.html`, `index.html`, `pages/videos/index.html`,
-`pages/blog/posts/index.json`, `pages/blog/posts/*.md`,
-`pages/projekte/apps-config.json`, and `pages/projekte/index.html` are
-maintained manually from `media-urls.js`.
+Shared site media lives in `media-urls.js`. Page and post frontmatter that
+stores absolute media URLs is maintained manually against the same public R2
+paths.
 
 `pages/projekte/apps-config.json` remains the canonical project-app config for
 `appPath`, `githubPath`, `previewUrl`, and `previewAlt`, and should be kept in
@@ -55,13 +52,12 @@ sync manually with the project entries.
 `constants.js` is the canonical source for global non-media constants:
 
 - `BASE_URL`, `BASE_URL_DEV`
-- `THREE_VERSION`
 
 `media-urls.js` is the canonical source for shared media URLs and local-dev R2
 resolution:
 
 - public R2 builders (`buildR2Url`, `buildProjectPreviewUrl`)
-- local runtime resolvers (`resolveR2Url`, `resolveProjectPreviewUrl`)
+- local runtime resolvers (`resolveProjectPreviewUrl`, `resolveR2Path`)
 - direct media URLs (`FAVICON_ICO_URL`, `FAVICON_512_URL`, `OG_HOME_IMAGE_URL`)
 
 ## Static Site Media

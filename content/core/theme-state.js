@@ -68,7 +68,6 @@ export const resolvedTheme = computed(() =>
 
 let _initialized = false;
 let _mediaQueryList = null;
-let _cleanupThemeSync = null;
 let _handleSystemChange = null;
 
 function applyThemeToDocument(theme) {
@@ -87,7 +86,7 @@ export function initThemeState() {
   systemTheme.value = readSystemTheme();
   themePreference.value = readStoredPreference();
   applyThemeToDocument(resolvedTheme.value);
-  _cleanupThemeSync = resolvedTheme.subscribe(theme => {
+  resolvedTheme.subscribe(theme => {
     applyThemeToDocument(theme);
   });
 
@@ -103,29 +102,6 @@ export function initThemeState() {
   if (typeof _mediaQueryList.addEventListener === "function") {
     _mediaQueryList.addEventListener("change", _handleSystemChange);
   }
-}
-
-/**
- * Clean up theme state listeners and subscriptions.
- * Useful for testing or isolated environments.
- */
-export function destroyThemeState() {
-  if (!_initialized) return;
-
-  if (_mediaQueryList && _handleSystemChange) {
-    if (typeof _mediaQueryList.removeEventListener === "function") {
-      _mediaQueryList.removeEventListener("change", _handleSystemChange);
-    }
-  }
-
-  if (typeof _cleanupThemeSync === "function") {
-    _cleanupThemeSync();
-  }
-
-  _initialized = false;
-  _mediaQueryList = null;
-  _handleSystemChange = null;
-  _cleanupThemeSync = null;
 }
 
 function setThemePreference(preference = SYSTEM) {

@@ -6,6 +6,7 @@ const log = createLogger("comments");
  */
 
 import { errorJsonResponse, jsonResponse } from "./_response.js";
+import { ensureAppD1Schema } from "./_d1-schema.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -24,6 +25,8 @@ export async function onRequestGet(context) {
     if (!db) {
       return jsonResponse({ comments: [], _warning: "DB not bound" });
     }
+
+    await ensureAppD1Schema(db);
 
     const { results } = await db
       .prepare(
@@ -68,6 +71,8 @@ export async function onRequestPost(context) {
         status: 500,
       });
     }
+
+    await ensureAppD1Schema(db);
 
     const result = await db
       .prepare(

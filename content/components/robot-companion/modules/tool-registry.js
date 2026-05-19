@@ -46,7 +46,7 @@ function createToolDefinition(name, overrides = {}) {
   };
 }
 
-export const ROBOT_TOOL_DEFINITIONS = /** @type {readonly RobotToolDefinition[]} */ (
+const ROBOT_TOOL_DEFINITIONS = /** @type {readonly RobotToolDefinition[]} */ (
   Object.freeze([
     createToolDefinition("navigate", {
       minRole: "user",
@@ -326,13 +326,7 @@ export const ROBOT_TOOL_DEFINITIONS = /** @type {readonly RobotToolDefinition[]}
   ])
 );
 
-export const TOOL_DEFINITION_BY_NAME = new Map(
-  ROBOT_TOOL_DEFINITIONS.map(tool => [tool.name, tool])
-);
-
-export const CLIENT_TOOL_DEFINITIONS = Object.freeze(
-  ROBOT_TOOL_DEFINITIONS.filter(tool => tool.execution === "client")
-);
+const TOOL_DEFINITION_BY_NAME = new Map(ROBOT_TOOL_DEFINITIONS.map(tool => [tool.name, tool]));
 
 export const TOOL_CARD_CONFIG = Object.freeze(
   Object.fromEntries(

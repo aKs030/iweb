@@ -11,9 +11,9 @@ export const OVERLAY_MODES = Object.freeze({
 });
 
 export const menuOpen = signal(false);
-export const searchOpen = signal(false);
-export const robotChatOpen = signal(false);
-export const robotHydrated = signal(false);
+const searchOpen = signal(false);
+const robotChatOpen = signal(false);
+const robotHydrated = signal(false);
 /** @type {{ value: OverlayMode, peek: () => OverlayMode, subscribe: (fn: (value: OverlayMode) => void) => () => boolean }} */
 export const activeOverlay = signal(OVERLAY_MODES.NONE);
 
@@ -88,17 +88,6 @@ export function clearActiveOverlayMode(mode = null) {
   });
 }
 
-/**
- * All UI signals collected for convenience.
- * Components can import individual signals for fine-grained reactivity.
- */
-export const uiSignals = {
-  menuOpen,
-  searchOpen,
-  robotChatOpen,
-  robotHydrated,
-  activeOverlay,
-};
 const _signalMap = {
   menuOpen,
   searchOpen,
