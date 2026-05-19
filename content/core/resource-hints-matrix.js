@@ -1,6 +1,6 @@
 const DEFAULT_PREFETCH_EAGERNESS = "conservative";
 
-export const RESOURCE_HINT_ROUTE_MATRIX = Object.freeze({
+const RESOURCE_HINT_ROUTE_MATRIX = Object.freeze({
   home: Object.freeze({
     seedRoutes: ["/projekte/", "/gallery/", "/videos/", "/blog/", "/about/"],
     maxRoutes: 6,
@@ -66,7 +66,7 @@ export const RESOURCE_HINT_ROUTE_MATRIX = Object.freeze({
   }),
 });
 
-export function detectResourceHintRouteBucket(pathname = "/") {
+function detectResourceHintRouteBucket(pathname = "/") {
   const path = String(pathname || "/").toLowerCase();
 
   if (path === "/" || path === "/index.html") return "home";

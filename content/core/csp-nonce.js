@@ -6,7 +6,7 @@ let cachedNonce = null;
  *
  * @returns {string}
  */
-export function getCspNonce() {
+function getCspNonce() {
   if (cachedNonce) return cachedNonce;
   if (typeof document === "undefined") return "";
 

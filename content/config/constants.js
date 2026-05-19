@@ -8,6 +8,3 @@
 // Base URLs
 export const BASE_URL = "https://www.abdulkerimsesli.de";
 export const BASE_URL_DEV = "http://localhost:8787";
-
-// ── Three.js ──────────────────────────────
-export const THREE_VERSION = "0.183.2";

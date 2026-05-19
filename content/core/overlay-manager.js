@@ -6,13 +6,10 @@ import {
   normalizeOverlayMode,
 } from "./ui-store.js";
 import {
-  clearOverlayControllers,
   deleteOverlayController,
-  destroyBackdrop,
   ensureBackdropElement,
   getControllerFocusElement,
   getControllerRoots,
-  getGlobalBackdropElement as getBackdropElement,
   getOverlayController,
   setOverlayController,
   shouldModeShowBackdrop,
@@ -21,7 +18,6 @@ import {
   syncBodyOverlayState,
 } from "./overlay-core.js";
 import {
-  destroyOverlayFocus,
   prepareOverlayFocusChange,
   syncOverlayFocusState,
 } from "./overlay-focus.js";
@@ -84,10 +80,6 @@ function syncOverlayEnvironment(mode) {
   });
 }
 
-export function getGlobalBackdropElement() {
-  return getBackdropElement();
-}
-
 export { prepareOverlayFocusChange };
 
 /**
@@ -146,26 +138,4 @@ export function initOverlayManager() {
   });
 
   return overlaySyncCleanup;
-}
-
-export function destroyOverlayManager() {
-  if (overlaySyncCleanup) {
-    overlaySyncCleanup();
-    overlaySyncCleanup = null;
-  }
-
-  if (typeof document !== "undefined" && document.body) {
-    syncBodyOverlayState(OVERLAY_MODES.NONE);
-    delete document.body.dataset.activeOverlay;
-    if (document.documentElement instanceof HTMLElement) {
-      delete document.documentElement.dataset.activeOverlay;
-    }
-    syncBackgroundInteractivity(OVERLAY_MODES.NONE, {
-      getInteractiveRootsForMode,
-    });
-  }
-
-  destroyOverlayFocus(getControllerFocusElement);
-  destroyBackdrop();
-  clearOverlayControllers();
 }

@@ -70,14 +70,3 @@ export const injectViewTransitionRuntimeStyles = options => {
 
   styleEl.textContent = getRuntimeStyles(options.enableCrossDocument);
 };
-
-export const removeViewTransitionRuntimeStyles = () => {
-  if (typeof document === "undefined") return;
-  const runtimeStyle = document.getElementById(VIEW_TRANSITION_RUNTIME_STYLE_ID);
-  if (
-    runtimeStyle instanceof HTMLStyleElement &&
-    runtimeStyle.dataset.injectedBy === "core-view-transitions"
-  ) {
-    runtimeStyle.remove();
-  }
-};

@@ -514,19 +514,17 @@ async function callAgent(payload, callbacks = {}, { stream = true, signal = unde
  * @param {{ syncUrl?: boolean }} [options]
  * @returns {string} normalized user id or empty string if invalid
  */
-export function setUserName(name, { syncUrl = true } = {}) {
+function setUserName(name, { syncUrl = true } = {}) {
   return syncNameIdentity(name, { syncUrl });
 }
 
-export function clearUserIdentity({ clearUrl = true } = {}) {
+function clearUserIdentity({ clearUrl = true } = {}) {
   runtimeUserId = "";
   if (clearUrl) {
     clearRobotUserName({ clearUrl: true });
   }
   return "";
 }
-
-export { getUserId };
 
 export class AIAgentService {
   /** Streaming agent response with tool-calling */

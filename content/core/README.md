@@ -21,19 +21,13 @@ This directory contains shared browser runtime modules used by pages, components
 - `resource-hints.js` / `resource-hints-matrix.js`: route-aware runtime optimizations.
 - `accessibility-manager.js`: Accessibility helpers and announcer utilities.
 - `three-earth-manager.js`: Three.js Earth lifecycle, loading orchestration, and cleanup.
-- `model-loader.js`: Compressed 3D model loader (Draco & Meshopt via GLTFLoader).
 - `types.js`: JSDoc typedefs used across modules and components.
 
 ## Typical Usage
 
 ```javascript
 import { createLogger } from "#core/logger.js";
-import {
-  AppLoadManager,
-  loadSignals,
-  subscribeLoadState,
-  whenAppReady,
-} from "#core/load-manager.js";
+import { AppLoadManager, loadSignals } from "#core/load-manager.js";
 import { i18n } from "#core/i18n.js";
 
 const log = createLogger("Example");
@@ -44,14 +38,6 @@ AppLoadManager.updateLoader(0.25, "Initialisiere Beispiel");
 AppLoadManager.unblock("example-init");
 AppLoadManager.updateLoader(0.75, "Daten vorbereitet");
 AppLoadManager.hideLoader(0);
-
-const stop = subscribeLoadState(state => {
-  if (!state.blocked && state.done) {
-    log.info("App ready", state);
-  }
-});
-
-await whenAppReady({ timeout: 5000 });
 
 console.log(loadSignals.progress.value);
 log.info("Core initialized");
@@ -71,6 +57,6 @@ log.info("Core initialized");
 - `runtime-env.js` is the canonical place for local-dev host detection and should be preferred over ad-hoc hostname checks.
 - `i18n.tOrFallback(...)` is the preferred path for UI copy with explicit fallback text.
 - `url-utils.js` should be preferred over ad-hoc `new URL(...)` parsing for internal navigation and compact URL rendering.
-- `load-manager.js` exposes `whenAppReady(...)` for async coordination; loader progress and readiness are consumed directly through signals.
+- `load-manager.js` exposes loader progress and readiness directly through signals.
 - `#core/`, `#components/`, `#config/`, and `#pages/` are available via the global import map in `content/templates/global-head.html` when rendered in `base` mode.
 - Prefer reusing existing helpers from `async-utils.js`, `dom-utils.js`, `timer-manager.js`, `text-utils.js`, `sanitization-utils.js`, `fetch.js`, `signals.js`, and `events.js` before adding new utilities.

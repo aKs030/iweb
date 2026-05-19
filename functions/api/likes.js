@@ -5,6 +5,7 @@ const log = createLogger("likes");
  * API function to handle rating/likes of portfolio projects using Cloudflare D1
  */
 import { errorJsonResponse, jsonResponse } from "./_response.js";
+import { ensureAppD1Schema } from "./_d1-schema.js";
 import { getRequestClientIp } from "./_request-utils.js";
 
 export async function onRequestGet(context) {
@@ -28,6 +29,8 @@ export async function onRequestGet(context) {
         status: 503,
       });
     }
+
+    await ensureAppD1Schema(db);
 
     const result = await db
       .prepare("SELECT likes FROM project_likes WHERE project_id = ?")
@@ -83,6 +86,8 @@ export async function onRequestPost(context) {
         status: 503,
       });
     }
+
+    await ensureAppD1Schema(db);
 
     await db.batch([
       db

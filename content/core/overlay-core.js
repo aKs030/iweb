@@ -14,7 +14,7 @@ import { OVERLAY_MODES, normalizeOverlayMode } from "./ui-store.js";
 // BACKDROP
 // ============================================================================
 
-export const GLOBAL_BACKDROP_ID = "menu-global-backdrop";
+const GLOBAL_BACKDROP_ID = "menu-global-backdrop";
 
 const GLOBAL_BACKDROP_CLASS = "menu-global-backdrop overlay-backdrop overlay-backdrop--global";
 
@@ -150,17 +150,6 @@ export function syncBackdropState(mode) {
   backdrop.dataset.mode = normalizedMode;
 }
 
-export function getGlobalBackdropElement() {
-  return ensureBackdropElement();
-}
-
-export function destroyBackdrop() {
-  if (backdropElement?.isConnected) {
-    backdropElement.remove();
-  }
-  backdropElement = null;
-}
-
 // ============================================================================
 // ISOLATION
 // ============================================================================
@@ -281,8 +270,4 @@ export function deleteOverlayController(mode, controller = null) {
   if (currentController === controller) {
     overlayControllers.delete(normalizedMode);
   }
-}
-
-export function clearOverlayControllers() {
-  overlayControllers.clear();
 }

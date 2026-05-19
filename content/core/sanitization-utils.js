@@ -257,7 +257,7 @@ export function sanitizeHTML(html, options = {}) {
  * @param {Object} [options] - Sanitization options
  * @returns {DocumentFragment}
  */
-export function createSanitizedFragment(html, options = {}) {
+function createSanitizedFragment(html, options = {}) {
   const fragment = document.createDocumentFragment();
   const sanitized = sanitizeHTML(html, options);
   if (!sanitized) return fragment;

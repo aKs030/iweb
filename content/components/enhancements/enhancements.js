@@ -632,5 +632,3 @@ export function initEnhancements() {
     log.error("Enhancement init failed:", error);
   }
 }
-
-export default initEnhancements;

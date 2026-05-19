@@ -9,9 +9,9 @@ import {
 import { buildProjectPreviewUrl, buildR2Url } from "../../content/config/media-urls.js";
 import { isImageMediaPath } from "../_shared/media-assets.js";
 
-export const BLOG_INDEX_PATH = "/pages/blog/posts/index.json";
-export const PROJECT_APPS_PATH = "/pages/projekte/apps-config.json";
-export const MAX_SITEMAP_YOUTUBE_RESULTS = 200;
+const BLOG_INDEX_PATH = "/pages/blog/posts/index.json";
+const PROJECT_APPS_PATH = "/pages/projekte/apps-config.json";
+const MAX_SITEMAP_YOUTUBE_RESULTS = 200;
 
 const GALLERY_PREFIX = "Gallery/";
 // Keep a small static fallback so image discovery still works without bucket access.
@@ -42,7 +42,7 @@ export function buildBlogPath(id) {
   return `/blog/${encodeURIComponent(id)}/`;
 }
 
-export function buildVideoPath(videoId) {
+function buildVideoPath(videoId) {
   return `/videos/${encodeURIComponent(videoId)}/`;
 }
 

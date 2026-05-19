@@ -171,14 +171,6 @@ export class ThreeEarthManager {
         log.warn("Cleanup failed:", error);
       }
     }
-
-    // Release Draco/Meshopt decoder resources if model-loader was used
-    try {
-      const { disposeModelLoader } = await import("./model-loader.js");
-      disposeModelLoader();
-    } catch {
-      // model-loader was never loaded — nothing to dispose
-    }
   }
 
   /**

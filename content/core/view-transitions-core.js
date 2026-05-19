@@ -21,8 +21,6 @@ const VT_EVENTS = Object.freeze({
 let transitionQueue = Promise.resolve();
 /** @type {MediaQueryList|null} */
 let reducedMotionMql = null;
-/** @type {(() => void)|null} */
-let reducedMotionCleanup = null;
 let prefersReducedMotion = false;
 
 /**
@@ -39,7 +37,7 @@ let prefersReducedMotion = false;
 /**
  * @returns {boolean}
  */
-export const isSupported = () =>
+const isSupported = () =>
   typeof document !== "undefined" && typeof document.startViewTransition === "function";
 
 /**
@@ -213,7 +211,6 @@ const ensureReducedMotionObserver = () => {
 
   if (typeof mql.addEventListener === "function") {
     mql.addEventListener("change", onChange);
-    reducedMotionCleanup = () => mql.removeEventListener("change", onChange);
   }
 };
 
@@ -559,46 +556,3 @@ export async function withViewTransition(callback, options = {}) {
     }
   });
 }
-
-/**
- * Temporarily applies an inline view-transition-name to an element while a
- * transition callback runs, then restores the previous inline value.
- *
- * @param {Element|null|undefined} element
- * @param {string} name
- * @param {() => void|Promise<void>} callback
- * @param {TransitionOptions} [options]
- * @returns {Promise<void>}
- */
-export async function withElementViewTransitionName(element, name, callback, options = {}) {
-  const token = normalizeTokens([name], 1)[0];
-
-  if (!(element instanceof HTMLElement) || !token) {
-    await withViewTransition(callback, options);
-    return;
-  }
-
-  const previousInlineName = element.style.viewTransitionName;
-  element.style.viewTransitionName = token;
-
-  try {
-    await withViewTransition(callback, options);
-  } finally {
-    if (previousInlineName) {
-      element.style.viewTransitionName = previousInlineName;
-    } else {
-      element.style.removeProperty("view-transition-name");
-    }
-  }
-}
-
-export const destroyViewTransitionCore = () => {
-  if (reducedMotionCleanup) {
-    reducedMotionCleanup();
-    reducedMotionCleanup = null;
-  }
-  reducedMotionMql = null;
-  prefersReducedMotion = false;
-  transitionQueue = Promise.resolve();
-  transitionQueueDepth = 0;
-};

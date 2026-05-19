@@ -4,7 +4,7 @@ import { storeMemory, recallMemories } from "./_ai-agent-memory.js";
 
 const log = createLogger("ai-agent-tools");
 
-export const TOOL_DEFINITIONS = SHARED_ROBOT_TOOL_DEFINITIONS;
+const TOOL_DEFINITIONS = SHARED_ROBOT_TOOL_DEFINITIONS;
 
 /** OpenAI-compatible tool format */
 export const TOOLS = TOOL_DEFINITIONS.map(t => ({
@@ -16,7 +16,7 @@ export const TOOLS = TOOL_DEFINITIONS.map(t => ({
   },
 }));
 
-export async function executeServerTool(env, toolName, args, userId, config) {
+async function executeServerTool(env, toolName, args, userId, config) {
   if (toolName === "rememberUser") {
     const result = await storeMemory(env, userId, args.key || "note", args.value || "", config);
     return result.success
@@ -33,7 +33,7 @@ export async function executeServerTool(env, toolName, args, userId, config) {
   return null; // Client-side tool
 }
 
-export function parseToolArguments(rawArguments, toolName) {
+function parseToolArguments(rawArguments, toolName) {
   if (!rawArguments) return {};
   if (typeof rawArguments === "object" && !Array.isArray(rawArguments)) {
     return rawArguments;

@@ -7,7 +7,7 @@ import { EARTH_FALLBACK_BACKGROUND_URL } from "./texture-paths.js";
 
 // ===== Helper Functions (Pure) =====
 
-export function calculateQualityLevel(fps) {
+function calculateQualityLevel(fps) {
   if (fps < CONFIG.QUALITY_LEVELS.MEDIUM.minFPS) {
     return "LOW";
   } else if (fps < CONFIG.QUALITY_LEVELS.HIGH.minFPS) {
@@ -17,7 +17,7 @@ export function calculateQualityLevel(fps) {
 }
 
 // DRS Disabled for maximum quality
-export function calculateDynamicResolution(_fps, _currentRatio, perfConfig) {
+function calculateDynamicResolution(_fps, _currentRatio, perfConfig) {
   return perfConfig.PIXEL_RATIO;
 }
 

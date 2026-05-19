@@ -115,7 +115,7 @@ const ROBOT_MEMORY_FIELDS = Object.freeze(
 
 const ROBOT_MEMORY_FIELD_BY_KEY = new Map(ROBOT_MEMORY_FIELDS.map(field => [field.key, field]));
 
-export const ROBOT_MEMORY_KEYS = Object.freeze(ROBOT_MEMORY_FIELDS.map(field => field.key));
+const ROBOT_MEMORY_KEYS = Object.freeze(ROBOT_MEMORY_FIELDS.map(field => field.key));
 
 export const ROBOT_MEMORY_KEY_ENUM = ROBOT_MEMORY_KEYS;
 

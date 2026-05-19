@@ -51,7 +51,7 @@ export const normalizeBrowseToken = value =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-export const normalizeBrowseQuery = value =>
+const normalizeBrowseQuery = value =>
   String(value || "")
     .replace(/\s+/g, " ")
     .trim()
@@ -62,7 +62,7 @@ export const normalizeBrowseCategory = value => {
   return token || "all";
 };
 
-export const normalizeBrowseSort = value => {
+const normalizeBrowseSort = value => {
   const token = normalizeBrowseToken(value);
   return BROWSE_SORT_VALUES.has(token) ? token : DEFAULT_BROWSE_STATE.sort;
 };
@@ -116,7 +116,7 @@ export const buildBrowseSearch = state => {
 
 export const buildProjectsOverviewPath = state => `${PROJECTS_HOME_PATH}${buildBrowseSearch(state)}`;
 
-export const normalizeValueList = values =>
+const normalizeValueList = values =>
   Array.isArray(values) ? values.map(value => String(value || "").trim()).filter(Boolean) : [];
 
 const projectHasToken = (values, token) => {

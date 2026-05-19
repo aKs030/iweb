@@ -14,7 +14,7 @@ import {
 } from "./_ai-agent-intent.js";
 import { createUserId } from "../../content/core/user-id.js";
 import { buildAgentResponsePayload } from "../../content/core/ai-agent-contracts.js";
-import { normalizeUserId } from "./_user-identity.js";
+import { USER_ID_HEADER_NAME, normalizeUserId } from "./_user-identity.js";
 import {
   buildAgentMessagePayload,
   hasMeaningfulAgentText,
@@ -46,7 +46,6 @@ const DEFAULT_MAX_MEMORY_RESULTS = 5;
 const DEFAULT_MEMORY_SCORE_THRESHOLD = 0.65;
 const DEFAULT_MAX_HISTORY_TURNS = 10;
 const DEFAULT_MAX_TOKENS = 2048;
-const USER_ID_HEADER = "X-Jules-User-Id";
 
 function parseDecimal(value, fallback, { min = 0, max = 1, precision = 2 } = {}) {
   const parsed = Number.parseFloat(String(value ?? ""));
@@ -116,8 +115,8 @@ function appendExposeHeader(headers, name) {
 function withUserIdentityHeader(headers, userId) {
   const out = new Headers(headers);
   if (userId) {
-    out.set(USER_ID_HEADER, userId);
-    appendExposeHeader(out, USER_ID_HEADER);
+    out.set(USER_ID_HEADER_NAME, userId);
+    appendExposeHeader(out, USER_ID_HEADER_NAME);
   }
   return out;
 }

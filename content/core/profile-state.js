@@ -78,7 +78,7 @@ function resolvePayloadUserId(payload, fallbackUserId = "") {
   };
 }
 
-export function normalizeProfileStatus(raw) {
+function normalizeProfileStatus(raw) {
   const value = normalizeSchemaText(raw).toLowerCase();
   return PROFILE_STATUSES.has(value) ? value : "anonymous";
 }

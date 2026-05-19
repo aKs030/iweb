@@ -3,21 +3,12 @@
  * Modern, UI-agnostic loading state manager.
  * - Uses reactive signals as the primary source of truth
  * - Keeps blocking orchestration (`block`/`unblock`)
- * - Exposes `whenAppReady()` for async coordination without DOM events
  * - Does not require loader-specific DOM markup
  * @module AppLoadManager
  */
 
 import { createLogger } from "./logger.js";
-import { waitForReadyState } from "./async-utils.js";
-import {
-  batch,
-  computed,
-  effect,
-  signal,
-  subscribe as signalSubscribe,
-  untracked,
-} from "./signals.js";
+import { batch, computed, effect, signal, untracked } from "./signals.js";
 
 const log = createLogger("AppLoadManager");
 
@@ -49,23 +40,6 @@ function getLoadSnapshot() {
     message: loadSignals.message.value,
     hideScheduled: loadSignals.hideScheduled.value,
     done: loadSignals.done.value,
-  });
-}
-
-export function subscribeLoadState(listener, options = {}) {
-  return signalSubscribe(getLoadSnapshot, listener, options);
-}
-
-export function whenAppReady(options = {}) {
-  const { timeout = 0, abortSignal = null } = options;
-  return waitForReadyState({
-    getSnapshot: getLoadSnapshot,
-    isReady: snapshot => !snapshot.blocked && snapshot.done,
-    subscribe: listener => subscribeLoadState(listener),
-    timeout,
-    abortSignal,
-    abortMessage: "App readiness wait aborted",
-    timeoutMessage: `Timed out waiting for app readiness after ${timeout}ms`,
   });
 }
 

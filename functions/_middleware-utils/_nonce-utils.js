@@ -8,7 +8,7 @@
  * @param {string} value - Value to escape
  * @returns {string} Escaped value
  */
-export function escapeHtmlAttribute(value) {
+function escapeHtmlAttribute(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;");

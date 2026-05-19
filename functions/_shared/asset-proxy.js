@@ -59,7 +59,7 @@ export function decodeProxyPath(proxyPath) {
  * @param {Headers | null | undefined} [sourceHeaders]
  * @returns {string}
  */
-export function inferProxyContentType(pathname, contentTypes, sourceHeaders) {
+function inferProxyContentType(pathname, contentTypes, sourceHeaders) {
   const extensionMatch = String(pathname || "").match(/(\.[A-Za-z0-9]+)$/);
   const mappedType = extensionMatch && contentTypes.get(extensionMatch[1].toLowerCase());
 
@@ -101,7 +101,7 @@ export function buildProxyResponseHeaders(options) {
  * @param {URL} url
  * @returns {Request}
  */
-export function buildProxyCacheKey(url) {
+function buildProxyCacheKey(url) {
   return new Request(url.toString(), { method: "GET" });
 }
 
@@ -279,5 +279,3 @@ export function buildProxyNotFoundResponse(message, status = 404) {
     },
   });
 }
-
-export { DEFAULT_NOT_FOUND_CACHE_CONTROL, DEFAULT_PROXY_CACHE_CONTROL };

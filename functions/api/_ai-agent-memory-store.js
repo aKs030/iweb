@@ -5,14 +5,14 @@ import {
   ROBOT_MEMORY_SINGLETON_KEYS,
 } from "../../content/core/robot-memory-schema.js";
 
-export const FALLBACK_MEMORY_PREFIX = "robot-memory:";
+const FALLBACK_MEMORY_PREFIX = "robot-memory:";
 export const DEFAULT_MEMORY_RETENTION_DAYS = 180;
-export const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-export const MEMORY_KEY_METADATA = ROBOT_MEMORY_METADATA;
+const MEMORY_KEY_METADATA = ROBOT_MEMORY_METADATA;
 
-export const DEFAULT_MEMORY_CATEGORY = DEFAULT_ROBOT_MEMORY_CATEGORY;
-export const DEFAULT_MEMORY_PRIORITY = DEFAULT_ROBOT_MEMORY_PRIORITY;
+const DEFAULT_MEMORY_CATEGORY = DEFAULT_ROBOT_MEMORY_CATEGORY;
+const DEFAULT_MEMORY_PRIORITY = DEFAULT_ROBOT_MEMORY_PRIORITY;
 
 export const SINGLETON_MEMORY_KEYS = ROBOT_MEMORY_SINGLETON_KEYS;
 
@@ -77,7 +77,7 @@ export function resolveMemoryMetadata(key, category, priority) {
   };
 }
 
-export function normalizeMemoryEntry(entry, now, retentionMs) {
+function normalizeMemoryEntry(entry, now, retentionMs) {
   const ts = Number(entry?.timestamp);
   const timestamp = Number.isFinite(ts) && ts > 0 ? ts : now;
   const metadata = resolveMemoryMetadata(entry?.key, entry?.category, entry?.priority);
@@ -90,7 +90,7 @@ export function normalizeMemoryEntry(entry, now, retentionMs) {
   };
 }
 
-export function compactMemories(entries, now, retentionMs) {
+function compactMemories(entries, now, retentionMs) {
   const unique = new Map();
   for (const rawEntry of entries) {
     const entry = normalizeMemoryEntry(rawEntry, now, retentionMs);
@@ -110,10 +110,6 @@ export function compactMemories(entries, now, retentionMs) {
     }
   }
   return [...unique.values()].sort((a, b) => a.timestamp - b.timestamp);
-}
-
-export function compactMemoryEntries(entries = [], env, now = Date.now()) {
-  return compactMemories(entries, now, getMemoryRetentionMs(env));
 }
 
 export async function loadFallbackMemories(kv, userId, env, { persistPruned = false } = {}) {

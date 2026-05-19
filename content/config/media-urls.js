@@ -1,50 +1,20 @@
 import { isLocalDevRuntime } from "../core/runtime-env.js";
 
-export const R2_PUBLIC_BASE_URL = "https://img.abdulkerimsesli.de";
+const R2_PUBLIC_BASE_URL = "https://img.abdulkerimsesli.de";
 export const R2_PUBLIC_ORIGIN = new URL(R2_PUBLIC_BASE_URL).origin;
 export const R2_PROXY_BASE_PATH = "/r2-proxy";
-export const R2_ICONS_BASE_URL = `${R2_PUBLIC_BASE_URL}/icons`;
-export const R2_BLOG_BASE_URL = `${R2_PUBLIC_BASE_URL}/blog`;
-export const R2_APP_PREVIEWS_BASE_URL = `${R2_PUBLIC_BASE_URL}/app`;
 
-export const ICONS_VERSION = "20260221";
-export const APP_PREVIEWS_VERSION = "20260221";
-export const SAFARI_PINNED_TAB_VERSION = "20260306";
+const ICONS_VERSION = "20260221";
+const APP_PREVIEWS_VERSION = "20260221";
 
 export const FAVICON_ICO_URL = buildIconUrl("favicon.ico");
 export const FAVICON_512_URL = buildIconUrl("favicon-512.webp");
-export const APPLE_TOUCH_ICON_URL = buildIconUrl("apple-touch-icon.webp");
-export const SAFARI_PINNED_TAB_URL = buildIconUrl(
-  "safari-pinned-tab.svg",
-  SAFARI_PINNED_TAB_VERSION
-);
 
 export const OG_HOME_IMAGE_URL = buildBlogUrl("og-home-800.png");
 export const OG_PROJECTS_IMAGE_URL = buildBlogUrl("og-projekte-800.png");
 export const OG_VIDEOS_IMAGE_URL = buildBlogUrl("og-videos-800.png");
 export const OG_DESIGN_IMAGE_URL = buildBlogUrl("og-design-800.png");
 export const OG_PHOTOGRAPHY_IMAGE_URL = buildBlogUrl("og-photography-800.png");
-export const OG_REACT_IMAGE_URL = buildBlogUrl("og-react-800.png");
-export const OG_THREEJS_IMAGE_URL = buildBlogUrl("og-threejs-800.png");
-export const OG_SEO_IMAGE_URL = buildBlogUrl("og-seo-800.png");
-export const OG_PWA_IMAGE_URL = buildBlogUrl("og-pwa-800.png");
-export const OG_WEBCOMPONENTS_IMAGE_URL = buildBlogUrl("og-webcomponents-800.png");
-export const OG_CSS_IMAGE_URL = buildBlogUrl("og-css-800.png");
-export const OG_PERFORMANCE_IMAGE_URL = buildBlogUrl("og-performance-800.png");
-export const OG_TYPESCRIPT_IMAGE_URL = buildBlogUrl("og-typescript-800.png");
-
-export const BLOG_POST_OG_IMAGE_URLS = Object.freeze({
-  "react-no-build": OG_REACT_IMAGE_URL,
-  "modern-ui-design": OG_DESIGN_IMAGE_URL,
-  "visual-storytelling": OG_PHOTOGRAPHY_IMAGE_URL,
-  "threejs-performance": OG_THREEJS_IMAGE_URL,
-  "seo-technische-optimierung": OG_SEO_IMAGE_URL,
-  "progressive-web-apps-2026": OG_PWA_IMAGE_URL,
-  "web-components-zukunft": OG_WEBCOMPONENTS_IMAGE_URL,
-  "css-container-queries": OG_CSS_IMAGE_URL,
-  "javascript-performance-patterns": OG_PERFORMANCE_IMAGE_URL,
-  "typescript-advanced-patterns": OG_TYPESCRIPT_IMAGE_URL,
-});
 
 function normalizeMediaText(value) {
   return String(value || "").trim();
@@ -97,15 +67,15 @@ export function buildR2Url(pathname, search = "") {
   return mediaUrl.toString();
 }
 
-export function buildIconUrl(filename, version = ICONS_VERSION) {
+function buildIconUrl(filename, version = ICONS_VERSION) {
   return buildR2Url(`icons/${filename}`, buildVersionSearch(version));
 }
 
-export function buildBlogUrl(filename, search = "") {
+function buildBlogUrl(filename, search = "") {
   return buildR2Url(`blog/${filename}`, search);
 }
 
-export function getProjectPreviewName(project) {
+function getProjectPreviewName(project) {
   if (project && typeof project === "object") {
     if (project.previewMedia === null || project.previewMedia === false) {
       return "";
@@ -125,7 +95,7 @@ export function buildProjectPreviewUrl(project, version = APP_PREVIEWS_VERSION) 
   return buildR2Url(`app/${previewName}.svg`, buildVersionSearch(version));
 }
 
-export function resolveR2Url(value, locationLike = globalThis.location) {
+function resolveR2Url(value, locationLike = globalThis.location) {
   const rawValue = normalizeMediaText(value);
   if (!rawValue) return "";
 

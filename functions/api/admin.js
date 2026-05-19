@@ -10,6 +10,7 @@ const log = createLogger("admin");
  */
 
 import { getCorsHeaders, handleOptions } from "./_cors.js";
+import { ensureAppD1Schema } from "./_d1-schema.js";
 import { jsonResponse, errorJsonResponse } from "./_response.js";
 import { getMemoryKV, loadFallbackMemories } from "./_ai-agent-memory-store.js";
 import {
@@ -160,6 +161,7 @@ async function handleDashboard(env, corsHeaders) {
 
   if (db) {
     try {
+      await ensureAppD1Schema(db);
       const [contacts, comments, likes, events] = await Promise.all([
         db
           .prepare("SELECT COUNT(*) as count FROM contact_messages")
@@ -211,6 +213,7 @@ async function handleDashboard(env, corsHeaders) {
 async function handleContactMessages(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
+  await ensureAppD1Schema(db);
 
   const limit = Math.min(100, Math.max(1, Number(body?.limit) || 50));
   const offset = Math.max(0, Number(body?.offset) || 0);
@@ -234,6 +237,7 @@ async function handleContactMessages(env, corsHeaders, body) {
 async function handleDeleteContact(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
+  await ensureAppD1Schema(db);
 
   const id = Number(body?.id);
   if (!id) return adminError(corsHeaders, "ID fehlt", 400);
@@ -248,6 +252,7 @@ async function handleDeleteContact(env, corsHeaders, body) {
 async function handleBlogComments(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
+  await ensureAppD1Schema(db);
 
   const limit = Math.min(100, Math.max(1, Number(body?.limit) || 50));
   const offset = Math.max(0, Number(body?.offset) || 0);
@@ -293,6 +298,7 @@ async function handleBlogComments(env, corsHeaders, body) {
 async function handleDeleteComment(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
+  await ensureAppD1Schema(db);
 
   const id = Number(body?.id);
   if (!id) return adminError(corsHeaders, "ID fehlt", 400);
@@ -307,6 +313,7 @@ async function handleDeleteComment(env, corsHeaders, body) {
 async function handleProjectLikes(env, corsHeaders) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
+  await ensureAppD1Schema(db);
 
   const { results } = await db.prepare("SELECT * FROM project_likes ORDER BY likes DESC").all();
 
@@ -316,6 +323,7 @@ async function handleProjectLikes(env, corsHeaders) {
 async function handleLikeEvents(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
+  await ensureAppD1Schema(db);
 
   const limit = Math.min(200, Math.max(1, Number(body?.limit) || 50));
   const offset = Math.max(0, Number(body?.offset) || 0);
