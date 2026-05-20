@@ -3,7 +3,7 @@
  * @version 2.0.0
  */
 
-export { escapeXml } from "../../content/core/text-utils.js";
+export { escapeXml } from "../../content/core/utils/text-utils.js";
 
 /**
  * Normalize URL path for sitemaps (adds trailing slash)

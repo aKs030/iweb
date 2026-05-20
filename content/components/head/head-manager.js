@@ -13,11 +13,11 @@ import {
   getSeoPageTopics,
 } from "#core/schema-page-types.js";
 import { generateSchemaGraph, injectSchema, scheduleSchemaInjection } from "#core/schema.js";
-import { loadBrandData } from "../../config/brand-data-loader.js";
+import { loadBrandData } from "../../data/brand-data-loader.js";
 import { ROUTES } from "../../config/routes-config.js";
 import { BASE_URL } from "../../config/constants.js";
 import { SITE_NAME } from "../../config/site-seo.js";
-import { headState } from "./head-state.js";
+import { headState } from "./state/head-state.js";
 
 const log = createLogger("HeadManager");
 

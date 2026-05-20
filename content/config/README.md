@@ -31,13 +31,13 @@ YOUTUBE_CHANNEL_ID=UCTGRherjM4iuIn86xxubuPg
 
 ## Brand Data
 
-`brand-data.json` stores canonical brand identity and schema fields:
+The canonical brand and language data now lives under `content/data/`:
 
-- name / legalName / alternateName
-- social profiles (`sameAs`)
-- language, occupation and contact points
+- `content/data/brand-data.json` stores canonical brand identity and schema fields
+- `content/data/typewriter-quotes.json` stores the typewriter quote pool
+- `content/data/locales/*.json` stores UI translations
 
-`brand-data-loader.js` normalizes this payload for JSON-LD usage.
+`content/data/brand-data-loader.js` normalizes brand data for JSON-LD usage.
 
 Shared site media lives in `media-urls.js`. Page and post frontmatter that
 stores absolute media URLs is maintained manually against the same public R2

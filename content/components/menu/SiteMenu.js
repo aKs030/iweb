@@ -186,9 +186,9 @@ export class SiteMenu extends HTMLElement {
 
   getCssUrls() {
     const fallbackUrls = [
-      "/content/components/menu/menu-base.css",
-      "/content/components/menu/menu-states.css",
-      "/content/components/menu/menu-mobile.css",
+      "/content/components/menu/styles/menu-base.css",
+      "/content/components/menu/styles/menu-states.css",
+      "/content/components/menu/styles/menu-mobile.css",
     ];
     const configuredUrls = Array.isArray(this.config.CSS_URLS)
       ? this.config.CSS_URLS

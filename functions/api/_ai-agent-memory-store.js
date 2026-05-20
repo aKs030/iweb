@@ -3,7 +3,7 @@ import {
   DEFAULT_ROBOT_MEMORY_PRIORITY,
   ROBOT_MEMORY_METADATA,
   ROBOT_MEMORY_SINGLETON_KEYS,
-} from "../../content/core/robot-memory-schema.js";
+} from "../../content/components/robot-companion/index.js";
 
 const FALLBACK_MEMORY_PREFIX = "robot-memory:";
 export const DEFAULT_MEMORY_RETENTION_DAYS = 180;

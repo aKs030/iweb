@@ -83,11 +83,11 @@
         }
       }
     },
-    "/api/ai": {
+    "/api/ai-agent": {
       "post": {
-        "summary": "AI chat completion",
-        "description": "Chat with AI robot companion using Groq API",
-        "operationId": "chatCompletion",
+        "summary": "AI robot companion",
+        "description": "Chat with the AI robot companion using Cloudflare AI, tool-calling, image analysis, and memory.",
+        "operationId": "runAiAgent",
         "tags": ["AI"],
         "requestBody": {
           "required": true,
@@ -95,17 +95,33 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["message"],
+                "required": ["prompt"],
                 "properties": {
-                  "message": {
+                  "prompt": {
                     "type": "string",
                     "description": "User message",
                     "example": "Tell me about your projects"
                   },
-                  "context": {
+                  "userId": {
                     "type": "string",
-                    "description": "Current page context",
-                    "example": "home"
+                    "description": "Optional stable or name-based user id",
+                    "example": "anonymous"
+                  },
+                  "stream": {
+                    "type": "boolean",
+                    "description": "Return an SSE stream when true",
+                    "default": true
+                  },
+                  "conversationHistory": {
+                    "type": "array",
+                    "description": "Recent chat turns",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": { "type": "string", "enum": ["user", "assistant"] },
+                        "content": { "type": "string" }
+                      }
+                    }
                   }
                 }
               }
@@ -114,16 +130,28 @@
         },
         "responses": {
           "200": {
-            "description": "AI response",
+            "description": "AI response or SSE event stream",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["response", "model"],
+                  "required": ["text"],
                   "properties": {
-                    "response": { "type": "string" },
-                    "model": { "type": "string" }
+                    "text": { "type": "string" },
+                    "toolCalls": { "type": "array" },
+                    "toolResults": { "type": "array" },
+                    "model": { "type": "string" },
+                    "hasMemory": { "type": "boolean" },
+                    "hasImage": { "type": "boolean" },
+                    "retryable": { "type": "boolean" },
+                    "degraded": { "type": "boolean" }
                   }
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "Server-sent events with token, status, tool, and message events"
                 }
               }
             }

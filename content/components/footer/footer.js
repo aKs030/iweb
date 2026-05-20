@@ -9,7 +9,7 @@
 import { createLogger } from "#core/logger.js";
 import { a11y } from "#core/accessibility-manager.js";
 import { i18n } from "#core/i18n.js";
-import { CookieManager } from "#core/cookie-manager.js";
+import { CookieManager } from "./modules/cookie-manager.js";
 import { AnalyticsManager } from "./footer-analytics.js";
 import { resetFooterState, setFooterExpanded, setFooterLoaded } from "./state.js";
 import { TimerManager } from "#core/timer-manager.js";

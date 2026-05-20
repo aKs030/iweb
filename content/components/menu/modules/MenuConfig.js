@@ -61,18 +61,18 @@ const CONTACT_TITLE = { title: "menu.contact", subtitle: "menu.contact_sub" };
 export const MenuConfig = {
   // Paths
   CSS_URLS: [
-    "/content/components/menu/menu-base.css",
-    "/content/components/menu/menu-states.css",
-    "/content/components/menu/menu-mobile.css",
+    "/content/components/menu/styles/menu-base.css",
+    "/content/components/menu/styles/menu-states.css",
+    "/content/components/menu/styles/menu-mobile.css",
   ],
-  DEFERRED_CSS_URLS: ["/content/components/menu/menu-search.css"],
+  DEFERRED_CSS_URLS: ["/content/components/menu/styles/menu-search.css"],
   SHADOW_CSS_URLS: [
-    "/content/components/menu/menu-base.css",
-    "/content/components/menu/menu-states.css",
-    "/content/components/menu/menu-mobile.css",
+    "/content/components/menu/styles/menu-base.css",
+    "/content/components/menu/styles/menu-states.css",
+    "/content/components/menu/styles/menu-mobile.css",
   ],
-  DEFERRED_SHADOW_CSS_URLS: ["/content/components/menu/menu-search.css"],
-  GLOBAL_CSS_URLS: ["/content/components/menu/menu-backdrop.css"],
+  DEFERRED_SHADOW_CSS_URLS: ["/content/components/menu/styles/menu-search.css"],
+  GLOBAL_CSS_URLS: ["/content/components/menu/styles/menu-backdrop.css"],
 
   // Timing
   DEBOUNCE_DELAY: 100,

@@ -23,9 +23,9 @@
 import { RobotAnimation } from "./modules/robot-animation.js";
 import { RobotChat } from "./modules/robot-chat.js";
 import { createLogger } from "../../core/logger.js";
-import { createObserver } from "../../core/dom-utils.js";
-import { TimerManager } from "../../core/timer-manager.js";
-import { uiStore } from "../../core/ui-store.js";
+import { createObserver } from "#core/dom-utils.js";
+import { TimerManager } from "#core/timer-manager.js";
+import { uiStore } from "#core/ui-store.js";
 import {
   OVERLAY_MODES,
   initOverlayManager,
@@ -1493,26 +1493,4 @@ export class RobotCompanion {
   async initialize() {
     if (!this.dom.container) this.init();
   }
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-      const robot = new RobotCompanion();
-      robot
-        .initialize()
-        .catch(e =>
-          log.error("RobotCompanion init failed: " + (e && e.message ? e.message : String(e)))
-        );
-    },
-    { once: true }
-  );
-} else {
-  const robot = new RobotCompanion();
-  robot
-    .initialize()
-    .catch(e =>
-      log.error("RobotCompanion init failed: " + (e && e.message ? e.message : String(e)))
-    );
 }

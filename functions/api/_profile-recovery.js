@@ -1,6 +1,6 @@
-import { normalizeRecoveryCandidate } from "../../content/core/profile-state.js";
+import { normalizeRecoveryCandidate } from "../../content/core/state/profile-state.js";
 import { normalizeUserId } from "./_user-identity.js";
-import { normalizeSchemaText } from "../../content/core/text-utils.js";
+import { normalizeSchemaText } from "../../content/core/utils/text-utils.js";
 
 const FALLBACK_MEMORY_PREFIX = "robot-memory:";
 const MAX_KV_SCAN_PAGES = 100;

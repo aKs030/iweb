@@ -28,6 +28,6 @@ console.log(loadSignals.blocked.value);
 - Das Loading-System ist UI-agnostisch und verwendet Signals als Primärzustand.
 - `loadSignals` ist der Primärpfad für App-Readiness und Loader-Fortschritt.
 - `global-head.html` stellt im `base`-Modus direkt die Import-Map für Vendor-Pakete und interne Aliase (`#core`, `#components`, `#config`, `#pages`) bereit.
-- Das Footer-Web-Component wird nicht mehr im kritischen Pfad geladen, sondern von `head-inline.js` per Intent-/Viewport-/Idle-Hydration nachgezogen.
+- Das Footer-Web-Component wird nicht mehr im kritischen Pfad geladen, sondern vom Head-Feature per Intent-/Viewport-/Idle-Hydration nachgezogen.
 - Event-Konstanten liegen in `content/core/events.js`.
-- `global-head.html` liefert im `base`-Modus die globale App-Shell; `head-inline.js` und `content/main.js` werden weiter darüber initialisiert.
+- `global-head.html` liefert im `base`-Modus die globale App-Shell; `content/components/head/index.js` und `content/main.js` werden weiter darüber initialisiert.

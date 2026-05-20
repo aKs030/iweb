@@ -2,7 +2,7 @@ import { getElementById, observeOnce } from "#core/dom-utils.js";
 import { createLogger } from "#core/logger.js";
 import { TimerManager } from "#core/timer-manager.js";
 import { i18n } from "#core/i18n.js";
-import { ROBOT_EVENTS } from "#components/robot-companion/constants/events.js";
+import { ROBOT_EVENTS } from "#components/robot-companion/index.js";
 
 let typeWriterModule = null;
 
@@ -31,7 +31,7 @@ const HeroManager = (() => {
   async function loadTyped(heroDataModule) {
     try {
       if (!typeWriterModule) {
-        typeWriterModule = await import("#components/typewriter/TypeWriter.js").catch(err => {
+        typeWriterModule = await import("#components/typewriter/index.js").catch(err => {
           log.warn("Failed to import TypeWriter module", err);
           return null;
         });

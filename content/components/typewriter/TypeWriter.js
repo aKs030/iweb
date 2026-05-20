@@ -4,7 +4,7 @@
  * Animated text typing effect with multi-line support
  * @version 2.0.0
  */
-import { subscribeFooterState } from "#footer/state.js";
+import { subscribeFooterState } from "#footer/index.js";
 import { createLogger } from "#core/logger.js";
 import { getElementById } from "#core/dom-utils.js";
 import { TimerManager } from "#core/timer-manager.js";
@@ -411,7 +411,7 @@ export async function initHeroSubtitle(options = {}) {
 
     let quotes = null;
     try {
-      quotes = await fetchJSON("/content/config/typewriter-quotes.json", {
+      quotes = await fetchJSON("/content/data/typewriter-quotes.json", {
         retries: 1,
       });
     } catch {
@@ -421,7 +421,7 @@ export async function initHeroSubtitle(options = {}) {
     if (!quotes || !quotes.length) return false;
     try {
       // B) Personalisierung der UI & Typewriter-Titel
-      const { getProfileState } = await import("../robot-companion/modules/user-identity.js");
+      const { getProfileState } = await import("#components/robot-companion/index.js");
       const profile = getProfileState();
       if (profile && profile.name && profile.name.toLowerCase() !== "jules") {
         quotes.unshift({
