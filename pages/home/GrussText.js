@@ -104,12 +104,10 @@ const LEDES = {
 const META_SETS = {
   de: [
     ["Räumliche Tiefe", "Bewegte Bilder", "Licht & Schatten", "Immersive Erlebnisse"],
-    ["Sanfte Kontraste", "Fließende Formen", "Visuelle Ruhe", "Atmosphärisch"],
     ["Poesie", "Elegante Bewegung", "Strukturelle Harmonie", "Visueller Klang"],
   ],
   en: [
     ["Spatial Depth", "Moving Images", "Light & Shadow", "Immersive Experiences"],
-    ["Soft Contrasts", "Flowing Forms", "Visual Calm", "Atmospheric"],
     ["Poetry", "Elegant Motion", "Structural Harmony", "Visual Sound"],
   ],
 };
