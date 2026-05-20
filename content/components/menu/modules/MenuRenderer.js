@@ -3,7 +3,7 @@
  */
 
 import { MenuTemplate } from "./MenuTemplate.js";
-import { i18n } from "#core/i18n.js";
+import { i18n } from "../../../core/i18n.js";
 
 /**
  * @typedef {import('./MenuState.js').MenuState} MenuState

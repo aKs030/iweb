@@ -1,7 +1,7 @@
 import { whenFooterReady } from "./state.js";
-import { cancelIdleTask, scheduleIdleTask } from "#core/utils/async-utils.js";
-import { createLogger } from "#core/logger.js";
-import { resourceHints } from "#core/seo/resource-hints.js";
+import { cancelIdleTask, scheduleIdleTask } from "../../core/utils/async-utils.js";
+import { createLogger } from "../../core/logger.js";
+import { resourceHints } from "../../core/seo/resource-hints.js";
 
 const log = createLogger("head-footer");
 

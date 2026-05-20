@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { TimerManager } from "#core/utils/timer-manager.js";
+import { TimerManager } from "../../content/core/utils/timer-manager.js";
 
 /**
  * Modern 3D Gallery System

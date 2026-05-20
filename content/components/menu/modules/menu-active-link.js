@@ -3,7 +3,7 @@
  * Keeps route matching deterministic and easy to unit test.
  */
 
-import { normalizePathname } from "#core/utils/path-utils.js";
+import { normalizePathname } from "../../../core/utils/path-utils.js";
 
 function parseMenuHref(rawHref) {
   const href = String(rawHref || "").trim();

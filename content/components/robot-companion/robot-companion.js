@@ -23,9 +23,9 @@
 import { RobotAnimation } from "./modules/robot-animation.js";
 import { RobotChat } from "./modules/robot-chat.js";
 import { createLogger } from "../../core/logger.js";
-import { createObserver } from "#core/utils/dom-utils.js";
-import { TimerManager } from "#core/utils/timer-manager.js";
-import { uiStore } from "#core/state/ui-store.js";
+import { createObserver } from "../../core/utils/dom-utils.js";
+import { TimerManager } from "../../core/utils/timer-manager.js";
+import { uiStore } from "../../core/state/ui-store.js";
 import {
   OVERLAY_MODES,
   initOverlayManager,

@@ -2,19 +2,19 @@
  * Menu Events Management
  * Handles all user interactions, URL changes, and scroll events.
  */
-import { i18n } from "#core/i18n.js";
+import { i18n } from "../../../core/i18n.js";
 import { footerSignals } from "#footer/index.js";
-import { createLogger } from "#core/logger.js";
-import { TimerManager } from "#core/utils/timer-manager.js";
-import { resolvedTheme, setTheme } from "#core/state/theme-state.js";
-import { addManagedEventListener } from "#core/utils/dom-utils.js";
-import { withViewTransition } from "#core/view-transitions.js";
+import { createLogger } from "../../../core/logger.js";
+import { TimerManager } from "../../../core/utils/timer-manager.js";
+import { resolvedTheme, setTheme } from "../../../core/state/theme-state.js";
+import { addManagedEventListener } from "../../../core/utils/dom-utils.js";
+import { withViewTransition } from "../../../core/view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
-} from "#core/view-transitions/constants.js";
-import { OVERLAY_MODES, prepareOverlayFocusChange } from "#core/overlay-manager.js";
+} from "../../../core/view-transitions/constants.js";
+import { OVERLAY_MODES, prepareOverlayFocusChange } from "../../../core/overlay-manager.js";
 import { isConnectedHTMLElement, resolveMenuHost } from "./menu-dom-helpers.js";
 import { selectActiveMenuHref } from "./menu-active-link.js";
 
@@ -148,7 +148,10 @@ export class MenuEvents {
         import("#footer/index.js").then(({ closeFooter }) => {
           try {
             closeFooter();
-          } catch {}
+          } catch {
+             
+            // ignoring if footer is not available
+          }
         });
       }
       this.setMenuOpenWithTransition(isOpen);

@@ -1,10 +1,10 @@
-import { i18n } from "#core/i18n.js";
-import { withViewTransition } from "#core/view-transitions.js";
+import { i18n } from "../../../core/i18n.js";
+import { withViewTransition } from "../../../core/view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
-} from "#core/view-transitions/constants.js";
+} from "../../../core/view-transitions/constants.js";
 import { isConnectedHTMLElement, resolveMenuHost } from "./menu-dom-helpers.js";
 
 const SEARCH_VIEW_TRANSITION_OPTIONS = Object.freeze({

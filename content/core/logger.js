@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { isLocalDevHost } from "./runtime-env.js";
 
 /**

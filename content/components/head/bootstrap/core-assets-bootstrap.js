@@ -1,8 +1,8 @@
-import { scheduleIdleTask } from "#core/utils/async-utils.js";
-import { applyCspNonce } from "#core/utils/csp-nonce.js";
-import { upsertHeadLink } from "#core/utils/dom-utils.js";
-import { createLogger } from "#core/logger.js";
-import { resourceHints } from "#core/seo/resource-hints.js";
+import { scheduleIdleTask } from "../../../core/utils/async-utils.js";
+import { applyCspNonce } from "../../../core/utils/csp-nonce.js";
+import { upsertHeadLink } from "../../../core/utils/dom-utils.js";
+import { createLogger } from "../../../core/logger.js";
+import { resourceHints } from "../../../core/seo/resource-hints.js";
 import { EARTH_PRIMARY_TEXTURE_URL } from "#components/particles/index.js";
 
 const log = createLogger("head-assets");

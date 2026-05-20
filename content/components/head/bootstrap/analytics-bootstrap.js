@@ -1,6 +1,6 @@
 import { ENV } from "#config/env.config.js";
-import { applyCspNonce } from "#core/utils/csp-nonce.js";
-import { createLogger } from "#core/logger.js";
+import { applyCspNonce } from "../../../core/utils/csp-nonce.js";
+import { createLogger } from "../../../core/logger.js";
 
 const log = createLogger("head-analytics");
 

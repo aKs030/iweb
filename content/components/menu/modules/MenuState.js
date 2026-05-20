@@ -2,14 +2,14 @@
  * Menu State Management
  * Handles the reactive state of the menu (open/closed, active link, title).
  */
-import { createLogger } from "#core/logger.js";
-import { computed, signal } from "#core/signals.js";
+import { createLogger } from "../../../core/logger.js";
+import { computed, signal } from "../../../core/signals.js";
 import {
   OVERLAY_MODES,
   clearActiveOverlayMode,
   setActiveOverlayMode,
   uiStore,
-} from "#core/state/ui-store.js";
+} from "../../../core/state/ui-store.js";
 
 const log = createLogger("MenuState");
 

@@ -1,4 +1,4 @@
-import { fire } from "#core/events.js";
+import { fire } from "../../../../core/events.js";
 import { ROBOT_EVENTS } from "../../constants/events.js";
 import { getRobotAvatarButton, getRobotImageUploadInput } from "../tool-dom-utils.js";
 import { buildToolResult } from "../tool-result.js";

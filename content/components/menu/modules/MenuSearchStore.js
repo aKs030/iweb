@@ -1,6 +1,6 @@
-import { i18n } from "#core/i18n.js";
-import { createLogger } from "#core/logger.js";
-import { batch, signal, subscribe as signalSubscribe } from "#core/signals.js";
+import { i18n } from "../../../core/i18n.js";
+import { createLogger } from "../../../core/logger.js";
+import { batch, signal, subscribe as signalSubscribe } from "../../../core/signals.js";
 import { MenuSearchApi } from "./search-api.js";
 
 const log = createLogger("MenuSearchStore");

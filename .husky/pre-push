@@ -1,0 +1,11 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run full lint before push
+echo "Running full linting before push..."
+npm run lint
+
+if [ $? -ne 0 ]; then
+  echo "Linting failed. Fix errors and try again."
+  exit 1
+fi

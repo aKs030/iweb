@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
   BACKDROP_SENSITIVE_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,

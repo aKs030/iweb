@@ -44,7 +44,7 @@ export function canonicalizeUrlPath(path) {
  * @returns {string} Normalized pathname (or "/" if empty)
  */
 export function normalizePathname(pathname) {
-  let source = String(pathname || "/");
+  const source = String(pathname || "/");
   // Remove query string and hash
   const noQuery = source.split("?")[0] || "";
   const noHash = noQuery.split("#")[0] || "";

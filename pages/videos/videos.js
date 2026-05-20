@@ -4,10 +4,10 @@
  * @last-modified 2026-01-31
  */
 
-import { createLogger } from "#core/logger.js";
-import { isLocalDevRuntime } from "#core/runtime-env.js";
-import { AppLoadManager } from "#core/load-manager.js";
-import { i18n } from "#core/i18n.js";
+import { createLogger } from "../content/core/logger.js";
+import { isLocalDevRuntime } from "../content/core/runtime-env.js";
+import { AppLoadManager } from "../content/core/load-manager.js";
+import { i18n } from "../content/core/i18n.js";
 import { ensureDeepLinkedVideo, loadFromApi } from "./videos-data.js";
 import {
   bindThumb,

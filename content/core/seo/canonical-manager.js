@@ -1,4 +1,4 @@
-import { isLocalDevHost } from "#core/runtime-env.js";
+import { isLocalDevHost } from "./runtime-env.js";
 import { BASE_URL } from "../../config/constants.js";
 import { createLogger } from "../logger.js";
 import { upsertHeadLink } from "../utils/dom-utils.js";

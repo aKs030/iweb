@@ -175,7 +175,10 @@ export async function loadGalleryImages(context) {
 
   try {
     dynamicObjects = await listGalleryObjects(context.env?.GALLERY_BUCKET);
-  } catch {}
+  } catch {
+     
+    // ignoring gallery loading errors
+  }
 
   const fallbackObjects = FALLBACK_GALLERY_KEYS.map(key => ({
     key,

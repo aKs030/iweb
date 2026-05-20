@@ -6,10 +6,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import htm from "htm";
-import { createLogger } from "#core/logger.js";
-import { createUseTranslation } from "#core/react-utils.js";
-import { sanitizeHTML } from "#core/utils/sanitization-utils.js";
-import { AppLoadManager } from "#core/load-manager.js";
+import { createLogger } from "../content/core/logger.js";
+import { createUseTranslation } from "../content/core/react-utils.js";
+import { sanitizeHTML } from "../content/core/utils/sanitization-utils.js";
+import { AppLoadManager } from "../content/core/load-manager.js";
 import { Clock, ArrowRight } from "#components/icons/index.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
 import { ParticleSystem } from "./utils/ParticleSystem.js";

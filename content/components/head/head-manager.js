@@ -3,16 +3,16 @@
  * @version 1.1.0
  */
 
-import { createLogger } from "#core/logger.js";
-import { upsertMeta } from "#core/utils/dom-utils.js";
-import { applyCanonicalLinks } from "#core/seo/canonical-manager.js";
-import { extractMainHeadingTerms } from "#core/seo/content-extractors.js";
+import { createLogger } from "../../core/logger.js";
+import { upsertMeta } from "../../core/utils/dom-utils.js";
+import { applyCanonicalLinks } from "../../core/seo/canonical-manager.js";
+import { extractMainHeadingTerms } from "../../core/seo/content-extractors.js";
 import {
   buildSeoAbstractText,
   buildSeoKeywordList,
   getSeoPageTopics,
-} from "#core/seo/schema-page-types.js";
-import { generateSchemaGraph, injectSchema, scheduleSchemaInjection } from "#core/seo/schema.js";
+} from "../../core/seo/schema-page-types.js";
+import { generateSchemaGraph, injectSchema, scheduleSchemaInjection } from "../../core/seo/schema.js";
 import { loadBrandData } from "../../data/brand-data-loader.js";
 import { ROUTES } from "../../config/routes-config.js";
 import { BASE_URL } from "../../config/constants.js";

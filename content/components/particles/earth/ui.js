@@ -1,8 +1,8 @@
 import { CONFIG } from "./config.js";
-import { createLogger } from "#core/logger.js";
-import { throttle } from "#core/utils/async-utils.js";
-import { AppLoadManager } from "#core/load-manager.js";
-import { i18n } from "#core/i18n.js";
+import { createLogger } from "../../../core/logger.js";
+import { throttle } from "../../../core/utils/async-utils.js";
+import { AppLoadManager } from "../../../core/load-manager.js";
+import { i18n } from "../../../core/i18n.js";
 import { EARTH_FALLBACK_BACKGROUND_URL } from "./texture-paths.js";
 
 // ===== Helper Functions (Pure) =====

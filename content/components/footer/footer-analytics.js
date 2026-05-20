@@ -1,5 +1,5 @@
-import { applyCspNonce } from "#core/utils/csp-nonce.js";
-import { createLogger } from "#core/logger.js";
+import { applyCspNonce } from "../../core/utils/csp-nonce.js";
+import { createLogger } from "../../core/logger.js";
 
 const log = createLogger("AnalyticsManager");
 
@@ -34,7 +34,7 @@ export class AnalyticsManager {
    * @param {boolean | { analytics?: boolean, ads?: boolean }} granted
    */
   updateConsent(granted) {
-    const win = /** @type {import('#core/types.js').GlobalWindow} */ (window);
+    const win = /** @type {import('../../core/types.js').GlobalWindow} */ (window);
 
     if (typeof win.gtag !== "function") return;
 
