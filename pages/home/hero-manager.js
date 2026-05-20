@@ -49,6 +49,27 @@ const HeroManager = (() => {
     return false;
   }
 
+  let scrollObserver = null;
+
+  function setupScrollObserver(heroEl) {
+    if (scrollObserver) return;
+
+    scrollObserver = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            heroEl.classList.add("is-visible");
+          } else {
+            heroEl.classList.remove("is-visible");
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    scrollObserver.observe(heroEl);
+  }
+
   function initLazyHeroModules() {
     if (isInitialized) return;
 
@@ -79,6 +100,9 @@ const HeroManager = (() => {
     }
 
     heroLookupAttempts = 0;
+
+    // Set up continuous scroll observation for animations
+    setupScrollObserver(heroEl);
 
     const rect = heroEl.getBoundingClientRect();
     if (rect.top < innerHeight && rect.bottom > 0) {
@@ -122,17 +146,12 @@ const HeroManager = (() => {
       const element = document.querySelector(selector);
       if (element && value) element.textContent = value;
     });
-
-    const metaEls = document.querySelectorAll(".hero__meta li");
-    if (metaEls.length > 0 && content.meta) {
-      metaEls.forEach((el, i) => {
-        if (content.meta[i]) el.textContent = content.meta[i];
-      });
-    }
   }
 
   async function setRandomGreetingHTML() {
-    const el = getElementById("greetingText") || (await waitForElement("#greetingText", GREETING_LOOKUP_DELAYS_MS));
+    const el =
+      getElementById("greetingText") ||
+      (await waitForElement("#greetingText", GREETING_LOOKUP_DELAYS_MS));
     if (!el) return;
 
     try {
@@ -154,6 +173,12 @@ const HeroManager = (() => {
     loaded = false;
     triggerLoad = null;
     heroLookupAttempts = 0;
+
+    if (scrollObserver) {
+      scrollObserver.disconnect();
+      scrollObserver = null;
+    }
+
     try {
       typeWriterModule?.stopHeroSubtitle?.();
     } catch (err) {
