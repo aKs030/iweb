@@ -1,4 +1,4 @@
-import { signal, batch, effect, subscribe as signalSubscribe } from "../signals.js";
+import { signal, batch, subscribe as signalSubscribe } from "../signals.js";
 /** @typedef {import('../types.js').OverlayMode} OverlayMode */
 // ---------------------------------------------------------------------------
 // Reactive Signals — fine-grained, subscribable per-property state
@@ -88,30 +88,8 @@ export function clearActiveOverlayMode(mode = null) {
   });
 }
 
-const _signalMap = {
-  menuOpen,
-  searchOpen,
-  robotChatOpen,
-  robotHydrated,
-  activeOverlay,
-};
-const _stateView = Object.freeze({
-  get menuOpen() {
-    return menuOpen.value;
-  },
-  get searchOpen() {
-    return searchOpen.value;
-  },
-  get robotChatOpen() {
-    return robotChatOpen.value;
-  },
-  get robotHydrated() {
-    return robotHydrated.value;
-  },
-  get activeOverlay() {
-    return activeOverlay.value;
-  },
-});
+const _signalMap = { menuOpen, searchOpen, robotChatOpen, robotHydrated, activeOverlay };
+
 class UIStore {
   getState() {
     return Object.freeze({
@@ -159,38 +137,6 @@ class UIStore {
     const sig = _signalMap[key];
     if (!sig) return () => {};
     return signalSubscribe(() => sig.value, listener, options);
-  }
-  select(selector, listener, options = {}) {
-    if (typeof selector !== "function" || typeof listener !== "function") {
-      return () => {};
-    }
-
-    const { emitImmediately = true, isEqual = Object.is } = options;
-    let hasRun = false;
-    let previousValue;
-
-    return effect(() => {
-      const selected = selector(_stateView);
-
-      if (!emitImmediately && !hasRun) {
-        previousValue = selected;
-        hasRun = true;
-        return;
-      }
-
-      if (hasRun && isEqual(selected, previousValue)) {
-        return;
-      }
-
-      previousValue = selected;
-      hasRun = true;
-
-      try {
-        listener(selected);
-      } catch {
-        // keep store resilient against listener errors
-      }
-    });
   }
   reset() {
     batch(() => {

@@ -1,4 +1,4 @@
-import { PROJECTS_HOME_PATH, normalizeProjectSlug } from "../../content/core/project-paths.js";
+import { PROJECTS_HOME_PATH, normalizeProjectSlug } from "#core/project-paths.js";
 
 export const DEFAULT_BROWSE_STATE = Object.freeze({
   query: "",

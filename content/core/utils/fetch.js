@@ -49,37 +49,10 @@ const getSafeRequestKey = (url, fetchOptions = {}) => {
  * @param {AbortSignal} timeoutSignal
  * @returns {{ signal: AbortSignal, cleanup: () => void }}
  */
-const createCombinedSignal = (externalSignal, timeoutSignal) => {
-  if (!externalSignal) {
-    return { signal: timeoutSignal, cleanup: () => {} };
-  }
-
-  if (typeof AbortSignal !== "undefined" && "any" in AbortSignal) {
-    return {
-      signal: AbortSignal.any([externalSignal, timeoutSignal]),
-      cleanup: () => {},
-    };
-  }
-
-  const controller = new AbortController();
-  const abort = () => controller.abort();
-
-  if (externalSignal.aborted || timeoutSignal.aborted) {
-    abort();
-    return { signal: controller.signal, cleanup: () => {} };
-  }
-
-  externalSignal.addEventListener("abort", abort, { once: true });
-  timeoutSignal.addEventListener("abort", abort, { once: true });
-
-  return {
-    signal: controller.signal,
-    cleanup: () => {
-      externalSignal.removeEventListener("abort", abort);
-      timeoutSignal.removeEventListener("abort", abort);
-    },
-  };
-};
+const createCombinedSignal = (externalSignal, timeoutSignal) => ({
+  signal: externalSignal ? AbortSignal.any([externalSignal, timeoutSignal]) : timeoutSignal,
+  cleanup: () => {},
+});
 
 /**
  * Modern fetch with timeout, retry, and caching

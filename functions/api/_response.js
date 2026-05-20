@@ -1,4 +1,4 @@
-import { mergeHeaders } from "../_shared/http-headers.js";
+import { mergeHeaders, CACHE_CONTROL_PRIVATE_NO_STORE } from "../_shared/http-headers.js";
 
 const DEFAULT_JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
@@ -39,5 +39,37 @@ export function errorJsonResponse(error, options = {}) {
   return jsonResponse(payload, {
     status: options.status || 500,
     headers: options.headers,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CORS-aware convenience helpers (merge CORS + no-store + extra headers)
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {Headers | Record<string, string>} corsHeaders
+ * @param {unknown} payload
+ * @param {number} [status]
+ * @param {Record<string, string>} [extraHeaders]
+ * @returns {Response}
+ */
+export function corsJsonResponse(corsHeaders, payload, status = 200, extraHeaders = {}) {
+  return jsonResponse(payload, {
+    status,
+    headers: mergeHeaders(corsHeaders, { "Cache-Control": CACHE_CONTROL_PRIVATE_NO_STORE }, extraHeaders),
+  });
+}
+
+/**
+ * @param {Headers | Record<string, string>} corsHeaders
+ * @param {string | Record<string, unknown>} error
+ * @param {number} [status]
+ * @param {Record<string, string>} [extraHeaders]
+ * @returns {Response}
+ */
+export function corsErrorResponse(corsHeaders, error, status = 500, extraHeaders = {}) {
+  return errorJsonResponse(error, {
+    status,
+    headers: mergeHeaders(corsHeaders, { "Cache-Control": CACHE_CONTROL_PRIVATE_NO_STORE }, extraHeaders),
   });
 }

@@ -36,14 +36,14 @@ import {
 } from "./utils/project-browse.js";
 import * as Icons from "#components/icons/index.js";
 import { LikeButton } from "#components/interactions/index.js";
-import { i18n } from "../content/core/i18n.js";
+import { i18n } from "#core/i18n.js";
 import { BASE_URL } from "#config/constants.js";
 import {
   PROJECTS_HOME_PATH,
   buildProjectDetailPath,
   extractProjectSlugFromLocation,
-} from "../content/core/project-paths.js";
-import { injectSchema } from "../content/core/seo/schema.js";
+} from "#core/project-paths.js";
+import { injectSchema } from "#core/schema.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
 
 const ErrorBoundary = createErrorBoundary(React);

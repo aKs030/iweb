@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import React, { useEffect, useRef } from "react";
-import { createLogger } from "../../content/core/logger.js";
+import { createLogger } from "#core/logger.js";
 import { ProjectGallery } from "./ProjectGallery.js";
 import { useScrollCamera } from "../hooks/useScrollCamera.js";
 

@@ -47,76 +47,18 @@ function isPlainObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function getNodeIdentity(value) {
-  if (!isPlainObject(value)) return `json:${JSON.stringify(value)}`;
-
-  const id = normalizeText(value["@id"]);
-  if (id) return `id:${id}`;
-
-  const url = normalizeText(value.url || value.contentUrl || value.embedUrl);
-  if (url) return `url:${url}`;
-
-  const type = normalizeText(value["@type"]);
-  const name = normalizeText(value.name);
-  if (type && name) return `type-name:${type}:${name}`;
-
-  return `json:${JSON.stringify(value)}`;
-}
-
-function mergeSchemaNodes(baseNode, incomingNode) {
-  const merged = { ...baseNode };
-
-  for (const [key, value] of Object.entries(incomingNode || {})) {
-    if (value == null || value === "") continue;
-
-    if (!(key in merged) || merged[key] == null || merged[key] === "") {
-      merged[key] = value;
-      continue;
-    }
-
-    const current = merged[key];
-    if (Array.isArray(current) && Array.isArray(value)) {
-      const seen = new Set();
-      const next = [];
-      for (const item of [...current, ...value]) {
-        const identity = getNodeIdentity(item);
-        if (seen.has(identity)) continue;
-        seen.add(identity);
-        next.push(item);
-      }
-      merged[key] = next;
-      continue;
-    }
-
-    if (isPlainObject(current) && isPlainObject(value)) {
-      const currentId = normalizeText(current["@id"]);
-      const valueId = normalizeText(value["@id"]);
-      if (!currentId || !valueId || currentId === valueId) {
-        merged[key] = mergeSchemaNodes(current, value);
-      }
-    }
-  }
-
-  return merged;
-}
-
+/** Deduplicate @id references */
 function dedupeNodeRefList(refs) {
   const seen = new Set();
-  const result = [];
-
-  for (const ref of refs || []) {
-    if (!isPlainObject(ref)) continue;
-    const id = normalizeText(ref["@id"]);
-    if (!id || seen.has(id)) continue;
+  return (refs || []).filter(ref => {
+    const id = normalizeText(ref?.["@id"]);
+    if (!id || seen.has(id)) return false;
     seen.add(id);
-    result.push({ "@id": id });
-  }
-
-  return result;
+    return true;
+  }).map(ref => ({ "@id": normalizeText(ref["@id"]) }));
 }
 
 function dedupeSchemaGraph(nodes) {
-  const orderedIds = [];
   const byId = new Map();
   const noIdNodes = [];
   const noIdSeen = new Set();
@@ -126,22 +68,18 @@ function dedupeSchemaGraph(nodes) {
 
     const id = normalizeText(node["@id"]);
     if (id) {
-      if (!byId.has(id)) {
-        byId.set(id, node);
-        orderedIds.push(id);
-      } else {
-        byId.set(id, mergeSchemaNodes(byId.get(id), node));
-      }
+      // Last-write-wins for nodes with the same @id
+      byId.set(id, node);
       continue;
     }
 
-    const identity = getNodeIdentity(node);
+    const identity = JSON.stringify(node);
     if (noIdSeen.has(identity)) continue;
     noIdSeen.add(identity);
     noIdNodes.push(node);
   }
 
-  return [...orderedIds.map(id => byId.get(id)), ...noIdNodes];
+  return [...byId.values(), ...noIdNodes];
 }
 
 function extractSchemaNodesFromScript(script) {
@@ -509,88 +447,37 @@ function generateBreadcrumbs(pageUrl, pageTitle, canonicalOrigin) {
  */
 function enrichPersonNode(personNode, brandData, doc) {
   try {
-    // Multiple profile images (up to 3)
-    try {
-      const imgs = Array.from(doc?.querySelectorAll?.("main img, .profile-photo, .avatar") || [])
-        .map(i => i.getAttribute("src"))
-        .filter(Boolean);
-      if (imgs.length > 1) {
-        personNode.image = imgs.slice(0, 3);
-      }
-    } catch {
-      // Ignore
-    }
-
     // Agent interaction statistic (posts/articles)
-    try {
-      const postsCount = Number(brandData.postsCount) || 0;
-      const articlesCount = doc?.querySelectorAll?.("article")?.length || 0;
-      const writeCount = postsCount > 0 ? postsCount : articlesCount;
-      if (writeCount > 0) {
-        personNode.agentInteractionStatistic = {
-          "@type": "InteractionCounter",
-          interactionType: "https://schema.org/WriteAction",
-          userInteractionCount: writeCount,
-        };
-      }
-    } catch {
-      // Ignore
+    const postsCount = Number(brandData.postsCount) || 0;
+    const articlesCount = doc?.querySelectorAll?.("article")?.length || 0;
+    const writeCount = postsCount > 0 ? postsCount : articlesCount;
+    if (writeCount > 0) {
+      personNode.agentInteractionStatistic = {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/WriteAction",
+        userInteractionCount: writeCount,
+      };
     }
 
-    // Followers and likes
-    try {
-      const findCount = selectors => {
-        for (const s of selectors) {
-          const el = doc?.querySelector?.(s);
-          if (!el) continue;
-          const attr =
-            el.dataset?.followers ||
-            el.dataset?.followersCount ||
-            el.dataset?.likes ||
-            el.dataset?.likesCount;
-          if (attr) return Number(String(attr).replace(/\D/g, "")) || 0;
-          const text = String(el.textContent || "").replace(/\D/g, "");
-          if (text) return Number(text) || 0;
-        }
-        return 0;
-      };
-
-      const brandFollowers = Number(brandData.followersCount) || 0;
-      const followers =
-        brandFollowers > 0
-          ? brandFollowers
-          : findCount([
-              "[data-followers]",
-              "[data-followers-count]",
-              ".followers-count",
-              ".follower-count",
-            ]);
-
+    // Use brand data for followers/likes if provided
+    const followers = Number(brandData.followersCount) || 0;
+    const likes = Number(brandData.likesCount) || 0;
+    if (followers > 0 || likes > 0) {
+      personNode.interactionStatistic = [];
       if (followers > 0) {
-        personNode.interactionStatistic = personNode.interactionStatistic || [];
         personNode.interactionStatistic.push({
           "@type": "InteractionCounter",
           interactionType: "https://schema.org/FollowAction",
           userInteractionCount: followers,
         });
       }
-
-      const brandLikes = Number(brandData.likesCount) || 0;
-      const likes =
-        brandLikes > 0
-          ? brandLikes
-          : findCount(["[data-likes]", "[data-likes-count]", ".likes-count", ".like-count"]);
-
       if (likes > 0) {
-        personNode.interactionStatistic = personNode.interactionStatistic || [];
         personNode.interactionStatistic.push({
           "@type": "InteractionCounter",
           interactionType: "https://schema.org/LikeAction",
           userInteractionCount: likes,
         });
       }
-    } catch {
-      // Ignore
     }
   } catch {
     // Ignore all enrichment errors
