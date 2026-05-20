@@ -54,15 +54,18 @@ const HeroManager = (() => {
   function setupScrollObserver(heroEl) {
     if (scrollObserver) return;
 
-    scrollObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          heroEl.classList.add('is-visible');
-        } else {
-          heroEl.classList.remove('is-visible');
-        }
-      });
-    }, { threshold: 0.1 });
+    scrollObserver = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            heroEl.classList.add("is-visible");
+          } else {
+            heroEl.classList.remove("is-visible");
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
 
     scrollObserver.observe(heroEl);
   }
@@ -153,7 +156,9 @@ const HeroManager = (() => {
   }
 
   async function setRandomGreetingHTML() {
-    const el = getElementById("greetingText") || (await waitForElement("#greetingText", GREETING_LOOKUP_DELAYS_MS));
+    const el =
+      getElementById("greetingText") ||
+      (await waitForElement("#greetingText", GREETING_LOOKUP_DELAYS_MS));
     if (!el) return;
 
     try {

@@ -67,7 +67,9 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  box-shadow: 0 8px 32px rgb(0 0 0 / 20%), inset 0 0 0 1px rgb(255 255 255 / 10%);
+  box-shadow:
+    0 8px 32px rgb(0 0 0 / 20%),
+    inset 0 0 0 1px rgb(255 255 255 / 10%);
 }
 
 .hero__title {
@@ -98,8 +100,12 @@
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
 
 .hero__lede {
@@ -159,12 +165,16 @@
   background: linear-gradient(135deg, #f3c47a 0%, #c88c39 100%);
   color: #09111f;
   box-shadow: 0 18px 44px rgb(201 140 57 / 24%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease;
 }
 
 .hero__button--primary:hover {
   color: #09111f;
-  box-shadow: 0 24px 60px rgb(201 140 57 / 40%), 0 0 20px rgb(243 196 122 / 30%);
+  box-shadow:
+    0 24px 60px rgb(201 140 57 / 40%),
+    0 0 20px rgb(243 196 122 / 30%);
   transform: translateY(-2px) scale(1.02);
 }
 
@@ -173,7 +183,10 @@
   background: color-mix(in srgb, var(--home-surface) 88%, transparent);
   color: color-mix(in srgb, var(--clr-white) 82%, transparent);
   backdrop-filter: blur(18px);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, border-color 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .hero__button--secondary:hover {
@@ -265,19 +278,35 @@
     animation: blurRevealEnter 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .is-visible .hero__eyebrow { animation-delay: 0.1s; }
-  .is-visible .hero__title { animation-delay: 0.3s; }
-  .is-visible .hero__lede { animation-delay: 0.5s; }
-  .is-visible .hero__buttons { animation-delay: 0.7s; }
+  .is-visible .hero__eyebrow {
+    animation-delay: 0.1s;
+  }
+  .is-visible .hero__title {
+    animation-delay: 0.3s;
+  }
+  .is-visible .hero__lede {
+    animation-delay: 0.5s;
+  }
+  .is-visible .hero__buttons {
+    animation-delay: 0.7s;
+  }
 
   .is-visible .hero__meta li {
     animation: slideUpMeta 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .is-visible .hero__meta li:nth-child(1) { animation-delay: 0.6s; }
-  .is-visible .hero__meta li:nth-child(2) { animation-delay: 0.7s; }
-  .is-visible .hero__meta li:nth-child(3) { animation-delay: 0.8s; }
-  .is-visible .hero__meta li:nth-child(4) { animation-delay: 0.9s; }
+  .is-visible .hero__meta li:nth-child(1) {
+    animation-delay: 0.6s;
+  }
+  .is-visible .hero__meta li:nth-child(2) {
+    animation-delay: 0.7s;
+  }
+  .is-visible .hero__meta li:nth-child(3) {
+    animation-delay: 0.8s;
+  }
+  .is-visible .hero__meta li:nth-child(4) {
+    animation-delay: 0.9s;
+  }
 
   @keyframes blurRevealEnter {
     0% {
