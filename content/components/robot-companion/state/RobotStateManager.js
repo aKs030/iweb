@@ -131,25 +131,6 @@ export class RobotStateManager {
   }
 
   /**
-   * Initialize per-session analytics state (no local persistence).
-   */
-  initializeSessionState() {
-    const now = new Date().toISOString();
-    const currentSessions = Number.parseInt(
-      String(this._stateSignal.peek().analytics.sessions || 0),
-      10
-    );
-
-    this.setState({
-      analytics: {
-        ...this._stateSignal.peek().analytics,
-        sessions: Number.isFinite(currentSessions) ? currentSessions + 1 : 1,
-        lastVisit: now,
-      },
-    });
-  }
-
-  /**
    * Track interaction
    */
   trackInteraction() {

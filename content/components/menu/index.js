@@ -1,1 +1,1 @@
-export { SiteMenu, openMenu, closeMenu } from "./SiteMenu.js";
+import "./SiteMenu.js";

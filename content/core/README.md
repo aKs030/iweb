@@ -43,7 +43,7 @@ log.info("Core initialized");
 
 - Core modules are ESM and browser-first.
 - Keep internal imports within this folder consistent as `./module.js`.
-- The browser import map now points `#core/*` aliases for the moved modules directly at the new subfolders.
+- The browser import map exposes the `#core/` prefix; moved modules should be imported from their real subfolders such as `#core/utils/*`, `#core/seo/*`, and `#core/state/*`.
 - Public facades such as `view-transitions.js` and `overlay-manager.js` stay at the root because they are the stable entry points.
 - Prefer signals for durable shared UI/app state and use DOM events for one-off lifecycle hooks or external integration points.
 - `ui-store.js` exposes `subscribeKey(...)` and `select(...)` for fine-grained subscriptions without rebuilding full UI snapshots.

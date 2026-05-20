@@ -1,5 +1,5 @@
 import { BASE_URL } from "#config/constants.js";
-import { injectSchema } from "#core/schema.js";
+import { injectSchema } from "#core/seo/schema.js";
 
 const VIDEO_PAGE_BASE_URL = `${BASE_URL}/videos/`;
 const VIDEOS_LIST_ID = `${VIDEO_PAGE_BASE_URL}#videos-list`;

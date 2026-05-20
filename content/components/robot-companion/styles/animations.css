@@ -343,48 +343,6 @@
   }
 }
 
-/* Highlight pulse for elements being pointed at */
-.robot-highlight {
-  animation: highlight-pulse 2s ease-in-out;
-  position: relative;
-  z-index: var(--z-robot-local); /* Ensure visibility */
-}
-
-.robot-highlight::after {
-  content: "";
-  position: absolute;
-  inset: calc(var(--size-6) * -1);
-  border: var(--size-2) solid var(--robot-cyan);
-  border-radius: var(--size-8);
-  pointer-events: none;
-  animation: highlight-glow 2s ease-in-out;
-}
-
-@keyframes highlight-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-}
-
-@keyframes highlight-glow {
-  0% {
-    opacity: 0;
-    box-shadow: 0 0 0 transparent;
-  }
-  50% {
-    opacity: 1;
-    box-shadow: 0 0 var(--size-25) color-mix(in srgb, var(--robot-cyan) 70%, transparent);
-  }
-  100% {
-    opacity: 0;
-    box-shadow: 0 0 0 transparent;
-  }
-}
-
 @keyframes blink {
   0%,
   48%,
@@ -598,28 +556,6 @@
   }
   100% {
     transform: rotate(-15deg);
-  }
-}
-
-/* Thumbs up gesture */
-.robot-hand.thumbs-up .finger-0 {
-  animation: thumbsUp 0.5s ease-out forwards;
-}
-
-.robot-hand.thumbs-up .finger-1,
-.robot-hand.thumbs-up .finger-2,
-.robot-hand.thumbs-up .finger-3,
-.robot-hand.thumbs-up .finger-4 {
-  opacity: 0.3;
-  transform: scale(0.8);
-}
-
-@keyframes thumbsUp {
-  0% {
-    transform: rotate(0deg) translateY(0);
-  }
-  100% {
-    transform: rotate(-90deg) translateY(calc(var(--size-3) * -1));
   }
 }
 

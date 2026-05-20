@@ -4,10 +4,10 @@ Frueher Browser-Bootstrap fuer Metadaten, Core-Assets, Analytics und den Footer/
 
 ## Public API
 
-- `index.js`: einziger oeffentlicher Einstieg; startet `head-inline.js` und exportiert `headState`.
+- `index.js`: einziger oeffentlicher Einstieg; startet `head-inline.js`.
 
-```js
-import { headState } from "#components/head/index.js";
+```html
+<script type="module" src="/content/components/head/index.js"></script>
 ```
 
 ## Intern
@@ -19,6 +19,6 @@ import { headState } from "#components/head/index.js";
 
 ## Migration
 
-- Neue externe Imports gehen ueber `#components/head/index.js`.
+- Neue externe Imports sollten direkt aus dem jeweiligen internen Modul kommen, wenn wirklich benoetigt.
 - Interne Head-Module importieren sich relativ.
 - Alte Root-Shims wie `head-state.js` bleiben nicht dauerhaft bestehen.

@@ -30,19 +30,6 @@ export const loadSignals = Object.freeze({
 
 const toPendingList = () => Object.freeze(Array.from(pending));
 
-function getLoadSnapshot() {
-  const pendingList = loadSignals.pending.value;
-
-  return Object.freeze({
-    blocked: pendingList.length > 0,
-    pending: [...pendingList],
-    progress: loadSignals.progress.value,
-    message: loadSignals.message.value,
-    hideScheduled: loadSignals.hideScheduled.value,
-    done: loadSignals.done.value,
-  });
-}
-
 let stopAppReadyBridge = () => {};
 stopAppReadyBridge = effect(() => {
   if (!loadSignals.done.value || loadSignals.blocked.value) return;
@@ -84,22 +71,6 @@ export const AppLoadManager = (() => {
       pending.delete(key);
       pendingSignal.value = toPendingList();
       log.debug(`Unblocked: ${name}`);
-    },
-
-    /**
-     * Check if loading is currently blocked.
-     * @returns {boolean}
-     */
-    isBlocked() {
-      return loadSignals.pending.value.length > 0;
-    },
-
-    /**
-     * Get list of pending blockers.
-     * @returns {string[]}
-     */
-    getPending() {
-      return [...loadSignals.pending.value];
     },
 
     /**
@@ -153,14 +124,6 @@ export const AppLoadManager = (() => {
       } else {
         run();
       }
-    },
-
-    /**
-     * Read-only snapshot for debugging and telemetry.
-     * @returns {{ blocked: boolean, pending: string[], progress: number, message: string, done: boolean }}
-     */
-    getSnapshot() {
-      return getLoadSnapshot();
     },
   };
 })();

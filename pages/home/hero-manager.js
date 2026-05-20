@@ -1,6 +1,6 @@
-import { getElementById, observeOnce } from "#core/dom-utils.js";
+import { getElementById, observeOnce } from "#core/utils/dom-utils.js";
 import { createLogger } from "#core/logger.js";
-import { TimerManager } from "#core/timer-manager.js";
+import { TimerManager } from "#core/utils/timer-manager.js";
 import { i18n } from "#core/i18n.js";
 import { ROBOT_EVENTS } from "#components/robot-companion/index.js";
 

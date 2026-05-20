@@ -8,7 +8,7 @@ import { createRoot } from "react-dom/client";
 import htm from "htm";
 import { createLogger } from "#core/logger.js";
 import { createUseTranslation } from "#core/react-utils.js";
-import { sanitizeHTML } from "#core/sanitization-utils.js";
+import { sanitizeHTML } from "#core/utils/sanitization-utils.js";
 import { AppLoadManager } from "#core/load-manager.js";
 import { Clock, ArrowRight } from "#components/icons/index.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";

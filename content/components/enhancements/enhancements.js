@@ -9,7 +9,7 @@
  */
 
 import { createLogger } from "#core/logger.js";
-import { resolvedTheme } from "#core/theme-state.js";
+import { resolvedTheme } from "#core/state/theme-state.js";
 
 const log = createLogger("Enhancements");
 

@@ -9,7 +9,7 @@ import {
   clearActiveOverlayMode,
   setActiveOverlayMode,
   uiStore,
-} from "#core/ui-store.js";
+} from "#core/state/ui-store.js";
 
 const log = createLogger("MenuState");
 

@@ -5,13 +5,13 @@ import {
   clearActiveOverlayMode,
   menuOpen,
   setActiveOverlayMode,
-} from "#core/ui-store.js";
+} from "#core/state/ui-store.js";
 import { withViewTransition } from "#core/view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
-} from "#core/view-transition-constants.js";
+} from "#core/view-transitions/constants.js";
 import { buildToolResult, createDetail } from "../tool-result.js";
 import { getMenuToggleButton, getSiteMenuHost, queryFirst } from "../tool-dom-utils.js";
 

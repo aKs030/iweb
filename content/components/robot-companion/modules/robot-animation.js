@@ -357,22 +357,6 @@ export class RobotAnimation {
     return true;
   }
 
-  handleHeroTypingEnd() {
-    const typeWriter = this.robot.getTypewriterElement();
-    if (typeWriter) {
-      this.cacheConfig.typeWriterRect = typeWriter.getBoundingClientRect();
-      this.cacheConfig.lastTypeWriterCheck = performance.now();
-    }
-
-    if (!this._typewriterIntroQueued) return;
-    if (!this._isHomeContext()) {
-      this._clearQueuedTypewriterIntro();
-      return;
-    }
-
-    this._startHomeIntroSequence();
-  }
-
   /**
    * Entry animation dispatcher – randomly picks one of several
    * entry animations each time the page loads for variety.

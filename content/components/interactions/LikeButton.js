@@ -1,7 +1,7 @@
 import React from "react";
 import htm from "htm";
 import { Heart, Rocket } from "../icons/icons.js";
-import { fetchJSON } from "#core/fetch.js";
+import { fetchJSON } from "#core/utils/fetch.js";
 import { createLogger } from "#core/logger.js";
 
 const html = htm.bind(React.createElement);

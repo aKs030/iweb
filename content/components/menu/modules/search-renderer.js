@@ -1,4 +1,4 @@
-import { setSanitizedHTML } from "#core/sanitization-utils.js";
+import { setSanitizedHTML } from "#core/utils/sanitization-utils.js";
 
 export class MenuSearchRenderer {
   constructor(options = {}) {

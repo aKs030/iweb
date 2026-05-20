@@ -23,23 +23,6 @@ export class MenuPerformance {
     return 0;
   }
 
-  // Check if reduced motion is preferred
-  prefersReducedMotion() {
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }
-
-  // Get device capabilities
-  getDeviceCapabilities() {
-    return {
-      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-      isTouch: "ontouchstart" in window || navigator.maxTouchPoints > 0,
-      hasHover: window.matchMedia("(hover: hover)").matches,
-      connection: /** @type {any} */ (navigator).connection?.effectiveType || "unknown",
-      memory: /** @type {any} */ (navigator).deviceMemory || "unknown",
-      cores: navigator.hardwareConcurrency || "unknown",
-    };
-  }
-
   // Cleanup
   destroy() {
     this.metrics.clear();
