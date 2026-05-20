@@ -565,6 +565,13 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    :root {
+      --transition-fast: 0s;
+      --transition-base: 0s;
+      --transition-smooth: 0s;
+      --transition-slow: 0s;
+    }
+
     *,
     *::before,
     *::after {

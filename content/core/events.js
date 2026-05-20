@@ -11,13 +11,8 @@ const log = createLogger("Events");
 /**
  * Fire native custom event on document
  */
-export function fire(type, detail = null, target = document) {
-  try {
-    target?.dispatchEvent?.(new CustomEvent(type, { detail, bubbles: true }));
-  } catch (error) {
-    log.error(`Failed to dispatch event: ${type}`, error);
-  }
-}
+export const fire = (type, detail = null, target = document) =>
+  target.dispatchEvent(new CustomEvent(type, { detail, bubbles: true }));
 
 /**
  * Global Event Handlers for retry & share actions

@@ -51,38 +51,24 @@ class Logger {
   shouldLog(level) {
     return LOG_LEVELS[level] <= this.level;
   }
-  formatMessage(message, ...args) {
-    const parts = [this.prefix];
-    if (this.timestamps) {
-      parts.push(`[${new Date().toISOString()}]`);
-    }
-    parts.push(message);
-    return { parts, args };
+  _log(method, message, args) {
+    if (this.timestamps) method(this.prefix, `[${new Date().toISOString()}]`, message, ...args);
+    else method(this.prefix, message, ...args);
   }
   error(message, ...args) {
-    if (!this.shouldLog("error")) return;
-    const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
-    console.error(...parts, ...formattedArgs);
+    if (this.shouldLog("error")) this._log(console.error, message, args);
   }
   warn(message, ...args) {
-    if (!this.shouldLog("warn")) return;
-    const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
-    console.warn(...parts, ...formattedArgs);
+    if (this.shouldLog("warn")) this._log(console.warn, message, args);
   }
   info(message, ...args) {
-    if (!this.shouldLog("info")) return;
-    const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
-    console.info(...parts, ...formattedArgs);
+    if (this.shouldLog("info")) this._log(console.info, message, args);
   }
   debug(message, ...args) {
-    if (!this.shouldLog("debug")) return;
-    const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
-    console.debug(...parts, ...formattedArgs);
+    if (this.shouldLog("debug")) this._log(console.debug, message, args);
   }
   trace(message, ...args) {
-    if (!this.shouldLog("trace")) return;
-    const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
-    console.trace(...parts, ...formattedArgs);
+    if (this.shouldLog("trace")) this._log(console.trace, message, args);
   }
   time(label) {
     if (!this.performance || !this.shouldLog("debug")) return;

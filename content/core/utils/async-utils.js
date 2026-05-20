@@ -221,87 +221,26 @@ export function handleSamePageScroll(url) {
 // ============================================================================
 
 /**
- * @typedef {{
- *   type: 'idle' | 'timeout' | 'none',
- *   id: number | null,
- *   cancel: () => void,
- * }} IdleTaskHandle
- */
-
-/**
  * Schedule a callback for browser idle time with a timeout-backed fallback.
  *
  * @param {() => void} callback
- * @param {{
- *   timeout?: number,
- *   fallbackDelay?: number,
- *   requestIdleCallbackFn?: typeof globalThis.requestIdleCallback,
- *   cancelIdleCallbackFn?: typeof globalThis.cancelIdleCallback,
- *   setTimeoutFn?: typeof globalThis.setTimeout,
- *   clearTimeoutFn?: typeof globalThis.clearTimeout,
- * }} [options]
- * @returns {IdleTaskHandle}
+ * @param {{ timeout?: number, fallbackDelay?: number }} [options]
+ * @returns {{ cancel: () => void }}
  */
-export function scheduleIdleTask(callback, options = {}) {
-  const {
-    timeout = 0,
-    fallbackDelay = timeout,
-    requestIdleCallbackFn = globalThis.requestIdleCallback?.bind(globalThis),
-    cancelIdleCallbackFn = globalThis.cancelIdleCallback?.bind(globalThis),
-    setTimeoutFn = globalThis.setTimeout?.bind(globalThis),
-    clearTimeoutFn = globalThis.clearTimeout?.bind(globalThis),
-  } = options;
-
-  if (typeof requestIdleCallbackFn === "function") {
-    const id = requestIdleCallbackFn(
-      () => {
-        callback();
-      },
-      Number.isFinite(timeout) && timeout > 0 ? { timeout } : undefined
-    );
-
-    return {
-      type: "idle",
-      id,
-      cancel() {
-        if (typeof cancelIdleCallbackFn === "function") {
-          cancelIdleCallbackFn(id);
-        }
-      },
-    };
+export function scheduleIdleTask(callback, { timeout = 0, fallbackDelay = timeout } = {}) {
+  if (globalThis.requestIdleCallback) {
+    const id = requestIdleCallback(callback, timeout > 0 ? { timeout } : undefined);
+    return { cancel: () => cancelIdleCallback(id) };
   }
 
-  if (typeof setTimeoutFn === "function") {
-    const id = setTimeoutFn(
-      () => {
-        callback();
-      },
-      Number.isFinite(fallbackDelay) ? fallbackDelay : 0
-    );
-
-    return {
-      type: "timeout",
-      id,
-      cancel() {
-        if (typeof clearTimeoutFn === "function") {
-          clearTimeoutFn(id);
-        }
-      },
-    };
-  }
-
-  callback();
-  return {
-    type: "none",
-    id: null,
-    cancel() {},
-  };
+  const id = setTimeout(callback, fallbackDelay || 0);
+  return { cancel: () => clearTimeout(id) };
 }
 
 /**
  * Cancel a previously scheduled idle task.
  *
- * @param {IdleTaskHandle|null|undefined} handle
+ * @param {{ cancel?: () => void }|null|undefined} handle
  */
 export function cancelIdleTask(handle) {
   handle?.cancel?.();

@@ -10,7 +10,6 @@ import { SectionManager } from "./core/section-manager.js";
 import { AppLoadManager, loadSignals } from "./core/load-manager.js";
 import { signal, effect, computed } from "./core/signals.js";
 import { ThreeEarthManager } from "#components/particles/index.js";
-import { onDOMReady } from "./core/utils/dom-utils.js";
 import { TimerManager } from "./core/utils/timer-manager.js";
 import { initViewTransitions } from "./core/view-transitions.js";
 import { i18n } from "./core/i18n.js";
@@ -98,14 +97,14 @@ const _initApp = () => {
   initEnhancements();
 };
 
-onDOMReady(_initApp);
-
 // ===== Application Bootstrap =====
 document.addEventListener(
   "DOMContentLoaded",
   async () => {
     await i18n.init();
     perfMarks.domReady = performance.now();
+
+    _initApp();
 
     const updateLoader = (progress, message, options) => {
       if (loaderHidden.value) return;

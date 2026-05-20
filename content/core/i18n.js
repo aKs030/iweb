@@ -391,10 +391,3 @@ class LanguageManager extends EventTarget {
 }
 
 export const i18n = new LanguageManager();
-
-// Auto-init
-if (typeof window !== "undefined") {
-  // Wait for DOM to be somewhat ready or just start immediately
-  // We want it early so UI builds with correct lang
-  i18n.init().catch(e => log.error("Failed to auto-init i18n", e));
-}

@@ -1,6 +1,6 @@
 import { ENV } from "#config/env.config.js";
-import { createLogger } from "../content/core/logger.js";
-import { isLocalDevRuntime } from "../content/core/runtime-env.js";
+import { createLogger } from "#core/logger.js";
+import { isLocalDevRuntime } from "#core/runtime-env.js";
 import {
   fetchUploadsPlaylist,
   fetchPlaylistItems,

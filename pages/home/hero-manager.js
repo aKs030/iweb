@@ -1,7 +1,7 @@
-import { getElementById, observeOnce } from "../content/core/utils/dom-utils.js";
-import { createLogger } from "../content/core/logger.js";
-import { TimerManager } from "../content/core/utils/timer-manager.js";
-import { i18n } from "../content/core/i18n.js";
+import { getElementById, observeOnce } from "#core/dom-utils.js";
+import { createLogger } from "#core/logger.js";
+import { TimerManager } from "#core/timer-manager.js";
+import { i18n } from "#core/i18n.js";
 import { ROBOT_EVENTS } from "#components/robot-companion/index.js";
 
 let typeWriterModule = null;
