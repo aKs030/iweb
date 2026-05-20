@@ -1,5 +1,6 @@
-import { createLogger } from "#core/logger.js";
-import { fetchJSON } from "#core/utils/fetch.js";
+import { createLogger } from "../core/logger.js";
+import { fetchJSON } from "../core/utils/fetch.js";
+import { FAVICON_512_URL } from "../config/media-urls.js";
 import {
   SITE_CONTACT_EMAIL,
   SITE_LEGAL_NAME,

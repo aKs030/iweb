@@ -1,5 +1,5 @@
-import { signal, subscribe as signalSubscribe } from "#core/signals.js";
-import { waitForReadyState } from "#core/utils/async-utils.js";
+import { signal, subscribe as signalSubscribe } from "../../core/signals.js";
+import { waitForReadyState } from "../../core/utils/async-utils.js";
 
 const loadedSignal = signal(false);
 const expandedSignal = signal(false);

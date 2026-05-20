@@ -4,8 +4,8 @@
  * @version 1.0.0
  */
 
-import { createLogger } from "#core/logger.js";
-import { computed, signal } from "#core/signals.js";
+import { createLogger } from "../../../core/logger.js";
+import { computed, signal } from "../../../core/signals.js";
 
 const log = createLogger("RobotStateManager");
 

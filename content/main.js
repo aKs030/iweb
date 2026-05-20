@@ -4,20 +4,20 @@
  */
 
 import { initHeroFeatureBundle } from "#pages/home/hero-manager.js";
-import { createLogger } from "#core/logger.js";
-import { a11y, createAnnouncer } from "#core/accessibility-manager.js";
-import { SectionManager } from "#core/section-manager.js";
-import { AppLoadManager, loadSignals } from "#core/load-manager.js";
-import { signal, effect, computed } from "#core/signals.js";
+import { createLogger } from "./core/logger.js";
+import { a11y, createAnnouncer } from "./core/accessibility-manager.js";
+import { SectionManager } from "./core/section-manager.js";
+import { AppLoadManager, loadSignals } from "./core/load-manager.js";
+import { signal, effect, computed } from "./core/signals.js";
 import { ThreeEarthManager } from "#components/particles/index.js";
-import { onDOMReady } from "#core/utils/dom-utils.js";
-import { TimerManager } from "#core/utils/timer-manager.js";
-import { initViewTransitions } from "#core/view-transitions.js";
-import { i18n } from "#core/i18n.js";
-import { GlobalEventHandlers } from "#core/events.js";
-import { resourceHints } from "#core/seo/resource-hints.js";
-import { initThemeState } from "#core/state/theme-state.js";
-import { initOverlayManager } from "#core/overlay-manager.js";
+import { onDOMReady } from "./core/utils/dom-utils.js";
+import { TimerManager } from "./core/utils/timer-manager.js";
+import { initViewTransitions } from "./core/view-transitions.js";
+import { i18n } from "./core/i18n.js";
+import { GlobalEventHandlers } from "./core/events.js";
+import { resourceHints } from "./core/seo/resource-hints.js";
+import { initThemeState } from "./core/state/theme-state.js";
+import { initOverlayManager } from "./core/overlay-manager.js";
 import { initEnhancements } from "#components/enhancements/index.js";
 
 const log = createLogger("main");

@@ -4,7 +4,7 @@
  * @version 2.0.0
  */
 
-import { createLogger } from "#core/logger.js";
+import { createLogger } from "../../../core/logger.js";
 import { isClientToolAvailable } from "./tool-availability.js";
 import { executeOpenImageUpload, executeClearChatHistory } from "./tool-handlers/chat-tools.js";
 import {

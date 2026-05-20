@@ -1,4 +1,4 @@
-import { normalizeUserId } from "#core/user-id.js";
+import { normalizeUserId } from "../../../core/user-id.js";
 
 const NAME_USER_ID_PREFIX = "name_";
 

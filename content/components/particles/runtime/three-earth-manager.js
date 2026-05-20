@@ -3,11 +3,11 @@
  * @version 1.2.0
  */
 
-import { cancelIdleTask, scheduleIdleTask } from "#core/utils/async-utils.js";
-import { getElementById, upsertHeadLink } from "#core/utils/dom-utils.js";
-import { createLogger } from "#core/logger.js";
-import { AppLoadManager } from "#core/load-manager.js";
-import { TimerManager } from "#core/utils/timer-manager.js";
+import { cancelIdleTask, scheduleIdleTask } from "../../../core/utils/async-utils.js";
+import { getElementById, upsertHeadLink } from "../../../core/utils/dom-utils.js";
+import { createLogger } from "../../../core/logger.js";
+import { AppLoadManager } from "../../../core/load-manager.js";
+import { TimerManager } from "../../../core/utils/timer-manager.js";
 import {
   EARTH_PRIMARY_TEXTURE_URL,
   EARTH_SECONDARY_TEXTURE_URLS,

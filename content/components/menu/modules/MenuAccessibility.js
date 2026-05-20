@@ -1,7 +1,7 @@
 /**
  * Menu Accessibility - WCAG 2.1 AA compliance
  */
-import { a11y } from "#core/accessibility-manager.js";
+import { a11y } from "../../../core/accessibility-manager.js";
 
 /**
  * @typedef {typeof import('./MenuConfig.js').MenuConfig} MenuComponentConfig

@@ -8,8 +8,8 @@
  * @version 2.0.0
  */
 
-import { createLogger } from "#core/logger.js";
-import { resolvedTheme } from "#core/state/theme-state.js";
+import { createLogger } from "../../core/logger.js";
+import { resolvedTheme } from "../../core/state/theme-state.js";
 
 const log = createLogger("Enhancements");
 

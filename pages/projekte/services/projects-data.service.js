@@ -1,9 +1,9 @@
 import React from "react";
-import { createLogger } from "#core/logger.js";
-import { AppLoadManager } from "#core/load-manager.js";
-import { i18n } from "#core/i18n.js";
-import { normalizeText } from "#core/utils/text-utils.js";
-import { fetchJSON } from "#core/utils/fetch.js";
+import { createLogger } from "../../content/core/logger.js";
+import { AppLoadManager } from "../../content/core/load-manager.js";
+import { i18n } from "../../content/core/i18n.js";
+import { normalizeText } from "../../content/core/utils/text-utils.js";
+import { fetchJSON } from "../../content/core/utils/fetch.js";
 import { resolveProjectPreviewUrl } from "#config/media-urls.js";
 import { DEFAULT_OG_IMAGE, THEME_COLORS } from "../config/constants.js";
 import { PROJECT_CATEGORIES } from "../config/project-categories.js";

@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertCircle, CheckCircle, Loader2, Send } from "lucide-react";
-import { createLogger } from "#core/logger.js";
+import { createLogger } from "../../core/logger.js";
 
 const log = createLogger("ContactForm");
 

@@ -16,11 +16,11 @@ import {
   OVERLAY_MODES,
   initOverlayManager,
   registerOverlayController,
-} from "#core/overlay-manager.js";
-import { applyCspNonce } from "#core/utils/csp-nonce.js";
-import { loadHeadStylesheet, upsertHeadLink } from "#core/utils/dom-utils.js";
-import { fetchText } from "#core/utils/fetch.js";
-import { createLogger } from "#core/logger.js";
+} from "../../core/overlay-manager.js";
+import { applyCspNonce } from "../../core/utils/csp-nonce.js";
+import { loadHeadStylesheet, upsertHeadLink } from "../../core/utils/dom-utils.js";
+import { fetchText } from "../../core/utils/fetch.js";
+import { createLogger } from "../../core/logger.js";
 
 /**
  * @typedef {typeof import('./modules/MenuConfig.js').MenuConfig} MenuComponentConfig
@@ -50,6 +50,7 @@ class SiteMenu extends HTMLElement {
     this.usesShadowDOM = false;
     this.shadowStyleElement = null;
     this.initialized = false;
+    /** @type {Array<() => void>} */
     this._overlayControllerCleanupFns = [];
     this._deferredStylesPromise = null;
     this._deferredStylesReady = false;
@@ -177,11 +178,19 @@ class SiteMenu extends HTMLElement {
   isShadowDOMEnabled() {
     if (this.getAttribute(SHADOW_DOM_ATTR) === "false") return false;
     if (this.hasAttribute(SHADOW_DOM_ATTR)) return true;
-    return globalThis.__SITE_MENU_SHADOW__ === true;
+    return /** @type {any} */ (globalThis).__SITE_MENU_SHADOW__ === true;
   }
 
+  /**
+   * @param {any} urls
+   * @returns {string[]}
+   */
   dedupeCssUrls(urls) {
-    return [...new Set((Array.isArray(urls) ? urls : []).filter(Boolean))];
+    const filteredUrls = (Array.isArray(urls) ? urls : []).filter(
+      /** @param {string | null | undefined | false} url @returns {url is string} */
+      url => typeof url === "string" && url.length > 0
+    );
+    return [...new Set(filteredUrls)];
   }
 
   getCssUrls() {
@@ -217,6 +226,10 @@ class SiteMenu extends HTMLElement {
     return allCssUrls;
   }
 
+  /**
+   * @param {string[]} cssUrls
+   * @param {string} [injectedBy]
+   */
   ensureHeadStyles(cssUrls, injectedBy = "site-menu") {
     if (!cssUrls.length) return;
 
@@ -233,6 +246,11 @@ class SiteMenu extends HTMLElement {
     }
   }
 
+
+  /**
+   * @param {string[]} cssUrls
+   * @param {string} [injectedBy]
+   */
   ensureHeadStylesAsync(cssUrls, injectedBy = "site-menu-deferred") {
     if (!cssUrls.length) return Promise.resolve([]);
 
@@ -341,11 +359,17 @@ class SiteMenu extends HTMLElement {
     return this._deferredStylesPromise;
   }
 
+  /**
+   * @param {string[]} cssUrls
+   */
   async getShadowScopedCssTextBatch(cssUrls) {
     const chunks = await Promise.all(cssUrls.map(cssUrl => this.getShadowScopedCssText(cssUrl)));
     return chunks.filter(Boolean).join("\n");
   }
 
+  /**
+   * @param {string[]} cssUrls
+   */
   async getShadowStylesheets(cssUrls) {
     const entries = await Promise.all(cssUrls.map(cssUrl => this.getShadowStylesheet(cssUrl)));
     /** @type {CSSStyleSheet[]} */
@@ -356,6 +380,9 @@ class SiteMenu extends HTMLElement {
     return sheets;
   }
 
+  /**
+   * @param {string} cssUrl
+   */
   async getShadowScopedCssText(cssUrl) {
     const cached = shadowCssCache.get(cssUrl);
     if (cached) return cached;
@@ -363,7 +390,10 @@ class SiteMenu extends HTMLElement {
     const promise = fetchText(cssUrl, {
       fetchOptions: { credentials: "same-origin" },
       retries: 1,
-    }).then(rawCss => this.transformCssForShadow(rawCss));
+    }).then(
+      /** @param {string} rawCss */
+      rawCss => this.transformCssForShadow(rawCss)
+    );
 
     shadowCssCache.set(cssUrl, promise);
 
@@ -376,6 +406,9 @@ class SiteMenu extends HTMLElement {
     }
   }
 
+  /**
+   * @param {string} cssUrl
+   */
   async getShadowStylesheet(cssUrl) {
     const supportsConstructable =
       typeof CSSStyleSheet !== "undefined" &&
@@ -406,6 +439,9 @@ class SiteMenu extends HTMLElement {
     }
   }
 
+  /**
+   * @param {string} rawCss
+   */
   transformCssForShadow(rawCss) {
     const withHostSelector = String(rawCss || "").replace(/(^|\n)\s*site-menu\s*\{/g, "$1:host {");
 

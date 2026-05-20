@@ -9,8 +9,8 @@ import {
   buildAgentResponsePayload,
   normalizeAgentResponsePayload,
 } from "../../core/ai-agent-contracts.js";
-import { fetchWithRetry } from "#core/utils/fetch.js";
-import { createUserId, normalizeUserId } from "#core/user-id.js";
+import { fetchWithRetry } from "../../core/utils/fetch.js";
+import { createUserId, normalizeUserId } from "../../core/user-id.js";
 import { executeTool } from "./modules/tool-executor.js";
 import {
   clearRobotUserName,

@@ -1,4 +1,4 @@
-import { resourceHints } from "#core/seo/resource-hints.js";
+import { resourceHints } from "../../../core/seo/resource-hints.js";
 
 const SEARCH_PRELOAD_URLS = Object.freeze([
   "https://esm.sh/htm@3.1.1",
