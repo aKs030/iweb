@@ -118,30 +118,6 @@
   text-wrap: pretty;
 }
 
-.hero__meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.8rem 1rem;
-  margin: 1rem 0;
-  padding: 0;
-  list-style: none;
-}
-
-.hero__meta li {
-  padding: 0.6rem 1.2rem;
-  border-radius: 100px;
-  background: color-mix(in srgb, var(--home-surface) 40%, transparent);
-  border: 1px solid rgb(255 255 255 / 8%);
-  color: color-mix(in srgb, var(--clr-white) 80%, var(--home-accent-warm) 20%);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
-}
-
 .hero__buttons {
   display: flex;
   flex-wrap: wrap;
@@ -252,8 +228,7 @@
 .hero__eyebrow,
 .hero__title,
 .hero__lede,
-.hero__buttons,
-.hero__meta li {
+.hero__buttons {
   opacity: 0;
 }
 
@@ -264,10 +239,6 @@
   .hero__buttons {
     filter: blur(10px);
     transform: translateY(30px) scale(0.98);
-  }
-
-  .hero__meta li {
-    transform: translateY(20px);
   }
 
   /* Active state triggered by intersection observer (.is-visible) */
@@ -291,23 +262,6 @@
     animation-delay: 0.7s;
   }
 
-  .is-visible .hero__meta li {
-    animation: slideUpMeta 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .is-visible .hero__meta li:nth-child(1) {
-    animation-delay: 0.6s;
-  }
-  .is-visible .hero__meta li:nth-child(2) {
-    animation-delay: 0.7s;
-  }
-  .is-visible .hero__meta li:nth-child(3) {
-    animation-delay: 0.8s;
-  }
-  .is-visible .hero__meta li:nth-child(4) {
-    animation-delay: 0.9s;
-  }
-
   @keyframes blurRevealEnter {
     0% {
       opacity: 0;
@@ -320,25 +274,13 @@
       transform: translateY(0) scale(1);
     }
   }
-
-  @keyframes slideUpMeta {
-    0% {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .is-visible .hero__eyebrow,
   .is-visible .hero__title,
   .is-visible .hero__lede,
-  .is-visible .hero__buttons,
-  .is-visible .hero__meta li {
+  .is-visible .hero__buttons {
     opacity: 1;
     transition: opacity 0.5s ease;
   }

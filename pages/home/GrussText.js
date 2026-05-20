@@ -101,17 +101,6 @@ const LEDES = {
   ],
 };
 
-const META_SETS = {
-  de: [
-    ["Poesie", "Elegante Bewegung", "Strukturelle Harmonie", "Visueller Klang"],
-    ["Ästhetik", "Form", "Rhythmus", "Intuition"],
-  ],
-  en: [
-    ["Poetry", "Elegant Motion", "Structural Harmony", "Visual Sound"],
-    ["Aesthetics", "Form", "Rhythm", "Intuition"],
-  ],
-};
-
 const BUTTONS = {
   de: {
     primary: ["Eintreten", "Die Reise beginnen", "Eintauchen", "Räume erkunden"],
@@ -151,7 +140,6 @@ const getHeroContent = (lang = "de") => {
   return {
     title: getRandomItem(TITLES, lang),
     lede: getRandomItem(LEDES, lang),
-    meta: getRandomItem(META_SETS, lang),
     primaryBtn: btns.primary[randomInt(0, btns.primary.length - 1)],
     secondaryBtn: btns.secondary[randomInt(0, btns.secondary.length - 1)],
   };

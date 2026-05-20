@@ -146,13 +146,6 @@ const HeroManager = (() => {
       const element = document.querySelector(selector);
       if (element && value) element.textContent = value;
     });
-
-    const metaEls = document.querySelectorAll(".hero__meta li");
-    if (metaEls.length > 0 && content.meta) {
-      metaEls.forEach((el, i) => {
-        if (content.meta[i]) el.textContent = content.meta[i];
-      });
-    }
   }
 
   async function setRandomGreetingHTML() {
