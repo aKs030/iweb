@@ -127,6 +127,13 @@
   }
 
   @media (max-width: 900px) {
+    .menu-global-backdrop.is-open[data-mode="menu"] {
+      opacity: 1;
+      pointer-events: auto;
+      backdrop-filter: blur(var(--size-8)) saturate(118%);
+      -webkit-backdrop-filter: blur(var(--size-8)) saturate(118%);
+    }
+
     html[data-active-overlay="menu"],
     body[data-active-overlay="menu"] {
       overflow: hidden;

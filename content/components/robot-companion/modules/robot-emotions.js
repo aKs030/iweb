@@ -28,23 +28,6 @@ export class RobotEmotions {
   }
 
   /**
-   * Show thumbs up gesture
-   * @param {number} duration - Duration in ms
-   */
-  showThumbsUp(duration = 1500) {
-    const rightHand = this.robot.dom.container?.querySelector(".robot-hand.right");
-    if (!rightHand) return;
-
-    rightHand.classList.add("thumbs-up");
-    this.setMouthExpression("happy");
-
-    this.robot._setTimeout(() => {
-      rightHand.classList.remove("thumbs-up");
-      this.setMouthExpression("neutral");
-    }, duration);
-  }
-
-  /**
    * Head shake "No"
    */
   shakeNo() {

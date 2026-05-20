@@ -32,7 +32,6 @@
  * @property {CssUrlList} DEFERRED_CSS_URLS
  * @property {CssUrlList} SHADOW_CSS_URLS
  * @property {CssUrlList} DEFERRED_SHADOW_CSS_URLS
- * @property {CssUrlList} GLOBAL_CSS_URLS
  * @property {number} DEBOUNCE_DELAY
  * @property {number} ANNOUNCEMENT_DELAY
  * @property {number} SEARCH_DEBOUNCE
@@ -72,7 +71,6 @@ export const MenuConfig = {
     "/content/components/menu/styles/menu-mobile.css",
   ],
   DEFERRED_SHADOW_CSS_URLS: ["/content/components/menu/styles/menu-search.css"],
-  GLOBAL_CSS_URLS: ["/content/components/menu/styles/menu-backdrop.css"],
 
   // Timing
   DEBOUNCE_DELAY: 100,

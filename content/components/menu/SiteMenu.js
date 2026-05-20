@@ -17,9 +17,9 @@ import {
   initOverlayManager,
   registerOverlayController,
 } from "#core/overlay-manager.js";
-import { applyCspNonce } from "#core/csp-nonce.js";
-import { loadHeadStylesheet, upsertHeadLink } from "#core/dom-utils.js";
-import { fetchText } from "#core/fetch.js";
+import { applyCspNonce } from "#core/utils/csp-nonce.js";
+import { loadHeadStylesheet, upsertHeadLink } from "#core/utils/dom-utils.js";
+import { fetchText } from "#core/utils/fetch.js";
 import { createLogger } from "#core/logger.js";
 
 /**
@@ -31,7 +31,7 @@ const SHADOW_DOM_ATTR = "data-shadow-dom";
 const shadowCssCache = new Map();
 const shadowSheetCache = new Map();
 
-export class SiteMenu extends HTMLElement {
+class SiteMenu extends HTMLElement {
   constructor() {
     super();
     /** @type {MenuComponentConfig} */
@@ -201,17 +201,12 @@ export class SiteMenu extends HTMLElement {
     return this.dedupeCssUrls(this.config.DEFERRED_CSS_URLS);
   }
 
-  getGlobalCssUrls() {
-    return this.dedupeCssUrls(this.config.GLOBAL_CSS_URLS);
-  }
-
   getShadowCssUrls(allCssUrls = this.getCssUrls()) {
     if (Array.isArray(this.config.SHADOW_CSS_URLS)) {
       return this.dedupeCssUrls(this.config.SHADOW_CSS_URLS);
     }
 
-    const globalUrls = new Set(this.getGlobalCssUrls());
-    return allCssUrls.filter(cssUrl => !globalUrls.has(cssUrl));
+    return allCssUrls;
   }
 
   getDeferredShadowCssUrls(allCssUrls = this.getDeferredCssUrls()) {
@@ -219,8 +214,7 @@ export class SiteMenu extends HTMLElement {
       return this.dedupeCssUrls(this.config.DEFERRED_SHADOW_CSS_URLS);
     }
 
-    const globalUrls = new Set(this.getGlobalCssUrls());
-    return allCssUrls.filter(cssUrl => !globalUrls.has(cssUrl));
+    return allCssUrls;
   }
 
   ensureHeadStyles(cssUrls, injectedBy = "site-menu") {
@@ -251,8 +245,6 @@ export class SiteMenu extends HTMLElement {
     if (allCssUrls.length === 0) return;
 
     if (this.usesShadowDOM && this.shadowRoot) {
-      this.ensureHeadStyles(this.getGlobalCssUrls(), "site-menu-global");
-
       const shadowCssUrls = this.getShadowCssUrls(allCssUrls);
       if (shadowCssUrls.length === 0) return;
 
@@ -332,7 +324,6 @@ export class SiteMenu extends HTMLElement {
           }
         }
 
-        this.ensureHeadStyles(this.getGlobalCssUrls(), "site-menu-global");
         this._deferredStylesReady = true;
       } else {
         await this.ensureHeadStylesAsync(deferredCssUrls, "site-menu-deferred");
@@ -426,33 +417,8 @@ export class SiteMenu extends HTMLElement {
     return withHostContext;
   }
 
-  // Get current stats
-  getStats() {
-    return {
-      initialized: this.initialized,
-      state: {
-        isOpen: this.state.isOpen,
-        title: this.state.currentTitle,
-        subtitle: this.state.currentSubtitle,
-      },
-      search: {
-        isOpen: this.search?.isSearchOpen() || false,
-      },
-      device: this.performance.getDeviceCapabilities(),
-    };
-  }
 }
 
 if (!customElements.get("site-menu")) {
   customElements.define("site-menu", SiteMenu);
-}
-
-export function openMenu() {
-  const el = /** @type {any} */ (document.querySelector("site-menu"));
-  el?.open?.();
-}
-
-export function closeMenu(options = {}) {
-  const el = /** @type {any} */ (document.querySelector("site-menu"));
-  el?.close?.(options);
 }

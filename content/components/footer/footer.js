@@ -12,16 +12,35 @@ import { i18n } from "#core/i18n.js";
 import { CookieManager } from "./modules/cookie-manager.js";
 import { AnalyticsManager } from "./footer-analytics.js";
 import { resetFooterState, setFooterExpanded, setFooterLoaded } from "./state.js";
-import { TimerManager } from "#core/timer-manager.js";
-import { fetchText } from "#core/fetch.js";
+import { TimerManager } from "#core/utils/timer-manager.js";
+import { fetchText } from "#core/utils/fetch.js";
 
 const log = createLogger("SiteFooter");
-const FOOTER_TEMPLATE_URL = new URL("./footer.html", import.meta.url);
+const FOOTER_TEMPLATE_URL = new URL("./footer", import.meta.url);
 const CONSENT_COOKIE = "cookie_consent";
 const ANALYTICS_CONSENT_COOKIE = "cookie_analytics_consent";
 const ADS_CONSENT_COOKIE = "cookie_ads_consent";
 
 let footerTemplatePromise = null;
+
+/**
+ * @typedef {Object} FooterElements
+ * @property {HTMLElement|null} footer
+ * @property {HTMLElement|null} footerMin
+ * @property {HTMLElement|null} footerMinMain
+ * @property {HTMLElement|null} footerMax
+ * @property {HTMLElement|null} cookieBanner
+ * @property {HTMLElement|null} cookieSettings
+ * @property {HTMLElement|null} footerContent
+ * @property {HTMLButtonElement|null} acceptBtn
+ * @property {HTMLButtonElement|null} rejectBtn
+ * @property {HTMLButtonElement|null} closeBtn
+ * @property {HTMLInputElement|null} analyticsToggle
+ * @property {HTMLInputElement|null} adsToggle
+ * @property {HTMLButtonElement|null} rejectAll
+ * @property {HTMLButtonElement|null} acceptSelected
+ * @property {HTMLButtonElement|null} acceptAll
+ */
 
 async function loadFooterTemplate() {
   footerTemplatePromise ||= fetchText(FOOTER_TEMPLATE_URL, {
@@ -45,8 +64,6 @@ function parseFooterTemplate(html) {
   fragment.append(...Array.from(doc.body.childNodes));
   return fragment;
 }
-
-/** @typedef {import('./footer.types.js').FooterElements} FooterElements */
 
 /**
  * SiteFooter Custom Element

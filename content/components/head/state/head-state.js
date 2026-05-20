@@ -26,9 +26,6 @@ class HeadStateManager {
       managerLoaded: false,
     };
 
-    /** @type {Set<Function>} */
-    this.readyListeners = new Set();
-
     /** @type {Promise<void>|null} */
     this.readyPromise = null;
 
@@ -46,12 +43,6 @@ class HeadStateManager {
       this.readyResolve();
       this.readyResolve = null;
     }
-
-    this.notifyReadyListeners();
-  }
-
-  isInlineReady() {
-    return this.config.inlineReady;
   }
 
   setManagerLoaded() {
@@ -91,30 +82,6 @@ class HeadStateManager {
     return this.readyPromise;
   }
 
-  onReady(listener) {
-    if (this.config.inlineReady) {
-      try {
-        listener();
-      } catch (error) {
-        log.warn("Ready listener failed:", error);
-      }
-      return () => {};
-    }
-
-    this.readyListeners.add(listener);
-    return () => this.readyListeners.delete(listener);
-  }
-
-  notifyReadyListeners() {
-    this.readyListeners.forEach(listener => {
-      try {
-        listener();
-      } catch (error) {
-        log.warn("Ready listener notification failed:", error);
-      }
-    });
-    this.readyListeners.clear();
-  }
 }
 
 export const headState = new HeadStateManager();

@@ -3,18 +3,21 @@
  * @version 1.2.0
  */
 
-import { cancelIdleTask, scheduleIdleTask } from "#core/async-utils.js";
-import { getElementById, upsertHeadLink } from "#core/dom-utils.js";
+import { cancelIdleTask, scheduleIdleTask } from "#core/utils/async-utils.js";
+import { getElementById, upsertHeadLink } from "#core/utils/dom-utils.js";
 import { createLogger } from "#core/logger.js";
 import { AppLoadManager } from "#core/load-manager.js";
-import { TimerManager } from "#core/timer-manager.js";
-import { threeEarthState } from "../three-earth-state.js";
+import { TimerManager } from "#core/utils/timer-manager.js";
 import {
   EARTH_PRIMARY_TEXTURE_URL,
   EARTH_SECONDARY_TEXTURE_URLS,
 } from "../earth/texture-paths.js";
 
 const log = createLogger("ThreeEarthManager");
+
+function isForceThreeEnabled() {
+  return new URL(globalThis.location.href).searchParams.get("forceThree") === "1";
+}
 
 export class ThreeEarthManager {
   /**
@@ -38,7 +41,7 @@ export class ThreeEarthManager {
     if (this.isLoading || this.cleanupFn) return;
     this.clearDeferredLoadHooks();
 
-    if (this.env.isTest && !threeEarthState.isForceEnabled()) {
+    if (this.env.isTest && !isForceThreeEnabled()) {
       log.info("Test environment - skipping Three.js Earth");
       return;
     }
@@ -81,7 +84,6 @@ export class ThreeEarthManager {
       this.cleanupFn = await initThreeEarth();
 
       if (typeof this.cleanupFn === "function") {
-        threeEarthState.setCleanupFunction(this.cleanupFn);
         log.info("Three.js Earth system initialized");
         this.announce("Interaktive 3D-Erde geladen");
       }

@@ -4,8 +4,7 @@ React-basiertes Kontaktformular fuer `/contact/`.
 
 ## Public API
 
-- `index.js`: Browser-Einstieg; mountet das Formular in `#main-content`.
-- Export: `ContactForm` fuer Tests oder gezielte Wiederverwendung.
+- `index.js`: schlanker Browser-Einstieg; mountet das Formular in `#main-content`.
 
 ```html
 <script type="module" src="/content/components/contact/index.js"></script>

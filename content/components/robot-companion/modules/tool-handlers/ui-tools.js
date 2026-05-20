@@ -1,10 +1,10 @@
-import { getResolvedTheme, setTheme, toggleTheme } from "#core/theme-state.js";
+import { getResolvedTheme, setTheme, toggleTheme } from "#core/state/theme-state.js";
 import { withViewTransition } from "#core/view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
-} from "#core/view-transition-constants.js";
+} from "#core/view-transitions/constants.js";
 import { buildToolResult, createDetail } from "../tool-result.js";
 
 export function executeSetTheme(args) {

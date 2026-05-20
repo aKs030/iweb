@@ -5,7 +5,7 @@ Lazy-hydrierter Site-Footer mit Cookie-Aktionen, Legal-Links und kompaktem Foote
 ## Public API
 
 - `index.js`: einziger oeffentlicher Einstieg fuer Footer-Aufrufer.
-- Exporte: `ensureFooterAndTrigger`, `openFooter`, `closeFooter`, `loadSiteFooter`, `footerSignals`, `subscribeFooterState`, `whenFooterReady`.
+- Exporte: `ensureFooterAndTrigger`, `openFooter`, `closeFooter`, `footerSignals`, `subscribeFooterState`.
 
 ```js
 import { openFooter, subscribeFooterState } from "#footer/index.js";

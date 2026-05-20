@@ -43,7 +43,7 @@ import {
   buildProjectDetailPath,
   extractProjectSlugFromLocation,
 } from "#core/project-paths.js";
-import { injectSchema } from "#core/schema.js";
+import { injectSchema } from "#core/seo/schema.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
 
 const ErrorBoundary = createErrorBoundary(React);

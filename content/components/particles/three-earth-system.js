@@ -18,7 +18,6 @@ import {
   sharedCleanupManager,
   sharedParallaxManager,
 } from "./shared-particle-system.js";
-import { threeEarthState } from "./three-earth-state.js";
 
 import { CONFIG } from "./earth/config.js";
 import { setupScene, setupLighting, createAtmosphere } from "./earth/scene.js";
@@ -191,12 +190,6 @@ class ThreeEarthSystem {
   }
 
   async init() {
-    // Load project-specific camera presets if available (for projekte page)
-    const customPresets = threeEarthState.getCameraPresets();
-    if (customPresets && Object.keys(customPresets).length > 0) {
-      Object.assign(CONFIG.CAMERA.PRESETS, customPresets);
-    }
-
     const sharedState = getSharedState();
     if (sharedState.hasSystem("three-earth")) {
       log.debug("System already initialized");
@@ -1189,7 +1182,7 @@ class ThreeEarthSystem {
     }
 
     const urlParams = new URL(location.href).searchParams;
-    const forceThree = urlParams.get("forceThree") === "1" || threeEarthState.isForceEnabled();
+    const forceThree = urlParams.get("forceThree") === "1";
 
     if (!supportsWebGL() && !forceThree) {
       log.warn("WebGL not supported, falling back to CSS");

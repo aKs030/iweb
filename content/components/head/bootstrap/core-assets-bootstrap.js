@@ -1,30 +1,14 @@
-import { scheduleIdleTask } from "#core/async-utils.js";
-import { applyCspNonce } from "#core/csp-nonce.js";
-import { upsertHeadLink } from "#core/dom-utils.js";
+import { scheduleIdleTask } from "#core/utils/async-utils.js";
+import { applyCspNonce } from "#core/utils/csp-nonce.js";
+import { upsertHeadLink } from "#core/utils/dom-utils.js";
 import { createLogger } from "#core/logger.js";
-import { resourceHints } from "#core/resource-hints.js";
+import { resourceHints } from "#core/seo/resource-hints.js";
 import { EARTH_PRIMARY_TEXTURE_URL } from "#components/particles/index.js";
 
 const log = createLogger("head-assets");
 
 function getNormalizedPathname() {
   return (globalThis.location?.pathname || "").replace(/\/+$/g, "") || "/";
-}
-
-function upsertScript({ src, module }) {
-  if (document.head.querySelector(`script[src="${src}"]`)) return;
-
-  const script = document.createElement("script");
-  script.src = src;
-  if (module) {
-    script.type = "module";
-    script.crossOrigin = "anonymous";
-  } else {
-    script.defer = true;
-  }
-  script.dataset.injectedBy = "head-inline";
-  applyCspNonce(script);
-  document.head.appendChild(script);
 }
 
 function upsertInlineModule({ id, code }) {
@@ -119,10 +103,6 @@ export function injectCoreAssets({
       });
 
       injectHomeLcpHints();
-      upsertScript({
-        src: "/content/components/menu/index.js",
-        module: true,
-      });
       deferNonCriticalAssets();
     });
   } catch (error) {

@@ -1,5 +1,5 @@
 import { signal, batch, effect, subscribe as signalSubscribe } from "../signals.js";
-/** @typedef {import('./types.js').OverlayMode} OverlayMode */
+/** @typedef {import('../types.js').OverlayMode} OverlayMode */
 // ---------------------------------------------------------------------------
 // Reactive Signals — fine-grained, subscribable per-property state
 // ---------------------------------------------------------------------------

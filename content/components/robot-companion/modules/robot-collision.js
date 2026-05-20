@@ -1,5 +1,5 @@
 import { createLogger } from "#core/logger.js";
-import { createObserver } from "#core/dom-utils.js";
+import { createObserver } from "#core/utils/dom-utils.js";
 const log = createLogger("RobotCollision");
 
 const OBSTACLE_SELECTOR = 'img, .card, button.btn, h2, .project-card, [data-test="photo-card"]';

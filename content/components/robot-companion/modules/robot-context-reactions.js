@@ -165,28 +165,6 @@ export class RobotContextReactions {
   }
 
   /**
-   * Point to an element on the page
-   * @param {HTMLElement} element
-   * @param {string} message
-   */
-  pointToElement(element, message = "Schau hier! 👉") {
-    if (!element || !this.robot.dom.container) return;
-
-    if (this.robot.dom.avatar) {
-      this.robot.dom.avatar.classList.add("pointing");
-    }
-
-    element.classList.add("robot-highlight");
-    this.robot.chatModule?.showBubble(message);
-
-    this.robot._setTimeout(() => {
-      this.robot.dom.avatar?.classList.remove("pointing");
-      element.classList.remove("robot-highlight");
-      this.robot.chatModule?.hideBubble();
-    }, 3000);
-  }
-
-  /**
    * React to long page visit (idle)
    * @param {number} idleTime - Time in ms
    */

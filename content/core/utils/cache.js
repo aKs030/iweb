@@ -53,21 +53,6 @@ class CacheManager {
     return this.items.delete(key);
   }
 
-  clear() {
-    this.items.clear();
-    log.info("Cache cleared");
-  }
-
-  getStats() {
-    return {
-      memorySize: this.items.size,
-      memoryMaxSize: this.maxSize,
-    };
-  }
-
-  async has(key) {
-    return this.get(key) !== null;
-  }
 }
 
 let globalCache = null;

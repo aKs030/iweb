@@ -14,7 +14,7 @@
  */
 
 import { createLogger } from "#core/logger.js";
-import { throttle } from "#core/async-utils.js";
+import { throttle } from "#core/utils/async-utils.js";
 
 const log = createLogger("sharedParticleSystem");
 
@@ -103,21 +103,6 @@ class SharedParallaxManager {
 
     if (!this.isActive) {
       this.activate();
-    }
-  }
-
-  /**
-   * @param {Function} handler
-   */
-  removeHandler(handler) {
-    const handlerObj = Array.from(this.handlers).find(h => h.handler === handler);
-    if (handlerObj) {
-      this.handlers.delete(handlerObj);
-      log.debug(`Parallax handler '${handlerObj.name}' removed`);
-    }
-
-    if (this.handlers.size === 0) {
-      this.deactivate();
     }
   }
 

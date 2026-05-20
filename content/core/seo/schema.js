@@ -162,13 +162,13 @@ function extractSchemaNodesFromScript(script) {
 
 /**
  * Generate Schema.org @graph
- * @param {import('./types.js').PageData} pageData
+ * @param {import('../types.js').PageData} pageData
  * @param {string} pageUrl
- * @param {import('./types.js').BrandData} brandData
+ * @param {import('../types.js').BrandData} brandData
  * @param {Object} [options={}] - Additional options
  * @param {Document} [options.doc] - Document object (for DOM queries)
  * @param {boolean} [options.forceProdCanonical] - Force production canonical
- * @returns {import('./types.js').SchemaNode[]}
+ * @returns {import('../types.js').SchemaNode[]}
  */
 export function generateSchemaGraph(pageData, pageUrl, brandData, options = {}) {
   const { doc = document, forceProdCanonical = false } = options;
@@ -770,7 +770,7 @@ function extractFAQs(pageUrl, doc) {
 
 /**
  * Inject schema into document
- * @param {import('./types.js').SchemaNode[]} graph
+ * @param {import('../types.js').SchemaNode[]} graph
  * @param {Object} options
  * @param {Document} [options.doc=document]
  * @param {string} [options.scriptId='schema-ldjson']

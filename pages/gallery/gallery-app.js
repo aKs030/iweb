@@ -9,9 +9,9 @@ import { createRoot } from "react-dom/client";
 
 import { createLogger } from "#core/logger.js";
 import { AppLoadManager } from "#core/load-manager.js";
-import { fetchJSON } from "#core/fetch.js";
+import { fetchJSON } from "#core/utils/fetch.js";
 import { createUseTranslation } from "#core/react-utils.js";
-import { injectSchema } from "#core/schema.js";
+import { injectSchema } from "#core/seo/schema.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
 import { i18n } from "#core/i18n.js";
 

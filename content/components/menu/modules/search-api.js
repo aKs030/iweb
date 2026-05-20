@@ -1,6 +1,6 @@
 import { i18n } from "#core/i18n.js";
-import { fetchJSON } from "#core/fetch.js";
-import { sanitizeInternalNavigationUrl } from "#core/url-utils.js";
+import { fetchJSON } from "#core/utils/fetch.js";
+import { sanitizeInternalNavigationUrl } from "#core/utils/url-utils.js";
 
 const SEARCH_ENDPOINT = "/api/search";
 const MARK_HIGHLIGHT_PATTERN = /<mark>[\s\S]*?<\/mark>/i;

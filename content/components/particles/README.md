@@ -5,7 +5,7 @@ Visuelle Particle- und Three.js-Earth-Systeme fuer die Startseite.
 ## Public API
 
 - `index.js`: einziger oeffentlicher Einstieg.
-- Exporte: `ThreeEarthManager`, `threeEarthState`, `EARTH_PRIMARY_TEXTURE_URL`, `EARTH_SECONDARY_TEXTURE_URLS`.
+- Exporte: `ThreeEarthManager`, `EARTH_PRIMARY_TEXTURE_URL`, `EARTH_SECONDARY_TEXTURE_URLS`.
 
 ```js
 import { ThreeEarthManager } from "#components/particles/index.js";
@@ -16,7 +16,6 @@ import { ThreeEarthManager } from "#components/particles/index.js";
 - `runtime/`: Laufzeit-Orchestrierung fuer das 3D-Earth-System.
 - `earth/`: Kamera, Szene, Texturen, Karten und UI-nahe Earth-Module.
 - `three-earth-system.js`: konkrete Three.js-Initialisierung.
-- `three-earth-state.js`: Feature-Zustand.
 - `three-earth.css`: feature-naher Style.
 
 ## Migration
