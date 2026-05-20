@@ -12,7 +12,6 @@
     "npm": ">=10.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.15",
     "eslint": "10.4.0",
     "jscpd": "4.2.2",
     "prettier": "3.8.3",
@@ -23,9 +22,6 @@
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint content pages functions --ext .js --no-config-lookup --rule \"no-unused-vars: [2, {\\\"vars\\\":\\\"all\\\",\\\"args\\\":\\\"none\\\",\\\"ignoreRestSiblings\\\":true}]\"",
     "lint:css": "prettier --check \"content/**/*.css\" \"pages/**/*.css\"",
-    "format": "biome format --write .",
-    "format:check": "biome format .",
-    "analyze:unused": "npx --yes knip@6.14.1 --no-progress",
     "analyze:duplicates": "jscpd --min-lines 8 --min-tokens 80 --format javascript,css --reporters console content pages content/styles",
     "clean": "rm -rf .wrangler .jscpd .eslintcache"
   }

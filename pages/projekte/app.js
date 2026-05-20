@@ -34,7 +34,7 @@ import {
   shouldDisableThreeScene,
   toAbsoluteAppUrl,
 } from "./utils/project-browse.js";
-import * as Icons from "#components/icons/icons.js";
+import * as Icons from "#components/icons/index.js";
 import { LikeButton } from "#components/interactions/index.js";
 import { i18n } from "#core/i18n.js";
 import { BASE_URL } from "#config/constants.js";
@@ -44,7 +44,7 @@ import {
   extractProjectSlugFromLocation,
 } from "#core/project-paths.js";
 import { injectSchema } from "#core/schema.js";
-import { createErrorBoundary } from "#components/ErrorBoundary.js";
+import { createErrorBoundary } from "#components/error-boundary/index.js";
 
 const ErrorBoundary = createErrorBoundary(React);
 const DEFAULT_PROJECTS_TITLE = "Projekte | Abdulkerim Sesli";

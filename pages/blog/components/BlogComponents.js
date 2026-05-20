@@ -5,7 +5,7 @@
 
 import React from "react";
 import htm from "htm";
-import { ArrowUp } from "#components/icons/icons.js";
+import { ArrowUp } from "#components/icons/index.js";
 import { LikeButton } from "#components/interactions/index.js";
 
 const html = htm.bind(React.createElement);

@@ -212,18 +212,8 @@
 # ============================================================================
 # API Routes - Strategic Caching
 # ============================================================================
-# Search API - Cache-Control is set in function response
-/api/search
-  Vary: Accept-Encoding, Accept
-  X-Robots-Tag: noindex
-
-# AI API - Cache-Control is set in function response
-/api/ai
-  Vary: Accept-Encoding, Accept
-  X-Robots-Tag: noindex
-
-# YouTube API - Cache-Control is set in function response
-/api/youtube/*
+# API responses set their own Cache-Control in the Functions layer.
+/api/*
   Vary: Accept-Encoding, Accept
   X-Robots-Tag: noindex
 

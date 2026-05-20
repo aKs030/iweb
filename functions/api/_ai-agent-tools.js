@@ -1,5 +1,5 @@
 import { createLogger } from "../../content/core/logger.js";
-import { SHARED_ROBOT_TOOL_DEFINITIONS } from "../../content/components/robot-companion/modules/shared-tool-definitions.js";
+import { SHARED_ROBOT_TOOL_DEFINITIONS } from "../../content/components/robot-companion/index.js";
 import { storeMemory, recallMemories } from "./_ai-agent-memory.js";
 
 const log = createLogger("ai-agent-tools");

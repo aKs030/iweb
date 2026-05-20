@@ -6,11 +6,11 @@
  */
 
 import * as THREE from "three";
-import { debounce } from "../../core/async-utils.js";
-import { createObserver, getElementById } from "../../core/dom-utils.js";
+import { debounce } from "../../core/utils/async-utils.js";
+import { createObserver, getElementById } from "../../core/utils/dom-utils.js";
 import { createLogger } from "../../core/logger.js";
 import { AppLoadManager } from "../../core/load-manager.js";
-import { TimerManager } from "../../core/timer-manager.js";
+import { TimerManager } from "../../core/utils/timer-manager.js";
 import {
   getSharedState,
   registerParticleSystem,

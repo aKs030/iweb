@@ -1,14 +1,14 @@
 import { createLogger } from "../../../core/logger.js";
 import { MarkdownRenderer } from "./markdown-renderer.js";
-import { setSanitizedHTML } from "../../../core/sanitization-utils.js";
+import { setSanitizedHTML } from "#core/sanitization-utils.js";
 import { ROBOT_ACTIONS } from "../constants/events.js";
-import { clearActiveOverlayMode, setActiveOverlayMode } from "../../../core/ui-store.js";
+import { clearActiveOverlayMode, setActiveOverlayMode } from "#core/ui-store.js";
 import { OVERLAY_MODES, prepareOverlayFocusChange } from "../../../core/overlay-manager.js";
 import { withViewTransition } from "../../../core/view-transitions.js";
 import { ChatHistoryStore } from "./chat-history-store.js";
 import { getRobotUserName, normalizeRobotUserName } from "./name-identity.js";
-import { getRobotMemoryManagerFields } from "../../../core/robot-memory-schema.js";
-import { fetchJSON } from "../../../core/fetch.js";
+import { getRobotMemoryManagerFields } from "../memory/robot-memory-schema.js";
+import { fetchJSON } from "#core/fetch.js";
 
 const log = createLogger("RobotChat");
 const DEFAULT_INPUT_PLACEHOLDER = "Frag mich etwas...";

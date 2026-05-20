@@ -1,14 +1,14 @@
 import { createLogger } from "#core/logger.js";
 import { buildProjectDetailPath, extractProjectSlug } from "#core/project-paths.js";
 import { stripBranding } from "#core/text-utils.js";
-import { headState } from "./head-state.js";
-import { getAnalyticsBootstrapState, initAnalyticsBootstrap } from "./analytics-bootstrap.js";
-import { ensureFooterAndTrigger } from "./footer-hydration.js";
+import { headState } from "./state/head-state.js";
+import { getAnalyticsBootstrapState, initAnalyticsBootstrap } from "./bootstrap/analytics-bootstrap.js";
+import { ensureFooterAndTrigger } from "#footer/index.js";
 import {
   addLazyLoadingDefaults,
   ensureFontDisplaySwap,
   injectCoreAssets,
-} from "./core-assets-bootstrap.js";
+} from "./bootstrap/core-assets-bootstrap.js";
 
 const log = createLogger("head-inline");
 
@@ -81,7 +81,7 @@ const hideBrandingFromUsers = () => {
         ua
       );
 
-    // Branding removal is handled centrally via `stripBranding()` in `content/core/text-utils.js`
+    // Branding removal is handled centrally via `stripBranding()`.
     const sanitize = s => stripBranding(s);
 
     const SHORT_MAP = {
@@ -309,6 +309,6 @@ setupThemeObservers();
 // Signal that head-inline is ready
 headState.setInlineReady();
 
-import("#components/head/head-manager.js").catch(err => {
+import("./head-manager.js").catch(err => {
   log.error("[head-inline] Failed to load head-manager.js:", err);
 });

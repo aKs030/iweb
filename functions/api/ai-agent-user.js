@@ -1,6 +1,6 @@
 import { createLogger } from "../../content/core/logger.js";
-import { createProfileState, createRecoveryState } from "../../content/core/profile-state.js";
-import { getRobotMemoryRank } from "../../content/core/robot-memory-schema.js";
+import { createProfileState, createRecoveryState } from "../../content/core/state/profile-state.js";
+import { getRobotMemoryRank } from "../../content/components/robot-companion/index.js";
 
 const log = createLogger("ai-agent-user");
 /**

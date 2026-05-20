@@ -18,7 +18,7 @@ import { R2_PUBLIC_ORIGIN } from "../../content/config/media-urls.js";
  * Resources the browser should start fetching immediately on header receipt.
  * Order matters — CSS first (render-blocking), then modulepreload (parser hint).
  */
-import { normalizePathname } from "../../content/core/path-utils.js";
+import { normalizePathname } from "../../content/core/utils/path-utils.js";
 
 const CORE_RESOURCES = [
   // Core CSS is loaded immediately by the document head
@@ -27,7 +27,7 @@ const CORE_RESOURCES = [
 
   // Core JS modules — start parsing before HTML fully loaded
   { href: "/content/main.js", rel: "modulepreload" },
-  { href: "/content/components/head/head-inline.js", rel: "modulepreload" },
+  { href: "/content/components/head/index.js", rel: "modulepreload" },
   { href: "/content/components/menu/index.js", rel: "modulepreload" },
 
   // Third-party preconnect — start DNS + TLS handshake early
@@ -44,7 +44,7 @@ const STANDALONE_SHELL_EXCLUSIONS = new Set([
   "/content/styles/main.css",
   "/content/styles/animations.css",
   "/content/main.js",
-  "/content/components/head/head-inline.js",
+  "/content/components/head/index.js",
   "/content/components/menu/index.js",
 ]);
 

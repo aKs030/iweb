@@ -1,4 +1,4 @@
-import { ROBOT_MEMORY_KEY_ENUM } from "../../../core/robot-memory-schema.js";
+import { ROBOT_MEMORY_KEY_ENUM } from "../memory/robot-memory-schema.js";
 
 export const SHARED_ROBOT_TOOL_DEFINITIONS = Object.freeze([
   {

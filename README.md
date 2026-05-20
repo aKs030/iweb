@@ -31,7 +31,13 @@ npm run dev           # Lokalen Cloudflare-Pages-Server starten
 
 `npm run dev` startet Cloudflare Pages lokal auf [http://localhost:8787](http://localhost:8787).
 
-Der Repo-Workflow ist bewusst schlank gehalten: ein lokaler Startbefehl, keine weiteren npm-Kommandos.
+Weitere schlanke Projektbefehle:
+
+```bash
+npm run lint                 # JS- und CSS-Checks
+npm run analyze:duplicates   # optionale Duplikatsanalyse
+npm run clean                # lokale Cache-/Tooling-Artefakte entfernen
+```
 
 ## CI/CD
 
@@ -56,7 +62,7 @@ functions/    Cloudflare Pages Functions + API-Endpunkte
 - `sw.js` - kleiner Legacy-Cleanup fuer alte Service-Worker-Registrierungen
 - `package.json`, `wrangler.jsonc`, `.env.example` - Projekt- und Laufzeitkonfiguration
 - `_headers`, `_redirects` - Cloudflare Header- und Routing-Regeln
-- `ai-index.json`, `llms.txt`, `llms-full.txt`, `person.jsonld`, `bio.md` - AI-Discovery und SEO
+- `robots.txt`, `ai-index.json`, `llms.txt`, `llms-full.txt`, `person.jsonld`, `bio.md`, `.well-known/*` - AI-Discovery und SEO
 
 ## Architektur
 
@@ -81,6 +87,7 @@ Cloudflare Functions:
 
 ## Dokumentation
 
+- [`CODING_CONVENTIONS.md`](CODING_CONVENTIONS.md) - kurze Projektregeln fuer Feature-Raender, Imports, Styles und Shims
 - [`functions/api/README.md`](functions/api/README.md) - API- und Functions-Überblick
 - [`content/styles/README.md`](content/styles/README.md) - CSS-Foundation und Utility-Workflow
 - [`SECURITY.md`](SECURITY.md) - Security Policy

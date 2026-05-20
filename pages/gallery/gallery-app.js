@@ -12,7 +12,7 @@ import { AppLoadManager } from "#core/load-manager.js";
 import { fetchJSON } from "#core/fetch.js";
 import { createUseTranslation } from "#core/react-utils.js";
 import { injectSchema } from "#core/schema.js";
-import { createErrorBoundary } from "#components/ErrorBoundary.js";
+import { createErrorBoundary } from "#components/error-boundary/index.js";
 import { i18n } from "#core/i18n.js";
 
 import { ThreeGalleryScene } from "./components/ThreeGalleryScene.js";

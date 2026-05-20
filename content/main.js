@@ -9,7 +9,7 @@ import { a11y, createAnnouncer } from "#core/accessibility-manager.js";
 import { SectionManager } from "#core/section-manager.js";
 import { AppLoadManager, loadSignals } from "#core/load-manager.js";
 import { signal, effect, computed } from "#core/signals.js";
-import { ThreeEarthManager } from "#core/three-earth-manager.js";
+import { ThreeEarthManager } from "#components/particles/index.js";
 import { onDOMReady } from "#core/dom-utils.js";
 import { TimerManager } from "#core/timer-manager.js";
 import { initViewTransitions } from "#core/view-transitions.js";
@@ -18,7 +18,7 @@ import { GlobalEventHandlers } from "#core/events.js";
 import { resourceHints } from "#core/resource-hints.js";
 import { initThemeState } from "#core/theme-state.js";
 import { initOverlayManager } from "#core/overlay-manager.js";
-import { initEnhancements } from "#components/enhancements/enhancements.js";
+import { initEnhancements } from "#components/enhancements/index.js";
 
 const log = createLogger("main");
 const appTimers = new TimerManager("Main");

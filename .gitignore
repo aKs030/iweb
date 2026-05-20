@@ -35,7 +35,6 @@ coverage/
 output/
 yarn.lock
 pnpm-lock.yaml
-reports/redirect-audit/
 report/
 _worker.bundle
 wrangler.toml.backup

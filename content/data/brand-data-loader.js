@@ -1,0 +1,92 @@
+import { createLogger } from "#core/logger.js";
+import { fetchJSON } from "#core/fetch.js";
+import {
+  SITE_CONTACT_EMAIL,
+  SITE_LEGAL_NAME,
+  SITE_OWNER_NAME,
+  SITE_PERSON_ALTERNATE_NAMES,
+  SITE_PERSON_JOB_TITLES,
+  SITE_PERSON_SOCIAL_URLS,
+} from "../config/site-seo.js";
+
+const log = createLogger("BrandDataLoader");
+
+let BRAND_DATA_CACHE = null;
+let BRAND_DATA_PROMISE = null;
+
+function addJsonLdType(entries, type) {
+  if (!Array.isArray(entries)) return null;
+  return entries
+    .filter(entry => entry && typeof entry === "object")
+    .map(entry => ({
+      "@type": type,
+      ...entry,
+    }));
+}
+
+function normalizeBrandData(payload) {
+  const raw = payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
+  const normalized = { ...raw };
+
+  const knowsLanguage = addJsonLdType(raw.knowsLanguage, "Language");
+  if (knowsLanguage) {
+    normalized.knowsLanguage = knowsLanguage;
+  }
+
+  const hasOccupation = addJsonLdType(raw.hasOccupation, "Occupation");
+  if (hasOccupation) {
+    normalized.hasOccupation = hasOccupation;
+  }
+
+  const contactPoint = addJsonLdType(raw.contactPoint, "ContactPoint");
+  if (contactPoint) {
+    normalized.contactPoint = contactPoint.map(cp => ({
+      ...cp,
+    }));
+  }
+
+  return normalized;
+}
+
+export async function loadBrandData() {
+  if (BRAND_DATA_CACHE) return BRAND_DATA_CACHE;
+  if (BRAND_DATA_PROMISE) return BRAND_DATA_PROMISE;
+
+  BRAND_DATA_PROMISE = (async () => {
+    try {
+      const payload = await fetchJSON("/content/data/brand-data.json", {
+        retries: 1,
+      });
+      BRAND_DATA_CACHE = normalizeBrandData(payload);
+      return BRAND_DATA_CACHE;
+    } catch (err) {
+      log.error("Failed to load brand-data.json, using fallback", err);
+      BRAND_DATA_CACHE = getFallbackBrandData();
+      return BRAND_DATA_CACHE;
+    } finally {
+      BRAND_DATA_PROMISE = null;
+    }
+  })();
+
+  return BRAND_DATA_PROMISE;
+}
+
+function getFallbackBrandData() {
+  return {
+    name: SITE_OWNER_NAME,
+    legalName: SITE_LEGAL_NAME,
+    alternateName: [...SITE_PERSON_ALTERNATE_NAMES],
+    logo: FAVICON_512_URL,
+    image: FAVICON_512_URL,
+    jobTitle: [...SITE_PERSON_JOB_TITLES],
+    email: SITE_CONTACT_EMAIL,
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "general inquiries",
+        email: SITE_CONTACT_EMAIL,
+      },
+    ],
+    sameAs: [...SITE_PERSON_SOCIAL_URLS],
+  };
+}

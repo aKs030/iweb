@@ -3,7 +3,7 @@
  * Handles all user interactions, URL changes, and scroll events.
  */
 import { i18n } from "#core/i18n.js";
-import { footerSignals } from "#footer/state.js";
+import { footerSignals } from "#footer/index.js";
 import { createLogger } from "#core/logger.js";
 import { TimerManager } from "#core/timer-manager.js";
 import { resolvedTheme, setTheme } from "#core/theme-state.js";

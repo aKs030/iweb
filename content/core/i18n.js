@@ -5,8 +5,8 @@
  */
 
 import { createLogger } from "./logger.js";
-import { fetchJSON } from "./fetch.js";
-import { setSanitizedHTML } from "./sanitization-utils.js";
+import { fetchJSON } from "./utils/fetch.js";
+import { setSanitizedHTML } from "./utils/sanitization-utils.js";
 
 const log = createLogger("LanguageManager");
 
@@ -147,7 +147,7 @@ class LanguageManager extends EventTarget {
     if (this.translations[lang]) return; // Already loaded
 
     try {
-      this.translations[lang] = await fetchJSON(`/content/config/locales/${lang}.json`, {
+      this.translations[lang] = await fetchJSON(`/content/data/locales/${lang}.json`, {
         retries: 1,
       });
       log.debug(`Loaded translations for ${lang}`);
