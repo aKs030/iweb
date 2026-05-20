@@ -29,12 +29,81 @@
   width: min(100%, var(--size-1200));
   margin-inline: auto;
   padding: var(--hero-content-block) var(--hero-content-inline);
+  isolation: isolate;
+}
+
+.hero__content::before {
+  content: "";
+  position: absolute;
+  inset: clamp(1rem, 6vw, 3rem);
+  background:
+    radial-gradient(circle at 12% 20%, rgb(139 184 255 / 18%), transparent 58%),
+    radial-gradient(circle at 72% 70%, rgb(243 196 122 / 14%), transparent 60%);
+  opacity: 0.8;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+
+.hero__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 22rem);
+  gap: clamp(1.6rem, 4vw, 4rem);
+  align-items: end;
 }
 
 .hero__poster {
   display: grid;
   gap: clamp(0.85rem, 1.4vw, 1.25rem);
   max-width: min(100%, 48rem);
+  position: relative;
+  z-index: 1;
+}
+
+.hero__aside {
+  display: grid;
+  gap: clamp(0.85rem, 1.6vw, 1.2rem);
+  align-content: end;
+  padding-bottom: clamp(0.2rem, 1vw, 0.8rem);
+}
+
+.hero__signal {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: 1.1rem;
+  border: 1px solid var(--home-line);
+  background: color-mix(in srgb, var(--home-surface) 42%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 16px 40px rgb(4 8 18 / 28%);
+}
+
+.hero__signal--primary {
+  border-color: color-mix(in srgb, var(--home-accent) 46%, transparent);
+  background: linear-gradient(150deg, rgb(139 184 255 / 22%), rgb(243 196 122 / 10%));
+}
+
+.hero__signal--outline {
+  border-style: dashed;
+  background: transparent;
+}
+
+.hero__signal-label {
+  color: color-mix(in srgb, var(--home-accent) 72%, var(--clr-white) 28%);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.hero__signal-value {
+  color: color-mix(in srgb, var(--clr-white) 86%, transparent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .hero__eyebrow {
@@ -156,6 +225,15 @@
     --hero-title-width: 10ch;
   }
 
+  .hero__grid {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .hero__aside {
+    max-width: 30rem;
+  }
+
   .hero__lede {
     max-width: 31rem;
   }
@@ -171,6 +249,10 @@
   .hero__poster {
     max-width: none;
   }
+
+  .hero__signal {
+    padding: 0.9rem 1rem;
+  }
 }
 
 @media (width <= 520px) {
@@ -181,6 +263,10 @@
     --hero-title-size: 2.85rem;
     --hero-title-line: 0.98;
     --hero-meta-item-size: 100%;
+  }
+
+  .hero__aside {
+    padding-bottom: 0;
   }
 
   .hero__eyebrow {
