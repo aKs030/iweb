@@ -3,6 +3,7 @@
   --home-accent-warm: #f7d69e;
   --home-line: rgb(255 255 255 / 20%);
   --home-surface: rgb(7 11 22 / 50%);
+  --home-vignette: #050811;
 
   --hero-content-inline: max(clamp(1.5rem, 6vw, 4rem), var(--safe-left))
     max(clamp(1.5rem, 6vw, 4rem), var(--safe-right));
@@ -27,17 +28,324 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 0%, #050811 100%);
+  background: radial-gradient(circle at center, transparent 0%, var(--home-vignette) 100%);
   pointer-events: none;
   z-index: 1;
 }
 
+/* ── Aurora Background — Fixed, spanning all sections ── */
+.home-aurora {
+  --aurora-violet: #8a2be2; /* Vibrant Electric Violet */
+  --aurora-cyan: #00f6ff; /* Ultra Bright Cosmic Cyan */
+  --aurora-magenta: #ff0090; /* Saturated Solar Pink */
+  --aurora-amber: #ffaa00; /* Intense Sun Gold */
+  --aurora-teal: #00ffaa; /* Solar Flare Neon Teal/Green */
+  --aurora-suncore: #ffffff; /* Pure Sunwhite Core */
+
+  position: fixed;
+  inset: -15%; /* Expanded to completely eliminate hard clipping borders/frames */
+  z-index: calc(
+    var(--z-behind-deep, -5) - 1
+  ); /* Sits exactly behind the Three.js Earth container (-5) */
+  overflow: hidden;
+  pointer-events: none;
+  perspective: 1200px;
+  perspective-origin: var(--aurora-perspective-x, 50%) var(--aurora-perspective-y, 50%);
+  transform-style: preserve-3d;
+  transform: translate3d(
+      var(--aurora-shift-x, 0px),
+      var(--aurora-shift-y, 0px),
+      calc(var(--aurora-depth, 0px) * -1)
+    )
+    scale(var(--aurora-scale, 1)) rotateX(var(--aurora-tilt-x, 0deg))
+    rotateY(var(--aurora-tilt-y, 0deg));
+  will-change: transform;
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.home-aurora__plane {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-aurora__plane--a {
+    opacity: 0.35;
+  }
+  .home-aurora__plane--b {
+    opacity: 0.38;
+  }
+  .home-aurora__plane--c {
+    opacity: 0.32;
+  }
+  .home-aurora__plane--d {
+    opacity: 0.72; /* High intensity for the Sun core */
+  }
+  .home-aurora__plane--e {
+    opacity: 0.28;
+  }
+}
+
+/* Plane A — deep violet, top-left, slow drift */
+.home-aurora__plane--a {
+  inset: -10% 45% 45% -15%;
+  filter: blur(80px);
+  background: radial-gradient(
+    circle at 35% 30%,
+    color-mix(in srgb, var(--aurora-violet) 80%, transparent) 0%,
+    transparent 60%
+  );
+  animation: auroraDriftA 26s ease-in-out infinite alternate;
+}
+
+/* Plane B — electric cyan, center-right, medium speed */
+.home-aurora__plane--b {
+  inset: 15% -10% 15% 40%;
+  filter: blur(75px);
+  background: radial-gradient(
+    ellipse at 70% 50%,
+    color-mix(in srgb, var(--aurora-cyan) 85%, #fff 15%) 0%,
+    color-mix(in srgb, var(--aurora-cyan) 40%, transparent) 45%,
+    transparent 70%
+  );
+  animation: auroraDriftB 20s ease-in-out infinite alternate;
+}
+
+/* Plane C — magenta, bottom-left, faster pulse */
+.home-aurora__plane--c {
+  inset: 40% 45% -10% -10%;
+  filter: blur(90px);
+  background: radial-gradient(
+    circle at 30% 70%,
+    color-mix(in srgb, var(--aurora-magenta) 80%, transparent) 0%,
+    transparent 58%
+  );
+  animation: auroraDriftC 18s ease-in-out infinite alternate;
+}
+
+/* Plane D — WARM SOLAR SUN LIGHT CORE (behind the Earth) */
+.home-aurora__plane--d {
+  inset: 10% 20% 30% 20%;
+  filter: blur(95px);
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--aurora-suncore) 0%,
+    color-mix(in srgb, var(--aurora-amber) 90%, #fff) 15%,
+    color-mix(in srgb, var(--aurora-amber) 60%, transparent) 45%,
+    transparent 70%
+  );
+  animation: auroraDriftD 24s ease-in-out infinite alternate;
+}
+
+/* Plane E — teal, center-bottom, subtle depth */
+.home-aurora__plane--e {
+  inset: 45% 15% -15% 15%;
+  filter: blur(100px);
+  background: radial-gradient(
+    ellipse at 50% 80%,
+    color-mix(in srgb, var(--aurora-teal) 75%, transparent) 0%,
+    transparent 62%
+  );
+  animation: auroraDriftE 22s ease-in-out infinite alternate;
+}
+
+/* Each plane drifts in a unique direction for organic movement */
+@keyframes auroraDriftA {
+  0% {
+    transform: translate(-4%, -3%) scale(1.02);
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.22;
+  }
+  100% {
+    transform: translate(5%, 4%) scale(1.06);
+    opacity: 0.16;
+  }
+}
+
+@keyframes auroraDriftB {
+  0% {
+    transform: translate(3%, -5%) scale(1.04);
+    opacity: 0.14;
+  }
+  50% {
+    opacity: 0.24;
+  }
+  100% {
+    transform: translate(-6%, 3%) scale(0.98);
+    opacity: 0.18;
+  }
+}
+
+@keyframes auroraDriftC {
+  0% {
+    transform: translate(-2%, 6%) scale(1.05);
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate(4%, -4%) scale(1.01);
+    opacity: 0.14;
+  }
+}
+
+@keyframes auroraDriftD {
+  0% {
+    transform: translate(5%, -2%) scale(0.97);
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.18;
+  }
+  100% {
+    transform: translate(-3%, 5%) scale(1.03);
+    opacity: 0.15;
+  }
+}
+
+@keyframes auroraDriftE {
+  0% {
+    transform: translate(-3%, 3%) scale(1.01);
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.16;
+  }
+  100% {
+    transform: translate(2%, -5%) scale(1.05);
+    opacity: 0.12;
+  }
+}
+
+/* ── Hero FX: Signal Pulses ── */
+.hero__fx {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero__signal {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--home-accent);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__signal {
+    opacity: 1;
+    animation: signalPulse 5s ease-out infinite;
+  }
+}
+
+.hero__signal--one {
+  top: 22%;
+  left: 15%;
+  animation-delay: 0s;
+}
+
+.hero__signal--two {
+  top: 68%;
+  right: 18%;
+  left: auto;
+  animation-delay: -1.8s;
+}
+
+.hero__signal--three {
+  top: 45%;
+  left: 72%;
+  animation-delay: -3.5s;
+}
+
+@keyframes signalPulse {
+  0% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--home-accent) 40%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--home-accent) 20%, transparent);
+    opacity: 0.8;
+  }
+  50% {
+    box-shadow:
+      0 0 0 18px color-mix(in srgb, var(--home-accent) 12%, transparent),
+      0 0 0 36px color-mix(in srgb, var(--home-accent) 4%, transparent);
+    opacity: 0.5;
+  }
+  100% {
+    box-shadow:
+      0 0 0 40px transparent,
+      0 0 0 70px transparent;
+    opacity: 0;
+  }
+}
+
+/* ── Hero FX: Scan Line ── */
+.hero__scan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--home-accent) 20%, transparent) 20%,
+    color-mix(in srgb, var(--home-accent) 35%, transparent) 50%,
+    color-mix(in srgb, var(--home-accent) 20%, transparent) 80%,
+    transparent 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2vh);
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__scan {
+    opacity: 1;
+    animation: scanLine 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: 3s;
+  }
+}
+
+@keyframes scanLine {
+  0% {
+    transform: translateY(-2vh);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  95% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(102vh);
+    opacity: 0;
+  }
+}
+
+/* ── Hero Content ── */
 .hero__content {
   position: relative;
   z-index: var(--z-elevated);
   width: min(100%, var(--size-1200));
   margin-inline: auto;
-  padding: var(--hero-content-block) var(--hero-content-inline);
+  padding-block: var(--hero-content-block);
+  padding-inline: var(--hero-content-inline);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -51,6 +359,7 @@
   max-width: min(100%, 60rem);
 }
 
+/* ── Eyebrow Badge with Shimmer Border ── */
 .hero__eyebrow {
   display: inline-flex;
   align-items: center;
@@ -63,15 +372,58 @@
   backdrop-filter: blur(24px);
   background: color-mix(in srgb, var(--home-surface) 80%, transparent);
   color: color-mix(in srgb, var(--home-accent) 80%, #fff 20%);
-  font-size: 0.75rem;
+  font-size: clamp(0.68rem, 1vw, 0.8rem);
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   box-shadow:
     0 8px 32px rgb(0 0 0 / 20%),
     inset 0 0 0 1px rgb(255 255 255 / 10%);
+  position: relative;
+  overflow: hidden;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .hero__eyebrow::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      transparent 30%,
+      color-mix(in srgb, var(--home-accent) 50%, transparent) 50%,
+      color-mix(in srgb, var(--home-accent-warm) 40%, transparent) 60%,
+      transparent 70%
+    );
+    background-size: 300% 300%;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    animation: shimmerBorder 5s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes shimmerBorder {
+  0% {
+    background-position: 100% 0%;
+  }
+  50% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+
+/* ── Title with Gradient ── */
 .hero__title {
   margin: 0;
   max-width: var(--hero-title-width);
@@ -84,13 +436,19 @@
   text-wrap: balance;
   text-shadow:
     0 20px 88px rgb(0 0 0 / 50%),
-    0 0 40px rgb(243 196 122 / 15%);
+    0 0 40px color-mix(in srgb, var(--home-accent-warm) 15%, transparent);
 }
 
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
   .hero__title {
-    background: linear-gradient(135deg, #ffffff 0%, #f7d69e 25%, #a3c2ff 75%, #ffffff 100%);
-    background-size: 300% 300%;
+    background: linear-gradient(
+      135deg,
+      #ffffff 0%,
+      var(--home-accent-warm) 25%,
+      var(--home-accent) 75%,
+      #ffffff 100%
+    );
+    background-size: 400% 400%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -108,6 +466,7 @@
   }
 }
 
+/* ── Lede Text ── */
 .hero__lede {
   margin: 0;
   max-width: 42rem;
@@ -118,6 +477,7 @@
   text-wrap: pretty;
 }
 
+/* ── Buttons ── */
 .hero__buttons {
   display: flex;
   flex-wrap: wrap;
@@ -138,9 +498,13 @@
 
 .hero__button--primary {
   border: 0;
-  background: linear-gradient(135deg, #f3c47a 0%, #c88c39 100%);
+  background: linear-gradient(
+    135deg,
+    var(--home-accent-warm) 0%,
+    color-mix(in srgb, var(--home-accent-warm) 70%, #8b6914) 100%
+  );
   color: #09111f;
-  box-shadow: 0 18px 44px rgb(201 140 57 / 24%);
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--home-accent-warm) 24%, transparent);
   transition:
     transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.3s ease;
@@ -149,8 +513,8 @@
 .hero__button--primary:hover {
   color: #09111f;
   box-shadow:
-    0 24px 60px rgb(201 140 57 / 40%),
-    0 0 20px rgb(243 196 122 / 30%);
+    0 24px 60px color-mix(in srgb, var(--home-accent-warm) 40%, transparent),
+    0 0 20px color-mix(in srgb, var(--home-accent-warm) 30%, transparent);
   transform: translateY(-2px) scale(1.02);
 }
 
@@ -170,14 +534,15 @@
   background: color-mix(in srgb, var(--home-surface) 96%, var(--home-accent));
   border-color: color-mix(in srgb, var(--home-accent) 42%, transparent);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgb(139 184 255 / 15%);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--home-accent) 15%, transparent);
 }
 
+/* ── Responsive Breakpoints ── */
 @media (width <= 960px) {
   .hero {
     --hero-content-block: clamp(5rem, 12vh, 6.5rem)
       max(clamp(4.2rem, 8vh, 5.5rem), calc(var(--content-bottom-offset) + 0.75rem));
-    --hero-title-size: 4.95rem;
+    --hero-title-size: clamp(3.5rem, 7vw, 4.95rem);
     --hero-title-width: 10ch;
   }
 
@@ -210,7 +575,7 @@
 
 @media (width <= 720px) {
   .hero {
-    --hero-title-size: 4.05rem;
+    --hero-title-size: clamp(2.85rem, 8vw, 4.05rem);
     --hero-title-width: 9ch;
     --hero-meta-item-size: calc(50% - 0.5rem);
   }
@@ -225,7 +590,7 @@
     --hero-content-inline: max(1rem, var(--safe-left)) max(1rem, var(--safe-right));
     --hero-content-block: clamp(4.75rem, 13vh, 5.75rem)
       max(clamp(3.5rem, 8vh, 4.25rem), calc(var(--content-bottom-offset) + 0.5rem));
-    --hero-title-size: 2.85rem;
+    --hero-title-size: clamp(2.2rem, 7.5vw, 2.85rem);
     --hero-title-line: 0.98;
     --hero-meta-item-size: 100%;
   }
@@ -242,6 +607,12 @@
   .hero__button {
     flex: 1 1 100%;
     min-inline-size: 0;
+  }
+
+  /* Reduce aurora complexity on small screens */
+  .home-aurora__plane {
+    filter: blur(100px);
+    inset: -20%;
   }
 }
 
@@ -261,6 +632,7 @@
   .hero__buttons {
     filter: blur(10px);
     transform: translateY(30px) scale(0.98);
+    will-change: filter, transform, opacity;
   }
 
   /* Active state triggered by intersection observer (.is-visible) */
@@ -298,6 +670,7 @@
   }
 }
 
+/* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
   .is-visible .hero__eyebrow,
   .is-visible .hero__title,
@@ -306,10 +679,18 @@
     opacity: 1;
     transition: opacity 0.5s ease;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
   .hero__button {
     transition: none;
+  }
+
+  .home-aurora__plane {
+    opacity: 0.08;
+    animation: none;
+  }
+
+  .hero__signal,
+  .hero__scan {
+    display: none;
   }
 }
