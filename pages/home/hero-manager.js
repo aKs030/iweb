@@ -189,7 +189,7 @@ const HeroManager = (() => {
       aurora.style.setProperty("--aurora-depth", "0px");
       aurora.style.setProperty("--aurora-perspective-x", "50%");
       aurora.style.setProperty("--aurora-perspective-y", "50%");
-      aurora.style.setProperty("--aurora-scale", "1.04");
+      aurora.style.setProperty("--aurora-scale", "1");
       aurora.style.setProperty("--aurora-shift-x", "0px");
       aurora.style.setProperty("--aurora-shift-y", "0px");
       aurora.style.setProperty("--aurora-tilt-x", "0deg");
@@ -197,17 +197,20 @@ const HeroManager = (() => {
       return;
     }
 
+    // 3 full cycles across all sections for continuous 3D movement
     const wave = Math.sin(progress * Math.PI);
-    const orbit = Math.sin(progress * Math.PI * 2);
-    const counterOrbit = Math.cos(progress * Math.PI * 2);
-    const tiltX = (counterOrbit * 3.8 + (progress - 0.5) * 7).toFixed(2);
-    const tiltY = (orbit * 7.5).toFixed(2);
-    const shiftX = (orbit * -34).toFixed(1);
-    const shiftY = ((progress - 0.5) * 34).toFixed(1);
-    const depth = (44 + wave * 92).toFixed(1);
-    const scale = (1.035 + wave * 0.035).toFixed(3);
-    const perspectiveX = (50 + orbit * 9).toFixed(2);
-    const perspectiveY = (50 + counterOrbit * 6).toFixed(2);
+    const orbit = Math.sin(progress * Math.PI * 3);
+    const counterOrbit = Math.cos(progress * Math.PI * 3);
+    const slowOrbit = Math.sin(progress * Math.PI * 1.5);
+
+    const tiltX = (counterOrbit * 8 + (progress - 0.5) * 14).toFixed(2);
+    const tiltY = (orbit * 15).toFixed(2);
+    const shiftX = (orbit * -80 + slowOrbit * 30).toFixed(1);
+    const shiftY = ((progress - 0.5) * 80 + counterOrbit * 20).toFixed(1);
+    const depth = (60 + wave * 140).toFixed(1);
+    const scale = (1.0 + wave * 0.08).toFixed(3);
+    const perspectiveX = (50 + orbit * 15 + slowOrbit * 5).toFixed(2);
+    const perspectiveY = (50 + counterOrbit * 12).toFixed(2);
 
     aurora.style.setProperty("--aurora-depth", `${depth}px`);
     aurora.style.setProperty("--aurora-perspective-x", `${perspectiveX}%`);
