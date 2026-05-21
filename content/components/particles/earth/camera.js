@@ -37,12 +37,7 @@ export class CameraManager {
 
   updateCameraForSection(sectionName) {
     // Map certain section ids to existing preset keys
-    const presetKey =
-      sectionName === "site-footer"
-        ? "contact"
-        : sectionName === "section3"
-          ? "about"
-          : sectionName;
+    const presetKey = sectionName === "site-footer" ? "contact" : sectionName;
     const preset = CONFIG.CAMERA.PRESETS[presetKey];
     if (preset) {
       this.flyToPreset(presetKey);

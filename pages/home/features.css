@@ -10,10 +10,6 @@
   isolation: isolate;
 }
 
-.section.features::before {
-  content: none;
-}
-
 @media (width <= 560px) {
   .section.features {
     padding-inline: max(1rem, var(--safe-left)) max(1rem, var(--safe-right));

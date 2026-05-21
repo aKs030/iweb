@@ -85,6 +85,12 @@ export const CONFIG = {
         z: 9.5,
         lookAt: { x: 0, y: 0, z: 0 },
       },
+      section3: {
+        x: -2.4,
+        y: 3.2,
+        z: 10.2,
+        lookAt: { x: 0.55, y: -0.35, z: -0.4 },
+      },
       contact: {
         x: -0.5,
         y: 3.0,
