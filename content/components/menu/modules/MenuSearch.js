@@ -5,7 +5,11 @@
 import { i18n } from "../../../core/i18n.js";
 import { TimerManager } from "../../../core/utils/timer-manager.js";
 import { prepareOverlayFocusChange, OVERLAY_MODES } from "../../../core/overlay-manager.js";
-import { activeOverlay, clearActiveOverlayMode, setActiveOverlayMode } from "../../../core/state/ui-store.js";
+import {
+  activeOverlay,
+  clearActiveOverlayMode,
+  setActiveOverlayMode,
+} from "../../../core/state/ui-store.js";
 import { addManagedEventListener } from "../../../core/utils/dom-utils.js";
 import { formatCompactUrlPath } from "../../../core/utils/url-utils.js";
 import { MenuSearchKeyboardController } from "./search-keyboard-controller.js";

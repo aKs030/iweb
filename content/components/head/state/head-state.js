@@ -81,7 +81,6 @@ class HeadStateManager {
 
     return this.readyPromise;
   }
-
 }
 
 export const headState = new HeadStateManager();

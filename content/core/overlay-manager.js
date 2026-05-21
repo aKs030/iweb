@@ -1,35 +1,32 @@
 import { effect } from "./signals.js";
 import {
-	OVERLAY_MODES,
-	activeOverlay,
-	clearActiveOverlayMode,
-	normalizeOverlayMode,
+  OVERLAY_MODES,
+  activeOverlay,
+  clearActiveOverlayMode,
+  normalizeOverlayMode,
 } from "./state/ui-store.js";
 import {
-	deleteOverlayController,
-	ensureBackdropElement,
-	getControllerFocusElement,
-	getControllerRoots,
-	getOverlayController,
-	setOverlayController,
-	shouldModeShowBackdrop,
-	syncBackdropState,
-	syncBackgroundInteractivity,
-	syncBodyOverlayState,
+  deleteOverlayController,
+  ensureBackdropElement,
+  getControllerFocusElement,
+  getControllerRoots,
+  getOverlayController,
+  setOverlayController,
+  shouldModeShowBackdrop,
+  syncBackdropState,
+  syncBackgroundInteractivity,
+  syncBodyOverlayState,
 } from "./overlay/core.js";
-import {
-	prepareOverlayFocusChange,
-	syncOverlayFocusState,
-} from "./overlay/focus.js";
+import { prepareOverlayFocusChange, syncOverlayFocusState } from "./overlay/focus.js";
 /** @typedef {import('./types.js').OverlayController} OverlayController */
 
 export { OVERLAY_MODES } from "./state/ui-store.js";
 
 /** @type {Map<string, string[]>} */
 const DEFAULT_INTERACTIVE_ROOT_SELECTORS = new Map([
-	[OVERLAY_MODES.MENU, ["header.site-header", "site-menu"]],
-	[OVERLAY_MODES.SEARCH, ["header.site-header", "site-menu"]],
-	[OVERLAY_MODES.ROBOT_CHAT, ["#robot-chat-window", "#robot-companion-container"]],
+  [OVERLAY_MODES.MENU, ["header.site-header", "site-menu"]],
+  [OVERLAY_MODES.SEARCH, ["header.site-header", "site-menu"]],
+  [OVERLAY_MODES.ROBOT_CHAT, ["#robot-chat-window", "#robot-companion-container"]],
 ]);
 
 /** @type {(() => void)|null} */
@@ -40,44 +37,44 @@ let overlaySyncCleanup = null;
  * @returns {element is HTMLElement}
  */
 function isConnectedHTMLElement(element) {
-	return element instanceof HTMLElement && element.isConnected;
+  return element instanceof HTMLElement && element.isConnected;
 }
 
 function getDefaultInteractiveRoots(mode) {
-	if (typeof document === "undefined") return [];
+  if (typeof document === "undefined") return [];
 
-	const selectors = DEFAULT_INTERACTIVE_ROOT_SELECTORS.get(normalizeOverlayMode(mode));
-	if (!selectors?.length) return [];
+  const selectors = DEFAULT_INTERACTIVE_ROOT_SELECTORS.get(normalizeOverlayMode(mode));
+  if (!selectors?.length) return [];
 
-	return selectors.map(selector => document.querySelector(selector)).filter(isConnectedHTMLElement);
+  return selectors.map(selector => document.querySelector(selector)).filter(isConnectedHTMLElement);
 }
 
 function getInteractiveRootsForMode(mode) {
-	const normalizedMode = normalizeOverlayMode(mode);
-	const controllerRoots = getControllerRoots(normalizedMode, "getInteractiveRoots");
-	const roots =
-		controllerRoots.length > 0 ? controllerRoots : getDefaultInteractiveRoots(normalizedMode);
+  const normalizedMode = normalizeOverlayMode(mode);
+  const controllerRoots = getControllerRoots(normalizedMode, "getInteractiveRoots");
+  const roots =
+    controllerRoots.length > 0 ? controllerRoots : getDefaultInteractiveRoots(normalizedMode);
 
-	if (shouldModeShowBackdrop(normalizedMode)) {
-		const backdrop = ensureBackdropElement();
-		if (backdrop) roots.push(backdrop);
-	}
+  if (shouldModeShowBackdrop(normalizedMode)) {
+    const backdrop = ensureBackdropElement();
+    if (backdrop) roots.push(backdrop);
+  }
 
-	return [...new Set(roots)];
+  return [...new Set(roots)];
 }
 
 function getFocusTrapRootsForMode(mode) {
-	return getControllerRoots(mode, "getFocusTrapRoots", getInteractiveRootsForMode(mode));
+  return getControllerRoots(mode, "getFocusTrapRoots", getInteractiveRootsForMode(mode));
 }
 
 function syncOverlayEnvironment(mode) {
-	syncBodyOverlayState(mode);
-	syncBackdropState(mode);
-	syncBackgroundInteractivity(mode, { getInteractiveRootsForMode });
-	syncOverlayFocusState(mode, {
-		getFocusTrapRootsForMode,
-		getControllerFocusElement,
-	});
+  syncBodyOverlayState(mode);
+  syncBackdropState(mode);
+  syncBackgroundInteractivity(mode, { getInteractiveRootsForMode });
+  syncOverlayFocusState(mode, {
+    getFocusTrapRootsForMode,
+    getControllerFocusElement,
+  });
 }
 
 export { prepareOverlayFocusChange };
@@ -88,54 +85,54 @@ export { prepareOverlayFocusChange };
  * @returns {() => void}
  */
 export function registerOverlayController(mode, controller = {}) {
-	const normalizedMode = normalizeOverlayMode(mode);
-	if (normalizedMode === OVERLAY_MODES.NONE) {
-		return () => {};
-	}
+  const normalizedMode = normalizeOverlayMode(mode);
+  if (normalizedMode === OVERLAY_MODES.NONE) {
+    return () => {};
+  }
 
-	setOverlayController(normalizedMode, controller);
-	syncBackgroundInteractivity(activeOverlay.value, {
-		getInteractiveRootsForMode,
-	});
+  setOverlayController(normalizedMode, controller);
+  syncBackgroundInteractivity(activeOverlay.value, {
+    getInteractiveRootsForMode,
+  });
 
-	return () => {
-		deleteOverlayController(normalizedMode, controller);
-		syncBackgroundInteractivity(activeOverlay.value, {
-			getInteractiveRootsForMode,
-		});
-	};
+  return () => {
+    deleteOverlayController(normalizedMode, controller);
+    syncBackgroundInteractivity(activeOverlay.value, {
+      getInteractiveRootsForMode,
+    });
+  };
 }
 
 export async function closeActiveOverlay(options = {}) {
-	const normalizedMode = normalizeOverlayMode(activeOverlay.value);
-	if (normalizedMode === OVERLAY_MODES.NONE) {
-		return false;
-	}
+  const normalizedMode = normalizeOverlayMode(activeOverlay.value);
+  if (normalizedMode === OVERLAY_MODES.NONE) {
+    return false;
+  }
 
-	const controller = getOverlayController(normalizedMode);
-	if (typeof controller?.close === "function") {
-		await Promise.resolve(
-			controller.close({
-				mode: normalizedMode,
-				reason: String(options.reason || "programmatic"),
-				restoreFocus: options.restoreFocus !== false,
-			})
-		);
-	} else {
-		clearActiveOverlayMode(normalizedMode);
-	}
+  const controller = getOverlayController(normalizedMode);
+  if (typeof controller?.close === "function") {
+    await Promise.resolve(
+      controller.close({
+        mode: normalizedMode,
+        reason: String(options.reason || "programmatic"),
+        restoreFocus: options.restoreFocus !== false,
+      })
+    );
+  } else {
+    clearActiveOverlayMode(normalizedMode);
+  }
 
-	return true;
+  return true;
 }
 
 export function initOverlayManager() {
-	if (overlaySyncCleanup || typeof document === "undefined") {
-		return overlaySyncCleanup;
-	}
+  if (overlaySyncCleanup || typeof document === "undefined") {
+    return overlaySyncCleanup;
+  }
 
-	overlaySyncCleanup = effect(() => {
-		syncOverlayEnvironment(normalizeOverlayMode(activeOverlay.value));
-	});
+  overlaySyncCleanup = effect(() => {
+    syncOverlayEnvironment(normalizeOverlayMode(activeOverlay.value));
+  });
 
-	return overlaySyncCleanup;
+  return overlaySyncCleanup;
 }

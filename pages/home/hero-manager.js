@@ -209,7 +209,7 @@ const HeroManager = (() => {
     const hero = document.querySelector(".hero");
     if (hero) {
       const heroHeight = hero.offsetHeight || window.innerHeight;
-      const vignetteOpacity = Math.max(0, Math.min(1, 1 - (window.scrollY / (heroHeight * 0.8))));
+      const vignetteOpacity = Math.max(0, Math.min(1, 1 - window.scrollY / (heroHeight * 0.8)));
       hero.style.setProperty("--hero-vignette-opacity", vignetteOpacity.toFixed(2));
     }
 
@@ -277,8 +277,6 @@ const HeroManager = (() => {
     adjustTitleFontSize();
   }
 
-
-
   function cleanup() {
     heroTimers.clearAll();
     isInitialized = false;
@@ -333,8 +331,6 @@ const HeroManager = (() => {
       }
       observerCleanup = null;
     }
-
-
   }
 
   function setClickHandler(handler) {

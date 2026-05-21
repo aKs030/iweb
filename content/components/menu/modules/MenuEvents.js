@@ -149,7 +149,6 @@ export class MenuEvents {
           try {
             closeFooter();
           } catch {
-             
             // ignoring if footer is not available
           }
         });

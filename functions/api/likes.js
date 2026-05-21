@@ -37,7 +37,10 @@ export async function onRequestGet(context) {
     return jsonResponse({ likes: result?.likes ?? 0 });
   } catch (error) {
     log.error("Error fetching likes:", error);
-    return errorJsonResponse({ error: "Internal Server Error", details: error.message }, { status: 500 });
+    return errorJsonResponse(
+      { error: "Internal Server Error", details: error.message },
+      { status: 500 }
+    );
   }
 }
 
@@ -67,15 +70,23 @@ export async function onRequestPost(context) {
     const requestId = String(request.headers.get("CF-Ray") || crypto.randomUUID()).trim();
 
     await db.batch([
-      db.prepare(`
+      db
+        .prepare(
+          `
         INSERT INTO project_like_events (project_id, source_ip, user_agent, request_id)
         VALUES (?, ?, ?, ?)
-      `).bind(projectId, sourceIp, userAgent, requestId),
-      db.prepare(`
+      `
+        )
+        .bind(projectId, sourceIp, userAgent, requestId),
+      db
+        .prepare(
+          `
         INSERT INTO project_likes (project_id, likes)
         VALUES (?, 1)
         ON CONFLICT(project_id) DO UPDATE SET likes = likes + 1
-      `).bind(projectId),
+      `
+        )
+        .bind(projectId),
     ]);
 
     const result = await db

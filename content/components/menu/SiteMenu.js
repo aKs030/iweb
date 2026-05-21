@@ -246,7 +246,6 @@ class SiteMenu extends HTMLElement {
     }
   }
 
-
   /**
    * @param {string[]} cssUrls
    * @param {string} [injectedBy]
@@ -452,7 +451,6 @@ class SiteMenu extends HTMLElement {
 
     return withHostContext;
   }
-
 }
 
 if (!customElements.get("site-menu")) {

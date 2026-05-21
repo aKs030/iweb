@@ -114,7 +114,8 @@ export const buildBrowseSearch = state => {
   return search ? `?${search}` : "";
 };
 
-export const buildProjectsOverviewPath = state => `${PROJECTS_HOME_PATH}${buildBrowseSearch(state)}`;
+export const buildProjectsOverviewPath = state =>
+  `${PROJECTS_HOME_PATH}${buildBrowseSearch(state)}`;
 
 const normalizeValueList = values =>
   Array.isArray(values) ? values.map(value => String(value || "").trim()).filter(Boolean) : [];

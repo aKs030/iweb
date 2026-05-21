@@ -86,7 +86,6 @@ class CacheManager {
   delete(key) {
     return this.items.delete(key);
   }
-
 }
 
 let globalCache = null;

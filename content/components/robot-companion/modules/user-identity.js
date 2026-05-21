@@ -4,7 +4,10 @@
  * @version 1.0.0
  */
 
-import { createProfileState, resolveProfileStatePayload } from "../../../core/state/profile-state.js";
+import {
+  createProfileState,
+  resolveProfileStatePayload,
+} from "../../../core/state/profile-state.js";
 import { normalizeUserId } from "../../../core/user-id.js";
 
 const USER_ID_STORAGE_KEY = "jules:user-id";

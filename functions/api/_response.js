@@ -56,7 +56,11 @@ export function errorJsonResponse(error, options = {}) {
 export function corsJsonResponse(corsHeaders, payload, status = 200, extraHeaders = {}) {
   return jsonResponse(payload, {
     status,
-    headers: mergeHeaders(corsHeaders, { "Cache-Control": CACHE_CONTROL_PRIVATE_NO_STORE }, extraHeaders),
+    headers: mergeHeaders(
+      corsHeaders,
+      { "Cache-Control": CACHE_CONTROL_PRIVATE_NO_STORE },
+      extraHeaders
+    ),
   });
 }
 
@@ -70,6 +74,10 @@ export function corsJsonResponse(corsHeaders, payload, status = 200, extraHeader
 export function corsErrorResponse(corsHeaders, error, status = 500, extraHeaders = {}) {
   return errorJsonResponse(error, {
     status,
-    headers: mergeHeaders(corsHeaders, { "Cache-Control": CACHE_CONTROL_PRIVATE_NO_STORE }, extraHeaders),
+    headers: mergeHeaders(
+      corsHeaders,
+      { "Cache-Control": CACHE_CONTROL_PRIVATE_NO_STORE },
+      extraHeaders
+    ),
   });
 }

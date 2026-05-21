@@ -2,7 +2,10 @@ import { createLogger } from "../../core/logger.js";
 import { buildProjectDetailPath, extractProjectSlug } from "../../core/project-paths.js";
 import { stripBranding } from "../../core/utils/text-utils.js";
 import { headState } from "./state/head-state.js";
-import { getAnalyticsBootstrapState, initAnalyticsBootstrap } from "./bootstrap/analytics-bootstrap.js";
+import {
+  getAnalyticsBootstrapState,
+  initAnalyticsBootstrap,
+} from "./bootstrap/analytics-bootstrap.js";
 import { ensureFooterAndTrigger } from "#footer/index.js";
 import {
   addLazyLoadingDefaults,
