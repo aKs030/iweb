@@ -709,7 +709,6 @@ class ResourceHintsManager {
     this.initialized = true;
     log.info("Common resource hints initialized");
   }
-
 }
 
 // Singleton instance

@@ -1,4 +1,8 @@
-import { formatSlug, normalizeText, sanitizeDiscoveryText } from "../../content/core/utils/text-utils.js";
+import {
+  formatSlug,
+  normalizeText,
+  sanitizeDiscoveryText,
+} from "../../content/core/utils/text-utils.js";
 import { loadJsonFile, toISODate } from "./_xml-utils.js";
 import { buildProjectDetailPath } from "../../content/core/project-paths.js";
 import {
@@ -176,7 +180,6 @@ export async function loadGalleryImages(context) {
   try {
     dynamicObjects = await listGalleryObjects(context.env?.GALLERY_BUCKET);
   } catch {
-     
     // ignoring gallery loading errors
   }
 

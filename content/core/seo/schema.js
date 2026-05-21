@@ -50,12 +50,14 @@ function isPlainObject(value) {
 /** Deduplicate @id references */
 function dedupeNodeRefList(refs) {
   const seen = new Set();
-  return (refs || []).filter(ref => {
-    const id = normalizeText(ref?.["@id"]);
-    if (!id || seen.has(id)) return false;
-    seen.add(id);
-    return true;
-  }).map(ref => ({ "@id": normalizeText(ref["@id"]) }));
+  return (refs || [])
+    .filter(ref => {
+      const id = normalizeText(ref?.["@id"]);
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    })
+    .map(ref => ({ "@id": normalizeText(ref["@id"]) }));
 }
 
 function dedupeSchemaGraph(nodes) {

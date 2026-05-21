@@ -1,8 +1,5 @@
 /* eslint-disable no-console */
-import {
-  BACKDROP_SENSITIVE_TRANSITION_TYPES,
-  VIEW_TRANSITION_TIMINGS_MS,
-} from "./constants.js";
+import { BACKDROP_SENSITIVE_TRANSITION_TYPES, VIEW_TRANSITION_TIMINGS_MS } from "./constants.js";
 
 const MAX_TOKEN_COUNT = 8;
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";

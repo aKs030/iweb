@@ -9,10 +9,7 @@
  * @version 6.0.0
  */
 
-import {
-	normalizeTypes,
-	withViewTransition,
-} from "./view-transitions/core.js";
+import { normalizeTypes, withViewTransition } from "./view-transitions/core.js";
 import { createDocumentClickHandler } from "./view-transitions/navigation.js";
 import { injectViewTransitionRuntimeStyles } from "./view-transitions/runtime-style.js";
 import { applyViewTransitionTimingVars } from "./view-transitions/constants.js";
@@ -27,11 +24,11 @@ import { DEFAULT_NAVIGATION_TRANSITION_TYPES } from "./view-transitions/constant
  */
 
 const INIT_CONFIG = {
-	captureInternalLinks: true,
-	enableCrossDocument: false,
-	injectNavigationStyles: true,
-	/** @type {string[]} */
-	navigationTypes: [...DEFAULT_NAVIGATION_TRANSITION_TYPES],
+  captureInternalLinks: true,
+  enableCrossDocument: false,
+  injectNavigationStyles: true,
+  /** @type {string[]} */
+  navigationTypes: [...DEFAULT_NAVIGATION_TRANSITION_TYPES],
 };
 
 let isInitialized = false;
@@ -42,20 +39,20 @@ let clickHandler = null;
  * @param {ViewTransitionInitOptions} options
  */
 const applyInitConfig = (options = {}) => {
-	if (typeof options.captureInternalLinks === "boolean") {
-		INIT_CONFIG.captureInternalLinks = options.captureInternalLinks;
-	}
-	if (typeof options.enableCrossDocument === "boolean") {
-		INIT_CONFIG.enableCrossDocument = options.enableCrossDocument;
-	}
-	if (typeof (/** @type {any} */ (options).injectNavigationStyles) === "boolean") {
-		INIT_CONFIG.injectNavigationStyles = /** @type {any} */ (options).injectNavigationStyles;
-	}
+  if (typeof options.captureInternalLinks === "boolean") {
+    INIT_CONFIG.captureInternalLinks = options.captureInternalLinks;
+  }
+  if (typeof options.enableCrossDocument === "boolean") {
+    INIT_CONFIG.enableCrossDocument = options.enableCrossDocument;
+  }
+  if (typeof (/** @type {any} */ (options).injectNavigationStyles) === "boolean") {
+    INIT_CONFIG.injectNavigationStyles = /** @type {any} */ (options).injectNavigationStyles;
+  }
 
-	const navigationTypes = normalizeTypes(/** @type {any} */ (options).navigationTypes);
-	if (navigationTypes && navigationTypes.length) {
-		INIT_CONFIG.navigationTypes = navigationTypes;
-	}
+  const navigationTypes = normalizeTypes(/** @type {any} */ (options).navigationTypes);
+  if (navigationTypes && navigationTypes.length) {
+    INIT_CONFIG.navigationTypes = navigationTypes;
+  }
 };
 
 /**
@@ -64,12 +61,12 @@ const applyInitConfig = (options = {}) => {
  * @param {ViewTransitionInitOptions} [options]
  */
 function configureViewTransitions(options = {}) {
-	applyInitConfig(options);
-	applyViewTransitionTimingVars();
-	injectViewTransitionRuntimeStyles({
-		injectNavigationStyles: INIT_CONFIG.injectNavigationStyles,
-		enableCrossDocument: INIT_CONFIG.enableCrossDocument,
-	});
+  applyInitConfig(options);
+  applyViewTransitionTimingVars();
+  injectViewTransitionRuntimeStyles({
+    injectNavigationStyles: INIT_CONFIG.injectNavigationStyles,
+    enableCrossDocument: INIT_CONFIG.enableCrossDocument,
+  });
 }
 
 /**
@@ -78,17 +75,17 @@ function configureViewTransitions(options = {}) {
  * @param {ViewTransitionInitOptions} [options]
  */
 export function initViewTransitions(options = {}) {
-	configureViewTransitions(options);
+  configureViewTransitions(options);
 
-	if (isInitialized) return;
-	isInitialized = true;
+  if (isInitialized) return;
+  isInitialized = true;
 
-	clickHandler = createDocumentClickHandler({
-		getCaptureInternalLinks: () => INIT_CONFIG.captureInternalLinks,
-		getNavigationTypes: () => INIT_CONFIG.navigationTypes,
-	});
+  clickHandler = createDocumentClickHandler({
+    getCaptureInternalLinks: () => INIT_CONFIG.captureInternalLinks,
+    getNavigationTypes: () => INIT_CONFIG.navigationTypes,
+  });
 
-	document.addEventListener("click", clickHandler);
+  document.addEventListener("click", clickHandler);
 }
 
 export { withViewTransition };

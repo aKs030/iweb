@@ -764,7 +764,6 @@ class ThreeEarthSystem {
    * @param {EarthDeviceCapabilities} capabilities
    */
   _updateFrame(totalTime, delta, capabilities) {
-
     if (this.cloudMesh) {
       this.cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED * 30 * delta;
     }

@@ -6,10 +6,7 @@ import {
   normalizeTypes,
   withViewTransition,
 } from "./core.js";
-import {
-  DEFAULT_SCROLL_TRANSITION_TYPES,
-  VIEW_TRANSITION_TYPES,
-} from "./constants.js";
+import { DEFAULT_SCROLL_TRANSITION_TYPES, VIEW_TRANSITION_TYPES } from "./constants.js";
 
 const TOKEN_TRUE_VALUES = new Set(["1", "true", "yes", "on"]);
 

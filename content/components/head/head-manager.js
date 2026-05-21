@@ -12,7 +12,11 @@ import {
   buildSeoKeywordList,
   getSeoPageTopics,
 } from "../../core/seo/schema-page-types.js";
-import { generateSchemaGraph, injectSchema, scheduleSchemaInjection } from "../../core/seo/schema.js";
+import {
+  generateSchemaGraph,
+  injectSchema,
+  scheduleSchemaInjection,
+} from "../../core/seo/schema.js";
 import { loadBrandData } from "../../data/brand-data-loader.js";
 import { ROUTES } from "../../config/routes-config.js";
 import { BASE_URL } from "../../config/constants.js";
