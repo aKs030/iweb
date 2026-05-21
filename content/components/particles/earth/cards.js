@@ -923,13 +923,8 @@ export class CardManager {
       const data = {
         id: index,
         title: d.title || "",
-        subtitle: d.subtitle || "",
-        text: d.text || "",
         link: d.link || "#",
-        cta: d.cta || "",
-        meta: d.meta || "",
         routeLabel: d.routeLabel || "",
-        iconChar: d.iconChar || "",
         color: positions[index].color,
         position: positions[index],
       };
@@ -1027,12 +1022,7 @@ export class CardManager {
 
     const keyObj = {
       title: (data.title || "").slice(0, 256),
-      subtitle: (data.subtitle || "").slice(0, 128),
-      text: (data.text || "").slice(0, 512),
-      cta: (data.cta || "").slice(0, 128),
-      meta: (data.meta || "").slice(0, 128),
       routeLabel: (data.routeLabel || "").slice(0, 64),
-      iconChar: data.iconChar || "",
       link: (data.link || "").slice(0, 128),
       color: data.color || "#ffffff",
       scale: S, // Include scale in key

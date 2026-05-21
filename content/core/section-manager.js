@@ -56,6 +56,7 @@ export class SectionManager {
       this.loadedSections.add(section);
       this.loadingSections.delete(section);
       i18n.translateElement(section);
+      this._restoreHashScroll(section);
       // Note: event dispatch removed; other parts of the system should
       // rely on the centralized fire() helper if needed.
     };
@@ -160,8 +161,26 @@ export class SectionManager {
         if (!this.loadedSections.has(section)) {
           this.loadedSections.add(section);
           i18n.translateElement(section);
+          this._restoreHashScroll(section);
           log.debug(`Section ${section.id} hydrated from Edge SSR`);
         }
       });
+  }
+
+  _restoreHashScroll(section) {
+    if (!section?.id || typeof window === "undefined") return;
+
+    const hashId = decodeURIComponent(window.location.hash.slice(1));
+    if (hashId !== section.id) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          section.scrollIntoView({ block: "start", inline: "nearest", behavior: "auto" });
+        } catch (err) {
+          log.warn(`Hash scroll restore failed for ${section.id}:`, err);
+        }
+      });
+    });
   }
 }

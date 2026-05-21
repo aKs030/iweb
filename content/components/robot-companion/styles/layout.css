@@ -50,6 +50,15 @@
   left: 8vw;
 }
 
+body[data-home-section="section3"] #robot-companion-container:not(.robot-chat--open) {
+  bottom: calc(var(--content-bottom-offset) + 0.8rem) !important;
+  top: auto !important;
+  right: max(1rem, var(--safe-right)) !important;
+  left: auto !important;
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
 /* Galerie – oben mittig-rechts, aus dem Weg der Bilder */
 #robot-companion-container[data-page-context="gallery"] {
   bottom: auto;

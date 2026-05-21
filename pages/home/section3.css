@@ -178,30 +178,10 @@
   }
 }
 
-/* ── Stagger-Einblende-Animation ── */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .section3__lead {
-      animation-delay: 0.05s;
-    }
-
-    .section3__column:nth-child(1) {
-      animation-delay: 0.12s;
-    }
-
-    .section3__column:nth-child(2) {
-      animation-delay: 0.22s;
-    }
-
-    .section3__cta {
-      animation-delay: 0.32s;
-    }
-  }
-}
-
 /* ── reduced-motion: Liste statisch, kein Hover-Shift ── */
 @media (prefers-reduced-motion: reduce) {
-  .section3__list li {
+  .section3__list li,
+  .section3__list li:hover {
     transition: none;
     padding-left: 0;
   }

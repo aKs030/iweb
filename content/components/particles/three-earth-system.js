@@ -2,7 +2,6 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 12.0.0 - MODERNIZED: Class-based Architecture
  */
 
 import * as THREE from "three";
@@ -317,7 +316,6 @@ class ThreeEarthSystem {
     this.cameraManager?.cleanup();
     this.starManager?.cleanup();
 
-    // ✅ Explicit null assignment after disconnect
     if (this.sectionObserver) {
       this.sectionObserver.disconnect();
       this.sectionObserver = null;
@@ -341,6 +339,7 @@ class ThreeEarthSystem {
 
     unregisterParticleSystem("three-earth");
     document.body.classList.remove("three-earth-active");
+    delete document.body.dataset.homeSection;
 
     // Clear Singleton
     if (singleton === this) singleton = null;
@@ -510,6 +509,7 @@ class ThreeEarthSystem {
   _setupManagersAndCards(container) {
     this.currentSection = this._resolveCurrentSection();
     container.dataset.section = this.currentSection;
+    document.body.dataset.homeSection = this.currentSection;
     this._syncWebGLVisibility(this.currentSection);
 
     this._setupSectionDetection();
@@ -541,57 +541,32 @@ class ThreeEarthSystem {
     return [
       {
         title: "Profil",
-        subtitle: "PROFIL",
-        text: "Fokus, Arbeitsweise, Hintergrund.",
         link: "/about/",
-        cta: "Oeffnen",
-        meta: "Profil",
         routeLabel: "Profil",
-        iconChar: "👨‍💻",
         color: "#07a1ff",
       },
       {
         title: "Projekte",
-        subtitle: "PROJEKTE",
-        text: "Arbeiten, Cases und Experimente.",
         link: "/projekte/",
-        cta: "Oeffnen",
-        meta: "Cases",
         routeLabel: "Projekte",
-        iconChar: "🚀",
         color: "#a107ff",
       },
       {
         title: "Fotos",
-        subtitle: "FOTOS",
-        text: "Serien, Stills und Beobachtungen.",
         link: "/gallery/",
-        cta: "Oeffnen",
-        meta: "Archiv",
         routeLabel: "Fotos",
-        iconChar: "📸",
         color: "#ff07a1",
       },
       {
         title: "Videos",
-        subtitle: "VIDEOS",
-        text: "Clips und Motion-Studien.",
         link: "/videos/",
-        cta: "Oeffnen",
-        meta: "Motion",
         routeLabel: "Videos",
-        iconChar: "🎬",
         color: "#07ffbc",
       },
       {
         title: "Journal",
-        subtitle: "JOURNAL",
-        text: "Notizen aus laufenden Projekten.",
         link: "/blog/",
-        cta: "Oeffnen",
-        meta: "Notes",
         routeLabel: "Journal",
-        iconChar: "📝",
         color: "#ffb807",
       },
     ];
@@ -907,6 +882,7 @@ class ThreeEarthSystem {
     const prev = this.currentSection;
     this.currentSection = newSection;
     this._currentSectionEl = target;
+    document.body.dataset.homeSection = newSection;
 
     this.cameraManager?.updateCameraForSection(newSection);
 

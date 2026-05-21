@@ -69,7 +69,7 @@ body.footer-expanded .typewriter-title--fixed {
   font-size: 0.75em;
   color: color-mix(in srgb, var(--clr-white) 72%, transparent);
   font-weight: 350;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   margin: 0;
   display: block;
   text-align: left;

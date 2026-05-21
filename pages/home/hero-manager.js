@@ -173,7 +173,6 @@ const HeroManager = (() => {
       const element = document.querySelector(selector);
       if (element && value) {
         element.textContent = value;
-        if (selector === ".hero__title") element.dataset.text = value;
       }
     });
 

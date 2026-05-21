@@ -1,4 +1,5 @@
 import { createLogger } from "../../content/core/logger.js";
+import { isLocalhost } from "./dev-utils.js";
 
 const log = createLogger("template-injector");
 /**
@@ -17,7 +18,7 @@ const log = createLogger("template-injector");
 // KV-Cache TTL: 1 Stunde (Sections ändern sich selten)
 const SECTION_TTL_MS = 3600 * 1000;
 // Bump when section HTML structure changes.
-const SECTION_CACHE_VERSION = "20260521-5";
+const SECTION_CACHE_VERSION = "20260521-6";
 const ALLOWED_SECTION_PARTIALS = new Set(["/pages/home/hero", "/pages/home/section3"]);
 
 /**
@@ -61,9 +62,10 @@ async function loadTemplateFromURL(context, path) {
 async function loadSectionCached(context, sectionPath) {
   const kv = context.env?.SITEMAP_CACHE_KV;
   const fetchUrl = `${sectionPath}.html`;
+  const isLocal = isLocalhost(new URL(context.request.url).hostname);
 
-  // Graceful degradation: no KV → direct fetch
-  if (!kv) {
+  // Local dev should always read fresh section files.
+  if (!kv || isLocal) {
     return loadTemplateFromURL(context, fetchUrl);
   }
 
