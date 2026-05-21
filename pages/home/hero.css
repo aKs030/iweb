@@ -9,9 +9,9 @@
     max(clamp(1.5rem, 6vw, 4rem), var(--safe-right));
   --hero-content-block: clamp(6rem, 15vh, 10rem)
     max(clamp(5rem, 12vh, 8rem), calc(var(--content-bottom-offset) + 2rem));
-  --hero-title-size: clamp(3.25rem, 6.2vw + 0.5rem, 6.35rem);
+  --hero-title-size: clamp(2.2rem, 4.3vw, 5.5rem);
   --hero-title-line: 1.05;
-  --hero-title-width: 18ch;
+  --hero-title-width: 100%;
 
   position: relative;
   display: flex;
@@ -364,81 +364,97 @@
   max-width: min(100%, 60rem);
 }
 
-/* ── Eyebrow Badge with Shimmer Border ── */
-.hero__eyebrow {
-  display: inline-flex;
+/* ── Creative 3D Header Group & Eyebrow Typographic Display ── */
+.hero__header-group {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: fit-content;
-  margin: 0 0 1rem 0;
-  border: 1px solid var(--home-line);
-  border-radius: 999px;
-  padding: 0.75rem 1.5rem;
-  backdrop-filter: blur(24px);
-  background: color-mix(in srgb, var(--home-surface) 80%, transparent);
-  color: color-mix(in srgb, var(--home-accent) 80%, #fff 20%);
-  font-size: clamp(0.68rem, 1vw, 0.8rem);
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  box-shadow:
-    0 8px 32px rgb(0 0 0 / 20%),
-    inset 0 0 0 1px rgb(255 255 255 / 10%);
+  gap: clamp(0.2rem, 0.4vw, 0.35rem);
+  margin: 0 0 clamp(0.6rem, 1.2vw, 0.9rem) 0;
+  pointer-events: auto;
+  user-select: none;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* Static 'Willkommen' styled with organic warm neon glow */
+.hero__welcome {
+  display: inline-block;
+  font-family: "Space Grotesk", var(--font-primary);
+  font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-shadow:
+    0 0 16px rgba(247, 214, 158, 0.55),
+    0 0 30px rgba(247, 214, 158, 0.3);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .hero__eyebrow::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      135deg,
-      transparent 30%,
-      color-mix(in srgb, var(--home-accent) 50%, transparent) 50%,
-      color-mix(in srgb, var(--home-accent-warm) 40%, transparent) 60%,
-      transparent 70%
-    );
-    background-size: 300% 300%;
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    animation: shimmerBorder 5s ease-in-out infinite;
-    pointer-events: none;
+  .hero__welcome {
+    animation: welcomeGlowPulse 4s ease-in-out infinite alternate;
   }
 }
 
-@keyframes shimmerBorder {
+@keyframes welcomeGlowPulse {
   0% {
-    background-position: 100% 0%;
-  }
-  50% {
-    background-position: 0% 100%;
+    text-shadow:
+      0 0 14px rgba(247, 214, 158, 0.45),
+      0 0 24px rgba(247, 214, 158, 0.2);
   }
   100% {
-    background-position: 100% 0%;
+    text-shadow:
+      0 0 20px rgba(247, 214, 158, 0.65),
+      0 0 36px rgba(247, 214, 158, 0.35);
   }
 }
 
-/* ── Title with Gradient ── */
+/* Dynamic greeting text styled with premium cyber cyan glow */
+.hero__eyebrow {
+  display: inline-block;
+  font-family: "Space Grotesk", var(--font-primary);
+  font-size: clamp(0.64rem, 1vw, 0.76rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-shadow:
+    0 0 16px rgba(0, 246, 255, 0.45),
+    0 0 30px rgba(0, 246, 255, 0.25);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__eyebrow {
+    animation: eyebrowGlowPulse 4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes eyebrowGlowPulse {
+  0% {
+    text-shadow:
+      0 0 14px rgba(0, 246, 255, 0.35),
+      0 0 24px rgba(0, 246, 255, 0.15);
+  }
+  100% {
+    text-shadow:
+      0 0 20px rgba(0, 246, 255, 0.55),
+      0 0 36px rgba(0, 246, 255, 0.3);
+  }
+}
+
+/* ── Title with Gradient - Forced exactly on one line and auto-scales ── */
 .hero__title {
   margin: 0;
-  max-width: var(--hero-title-width);
+  width: max-content;
+  max-width: none;
+  white-space: nowrap;
   color: color-mix(in srgb, var(--clr-white) 92%, var(--home-accent-warm));
   font-family: "Space Grotesk", var(--font-primary);
   font-size: var(--hero-title-size);
   font-weight: 800;
   line-height: var(--hero-title-line);
-  letter-spacing: 0;
-  text-wrap: balance;
+  letter-spacing: -0.01em;
   text-shadow:
     0 20px 88px rgb(0 0 0 / 50%),
     0 0 40px color-mix(in srgb, var(--home-accent-warm) 15%, transparent);
@@ -547,8 +563,8 @@
   .hero {
     --hero-content-block: clamp(5rem, 12vh, 6.5rem)
       max(clamp(4.2rem, 8vh, 5.5rem), calc(var(--content-bottom-offset) + 0.75rem));
-    --hero-title-size: clamp(3.5rem, 7vw, 4.95rem);
-    --hero-title-width: 10ch;
+    --hero-title-size: clamp(1.8rem, 4.2vw, 3.8rem);
+    --hero-title-width: 100%;
   }
 
   .hero__lede {
@@ -560,8 +576,8 @@
   .hero {
     --hero-content-block: clamp(4.35rem, 10vh, 5.75rem)
       max(clamp(5.5rem, 14vh, 7rem), calc(var(--content-bottom-offset) + 3rem));
-    --hero-title-size: clamp(3.35rem, 5.2vw, 5.05rem);
-    --hero-title-width: 17ch;
+    --hero-title-size: clamp(1.8rem, 4vw, 3.8rem);
+    --hero-title-width: 100%;
   }
 
   .hero__poster {
@@ -580,8 +596,8 @@
 
 @media (width <= 720px) {
   .hero {
-    --hero-title-size: clamp(2.85rem, 8vw, 4.05rem);
-    --hero-title-width: 9ch;
+    --hero-title-size: clamp(1.4rem, 4vw, 2.8rem);
+    --hero-title-width: 100%;
     --hero-meta-item-size: calc(50% - 0.5rem);
   }
 
@@ -595,13 +611,12 @@
     --hero-content-inline: max(1rem, var(--safe-left)) max(1rem, var(--safe-right));
     --hero-content-block: clamp(4.75rem, 13vh, 5.75rem)
       max(clamp(3.5rem, 8vh, 4.25rem), calc(var(--content-bottom-offset) + 0.5rem));
-    --hero-title-size: clamp(2.2rem, 7.5vw, 2.85rem);
-    --hero-title-line: 0.98;
+    --hero-title-size: clamp(1.05rem, 4.2vw + 0.1rem, 1.8rem);
+    --hero-title-line: 1;
     --hero-meta-item-size: 100%;
   }
 
-  .hero__eyebrow {
-    padding: 0.6rem 0.84rem;
+  .hero__welcome {
     font-size: 0.66rem;
   }
 
@@ -623,7 +638,7 @@
 
 /* ── Creative Blur-Reveal Scroll Animations ── */
 /* Base state (hidden) */
-.hero__eyebrow,
+.hero__header-group,
 .hero__title,
 .hero__lede,
 .hero__buttons {
@@ -631,7 +646,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .hero__eyebrow,
+  .hero__header-group,
   .hero__title,
   .hero__lede,
   .hero__buttons {
@@ -641,14 +656,14 @@
   }
 
   /* Active state triggered by intersection observer (.is-visible) */
-  .is-visible .hero__eyebrow,
+  .is-visible .hero__header-group,
   .is-visible .hero__title,
   .is-visible .hero__lede,
   .is-visible .hero__buttons {
     animation: blurRevealEnter 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .is-visible .hero__eyebrow {
+  .is-visible .hero__header-group {
     animation-delay: 0.1s;
   }
   .is-visible .hero__title {
@@ -677,7 +692,7 @@
 
 /* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .is-visible .hero__eyebrow,
+  .is-visible .hero__header-group,
   .is-visible .hero__title,
   .is-visible .hero__lede,
   .is-visible .hero__buttons {
