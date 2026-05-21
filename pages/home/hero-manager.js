@@ -88,6 +88,7 @@ const HeroManager = (() => {
         applyRandomHeroContent(dataModule);
         await setRandomGreetingHTML();
         await loadTyped(dataModule);
+        adjustTitleFontSize();
 
         isInitialized = true;
       };
@@ -138,6 +139,27 @@ const HeroManager = (() => {
     return null;
   }
 
+  function adjustTitleFontSize() {
+    const title = document.querySelector(".hero__title");
+    if (!title) return;
+
+    const parent = title.parentElement;
+    if (!parent) return;
+
+    title.style.fontSize = "";
+
+    const parentWidth = parent.clientWidth;
+    const titleWidth = title.scrollWidth;
+
+    if (titleWidth > parentWidth && parentWidth > 0) {
+      const computedStyle = window.getComputedStyle(title);
+      const currentSize = parseFloat(computedStyle.fontSize);
+      const ratio = parentWidth / titleWidth;
+      const newSize = Math.floor(currentSize * ratio * 0.97);
+      title.style.fontSize = `${newSize}px`;
+    }
+  }
+
   function applyRandomHeroContent(dataModule) {
     if (!dataModule?.getHeroContent) return;
 
@@ -154,6 +176,8 @@ const HeroManager = (() => {
         if (selector === ".hero__title") element.dataset.text = value;
       }
     });
+
+    adjustTitleFontSize();
   }
 
   async function setRandomGreetingHTML() {
@@ -240,14 +264,20 @@ const HeroManager = (() => {
 
     auroraMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
     auroraScrollHandler = requestAuroraPerspectiveUpdate;
-    auroraResizeHandler = requestAuroraPerspectiveUpdate;
+    auroraResizeHandler = () => {
+      requestAuroraPerspectiveUpdate();
+      adjustTitleFontSize();
+    };
     auroraMotionChangeHandler = requestAuroraPerspectiveUpdate;
 
     window.addEventListener("scroll", auroraScrollHandler, { passive: true });
     window.addEventListener("resize", auroraResizeHandler, { passive: true });
     auroraMotionQuery?.addEventListener?.("change", auroraMotionChangeHandler);
     updateAuroraPerspective();
+    adjustTitleFontSize();
   }
+
+
 
   function cleanup() {
     heroTimers.clearAll();
@@ -303,6 +333,8 @@ const HeroManager = (() => {
       }
       observerCleanup = null;
     }
+
+
   }
 
   function setClickHandler(handler) {
