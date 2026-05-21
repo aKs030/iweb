@@ -15,7 +15,6 @@
     "@eslint/js": "^9.0.0",
     "eslint": "^9.0.0",
     "globals": "^17.6.0",
-    "husky": "^9.0.0",
     "jscpd": "4.2.2",
     "lint-staged": "^15.0.0",
     "prettier": "3.8.3",
@@ -28,8 +27,7 @@
     "lint:css": "prettier --write \"content/**/*.css\" \"pages/**/*.css\"",
     "analyze:duplicates": "jscpd --min-lines 8 --min-tokens 80 --format javascript,css --reporters console content pages content/styles",
     "clean": "rm -rf .wrangler .jscpd .eslintcache",
-    "format": "prettier --write \"content/**/*.{js,json,md}\" \"pages/**/*.{js,json,md}\" \"functions/**/*.js\"",
-    "prepare": "husky install"
+    "format": "prettier --write \"content/**/*.{js,json,md}\" \"pages/**/*.{js,json,md}\" \"functions/**/*.js\""
   },
   "lint-staged": {
     "*.js": "eslint --fix",
