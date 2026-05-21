@@ -37,7 +37,16 @@ Weitere schlanke Projektbefehle:
 npm run lint                 # JS- und CSS-Checks
 npm run analyze:duplicates   # optionale Duplikatsanalyse
 npm run clean                # lokale Cache-/Tooling-Artefakte entfernen
+npm run migrate:live         # SQL-Snapshot von Live exportieren und auf D1 anwenden
 ```
+
+Optionale Migration-Umgebungsvariablen:
+
+- `ADMIN_TOKEN` (erforderlich)
+- `MIGRATION_SOURCE_URL` (Default: `https://www.abdulkerimsesli.de`)
+- `MIGRATION_DATABASE` (Default: `portfolio-likes`)
+- `MIGRATION_OUT` (Default: `./.tmp/live-d1-snapshot.sql`)
+- `MIGRATION_REMOTE` (`0` = lokal, sonst remote)
 
 ## CI/CD
 

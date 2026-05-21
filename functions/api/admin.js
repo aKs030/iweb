@@ -142,6 +142,132 @@ function adminError(corsHeaders, message, status = 400) {
   });
 }
 
+const SNAPSHOT_SCHEMA_SQL = `
+CREATE TABLE IF NOT EXISTS project_likes (
+  project_id TEXT PRIMARY KEY,
+  likes INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS blog_comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  post_id TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_comments_post_id ON blog_comments(post_id);
+
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  subject TEXT,
+  message TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_contact_created_at ON contact_messages(created_at);
+
+CREATE TABLE IF NOT EXISTS project_like_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id TEXT NOT NULL,
+  source_ip TEXT DEFAULT '',
+  user_agent TEXT DEFAULT '',
+  request_id TEXT DEFAULT '',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_project_like_events_project_id_created_at
+ON project_like_events (project_id, created_at DESC);
+`;
+
+function escapeSqlString(value) {
+  return String(value ?? "").replace(/'/g, "''");
+}
+
+function sqlValue(value) {
+  if (value === null || value === undefined) return "NULL";
+  if (typeof value === "number") return Number.isFinite(value) ? String(value) : "NULL";
+  if (typeof value === "boolean") return value ? "1" : "0";
+  return `'${escapeSqlString(value)}'`;
+}
+
+function chunk(values, size) {
+  const groups = [];
+  for (let index = 0; index < values.length; index += size) {
+    groups.push(values.slice(index, index + size));
+  }
+  return groups;
+}
+
+function buildInsertSql(table, columns, rows, chunkSize = 100) {
+  if (!rows.length) return [];
+
+  return chunk(rows, chunkSize).map(group => {
+    const values = group
+      .map(row => `(${columns.map(column => sqlValue(row[column])).join(", ")})`)
+      .join(",\n  ");
+    return `INSERT INTO ${table} (${columns.join(", ")})\nVALUES\n  ${values};`;
+  });
+}
+
+async function buildSnapshotSqlFromDb(db) {
+  await ensureAppD1Schema(db);
+
+  const [projectLikes, blogComments, contactMessages, likeEvents] = await Promise.all([
+    db
+      .prepare("SELECT project_id, likes FROM project_likes ORDER BY project_id ASC")
+      .all()
+      .then(result => result?.results || []),
+    db
+      .prepare("SELECT id, post_id, author_name, content, created_at FROM blog_comments ORDER BY id ASC")
+      .all()
+      .then(result => result?.results || []),
+    db
+      .prepare("SELECT id, name, email, subject, message, created_at FROM contact_messages ORDER BY id ASC")
+      .all()
+      .then(result => result?.results || []),
+    db
+      .prepare(
+        "SELECT id, project_id, source_ip, user_agent, request_id, created_at FROM project_like_events ORDER BY id ASC"
+      )
+      .all()
+      .then(result => result?.results || []),
+  ]);
+
+  const statements = [
+    SNAPSHOT_SCHEMA_SQL.trim(),
+    "BEGIN TRANSACTION;",
+    "DELETE FROM project_likes;",
+    "DELETE FROM blog_comments;",
+    "DELETE FROM contact_messages;",
+    "DELETE FROM project_like_events;",
+    ...buildInsertSql("project_likes", ["project_id", "likes"], projectLikes, 100),
+    ...buildInsertSql(
+      "blog_comments",
+      ["id", "post_id", "author_name", "content", "created_at"],
+      blogComments,
+      50
+    ),
+    ...buildInsertSql(
+      "contact_messages",
+      ["id", "name", "email", "subject", "message", "created_at"],
+      contactMessages,
+      50
+    ),
+    ...buildInsertSql(
+      "project_like_events",
+      ["id", "project_id", "source_ip", "user_agent", "request_id", "created_at"],
+      likeEvents,
+      50
+    ),
+    "COMMIT;",
+  ];
+
+  return `${statements.join("\n\n")}\n`;
+}
+
 // ---------------------------------------------------------------------------
 // Actions
 // ---------------------------------------------------------------------------
@@ -558,6 +684,31 @@ async function handleClearCache(env, corsHeaders) {
   });
 }
 
+async function handleExportSnapshot(env, corsHeaders, body) {
+  const db = env.DB_LIKES;
+  if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
+
+  const format = String(body?.format || "sql").toLowerCase();
+  const sql = await buildSnapshotSqlFromDb(db);
+
+  if (format === "json") {
+    return adminResponse(corsHeaders, {
+      success: true,
+      sql,
+      bytes: sql.length,
+    });
+  }
+
+  return new Response(sql, {
+    status: 200,
+    headers: mergeHeaders(corsHeaders, {
+      "Cache-Control": CACHE_CONTROL_NO_STORE,
+      "Content-Type": "application/sql; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
+    }),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Main Handler
 // ---------------------------------------------------------------------------
@@ -610,6 +761,8 @@ export async function onRequestPost({ request, env }) {
         return handleKvOverview(env, corsHeaders, body);
       case "clear-cache":
         return handleClearCache(env, corsHeaders);
+      case "export-snapshot":
+        return handleExportSnapshot(env, corsHeaders, body);
       default:
         return adminError(corsHeaders, `Unbekannte Action: "${action}"`, 400);
     }
