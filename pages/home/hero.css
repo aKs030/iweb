@@ -8,9 +8,9 @@
     max(clamp(1.5rem, 6vw, 4rem), var(--safe-right));
   --hero-content-block: clamp(6rem, 15vh, 10rem)
     max(clamp(5rem, 12vh, 8rem), calc(var(--content-bottom-offset) + 2rem));
-  --hero-title-size: clamp(3.5rem, 8vw + 1rem, 7.5rem);
+  --hero-title-size: clamp(3.25rem, 6.2vw + 0.5rem, 6.35rem);
   --hero-title-line: 1.05;
-  --hero-title-width: 15ch;
+  --hero-title-width: 18ch;
 
   position: relative;
   display: flex;
@@ -80,7 +80,7 @@
   font-size: var(--hero-title-size);
   font-weight: 800;
   line-height: var(--hero-title-line);
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   text-wrap: balance;
   text-shadow:
     0 20px 88px rgb(0 0 0 / 50%),
@@ -183,6 +183,28 @@
 
   .hero__lede {
     max-width: 31rem;
+  }
+}
+
+@media (height <= 760px) and (width >= 721px) {
+  .hero {
+    --hero-content-block: clamp(4.35rem, 10vh, 5.75rem)
+      max(clamp(5.5rem, 14vh, 7rem), calc(var(--content-bottom-offset) + 3rem));
+    --hero-title-size: clamp(3.35rem, 5.2vw, 5.05rem);
+    --hero-title-width: 17ch;
+  }
+
+  .hero__poster {
+    gap: clamp(0.8rem, 1.4vw, 1.15rem);
+  }
+
+  .hero__lede {
+    max-width: 38rem;
+    line-height: 1.55;
+  }
+
+  .hero__buttons {
+    margin-top: 0.7rem;
   }
 }
 
