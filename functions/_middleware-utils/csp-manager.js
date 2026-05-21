@@ -96,3 +96,18 @@ export function buildCspHeader(nonce) {
 
   return directives.join("; ");
 }
+
+/**
+ * Build a report-only CSP header value that points reports to a given URI.
+ * Uses the same directives as the enforced CSP and appends a `report-uri`.
+ * @param {string} nonce
+ * @param {string} [reportUri]
+ * @returns {string}
+ */
+export function buildCspReportOnlyHeader(nonce, reportUri = "/api/csp-report") {
+  const base = buildCspHeader(nonce);
+  if (!base) return "";
+  const normalized = String(reportUri || "").trim();
+  if (!normalized) return base;
+  return `${base}; report-uri "${normalized}"`;
+}

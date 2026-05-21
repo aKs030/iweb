@@ -326,3 +326,21 @@
   # Content Security Policy is set dynamically in functions/_middleware.js
   # with per-request nonce generation for stricter script-src.
   # DO NOT set CSP here — it would override the middleware's nonce-based policy.
+
+# ============================================================================
+# Global Security Headers (enabled)
+# NOTE: CSP is set dynamically in functions/_middleware.js and must NOT be set here.
+# ============================================================================
+/*
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Frame-Options: DENY
+Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), interest-cohort=()
+Cross-Origin-Embedder-Policy: unsafe-none
+Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+# Content Security Policy is set dynamically in functions/_middleware.js
+# with per-request nonce generation for stricter script-src.
+# DO NOT set CSP here — it would override the middleware's nonce-based policy.
+*/

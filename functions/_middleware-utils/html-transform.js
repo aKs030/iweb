@@ -1,4 +1,4 @@
-import { buildCspHeader, generateNonce } from "./csp-manager.js";
+import { buildCspHeader, buildCspReportOnlyHeader, generateNonce } from "./csp-manager.js";
 import { EdgeSpeculationRules, StaticSpeculationRemover } from "./edge-speculation.js";
 import { buildResponseLinkHeaders } from "./early-hints.js";
 import { HeaderInjector, FooterInjector } from "./esi-shell.js";
@@ -48,6 +48,7 @@ export function createHtmlSecurityContext(isLocal) {
   const nonce = isLocal ? null : generateNonce();
   return {
     cspHeader: nonce ? buildCspHeader(nonce) : "",
+    cspReportOnlyHeader: nonce ? buildCspReportOnlyHeader(nonce, "/api/csp-report") : "",
     nonce,
   };
 }
@@ -70,6 +71,9 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
   headers.set("X-Deploy-Version", options.deployVersion);
   headers.delete("Content-Security-Policy-Report-Only");
   headers.set("Content-Security-Policy", options.cspHeader);
+  if (options.cspReportOnlyHeader) {
+    headers.set("Content-Security-Policy-Report-Only", options.cspReportOnlyHeader);
+  }
 
   return new Response(withNonce.body, {
     status: withNonce.status,
@@ -167,6 +171,9 @@ export function buildFinalHtmlResponse(response, transformedResponse, options) {
   if (options.cspHeader) {
     newHeaders.delete("Content-Security-Policy-Report-Only");
     newHeaders.set("Content-Security-Policy", options.cspHeader);
+  }
+  if (options.cspReportOnlyHeader) {
+    newHeaders.set("Content-Security-Policy-Report-Only", options.cspReportOnlyHeader);
   }
 
   const timingParts = [];

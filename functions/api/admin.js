@@ -221,11 +221,15 @@ async function buildSnapshotSqlFromDb(db) {
       .all()
       .then(result => result?.results || []),
     db
-      .prepare("SELECT id, post_id, author_name, content, created_at FROM blog_comments ORDER BY id ASC")
+      .prepare(
+        "SELECT id, post_id, author_name, content, created_at FROM blog_comments ORDER BY id ASC"
+      )
       .all()
       .then(result => result?.results || []),
     db
-      .prepare("SELECT id, name, email, subject, message, created_at FROM contact_messages ORDER BY id ASC")
+      .prepare(
+        "SELECT id, name, email, subject, message, created_at FROM contact_messages ORDER BY id ASC"
+      )
       .all()
       .then(result => result?.results || []),
     db
