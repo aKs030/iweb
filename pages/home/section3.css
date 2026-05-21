@@ -3,7 +3,8 @@
   display: block;
   min-block-size: var(--section-viewport-height);
   block-size: auto;
-  padding-block: clamp(4.5rem, 8vw, 7rem);
+  padding-block: clamp(4.5rem, 8vw, 7rem)
+    max(clamp(7rem, 16vh, 9.5rem), calc(var(--content-bottom-offset) + 2.5rem));
   padding-inline: max(clamp(1.2rem, 4vw, 3rem), var(--safe-left))
     max(clamp(1.2rem, 4vw, 3rem), var(--safe-right));
   overflow: clip;
@@ -65,7 +66,7 @@
   font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 700;
   line-height: 0.96;
-  letter-spacing: -0.055em;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 
@@ -167,7 +168,8 @@
 @media (width <= 640px) {
   .section.section3 {
     padding-inline: max(1rem, var(--safe-left)) max(1rem, var(--safe-right));
-    padding-block: clamp(3.6rem, 9vw, 4.6rem);
+    padding-block: clamp(3.6rem, 9vw, 4.6rem)
+      max(clamp(8rem, 22vh, 10.5rem), calc(var(--content-bottom-offset) + 2.75rem));
   }
 
   .section3__cta .btn {
