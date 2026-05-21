@@ -17,7 +17,7 @@ const log = createLogger("template-injector");
 // KV-Cache TTL: 1 Stunde (Sections ändern sich selten)
 const SECTION_TTL_MS = 3600 * 1000;
 // Bump when section HTML structure changes.
-const SECTION_CACHE_VERSION = "20260517-1";
+const SECTION_CACHE_VERSION = "20260520-4";
 const ALLOWED_SECTION_PARTIALS = new Set(["/pages/home/hero", "/pages/home/section3"]);
 
 /**

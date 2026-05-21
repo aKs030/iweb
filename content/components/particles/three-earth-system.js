@@ -33,6 +33,7 @@ import {
 } from "./earth/ui.js";
 
 const log = createLogger("ThreeEarthSystem");
+const WEBGL_RENDER_SECTIONS = new Set(["hero", "features", "section3"]);
 
 /**
  * @typedef {import('../../core/types.js').TimerID} TimerID
@@ -48,6 +49,12 @@ const log = createLogger("ThreeEarthSystem");
  *   moon?: SectionObjectConfig,
  *   mode?: 'day'|'night',
  *   lighting?: { ambientColor?: number, ambientIntensity?: number, sunIntensity?: number },
+ *   scroll?: {
+ *     pos?: { x?: number, y?: number, z?: number },
+ *     scale?: number,
+ *     rotation?: number,
+ *     orbit?: number,
+ *   },
  * }} SectionConfig
  * @typedef {DeviceCapabilities & { recommendedQuality?: string }} EarthDeviceCapabilities
  * @typedef {{ cloudLayer?: boolean, meteorShowers?: boolean }} QualityConfig
@@ -78,6 +85,12 @@ const SECTION_CONFIGS = {
     earth: { pos: { x: 1, y: -2.5, z: -1 }, scale: 1.3, rotation: 0 },
     moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
     mode: "day",
+    scroll: {
+      pos: { x: -0.35, y: 0.18, z: -0.2 },
+      scale: -0.08,
+      rotation: 0.28,
+      orbit: 0.08,
+    },
   },
   features: {
     earth: { pos: { x: 0, y: -0.06, z: -2.35 }, scale: 0.64, rotation: 0 },
@@ -88,11 +101,28 @@ const SECTION_CONFIGS = {
       sunIntensity: 1.45,
     },
     mode: "day",
+    scroll: {
+      pos: { x: 0.12, y: -0.08, z: 0.12 },
+      scale: 0.04,
+      rotation: 0.18,
+      orbit: 0.06,
+    },
   },
   section3: {
-    earth: { pos: { x: -1, y: -0.5, z: -1 }, scale: 1, rotation: Math.PI },
-    moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+    earth: { pos: { x: 1.9, y: -2.05, z: -2.65 }, scale: 0.76, rotation: Math.PI * 1.12 },
+    moon: { pos: { x: 5.2, y: 2.8, z: -9.4 }, scale: 0.48 },
+    lighting: {
+      ambientColor: 0x2d375d,
+      ambientIntensity: 0.58,
+      sunIntensity: 0.62,
+    },
     mode: "night",
+    scroll: {
+      pos: { x: -0.48, y: 0.24, z: 0.16 },
+      scale: 0.08,
+      rotation: -0.32,
+      orbit: -0.1,
+    },
   },
   contact: {
     earth: {
@@ -155,6 +185,7 @@ class ThreeEarthSystem {
 
     // State
     this.currentSection = "hero";
+    /** @type {HTMLElement|null} */ this._currentSectionEl = null;
     this.currentQualityLevel = "HIGH";
     this.isMobileDevice = false;
     this.isVisible = true;
@@ -186,7 +217,7 @@ class ThreeEarthSystem {
     // Observers
     /** @type {ObserverWrapper|null} */ this.sectionObserver = null;
     /** @type {ObserverWrapper|null} */ this.viewportObserver = null;
-    /** @type {Set<string>|null} */ this._visibleWebGLSections = null;
+    /** @type {Set<string>} */ this._visibleWebGLSections = new Set(WEBGL_RENDER_SECTIONS);
   }
 
   async init() {
@@ -303,6 +334,7 @@ class ThreeEarthSystem {
 
     this.assetsReady = false;
     this.firstFrameRendered = false;
+    this._currentSectionEl = null;
 
     if (this.cardManager) this.cardManager.cleanup();
     this.cardManager = null;
@@ -476,6 +508,10 @@ class ThreeEarthSystem {
    * @param {HTMLElement} container
    */
   _setupManagersAndCards(container) {
+    this.currentSection = this._resolveCurrentSection();
+    container.dataset.section = this.currentSection;
+    this._syncWebGLVisibility(this.currentSection);
+
     this._setupSectionDetection();
     this._setupViewportObserver(container);
 
@@ -672,6 +708,12 @@ class ThreeEarthSystem {
 
     this.animate = () => {
       if (!this.active) return;
+      if (document.hidden || !this.isVisible || !this._isWebGLSectionVisible()) {
+        this.animationFrameId = 0;
+        this._clearWebGLCanvas();
+        return;
+      }
+
       this.animationFrameId = requestAnimationFrame(this.animate);
 
       const cap = /** @type {EarthDeviceCapabilities} */ (
@@ -704,7 +746,13 @@ class ThreeEarthSystem {
         this.animationFrameId = 0;
       }
     } else {
-      if (!this.animationFrameId && this.animate && this.isVisible && this.active) {
+      if (
+        !this.animationFrameId &&
+        this.animate &&
+        this.isVisible &&
+        this.active &&
+        this._isWebGLSectionVisible()
+      ) {
         this.animate();
       }
     }
@@ -716,6 +764,7 @@ class ThreeEarthSystem {
    * @param {EarthDeviceCapabilities} capabilities
    */
   _updateFrame(totalTime, delta, capabilities) {
+
     if (this.cloudMesh) {
       this.cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED * 30 * delta;
     }
@@ -725,6 +774,7 @@ class ThreeEarthSystem {
     if (!capabilities.isLowEnd) this.starManager?.update(totalTime);
 
     this._updateNightPulse(totalTime, capabilities);
+    this._updateScrollLinkedEarthTarget();
 
     this.cameraManager?.updateCameraPosition(delta);
     this._updateTransforms(delta);
@@ -857,11 +907,12 @@ class ThreeEarthSystem {
 
     const prev = this.currentSection;
     this.currentSection = newSection;
+    this._currentSectionEl = target;
 
     this.cameraManager?.updateCameraForSection(newSection);
 
-    const isFeaturesToAbout = prev === "features" && newSection === "section3";
-    this._updateEarthForSection(newSection, isFeaturesToAbout);
+    const forceMode = prev === "features" && newSection === "section3";
+    this._updateEarthForSection(newSection, forceMode);
     this._syncFeatureCardsForSection();
 
     const container = document.querySelector(".three-earth-container");
@@ -869,6 +920,7 @@ class ThreeEarthSystem {
       container
     );
     if (datasetContainer) datasetContainer.dataset.section = newSection;
+    this._syncWebGLVisibility(newSection);
   }
 
   _syncFeatureCardsForSection() {
@@ -913,19 +965,155 @@ class ThreeEarthSystem {
     }
   }
 
+  _resolveCurrentSection() {
+    const hashId = decodeURIComponent(window.location.hash.slice(1));
+    if (hashId) {
+      const hashEl = document.getElementById(hashId);
+      if (hashEl) {
+        this._currentSectionEl = /** @type {HTMLElement} */ (hashEl);
+        return hashId;
+      }
+    }
+
+    const sections = Array.from(document.querySelectorAll("section[id]"));
+    let bestEl = null;
+    let bestId = this.currentSection || "hero";
+    let bestVisibleArea = 0;
+
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      const visibleHeight = Math.max(
+        0,
+        Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
+      );
+      const visibleArea = visibleHeight * Math.max(0, rect.width);
+      if (visibleArea > bestVisibleArea) {
+        bestVisibleArea = visibleArea;
+        bestEl = section;
+        bestId = section.id;
+      }
+    });
+
+    this._currentSectionEl = /** @type {HTMLElement|null} */ (bestEl);
+    return bestId;
+  }
+
+  /**
+   * @param {string} [sectionName]
+   */
+  _isWebGLSectionVisible(sectionName = this.currentSection) {
+    return WEBGL_RENDER_SECTIONS.has(sectionName) && this._visibleWebGLSections.has(sectionName);
+  }
+
+  _clearWebGLCanvas() {
+    if (!this.renderer) return;
+    this.renderer.clear(true, true, true);
+  }
+
+  /**
+   * Maps section IDs to config keys (e.g. "site-footer" → "contact").
+   * @param {string} [sectionName]
+   * @returns {string}
+   */
+  _resolveSectionKey(sectionName = this.currentSection) {
+    return sectionName === "site-footer" ? "contact" : sectionName;
+  }
+
+  _getCurrentSectionConfig() {
+    return SECTION_CONFIGS[this._resolveSectionKey()] || SECTION_CONFIGS.hero;
+  }
+
+  _getCurrentSectionScrollProgress() {
+    const section = this._currentSectionEl;
+    if (!section) return 0.5;
+
+    const rect = section.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+    const range = rect.height + viewportHeight;
+    const rawProgress = (viewportHeight - rect.top) / range;
+    const progress = Math.max(0, Math.min(1, rawProgress));
+
+    return progress * progress * (3 - 2 * progress);
+  }
+
+  _updateScrollLinkedEarthTarget() {
+    if (!this.earthMesh || !this.active || !this._isWebGLSectionVisible()) return;
+
+    const config = this._getCurrentSectionConfig();
+    const progress = this._getCurrentSectionScrollProgress();
+    const centeredProgress = progress - 0.5;
+    const scroll = config.scroll || {};
+    const pos = scroll.pos || {};
+    const em = this.earthMesh;
+
+    if (!em.userData.targetPosition) {
+      em.userData.targetPosition = new this.THREE.Vector3();
+    }
+
+    em.userData.targetPosition.set(
+      config.earth.pos.x + (pos.x || 0) * centeredProgress,
+      config.earth.pos.y + (pos.y || 0) * centeredProgress,
+      config.earth.pos.z + (pos.z || 0) * centeredProgress
+    );
+    em.userData.targetScale = Math.max(
+      0.2,
+      config.earth.scale + (scroll.scale || 0) * centeredProgress
+    );
+    em.userData.targetRotation =
+      (config.earth.rotation || 0) + (scroll.rotation || 0) * centeredProgress;
+
+    if (this.moonMesh && config.moon) {
+      const mm = this.moonMesh;
+      if (!mm.userData.targetPosition) {
+        mm.userData.targetPosition = new this.THREE.Vector3();
+      }
+      mm.userData.targetPosition.set(config.moon.pos.x, config.moon.pos.y, config.moon.pos.z);
+      mm.userData.targetScale = config.moon.scale;
+    }
+
+    const baseOrbit = em.userData.currentMode === "night" ? Math.PI : 0;
+    this.cameraManager?.setTargetOrbitAngle(baseOrbit + (scroll.orbit || 0) * centeredProgress);
+  }
+
   /**
    * @param {string} sectionName
-   * @param {boolean} allowModeSwitch
    */
-  _updateEarthForSection(sectionName, allowModeSwitch) {
+  _syncWebGLVisibility(sectionName) {
+    const shouldRender = this._isWebGLSectionVisible(sectionName);
+
+    if (!shouldRender) {
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = 0;
+      }
+      this.cardManager?.setProgress(0);
+      this._clearWebGLCanvas();
+      return;
+    }
+
+    if (
+      !this.animationFrameId &&
+      this.animate &&
+      this.active &&
+      this.isVisible &&
+      !document.hidden
+    ) {
+      this.animate();
+    }
+  }
+
+  /**
+   * @param {string} sectionName
+   * @param {boolean} forceMode – apply config.mode even if it matches the current mode
+   */
+  _updateEarthForSection(sectionName, forceMode) {
     if (!this.earthMesh || !this.active) return;
 
-    const sectionKey = sectionName === "site-footer" ? "contact" : sectionName;
-    const config = SECTION_CONFIGS[sectionKey] || SECTION_CONFIGS.hero;
+    const config = SECTION_CONFIGS[this._resolveSectionKey(sectionName)] || SECTION_CONFIGS.hero;
     this._applyConfigToMeshes(config);
 
-    if (allowModeSwitch) {
-      const newMode = this.earthMesh.userData.currentMode === "night" ? "day" : "night";
+    if (config.mode && (forceMode || config.mode !== this.earthMesh.userData.currentMode)) {
+      const newMode = config.mode;
       const nextMaterial = newMode === "day" ? this.dayMaterial : this.nightMaterial;
       if (!nextMaterial) return;
       this.earthMesh.material = nextMaterial;
@@ -978,7 +1166,7 @@ class ThreeEarthSystem {
       return;
     }
 
-    this._visibleWebGLSections = new Set();
+    this._visibleWebGLSections = new Set([this.currentSection]);
 
     const createdViewportObserver = createObserver(
       /**
@@ -1016,10 +1204,7 @@ class ThreeEarthSystem {
               log.debug("Pausing render loop (WebGL area out of view)");
               cancelAnimationFrame(this.animationFrameId);
               this.animationFrameId = 0;
-              // Clear canvas so frozen UI artifacts don't persist during scrolling
-              if (this.renderer && this.scene && this.camera) {
-                this.renderer.render(this.scene, this.camera);
-              }
+              this._clearWebGLCanvas();
             }
           }, 800);
         }
@@ -1028,8 +1213,8 @@ class ThreeEarthSystem {
     );
     this.viewportObserver = /** @type {ObserverWrapper} */ (createdViewportObserver);
 
-    // Observe all sections that render 3D content (Hero + Features)
-    const targets = document.querySelectorAll("#hero, #features");
+    // Observe all sections that render 3D content.
+    const targets = document.querySelectorAll("#hero, #features, #section3");
     const viewportObserver = /** @type {ObserverWrapper|null} */ (this.viewportObserver);
     if (!viewportObserver) return;
     if (targets.length) {

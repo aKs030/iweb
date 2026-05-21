@@ -11,10 +11,7 @@
   container-name: section3;
   content-visibility: auto;
   contain-intrinsic-size: 0 600px;
-}
-
-.section.section3::before {
-  content: none;
+  isolation: isolate;
 }
 
 .section3__container {

@@ -20,6 +20,11 @@ const GREETING_LOOKUP_DELAYS_MS = Object.freeze([0, 50, 120, 240, 480]);
 const HeroManager = (() => {
   let heroData = null;
   let isInitialized = false;
+  let auroraFrame = 0;
+  let auroraMotionQuery = null;
+  let auroraMotionChangeHandler = null;
+  let auroraScrollHandler = null;
+  let auroraResizeHandler = null;
   let clickHandler = null;
   let observerCleanup = null;
   let loaded = false;
@@ -144,7 +149,10 @@ const HeroManager = (() => {
       [".hero__button--secondary", content.secondaryBtn],
     ].forEach(([selector, value]) => {
       const element = document.querySelector(selector);
-      if (element && value) element.textContent = value;
+      if (element && value) {
+        element.textContent = value;
+        if (selector === ".hero__title") element.dataset.text = value;
+      }
     });
   }
 
@@ -167,6 +175,69 @@ const HeroManager = (() => {
     }
   }
 
+  function updateAuroraPerspective() {
+    auroraFrame = 0;
+
+    const aurora = document.querySelector(".home-aurora");
+    if (!aurora) return;
+
+    const reduceMotion = auroraMotionQuery?.matches;
+    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const progress = Math.min(1, Math.max(0, window.scrollY / maxScroll));
+
+    if (reduceMotion) {
+      aurora.style.setProperty("--aurora-depth", "0px");
+      aurora.style.setProperty("--aurora-perspective-x", "50%");
+      aurora.style.setProperty("--aurora-perspective-y", "50%");
+      aurora.style.setProperty("--aurora-scale", "1.04");
+      aurora.style.setProperty("--aurora-shift-x", "0px");
+      aurora.style.setProperty("--aurora-shift-y", "0px");
+      aurora.style.setProperty("--aurora-tilt-x", "0deg");
+      aurora.style.setProperty("--aurora-tilt-y", "0deg");
+      return;
+    }
+
+    const wave = Math.sin(progress * Math.PI);
+    const orbit = Math.sin(progress * Math.PI * 2);
+    const counterOrbit = Math.cos(progress * Math.PI * 2);
+    const tiltX = (counterOrbit * 3.8 + (progress - 0.5) * 7).toFixed(2);
+    const tiltY = (orbit * 7.5).toFixed(2);
+    const shiftX = (orbit * -34).toFixed(1);
+    const shiftY = ((progress - 0.5) * 34).toFixed(1);
+    const depth = (44 + wave * 92).toFixed(1);
+    const scale = (1.035 + wave * 0.035).toFixed(3);
+    const perspectiveX = (50 + orbit * 9).toFixed(2);
+    const perspectiveY = (50 + counterOrbit * 6).toFixed(2);
+
+    aurora.style.setProperty("--aurora-depth", `${depth}px`);
+    aurora.style.setProperty("--aurora-perspective-x", `${perspectiveX}%`);
+    aurora.style.setProperty("--aurora-perspective-y", `${perspectiveY}%`);
+    aurora.style.setProperty("--aurora-scale", scale);
+    aurora.style.setProperty("--aurora-shift-x", `${shiftX}px`);
+    aurora.style.setProperty("--aurora-shift-y", `${shiftY}px`);
+    aurora.style.setProperty("--aurora-tilt-x", `${tiltX}deg`);
+    aurora.style.setProperty("--aurora-tilt-y", `${tiltY}deg`);
+  }
+
+  function requestAuroraPerspectiveUpdate() {
+    if (auroraFrame) return;
+    auroraFrame = requestAnimationFrame(updateAuroraPerspective);
+  }
+
+  function setupHomeAuroraPerspective() {
+    if (auroraScrollHandler || typeof window === "undefined") return;
+
+    auroraMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
+    auroraScrollHandler = requestAuroraPerspectiveUpdate;
+    auroraResizeHandler = requestAuroraPerspectiveUpdate;
+    auroraMotionChangeHandler = requestAuroraPerspectiveUpdate;
+
+    window.addEventListener("scroll", auroraScrollHandler, { passive: true });
+    window.addEventListener("resize", auroraResizeHandler, { passive: true });
+    auroraMotionQuery?.addEventListener?.("change", auroraMotionChangeHandler);
+    updateAuroraPerspective();
+  }
+
   function cleanup() {
     heroTimers.clearAll();
     isInitialized = false;
@@ -177,6 +248,23 @@ const HeroManager = (() => {
     if (scrollObserver) {
       scrollObserver.disconnect();
       scrollObserver = null;
+    }
+    if (auroraFrame) {
+      cancelAnimationFrame(auroraFrame);
+      auroraFrame = 0;
+    }
+    if (auroraScrollHandler) {
+      window.removeEventListener("scroll", auroraScrollHandler);
+      auroraScrollHandler = null;
+    }
+    if (auroraResizeHandler) {
+      window.removeEventListener("resize", auroraResizeHandler);
+      auroraResizeHandler = null;
+    }
+    if (auroraMotionChangeHandler) {
+      auroraMotionQuery?.removeEventListener?.("change", auroraMotionChangeHandler);
+      auroraMotionChangeHandler = null;
+      auroraMotionQuery = null;
     }
 
     try {
@@ -220,6 +308,7 @@ const HeroManager = (() => {
     ensureHeroData,
     cleanup,
     setClickHandler,
+    setupHomeAuroraPerspective,
     setupLanguageListener: () => {
       if (languageChangeHandler) {
         i18n.removeEventListener("language-changed", languageChangeHandler);
@@ -250,6 +339,7 @@ export const initHeroFeatureBundle = sectionManager => {
 
   HeroManager.setupLanguageListener();
   HeroManager.setupTypingEndListener();
+  HeroManager.setupHomeAuroraPerspective();
 
   HeroManager.initLazyHeroModules();
 
