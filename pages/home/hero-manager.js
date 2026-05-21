@@ -181,6 +181,14 @@ const HeroManager = (() => {
     const aurora = document.querySelector(".home-aurora");
     if (!aurora) return;
 
+    // Handle vignette opacity update (common for both normal and reduced motion)
+    const hero = document.querySelector(".hero");
+    if (hero) {
+      const heroHeight = hero.offsetHeight || window.innerHeight;
+      const vignetteOpacity = Math.max(0, Math.min(1, 1 - (window.scrollY / (heroHeight * 0.8))));
+      hero.style.setProperty("--hero-vignette-opacity", vignetteOpacity.toFixed(2));
+    }
+
     const reduceMotion = auroraMotionQuery?.matches;
     const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
     const progress = Math.min(1, Math.max(0, window.scrollY / maxScroll));

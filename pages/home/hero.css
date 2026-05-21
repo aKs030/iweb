@@ -31,6 +31,11 @@
   background: radial-gradient(circle at center, transparent 0%, var(--home-vignette) 100%);
   pointer-events: none;
   z-index: 1;
+  -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  opacity: var(--hero-vignette-opacity, 1);
+  will-change: opacity;
+  transition: opacity 0.1s ease-out;
 }
 
 /* ── Aurora Background — Fixed, spanning all sections ── */
