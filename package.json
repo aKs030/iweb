@@ -25,6 +25,7 @@
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint content pages functions --fix",
     "lint:css": "prettier --write \"content/**/*.css\" \"pages/**/*.css\"",
+    "migrate:live": "node scripts/live-sync.mjs",
     "analyze:duplicates": "jscpd --min-lines 8 --min-tokens 80 --format javascript,css --reporters console content pages content/styles",
     "clean": "rm -rf .wrangler .jscpd .eslintcache",
     "format": "prettier --write \"content/**/*.{js,json,md}\" \"pages/**/*.{js,json,md}\" \"functions/**/*.js\""

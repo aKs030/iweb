@@ -58,8 +58,7 @@
 		{
 			"binding": "DB_LIKES",
 			"database_name": "portfolio-likes",
-			"database_id": "a5d566b6-19c2-4238-8294-236479b02a97",
-			"migrations_dir": "migrations"
+			"database_id": "a5d566b6-19c2-4238-8294-236479b02a97"
 		}
 	],
 
@@ -121,8 +120,7 @@
 				{
 					"binding": "DB_LIKES",
 					"database_name": "portfolio-likes",
-					"database_id": "a5d566b6-19c2-4238-8294-236479b02a97",
-					"migrations_dir": "migrations"
+					"database_id": "a5d566b6-19c2-4238-8294-236479b02a97"
 				}
 			],
 
