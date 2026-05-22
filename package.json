@@ -30,13 +30,13 @@
   },
   "lint-staged": {
     "*.{js,mjs}": [
-      "eslint --fix",
-      "prettier --write"
+      "npm exec --yes -- eslint --fix",
+      "npm exec --yes -- prettier --write"
     ],
-    "*.{json,md,css,html,xml,svg,yml,yaml}": "prettier --write"
+    "*.{json,md,css,html,xml,svg,yml,yaml}": "npm exec --yes -- prettier --write"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx --no-install lint-staged"
+    "pre-commit": "npm exec --yes lint-staged"
   },
   "prettier": {
     "trailingComma": "es5",
