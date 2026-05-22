@@ -40,7 +40,6 @@
 
 .gitattributes export-ignore
 .gitignore export-ignore
-.github/ export-ignore
 node_modules/ export-ignore
 .wrangler/ export-ignore
 *.log export-ignore

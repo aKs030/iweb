@@ -48,9 +48,6 @@ Optionale Migration-Umgebungsvariablen:
 ## CI/CD
 
 GitHub Workflows:
-
-- [`.github/workflows/main.yml`](.github/workflows/main.yml) - schlankes Preview-Deployment für Pull Requests
-
 Preview-Deployments bleiben auf das Deployment reduziert.
 
 ## Projektstruktur
