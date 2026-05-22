@@ -13,6 +13,10 @@ Die oeffentliche API sind die HTTP-Routen:
 - `feed.xml.js`
 - `project-apps/[[path]].js`, `youtube/[[path]].js`
 
+Der kanonische RSS-Feed wird oeffentlich unter `/feed.xml` durch
+`functions/feed.xml.js` bereitgestellt; `/api/feed.xml` bleibt als
+API-nahe Kompatibilitaetsroute erhalten.
+
 ## Intern
 
 - Dateien mit fuehrendem `_` sind interne Handler, Stores, Services oder Response-Helfer.

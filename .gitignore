@@ -6,6 +6,7 @@ node_modules/
 .env.*.local
 .dev.vars
 .cache/
+.tmp/
 *.cache
 *.log
 npm-debug.log*

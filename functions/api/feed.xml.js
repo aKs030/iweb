@@ -3,19 +3,20 @@ import { createLogger } from "../../content/core/logger.js";
 const log = createLogger("feed.xml");
 /**
  * RSS Feed Generator
+ * GET /feed.xml
  * GET /api/feed.xml
  * Generates an RSS 2.0 feed from blog post index
  */
 
-import { escapeXml } from "./_xml-utils.js";
+import { escapeXml, resolveOrigin } from "./_xml-utils.js";
 
-const SITE_URL = "https://abdulkerimsesli.de";
 const FEED_TITLE = "Abdulkerim Sesli — Blog";
 const FEED_DESCRIPTION = "Praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing.";
 
 export async function onRequestGet({ request }) {
   try {
     const origin = new URL(request.url).origin;
+    const publicOrigin = resolveOrigin(request.url);
     const indexUrl = `${origin}/pages/blog/posts/index.json`;
 
     const response = await fetch(indexUrl);
@@ -36,7 +37,7 @@ export async function onRequestGet({ request }) {
 
     const items = sorted
       .map(post => {
-        const link = `${SITE_URL}/blog/${post.id}`;
+        const link = `${publicOrigin}/blog/${post.id}`;
         const pubDate = new Date(post.date).toUTCString();
         return `    <item>
       <title>${escapeXml(post.title)}</title>
@@ -53,11 +54,11 @@ export async function onRequestGet({ request }) {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeXml(FEED_TITLE)}</title>
-    <link>${SITE_URL}/blog/</link>
+    <link>${publicOrigin}/blog/</link>
     <description>${escapeXml(FEED_DESCRIPTION)}</description>
     <language>de</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
-    <atom:link href="${SITE_URL}/api/feed.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${publicOrigin}/feed.xml" rel="self" type="application/rss+xml"/>
 ${items}
   </channel>
 </rss>`;

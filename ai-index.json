@@ -536,7 +536,7 @@
   ],
   "feeds": [
     {
-      "url": "https://www.abdulkerimsesli.de/blog/feed.xml",
+      "url": "https://www.abdulkerimsesli.de/feed.xml",
       "type": "rss",
       "format": "RSS 2.0"
     }

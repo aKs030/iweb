@@ -22,6 +22,9 @@
 /offline.html        /              301
 /manifest.json       /              301
 
+# Public RSS feed alias
+/blog/feed.xml       /feed.xml      301
+
 # Canonical URL Redirects (Remove index.html)
 /index.html          /              301
 /blog/index.html     /blog/         301

@@ -12,6 +12,8 @@ const log = createLogger("admin");
 import { getCorsHeaders, handleOptions } from "./_cors.js";
 import { ensureAppD1Schema } from "./_d1-schema.js";
 import { jsonResponse, errorJsonResponse } from "./_response.js";
+import { createWindowRateLimiter } from "./_rate-limit.js";
+import { getRequestClientIp } from "./_request-utils.js";
 import { getMemoryKV, loadFallbackMemories } from "./_ai-agent-memory-store.js";
 import {
   updateSingleMemory,
@@ -50,73 +52,41 @@ function timingSafeEqual(a, b) {
   return diff === 0;
 }
 
-/**
- * Simple in-memory rate-limiter for failed admin auth attempts.
- * Caps at MAX_FAILURES per IP per window.  Resets automatically.
- * (For production deployments, replace with KV-backed rate-limiting.)
- */
 const MAX_AUTH_FAILURES = 5;
-const AUTH_WINDOW_MS = 60_000; // 1 minute
-/** @type {Map<string, { count: number; resetAt: number }>} */
-const authFailureMap = new Map();
+const AUTH_WINDOW_SECONDS = 60;
+const adminAuthFailureLimiter = createWindowRateLimiter({
+  keyNamespace: "admin_auth_fail:v1",
+  maxEntries: 1000,
+});
 
-function isAuthRateLimited(ip) {
-  const now = Date.now();
-  const entry = authFailureMap.get(ip);
-  if (!entry || now >= entry.resetAt) return false;
-  return entry.count >= MAX_AUTH_FAILURES;
-}
-
-function recordAuthFailure(ip) {
-  const now = Date.now();
-  const entry = authFailureMap.get(ip);
-  if (!entry || now >= entry.resetAt) {
-    authFailureMap.set(ip, { count: 1, resetAt: now + AUTH_WINDOW_MS });
-  } else {
-    entry.count += 1;
-  }
-  // Evict stale entries to avoid unbounded growth
-  if (authFailureMap.size > 500) {
-    for (const [key, val] of authFailureMap) {
-      if (Date.now() >= val.resetAt) authFailureMap.delete(key);
-    }
-  }
-}
-
-function clearAuthFailures(ip) {
-  authFailureMap.delete(ip);
+async function authFailureReason(ip, env, reason) {
+  const result = await adminAuthFailureLimiter.check(ip, {
+    kv: env?.RATE_LIMIT_KV,
+    limit: MAX_AUTH_FAILURES,
+    windowSeconds: AUTH_WINDOW_SECONDS,
+  });
+  return result.allowed ? reason : "rate-limited";
 }
 
 /**
  * @param {Request} request
  * @param {object} env
- * @returns {{ ok: boolean; reason?: string }}
+ * @returns {Promise<{ ok: boolean; reason?: string }>}
  */
-function authenticateAdmin(request, env) {
-  const ip =
-    request.headers.get("CF-Connecting-IP") ||
-    request.headers.get("X-Forwarded-For")?.split(",")[0]?.trim() ||
-    "unknown";
-
-  if (isAuthRateLimited(ip)) {
-    return { ok: false, reason: "rate-limited" };
-  }
-
+async function authenticateAdmin(request, env) {
+  const ip = getRequestClientIp(request);
   const authHeader = request.headers.get("Authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
   if (!env.ADMIN_TOKEN || !token) {
-    recordAuthFailure(ip);
-    return { ok: false, reason: "missing-token" };
+    return { ok: false, reason: await authFailureReason(ip, env, "missing-token") };
   }
 
   const valid = timingSafeEqual(token, env.ADMIN_TOKEN);
   if (!valid) {
-    recordAuthFailure(ip);
-    return { ok: false, reason: "invalid-token" };
+    return { ok: false, reason: await authFailureReason(ip, env, "invalid-token") };
   }
 
-  clearAuthFailures(ip);
   return { ok: true };
 }
 
@@ -140,6 +110,13 @@ function adminError(corsHeaders, message, status = 400) {
       "Cache-Control": CACHE_CONTROL_NO_STORE,
     }),
   });
+}
+
+function paginationFromBody(body, defaultLimit = 50, maxLimit = 100) {
+  return {
+    limit: Math.min(maxLimit, Math.max(1, Number(body?.limit) || defaultLimit)),
+    offset: Math.max(0, Number(body?.offset) || 0),
+  };
 }
 
 const SNAPSHOT_SCHEMA_SQL = `
@@ -345,8 +322,7 @@ async function handleContactMessages(env, corsHeaders, body) {
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
   await ensureAppD1Schema(db);
 
-  const limit = Math.min(100, Math.max(1, Number(body?.limit) || 50));
-  const offset = Math.max(0, Number(body?.offset) || 0);
+  const { limit, offset } = paginationFromBody(body);
 
   const { results } = await db
     .prepare("SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT ? OFFSET ?")
@@ -384,8 +360,7 @@ async function handleBlogComments(env, corsHeaders, body) {
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
   await ensureAppD1Schema(db);
 
-  const limit = Math.min(100, Math.max(1, Number(body?.limit) || 50));
-  const offset = Math.max(0, Number(body?.offset) || 0);
+  const { limit, offset } = paginationFromBody(body);
   const postId = body?.postId || null;
 
   let query = "SELECT * FROM blog_comments";
@@ -455,8 +430,7 @@ async function handleLikeEvents(env, corsHeaders, body) {
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
   await ensureAppD1Schema(db);
 
-  const limit = Math.min(200, Math.max(1, Number(body?.limit) || 50));
-  const offset = Math.max(0, Number(body?.offset) || 0);
+  const { limit, offset } = paginationFromBody(body, 50, 200);
   const projectId = body?.projectId || null;
 
   let query = "SELECT * FROM project_like_events";
@@ -616,26 +590,11 @@ async function handleGalleryList(env, corsHeaders) {
 }
 
 async function handleKvOverview(env, corsHeaders, body) {
-  const namespace = body?.namespace || "memory";
-  let kv = null;
-  let prefix = "";
+  const namespace = String(body?.namespace || "memory");
+  const config = KV_NAMESPACES[namespace]?.(env, body);
+  if (!config) return adminError(corsHeaders, "Unbekannter Namespace", 400);
 
-  switch (namespace) {
-    case "memory":
-      kv = env.JULES_MEMORY_KV;
-      prefix = body?.prefix || "";
-      break;
-    case "ratelimit":
-      kv = env.RATE_LIMIT_KV;
-      prefix = body?.prefix || "rl:";
-      break;
-    case "cache":
-      kv = env.SITEMAP_CACHE_KV;
-      prefix = body?.prefix || "";
-      break;
-    default:
-      return adminError(corsHeaders, "Unbekannter Namespace", 400);
-  }
+  const { kv, prefix } = config;
 
   if (!kv?.list) return adminError(corsHeaders, "KV nicht verfügbar", 503);
 
@@ -713,6 +672,31 @@ async function handleExportSnapshot(env, corsHeaders, body) {
   });
 }
 
+const KV_NAMESPACES = {
+  memory: (env, body) => ({ kv: env.JULES_MEMORY_KV, prefix: body?.prefix || "" }),
+  ratelimit: (env, body) => ({ kv: env.RATE_LIMIT_KV, prefix: body?.prefix || "rl:" }),
+  cache: (env, body) => ({ kv: env.SITEMAP_CACHE_KV, prefix: body?.prefix || "" }),
+};
+
+const ADMIN_ACTIONS = {
+  dashboard: handleDashboard,
+  "contact-messages": handleContactMessages,
+  "delete-contact": handleDeleteContact,
+  "blog-comments": handleBlogComments,
+  "delete-comment": handleDeleteComment,
+  "project-likes": handleProjectLikes,
+  "like-events": handleLikeEvents,
+  "user-memories": handleUserMemories,
+  "user-memory-detail": handleUserMemoryDetail,
+  "update-user-memory": handleUpdateUserMemory,
+  "delete-user-memory": handleDeleteUserMemory,
+  "delete-user-profile": handleDeleteUserProfile,
+  "gallery-list": handleGalleryList,
+  "kv-overview": handleKvOverview,
+  "clear-cache": handleClearCache,
+  "export-snapshot": handleExportSnapshot,
+};
+
 // ---------------------------------------------------------------------------
 // Main Handler
 // ---------------------------------------------------------------------------
@@ -720,7 +704,7 @@ async function handleExportSnapshot(env, corsHeaders, body) {
 export async function onRequestPost({ request, env }) {
   const corsHeaders = getCorsHeaders(request, env);
 
-  const authResult = authenticateAdmin(request, env);
+  const authResult = await authenticateAdmin(request, env);
   if (!authResult.ok) {
     const status = authResult.reason === "rate-limited" ? 429 : 401;
     const message =
@@ -733,43 +717,10 @@ export async function onRequestPost({ request, env }) {
   try {
     const body = await request.json().catch(() => ({}));
     const action = String(body?.action || "").trim();
+    const handler = ADMIN_ACTIONS[action];
 
-    switch (action) {
-      case "dashboard":
-        return handleDashboard(env, corsHeaders);
-      case "contact-messages":
-        return handleContactMessages(env, corsHeaders, body);
-      case "delete-contact":
-        return handleDeleteContact(env, corsHeaders, body);
-      case "blog-comments":
-        return handleBlogComments(env, corsHeaders, body);
-      case "delete-comment":
-        return handleDeleteComment(env, corsHeaders, body);
-      case "project-likes":
-        return handleProjectLikes(env, corsHeaders);
-      case "like-events":
-        return handleLikeEvents(env, corsHeaders, body);
-      case "user-memories":
-        return handleUserMemories(env, corsHeaders);
-      case "user-memory-detail":
-        return handleUserMemoryDetail(env, corsHeaders, body);
-      case "update-user-memory":
-        return handleUpdateUserMemory(env, corsHeaders, body);
-      case "delete-user-memory":
-        return handleDeleteUserMemory(env, corsHeaders, body);
-      case "delete-user-profile":
-        return handleDeleteUserProfile(env, corsHeaders, body);
-      case "gallery-list":
-        return handleGalleryList(env, corsHeaders);
-      case "kv-overview":
-        return handleKvOverview(env, corsHeaders, body);
-      case "clear-cache":
-        return handleClearCache(env, corsHeaders);
-      case "export-snapshot":
-        return handleExportSnapshot(env, corsHeaders, body);
-      default:
-        return adminError(corsHeaders, `Unbekannte Action: "${action}"`, 400);
-    }
+    if (!handler) return adminError(corsHeaders, `Unbekannte Action: "${action}"`, 400);
+    return handler(env, corsHeaders, body);
   } catch (error) {
     log.error("[admin] Error:", error?.message || error);
     return adminError(corsHeaders, "Interner Server-Fehler", 500);
