@@ -23,15 +23,9 @@ npm run dev
 
 Lokale URL: [http://localhost:8787](http://localhost:8787)
 
-## Lokaler Server
-
-```bash
-npm run dev           # Lokalen Cloudflare-Pages-Server starten
-```
-
 `npm run dev` startet Cloudflare Pages lokal auf [http://localhost:8787](http://localhost:8787).
 
-Weitere schlanke Projektbefehle:
+Weitere Projektbefehle:
 
 ```bash
 npm run lint                 # JS- und CSS-Checks ohne Dateiaenderungen
@@ -57,16 +51,14 @@ GitHub Workflows:
 
 - [`.github/workflows/main.yml`](.github/workflows/main.yml) - schlankes Preview-Deployment für Pull Requests
 
-Preview-Deployments bleiben auf das Deployment reduziert. Der Robot-Agent begrenzt Memory-Recall über `ROBOT_CONTEXT_TIMEOUT_MS` standardmäßig auf `3500ms`, und Prompt-Memory-Persistenz läuft getrennt über `context.waitUntil(...)`, damit langsame Hintergrundschritte die Chat-Antwort nicht blockieren.
+Preview-Deployments bleiben auf das Deployment reduziert.
 
 ## Projektstruktur
 
-```text
-content/      Frontend-Code (Komponenten, Core, Styles, Media)
-pages/        Seiten-spezifische Entry-Points
-functions/    Cloudflare Pages Functions + API-Endpunkte
-.github/      CI/CD Workflows
-```
+- `content/` - Frontend-Code (Komponenten, Core, Styles, Media)
+- `pages/` - Seiten-spezifische Entry-Points
+- `functions/` - Cloudflare Pages Functions + API-Endpunkte
+- `.github/` - CI/CD Workflows
 
 ## Root-Dateien
 
@@ -78,15 +70,10 @@ functions/    Cloudflare Pages Functions + API-Endpunkte
 
 ## Architektur
 
-Frontend-Layer:
-
 - `content/core` - generische Utilities und Runtime-Bausteine
 - `content/components` - wiederverwendbare UI-Komponenten
 - `content/styles` - globale Styles, Foundation und Utilities
 - `pages/*` - Seiten-Entry-Points und Seitenspezifika
-
-Cloudflare Functions:
-
 - `functions/api` - API-Endpunkte
 - `functions/sitemap*.js` - Sitemap-Generierung
 - `functions/_shared` - gemeinsame Laufzeit-Helfer

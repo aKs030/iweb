@@ -1,138 +1,70 @@
-// wrangler.jsonc — Cloudflare Pages Konfiguration
-//
-// ARCHITEKTUR:
-//   Top-Level   → Local-Dev (`wrangler pages dev`) + Preview-Deployments
-//   env.production → Production (CF-Pflicht: alle non-inheritable Felder neu deklarieren)
-//
-// WAS SICH ZWISCHEN DEN UMGEBUNGEN UNTERSCHEIDET:
-//   ✦ KV-Namespace-IDs  (Preview-KV ≠ Production-KV)
-//   ✦ vars              (Production-Werte → CF Dashboard "Environment Variables" setzen,
-//                        NICHT hier im Commit pflegen)
-//
-// WAS IDENTISCH BLEIBT (CF-Pflicht zur Wiederholung):
-//   R2, D1, AI, Vectorize — gleiche Konfiguration in beiden Umgebungen
-//
-// HINWEIS: `compatibility_date` nur nach Runtime-Review + Tests anheben.
+// Cloudflare Pages config for local dev and preview.
+// Production repeats non-inheritable bindings by design.
 {
-	"name": "1web",
-	"compatibility_date": "2025-03-07",
-	"compatibility_flags": ["nodejs_compat"],
-	"pages_build_output_dir": ".",
-
-	// ─── Local-Dev / Preview: Variablen ────────────────────────────────────────
-	// Production-Werte werden im CF Dashboard gesetzt und NICHT im Commit gepflegt.
-	// Diese Werte dienen ausschließlich als Defaults für lokale Entwicklung und Preview.
-	"vars": {
-		"MAX_SEARCH_RESULTS": "10",
-		"ROBOT_CHAT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-		"ROBOT_EMBEDDING_MODEL": "@cf/baai/bge-base-en-v1.5",
-		"ROBOT_IMAGE_MODEL": "@cf/llava-hf/llava-1.5-7b-hf",
-		"ROBOT_MAX_TOKENS": "2048",
-		"ROBOT_MAX_HISTORY_TURNS": "10",
-		"ROBOT_CONTEXT_TIMEOUT_MS": "3500",
-		"ROBOT_MEMORY_TOP_K": "5",
-		"ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
-		"CONTACT_EMAIL": "krm19030@gmail.com",
-		"YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
-		"ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de"
-	},
-
-	// ─── Local-Dev / Preview: KV-Bindings ──────────────────────────────────────
-	// Preview-KV-IDs (getrennt von Production für saubere Datenisolation)
-	"kv_namespaces": [
-		{ "binding": "RATE_LIMIT_KV", "id": "edf1005c1b964f2fae4718afa152e836" },
-		{ "binding": "JULES_MEMORY_KV", "id": "8165d825e79a4e8d953aaca346c91f10" },
-		{
-			// SITEMAP_CACHE_KV: auch für Template-Caching (Keys: "template:global-head", "sitemap:*.xml")
-			"binding": "SITEMAP_CACHE_KV",
-			"id": "84ddd91c726146f3b363749eff14dbd5"
-		}
-	],
-
-	// ─── Gemeinsame Bindings (identisch in allen Umgebungen) ───────────────────
-	"r2_buckets": [
-		{ "binding": "GALLERY_BUCKET", "bucket_name": "img", "remote": true }
-	],
-
-	"d1_databases": [
-		{
-			"binding": "DB_LIKES",
-			"database_name": "portfolio-likes",
-			"database_id": "a5d566b6-19c2-4238-8294-236479b02a97"
-		}
-	],
-
-	"ai": { "binding": "AI", "remote": true },
-
-	"vectorize": [
-		{ "binding": "JULES_MEMORY", "index_name": "jules-memory", "remote": true }
-	],
-
-	// ─── env.production ────────────────────────────────────────────────────────
-	// CF-Pages-Einschränkung: Sobald irgendein non-inheritable Feld überschrieben
-	// wird (hier: kv_namespaces), müssen ALLE non-inheritable Felder (vars,
-	// kv_namespaces, r2_buckets, d1_databases, ai, vectorize) neu deklariert werden.
-	//
-	// ► Was hier wirklich anders ist:  KV-Namespace-IDs (Production-Namespaces)
-	// ► Was unverändert ist (CF-Pflicht zur Wiederholung): vars, R2, D1, AI, Vectorize
-	"env": {
-		"production": {
-			// vars: Identische Defaults — im CF Dashboard können diese per Secret
-			// überschrieben werden (z. B. CONTACT_EMAIL, ALLOWED_ORIGINS).
-			// CF-Pflicht: muss trotz gleicher Werte vollständig deklariert werden.
-			"vars": {
-				"MAX_SEARCH_RESULTS": "10",
-				"ROBOT_CHAT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-				"ROBOT_EMBEDDING_MODEL": "@cf/baai/bge-base-en-v1.5",
-				"ROBOT_IMAGE_MODEL": "@cf/llava-hf/llava-1.5-7b-hf",
-				"ROBOT_MAX_TOKENS": "2048",
-				"ROBOT_MAX_HISTORY_TURNS": "10",
-				"ROBOT_CONTEXT_TIMEOUT_MS": "3500",
-				"ROBOT_MEMORY_TOP_K": "5",
-				"ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
-				"CONTACT_EMAIL": "krm19030@gmail.com",
-				"YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
-				"ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de"
-			},
-
-			// ✦ EINZIGER ECHTER UNTERSCHIED: Production-KV-IDs ──────────────────────
-			"kv_namespaces": [
-				{
-					"binding": "RATE_LIMIT_KV",
-					"id": "75d79a452fa74cc980caf400862e2c67"
-				},
-				{
-					"binding": "JULES_MEMORY_KV",
-					"id": "90adb98d1b0c4dc783e91cfdcecad60d"
-				},
-				{
-					"binding": "SITEMAP_CACHE_KV",
-					"id": "5980265e029e4a88a987d17f25c71dfc"
-				}
-			],
-
-			// CF-Pflicht: unverändert gegenüber Top-Level ───────────────────────────
-			"r2_buckets": [
-				{ "binding": "GALLERY_BUCKET", "bucket_name": "img", "remote": true }
-			],
-
-			"d1_databases": [
-				{
-					"binding": "DB_LIKES",
-					"database_name": "portfolio-likes",
-					"database_id": "a5d566b6-19c2-4238-8294-236479b02a97"
-				}
-			],
-
-			"ai": { "binding": "AI", "remote": true },
-
-			"vectorize": [
-				{
-					"binding": "JULES_MEMORY",
-					"index_name": "jules-memory",
-					"remote": true
-				}
-			]
-		}
-	}
+  "name": "1web",
+  "compatibility_date": "2025-03-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": ".",
+  "vars": {
+    "MAX_SEARCH_RESULTS": "10",
+    "ROBOT_CHAT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "ROBOT_EMBEDDING_MODEL": "@cf/baai/bge-base-en-v1.5",
+    "ROBOT_IMAGE_MODEL": "@cf/llava-hf/llava-1.5-7b-hf",
+    "ROBOT_MAX_TOKENS": "2048",
+    "ROBOT_MAX_HISTORY_TURNS": "10",
+    "ROBOT_CONTEXT_TIMEOUT_MS": "3500",
+    "ROBOT_MEMORY_TOP_K": "5",
+    "ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
+    "CONTACT_EMAIL": "krm19030@gmail.com",
+    "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
+    "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
+  },
+  "kv_namespaces": [
+    { "binding": "RATE_LIMIT_KV", "id": "edf1005c1b964f2fae4718afa152e836" },
+    { "binding": "JULES_MEMORY_KV", "id": "8165d825e79a4e8d953aaca346c91f10" },
+    { "binding": "SITEMAP_CACHE_KV", "id": "84ddd91c726146f3b363749eff14dbd5" },
+  ],
+  "r2_buckets": [{ "binding": "GALLERY_BUCKET", "bucket_name": "img", "remote": true }],
+  "d1_databases": [
+    {
+      "binding": "DB_LIKES",
+      "database_name": "portfolio-likes",
+      "database_id": "a5d566b6-19c2-4238-8294-236479b02a97",
+    },
+  ],
+  "ai": { "binding": "AI", "remote": true },
+  "vectorize": [{ "binding": "JULES_MEMORY", "index_name": "jules-memory", "remote": true }],
+  "env": {
+    "production": {
+      "vars": {
+        "MAX_SEARCH_RESULTS": "10",
+        "ROBOT_CHAT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "ROBOT_EMBEDDING_MODEL": "@cf/baai/bge-base-en-v1.5",
+        "ROBOT_IMAGE_MODEL": "@cf/llava-hf/llava-1.5-7b-hf",
+        "ROBOT_MAX_TOKENS": "2048",
+        "ROBOT_MAX_HISTORY_TURNS": "10",
+        "ROBOT_CONTEXT_TIMEOUT_MS": "3500",
+        "ROBOT_MEMORY_TOP_K": "5",
+        "ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
+        "CONTACT_EMAIL": "krm19030@gmail.com",
+        "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
+        "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
+      },
+      "kv_namespaces": [
+        { "binding": "RATE_LIMIT_KV", "id": "75d79a452fa74cc980caf400862e2c67" },
+        { "binding": "JULES_MEMORY_KV", "id": "90adb98d1b0c4dc783e91cfdcecad60d" },
+        { "binding": "SITEMAP_CACHE_KV", "id": "5980265e029e4a88a987d17f25c71dfc" },
+      ],
+      "r2_buckets": [{ "binding": "GALLERY_BUCKET", "bucket_name": "img", "remote": true }],
+      "d1_databases": [
+        {
+          "binding": "DB_LIKES",
+          "database_name": "portfolio-likes",
+          "database_id": "a5d566b6-19c2-4238-8294-236479b02a97",
+        },
+      ],
+      "ai": { "binding": "AI", "remote": true },
+      "vectorize": [{ "binding": "JULES_MEMORY", "index_name": "jules-memory", "remote": true }],
+    },
+  },
 }

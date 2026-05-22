@@ -45,7 +45,3 @@ node_modules/ export-ignore
 .wrangler/ export-ignore
 *.log export-ignore
 *.cache export-ignore
-
-*.md linguist-documentation
-docs/* linguist-documentation
-node_modules/* linguist-vendored

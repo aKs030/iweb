@@ -2,38 +2,19 @@
 
 ## Source of truth
 
-- `content/styles/foundation.css`
-- `content/styles/utilities.css`
-
-## File responsibilities
-
-- `foundation.css`: globale CSS-Variablen, Theme-Overrides, Safe-Area/Layout-Grundlagen und Runtime-Defaults.
-- `utilities.css`: kleine handgepflegte Utility-Sammlung fuer wiederkehrende Layout-Helfer.
-- `main.css`: globale Komponenten-, Utility- und Basis-Styles fuer die App-Shell.
-- `overlays.css`: globale Overlay-Regeln in der `components`-Layer.
+- `content/styles/foundation.css` - CSS variables, theme overrides and layout defaults.
+- `content/styles/utilities.css` - small reusable utility helpers.
+- `content/styles/main.css` - app-shell base styles.
+- `content/styles/overlays.css` - overlay-layer rules.
 
 ## Workflow
 
-- `npm run dev` -> starts the local Cloudflare Pages development server
-- Global CSS now uses native cascade layers (`foundation`, `base`, `utilities`, `components`, `animations`) instead of generation or selector-order coupling.
+- `npm run dev` starts the local Cloudflare Pages server.
+- Global CSS uses native cascade layers: `foundation`, `base`, `utilities`, `components`, `animations`.
+- Theme toggling only changes `data-theme` on `<html>`.
 
-## Theme switching
+## Rules
 
-- Theme attribute is set on `<html>` via `data-theme` (`dark` or `light`).
-- `foundation.css` contains base + light + dark overrides (`:root[data-theme='light']`, `:root[data-theme='dark']`).
-- Menu toggle only updates `data-theme`; no stylesheet enable/disable needed.
-
-## Utilities
-
-- Keep utilities intentionally small and only for repeated layout patterns.
-- Prefer semantic component classes first; add utility classes only when reuse is obvious.
-
-## Team rule
-
-- Avoid hardcoded colors, spacing, radii, shadows and z-index values in components.
-- Use `var(--...)` from `foundation.css` for consistent theming and spacing.
-
-## Breakpoints
-
-- Keep numeric `@media` queries in CSS for now; native CSS variables are not supported inside media queries.
-- If shared breakpoint semantics become complex, prefer documenting them in CSS comments or JS constants instead of adding a generation layer again.
+- Keep utilities small and only for repeated layout patterns.
+- Prefer `var(--...)` from `foundation.css` instead of hardcoded component values.
+- Keep numeric `@media` queries for now; document shared breakpoint semantics in code comments or constants.

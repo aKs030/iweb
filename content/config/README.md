@@ -1,78 +1,25 @@
 # Configuration Files
 
-This directory centralizes runtime and SEO configuration.
+This directory groups runtime, SEO and media-related configuration.
 
-## Environment Config
+## What Lives Here
 
-`env.config.js` resolves runtime IDs and environment values:
+- `env.config.js` - runtime IDs, base URLs and environment detection.
+- `routes-config.js` - per-route SEO defaults and Open Graph fallback data.
+- `media-urls.js` - shared media helpers and local-dev R2 resolution.
+- `constants.js` - global non-media constants such as `BASE_URL`.
 
-- GTM / GA4 / Google Ads IDs
-- Base URL (production vs localhost)
-- YouTube channel + optional API key
-- Environment detection (`isDev`, `isPreview`, `isProd`)
+## Data Boundaries
 
-Runtime values can be injected via `window.ENV` or `window.__ENV__`.
+- Canonical brand, locale and typewriter data live under `content/data/`.
+- `pages/projekte/apps-config.json` is the source of truth for project app links and preview metadata.
+- Runtime code should prefer shared helpers from `media-urls.js` over ad-hoc URL construction.
+- `window.ENV` and `window.__ENV__` remain the supported browser-side injection points.
 
-### Local Variables
+## Local Values
 
 ```bash
 # .dev.vars
 YOUTUBE_API_KEY=your_api_key_here
 YOUTUBE_CHANNEL_ID=UCTGRherjM4iuIn86xxubuPg
 ```
-
-## Route Meta
-
-`routes-config.js` defines per-route SEO defaults:
-
-- title / description (DE + EN)
-- semantic page type
-- default Open Graph image
-
-## Brand Data
-
-The canonical brand and language data now lives under `content/data/`:
-
-- `content/data/brand-data.json` stores canonical brand identity and schema fields
-- `content/data/typewriter-quotes.json` stores the typewriter quote pool
-- `content/data/locales/*.json` stores UI translations
-
-`content/data/brand-data-loader.js` normalizes brand data for JSON-LD usage.
-
-Shared site media lives in `media-urls.js`. Page and post frontmatter that
-stores absolute media URLs is maintained manually against the same public R2
-paths.
-
-`pages/projekte/apps-config.json` remains the canonical project-app config for
-`appPath`, `githubPath`, `previewUrl`, and `previewAlt`, and should be kept in
-sync manually with the project entries.
-
-## Shared Constants
-
-`constants.js` is the canonical source for global non-media constants:
-
-- `BASE_URL`, `BASE_URL_DEV`
-
-`media-urls.js` is the canonical source for shared media URLs and local-dev R2
-resolution:
-
-- public R2 builders (`buildR2Url`, `buildProjectPreviewUrl`)
-- local runtime resolvers (`resolveProjectPreviewUrl`, `resolveR2Path`)
-- direct media URLs (`FAVICON_ICO_URL`, `FAVICON_512_URL`, `OG_HOME_IMAGE_URL`)
-
-## Static Site Media
-
-Static site-level media URLs are exported from `media-urls.js`.
-
-Project preview media URLs live in `pages/projekte/apps-config.json` as
-`previewUrl` and `previewAlt`, and project links live there as `appPath` and
-`githubPath`. Runtime code should still use the shared helpers in `media-urls.js`,
-so local `/r2-proxy` handling and preview fallbacks stay consistent even when
-config data is incomplete.
-
-Project apps are loaded on the same origin through
-`functions/api/project-apps/[[path]].js`, so the frontend no longer depends on
-third-party app hosting URLs at runtime.
-
-`pages/blog/posts/index.json` is derived from the blog markdown frontmatter,
-while image URLs in the markdown files remain aligned with `media-urls.js`.
