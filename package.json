@@ -12,10 +12,44 @@
     "npm": ">=10.0.0"
   },
   "devDependencies": {
-    "wrangler": "4.93.1"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
+    "lint-staged": "^17.0.5",
+    "prettier": "^3.8.3",
+    "simple-git-hooks": "^2.13.1",
+    "wrangler": "^4.93.1"
   },
   "scripts": {
     "dev": "wrangler pages dev . --port 8787 --show-interactive-dev-session=false",
-    "clean": "rm -rf .wrangler .eslintcache"
+    "prepare": "simple-git-hooks",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "check:format": "prettier --check .",
+    "check:lint": "eslint . --max-warnings=0"
+  },
+  "lint-staged": {
+    "*.{js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,html,xml,svg,yml,yaml}": "prettier --write"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx --no-install lint-staged"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "printWidth": 100,
+    "arrowParens": "avoid",
+    "endOfLine": "lf",
+    "overrides": [
+      {
+        "files": "*.jsonld",
+        "options": {
+          "parser": "json"
+        }
+      }
+    ]
   }
 }
