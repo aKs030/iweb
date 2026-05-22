@@ -7,36 +7,6 @@
 # ============================================================================
 # Static Assets - Long-term Immutable Caching
 # ============================================================================
-# Media assets, icons, fonts, and other static assets with content hashing
-/content/media/*
-  Cache-Control: public, max-age=31536000, immutable
-  Vary: Accept-Encoding
-  Cross-Origin-Resource-Policy: cross-origin
-  Timing-Allow-Origin: *
-  X-Content-Type-Options: nosniff
-
-# Nested media directories
-/content/media/:level1/*
-  Cache-Control: public, max-age=31536000, immutable
-  Vary: Accept-Encoding
-  Cross-Origin-Resource-Policy: cross-origin
-  Timing-Allow-Origin: *
-  X-Content-Type-Options: nosniff
-
-/content/media/:level1/:level2/*
-  Cache-Control: public, max-age=31536000, immutable
-  Vary: Accept-Encoding
-  Cross-Origin-Resource-Policy: cross-origin
-  Timing-Allow-Origin: *
-  X-Content-Type-Options: nosniff
-
-/content/media/:level1/:level2/:level3/*
-  Cache-Control: public, max-age=31536000, immutable
-  Vary: Accept-Encoding
-  Cross-Origin-Resource-Policy: cross-origin
-  Timing-Allow-Origin: *
-  X-Content-Type-Options: nosniff
-
 # 3D Models (GLB/glTF) - Long-term caching with correct MIME types
 /content/media/*.glb
   Content-Type: model/gltf-binary
@@ -51,22 +21,6 @@
   X-Content-Type-Options: nosniff
 
 /content/media/img/*
-  Cache-Control: public, max-age=31536000, immutable
-  Vary: Accept-Encoding
-  Cross-Origin-Resource-Policy: cross-origin
-  Timing-Allow-Origin: *
-  X-Robots-Tag: max-image-preview:large
-  X-Content-Type-Options: nosniff
-
-/content/media/img/:level1/*
-  Cache-Control: public, max-age=31536000, immutable
-  Vary: Accept-Encoding
-  Cross-Origin-Resource-Policy: cross-origin
-  Timing-Allow-Origin: *
-  X-Robots-Tag: max-image-preview:large
-  X-Content-Type-Options: nosniff
-
-/content/media/img/:level1/:level2/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: cross-origin
@@ -146,16 +100,6 @@
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-/pages/:section/*.js
-  Cache-Control: public, max-age=0, s-maxage=60
-  Vary: Accept-Encoding
-  X-Content-Type-Options: nosniff
-
-/pages/:section/:subsection/*.js
-  Cache-Control: public, max-age=0, s-maxage=60
-  Vary: Accept-Encoding
-  X-Content-Type-Options: nosniff
-
 # Main application script (not fingerprinted) - fresh browser, 60s edge cache
 /content/main.js
   Cache-Control: public, max-age=0, s-maxage=60
@@ -169,32 +113,10 @@
   X-Content-Type-Options: nosniff
   Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
 
-/content/components/:component/*.js
-  Cache-Control: public, max-age=0, s-maxage=60
-  Vary: Accept-Encoding
-  X-Content-Type-Options: nosniff
-  Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
-
-/content/components/:component/:module/*.js
-  Cache-Control: public, max-age=0, s-maxage=60
-  Vary: Accept-Encoding
-  X-Content-Type-Options: nosniff
-  Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
-
 # ============================================================================
 # CSS Stylesheets - Modern Optimization
 # ============================================================================
 /pages/*.css
-  Cache-Control: public, max-age=0, s-maxage=60
-  Vary: Accept-Encoding
-  X-Content-Type-Options: nosniff
-
-/pages/:section/*.css
-  Cache-Control: public, max-age=0, s-maxage=60
-  Vary: Accept-Encoding
-  X-Content-Type-Options: nosniff
-
-/pages/:section/:subsection/*.css
   Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
@@ -216,6 +138,17 @@
 /api/*
   Vary: Accept-Encoding, Accept
   X-Robots-Tag: noindex
+
+# ============================================================================
+# Admin HTML - Private, non-indexed route
+# ============================================================================
+/admin
+  Cache-Control: private, no-store
+  X-Robots-Tag: noindex, nofollow
+
+/admin/*
+  Cache-Control: private, no-store
+  X-Robots-Tag: noindex, nofollow
 
 # ============================================================================
 # Public HTML Routes - Dynamic Cache (single source for page responses)

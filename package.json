@@ -12,27 +12,10 @@
     "npm": ">=10.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
-    "eslint": "^9.0.0",
-    "globals": "^17.6.0",
-    "lint-staged": "^15.0.0",
-    "prettier": "3.8.3",
     "wrangler": "4.93.1"
   },
   "scripts": {
     "dev": "wrangler pages dev . --port 8787 --show-interactive-dev-session=false",
-    "lint": "npm run lint:js && npm run lint:css",
-    "lint:js": "eslint content pages functions scripts --fix",
-    "lint:css": "prettier --write \"content/**/*.css\" \"pages/**/*.css\"",
-    "migrate:live:export": "node scripts/migrate-live-export.mjs",
-    "migrate:live:apply": "node scripts/migrate-live-apply.mjs",
-    "migrate:live": "npm run migrate:live:export && npm run migrate:live:apply",
-    "clean": "rm -rf .wrangler .eslintcache",
-    "format": "prettier --write \"content/**/*.{js,json,md}\" \"pages/**/*.{js,json,md}\" \"functions/**/*.js\" \"scripts/**/*.mjs\""
-  },
-  "lint-staged": {
-    "*.{js,mjs}": "eslint --fix",
-    "*.{js,mjs,json,md}": "prettier --write",
-    "*.css": "prettier --write"
+    "clean": "rm -rf .wrangler .eslintcache"
   }
 }

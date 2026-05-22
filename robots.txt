@@ -7,6 +7,7 @@ Sitemap: https://www.abdulkerimsesli.de/sitemap-index.xml
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin/
 Disallow: /.wrangler/
 Disallow: /node_modules/
 Disallow: /*.log$

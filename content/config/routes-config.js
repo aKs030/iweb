@@ -108,6 +108,17 @@ export const ROUTES = Object.freeze({
     robots: "index, follow",
     image: OG_HOME_IMAGE,
   }),
+  "/admin/": defineRoute({
+    title: "Admin Dashboard | Abdulkerim Sesli",
+    title_en: "Admin Dashboard | Abdulkerim Sesli",
+    description:
+      "Geschuetzter Verwaltungsbereich fuer Inhalte, Nachrichten, Kommentare, Likes und Cache-Ressourcen.",
+    description_en:
+      "Protected administration area for content, messages, comments, likes, and cache resources.",
+    type: "WebPage",
+    robots: "noindex, nofollow",
+    image: OG_HOME_IMAGE,
+  }),
   "/datenschutz/": defineRoute({
     title: "Datenschutzerklärung | Abdulkerim Sesli",
     title_en: "Privacy Policy | Abdulkerim Sesli",

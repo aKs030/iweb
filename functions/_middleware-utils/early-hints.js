@@ -50,7 +50,12 @@ const STANDALONE_SHELL_EXCLUSIONS = new Set([
 
 function isStandaloneShellPath(pathname = "/") {
   const normalized = normalizePathname(pathname);
-  return normalized === "/ai-info" || normalized.startsWith("/pages/ai-info");
+  return (
+    normalized === "/ai-info" ||
+    normalized.startsWith("/pages/ai-info") ||
+    normalized === "/admin" ||
+    normalized.startsWith("/pages/admin")
+  );
 }
 
 function getResourcesForPath(pathname = "/") {

@@ -86,6 +86,7 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
  * @param {URL} url
  * @param {{
  *   isLocal: boolean,
+ *   injectShell?: boolean,
  *   resolvedGlobalHeadTemplate: string,
  *   routeMeta: any,
  * }} options
@@ -128,8 +129,10 @@ export function createHtmlRewriter(context, url, options) {
     rewriter.on("style", nonceHandler);
   }
 
-  rewriter.on("a.skip-link", new HeaderInjector(url));
-  rewriter.on("body", new FooterInjector());
+  if (options.injectShell !== false) {
+    rewriter.on("a.skip-link", new HeaderInjector(url));
+    rewriter.on("body", new FooterInjector());
+  }
 
   const acceptLanguage = String(context.request.headers.get("Accept-Language") || "").toLowerCase();
   if (acceptLanguage.startsWith("en")) {

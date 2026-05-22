@@ -18,6 +18,11 @@ import {
   loadTemplateWithCache,
 } from "./_middleware-utils/template-cache.js";
 
+function shouldInjectShell(pathname) {
+  const normalized = pathname.endsWith("/") ? pathname : `${pathname}/`;
+  return !normalized.startsWith("/admin/") && !normalized.startsWith("/pages/admin/");
+}
+
 /**
  * Middleware entry point — runs on every request.
  *
@@ -94,6 +99,7 @@ export async function onRequest(context) {
   }
 
   const { cspHeader, nonce, rewriter } = createHtmlRewriter(context, url, {
+    injectShell: shouldInjectShell(url.pathname),
     isLocal,
     resolvedGlobalHeadTemplate,
     routeMeta,

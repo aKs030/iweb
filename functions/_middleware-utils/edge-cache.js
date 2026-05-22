@@ -21,7 +21,7 @@ const CACHE_KEY_QUERY_ALLOWLIST = new Set(["menuShadow"]);
 /**
  * Pages that should NOT be cached (dynamic per-request content).
  */
-const UNCACHEABLE_PATTERNS = ["/api/", "/contact"];
+const UNCACHEABLE_PATTERNS = ["/api/", "/admin", "/contact", "/pages/admin"];
 const UNCACHEABLE_EXACT_PATHS = new Set(["/"]);
 
 /**

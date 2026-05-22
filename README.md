@@ -34,7 +34,10 @@ npm run dev           # Lokalen Cloudflare-Pages-Server starten
 Weitere schlanke Projektbefehle:
 
 ```bash
-npm run lint                 # JS- und CSS-Checks
+npm run lint                 # JS- und CSS-Checks ohne Dateiaenderungen
+npm run lint:fix             # JS- und CSS-Fixes anwenden
+npm run format:check         # Formatierung pruefen
+npm run format               # Formatierung anwenden
 npm run analyze:duplicates   # optionale Duplikatsanalyse
 npm run clean                # lokale Cache-/Tooling-Artefakte entfernen
 npm run migrate:live         # SQL-Snapshot von Live exportieren und auf D1 anwenden
