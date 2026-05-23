@@ -1,3 +1,4 @@
+import { initMagneticButtons } from "./magnetic-buttons.js";
 import { getElementById, observeOnce } from "#core/dom-utils.js";
 import { createLogger } from "#core/logger.js";
 import { TimerManager } from "#core/timer-manager.js";
@@ -372,6 +373,7 @@ const HeroManager = (() => {
 })();
 
 // ===== Public API =====
+
 export const initHeroFeatureBundle = sectionManager => {
   HeroManager.cleanup();
 
@@ -380,6 +382,7 @@ export const initHeroFeatureBundle = sectionManager => {
   HeroManager.setupHomeAuroraPerspective();
 
   HeroManager.initLazyHeroModules();
+  initMagneticButtons();
 
   const handleHeroClick = async event => {
     const eventTarget = event.target instanceof Element ? event.target : null;

@@ -162,6 +162,17 @@ body[data-home-section="section3"] #robot-companion-container:not(.robot-chat--o
   flex-direction: column;
   align-items: flex-end;
   will-change: transform;
+  animation: robotFloatY 4s ease-in-out infinite;
+}
+
+@keyframes robotFloatY {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 /* Der Roboter selbst */

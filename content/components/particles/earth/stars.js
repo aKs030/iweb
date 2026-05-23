@@ -71,7 +71,10 @@ export class StarManager {
         uniform float twinkleSpeed;
         varying vec3 vColor;
         void main() {
-          float strength = (sin(time * twinkleSpeed + gl_FragCoord.x * 0.5) + 1.0) / 2.0 * 0.5 + 0.5;
+          // Increase twinkle variation based on position
+          float noise = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+          float strength = (sin(time * twinkleSpeed + gl_FragCoord.x * 0.1 + noise * 10.0) + 1.0) / 2.0;
+          strength = strength * 0.7 + 0.3; // Prevent stars from completely disappearing
           gl_FragColor = vec4(vColor, strength);
         }
       `,
