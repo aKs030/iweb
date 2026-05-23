@@ -167,8 +167,8 @@ const HeroManager = (() => {
     [
       [".hero__title", content.title],
       [".hero__lede", content.lede],
-      [".hero__button--primary", content.primaryBtn],
-      [".hero__button--secondary", content.secondaryBtn],
+      [".home-btn-group--hero .home-btn--primary", content.primaryBtn],
+      [".home-btn-group--hero .home-btn--secondary", content.secondaryBtn],
     ].forEach(([selector, value]) => {
       const element = document.querySelector(selector);
       if (element && value) {
@@ -383,7 +383,7 @@ export const initHeroFeatureBundle = sectionManager => {
 
   const handleHeroClick = async event => {
     const eventTarget = event.target instanceof Element ? event.target : null;
-    const link = eventTarget?.closest('.hero__buttons a[href^="#"]');
+    const link = eventTarget?.closest('.home-btn-group--hero a[href^="#"]');
     if (!link) return;
 
     const href = link.getAttribute("href") || "";
