@@ -1,32 +1,81 @@
 <!-- partial: true; parent: index.html -->
-<div class="section3__container">
-  <p class="section3__eyebrow" data-i18n="home.closing_eyebrow">Portfolio Notes</p>
+<div class="section3__cosmos" aria-hidden="true">
+  <span class="section3__star section3__star--1"></span>
+  <span class="section3__star section3__star--2"></span>
+  <span class="section3__star section3__star--3"></span>
+  <span class="section3__star section3__star--4"></span>
+  <span class="section3__star section3__star--5"></span>
+  <span class="section3__star section3__star--6"></span>
+  <span class="section3__star section3__star--7"></span>
+  <span class="section3__star section3__star--8"></span>
+  <span class="section3__nebula section3__nebula--a"></span>
+  <span class="section3__nebula section3__nebula--b"></span>
+  <span class="section3__scanline"></span>
+</div>
 
-  <div class="section3__grid">
-    <div class="section3__lead">
-      <h2 id="section3-heading" data-i18n="home.closing_title">
-        Kein Pitch. Eher ein offenes Archiv.
-      </h2>
-      <p data-i18n="home.closing_p1">
-        Diese Seite ist mein öffentliches Arbeitsfeld zwischen Engineering, Bildsprache und AI.
-        Manche Dinge sind fertig, andere bewusst im Fluss.
-      </p>
-      <p data-i18n="home.closing_p2">
-        Wenn dich etwas genauer interessiert, findest du mehr in den Projekten, im Journal oder
-        direkt über die einzelnen Kanäle.
-      </p>
-    </div>
+<div class="section3__container">
+  <!-- ── Headline Zone ── -->
+  <header class="section3__header">
+    <p class="section3__eyebrow" data-i18n="home.closing_eyebrow">Portfolio Notes</p>
+    <h2 id="section3-heading" class="section3__title" data-i18n="home.closing_title">
+      Kein Pitch. Eher ein offenes Archiv.
+    </h2>
+    <p class="section3__subtitle" data-i18n="home.closing_p1">
+      Diese Seite ist mein öffentliches Arbeitsfeld zwischen Engineering, Bildsprache und AI. Manche
+      Dinge sind fertig, andere bewusst im Fluss.
+    </p>
+  </header>
+
+  <!-- ── Closing Text ── -->
+  <div class="section3__closing">
+    <p class="section3__closing-text" data-i18n="home.closing_p2">
+      Wenn dich etwas genauer interessiert, findest du mehr in den Projekten, im Journal oder direkt
+      über die einzelnen Kanäle.
+    </p>
   </div>
 
+  <!-- ── CTA Zone ── -->
   <nav
     class="section3__cta"
     aria-label="Weitere Wege durch das Portfolio"
     data-i18n-attrs="aria-label:home.closing_nav_aria"
   >
-    <a href="/projekte/" class="btn btn-primary" data-i18n="home.closing_cta_projects"
-      >Alle Projekte</a
+    <a
+      href="/projekte/"
+      class="section3__cta-btn section3__cta-btn--primary"
+      data-i18n="home.closing_cta_projects"
     >
-    <a href="/blog/" class="btn btn-secondary" data-i18n="home.closing_cta_blog">Journal</a>
-    <a href="/contact/" class="btn btn-secondary" data-i18n="home.closing_cta_contact">Kontakt</a>
+      <span class="section3__cta-btn-glow" aria-hidden="true"></span>
+      <span class="section3__cta-btn-text">Alle Projekte</span>
+      <svg
+        class="section3__cta-arrow"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
+    <a
+      href="/blog/"
+      class="section3__cta-btn section3__cta-btn--glass"
+      data-i18n="home.closing_cta_blog"
+    >
+      <span class="section3__cta-btn-text">Journal</span>
+    </a>
+    <a
+      href="/contact/"
+      class="section3__cta-btn section3__cta-btn--glass"
+      data-i18n="home.closing_cta_contact"
+    >
+      <span class="section3__cta-btn-text">Kontakt</span>
+    </a>
   </nav>
 </div>
