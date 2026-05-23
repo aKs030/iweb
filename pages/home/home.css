@@ -615,16 +615,18 @@
 .home-btn--primary:hover {
   color: #09111f;
   box-shadow:
-    0 24px 60px color-mix(in srgb, var(--home-accent-warm, #f7d69e) 40%, transparent),
-    0 0 20px color-mix(in srgb, var(--home-accent-warm, #f7d69e) 30%, transparent);
+    0 24px 60px color-mix(in srgb, #ffaa00 50%, transparent),
+    0 0 30px color-mix(in srgb, #ff8800 60%, transparent),
+    inset 0 0 10px color-mix(in srgb, #ffcc00 40%, transparent);
   transform: translateY(-2px) scale(1.02);
 }
 
 .home-btn--secondary {
   border: 1px solid var(--home-line, rgb(255 255 255 / 20%));
-  background: color-mix(in srgb, var(--home-surface, rgb(7 11 22 / 50%)) 88%, transparent);
-  color: color-mix(in srgb, var(--clr-white) 82%, transparent);
-  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--home-surface, rgb(7 11 22 / 20%)) 50%, transparent);
+  color: color-mix(in srgb, var(--clr-white) 90%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
 .home-btn--secondary:hover {
@@ -833,6 +835,16 @@
     animation: s3RevealUp linear both;
     animation-timeline: view();
     animation-range: entry 5% entry 35%;
+  }
+
+  .section3__header {
+    animation-delay: 0s;
+  }
+  .section3__closing {
+    animation-delay: 0.15s;
+  }
+  .section3__cta {
+    animation-delay: 0.3s;
   }
 
   @media (prefers-reduced-motion: reduce) {

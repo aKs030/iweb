@@ -111,9 +111,9 @@ const SECTION_CONFIGS = {
     earth: { pos: { x: 1.9, y: -2.05, z: -2.65 }, scale: 0.76, rotation: Math.PI * 1.12 },
     moon: { pos: { x: 5.2, y: 2.8, z: -9.4 }, scale: 0.48 },
     lighting: {
-      ambientColor: 0x2d375d,
-      ambientIntensity: 0.58,
-      sunIntensity: 0.62,
+      ambientColor: 0x4a5585,
+      ambientIntensity: 0.85,
+      sunIntensity: 1.1,
     },
     mode: "night",
     scroll: {
@@ -463,6 +463,16 @@ class ThreeEarthSystem {
         starField.position.z = Math.sin(progress * Math.PI) * 15;
       }, "three-earth-stars");
 
+      // Mouse Parallax for Stars
+      document.addEventListener("mousemove", e => {
+        if (!starField || !this.starManager || !this.active) return;
+        const x = (e.clientX / window.innerWidth) * 2 - 1;
+        const y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        starField.position.x += (x * 0.5 - starField.position.x) * 0.05;
+        starField.position.y += (y * 0.5 - starField.position.y) * 0.05;
+      });
+
       const lights = setupLighting(this.THREE, this.scene);
       this.directionalLight = lights.directionalLight;
       this.ambientLight = lights.ambientLight;
@@ -750,6 +760,22 @@ class ThreeEarthSystem {
     this._updateNightPulse(totalTime, capabilities);
     this._updateScrollLinkedEarthTarget();
 
+    // Add continuous slow rotation decoupled from scroll target
+    if (this.earthMesh) {
+      this.earthMesh.rotation.y += 0.02 * delta;
+      // also update target so it doesn't snap back when scrolling
+      this.earthMesh.userData.targetRotation += 0.02 * delta;
+    }
+
+    // Apply Star Parallax Lerping
+    if (this.starManager && this.starManager.starField && this.mouseParallaxTarget) {
+      const starField = this.starManager.starField;
+      starField.position.x +=
+        (this.mouseParallaxTarget.x * 0.5 - starField.position.x) * (delta * 2);
+      starField.position.y +=
+        (this.mouseParallaxTarget.y * 0.5 - starField.position.y) * (delta * 2);
+    }
+
     this.cameraManager?.updateCameraPosition(delta);
     this._updateTransforms(delta);
 
@@ -798,6 +824,8 @@ class ThreeEarthSystem {
       em.scale.y = em.scale.z = em.scale.x;
     }
     if (em.userData.targetRotation !== undefined) {
+      // Add continuous slow rotation in addition to the target scroll rotation
+      em.userData.targetRotation += 0.02 * delta;
       const diff = em.userData.targetRotation - em.rotation.y;
       if (Math.abs(diff) > 0.001) em.rotation.y += diff * scaleLerp;
     }
