@@ -49,10 +49,9 @@ function getStylesForPath() {
 
   if (getNormalizedPathname() === "/") {
     pageSpecific.push(
-      "/pages/home/hero.css",
+      "/pages/home/home.css",
       "/pages/home/features.css",
-      "/content/components/typewriter/typewriter.css",
-      "/pages/home/section3.css"
+      "/content/components/typewriter/typewriter.css"
     );
   }
 
