@@ -18,7 +18,7 @@
     "lint-staged": "^17.0.5",
     "prettier": "^3.8.3",
     "simple-git-hooks": "^2.13.1",
-    "wrangler": "^4.93.1"
+    "wrangler": "^4.94.0"
   },
   "scripts": {
     "dev": "wrangler pages dev . --port 8787 --show-interactive-dev-session=false",
