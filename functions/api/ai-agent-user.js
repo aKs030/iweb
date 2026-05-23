@@ -261,26 +261,39 @@ async function deleteUsernameMappingsForUser(kv, userId) {
     });
 
     const keys = Array.isArray(page?.keys) ? page.keys : [];
-    for (const item of keys) {
-      const key = String(item?.name || "").trim();
-      if (!key) continue;
 
-      scanned += 1;
+    // Process chunks of 50 in parallel to prevent high latency or limits
+    const chunks = [];
+    for (let i = 0; i < keys.length; i += 50) {
+      chunks.push(keys.slice(i, i + 50));
+    }
 
-      let mappedUserId;
-      try {
-        mappedUserId = normalizeUserId(await kv.get(key));
-      } catch {
-        continue;
-      }
+    for (const chunk of chunks) {
+      const batchPromises = chunk.map(async item => {
+        const key = String(item?.name || "").trim();
+        if (!key) return { key, scanned: false, deleted: false };
 
-      if (mappedUserId !== userId) continue;
+        let mappedUserId;
+        try {
+          mappedUserId = normalizeUserId(await kv.get(key));
+        } catch {
+          return { key, scanned: true, deleted: false };
+        }
 
-      try {
-        await kv.delete(key);
-        deleted += 1;
-      } catch {
-        /* ignore */
+        if (mappedUserId !== userId) return { key, scanned: true, deleted: false };
+
+        try {
+          await kv.delete(key);
+          return { key, scanned: true, deleted: true };
+        } catch {
+          return { key, scanned: true, deleted: false };
+        }
+      });
+
+      const results = await Promise.all(batchPromises);
+      for (const res of results) {
+        if (res.scanned) scanned += 1;
+        if (res.deleted) deleted += 1;
       }
     }
 

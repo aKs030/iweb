@@ -626,13 +626,16 @@ async function handleClearCache(env, corsHeaders) {
     const page = await kv.list({ cursor, limit: 500 });
     const keys = Array.isArray(page?.keys) ? page.keys : [];
 
-    for (const item of keys) {
-      try {
-        await kv.delete(item.name);
-        deleted += 1;
-      } catch {
-        /* ignore */
-      }
+    // Process chunks of 50 in parallel to prevent high latency or limits
+    const chunks = [];
+    for (let i = 0; i < keys.length; i += 50) {
+      chunks.push(keys.slice(i, i + 50));
+    }
+
+    for (const chunk of chunks) {
+      const deletePromises = chunk.map(item => kv.delete(item.name));
+      const results = await Promise.allSettled(deletePromises);
+      deleted += results.filter(r => r.status === "fulfilled").length;
     }
 
     const listComplete = !!page?.list_complete;
