@@ -615,6 +615,21 @@ class ThreeEarthSystem {
           detail: { containerId: container.id },
         })
       );
+      // Expose debug handles in local/dev environments for quick inspection
+      try {
+        const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+        const debugFlag = location.search.includes("debugThree");
+        if (isLocal || debugFlag) {
+          try {
+            globalThis.__threeEarthSystem = this;
+            globalThis.__threeEarthCardManager = this.cardManager || null;
+          } catch {
+            /* ignore */
+          }
+        }
+      } catch {
+        /* ignore */
+      }
     } catch {
       /* ignore */
     }
