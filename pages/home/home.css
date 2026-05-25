@@ -704,6 +704,26 @@
     inset 0 -1px 0 rgb(255 255 255 / 8%);
 }
 
+.home-btn:focus-visible {
+  outline: 2px solid var(--home-accent, #a3c2ff);
+  outline-offset: 4px;
+  transform: translateY(-2px) scale(1.02);
+}
+
+.home-btn--primary:focus-visible {
+  outline-color: var(--home-accent-warm, #f7d69e);
+  box-shadow:
+    0 20px 54px color-mix(in srgb, var(--home-accent-warm, #f7d69e) 34%, transparent),
+    0 0 44px color-mix(in srgb, var(--home-accent-warm, #f7d69e) 24%, transparent);
+}
+
+.home-btn--secondary:focus-visible {
+  box-shadow:
+    0 14px 40px color-mix(in srgb, var(--home-accent, #a3c2ff) 18%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 24%),
+    inset 0 -1px 0 rgb(255 255 255 / 8%);
+}
+
 /* ── Section 3 ── */
 .section.section3 {
   position: relative;
@@ -1165,6 +1185,9 @@
   }
   .home-btn {
     transition: none;
+  }
+  .home-btn:focus-visible {
+    transform: none;
   }
   .home-aurora__plane {
     opacity: 0.08;

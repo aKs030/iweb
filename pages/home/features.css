@@ -47,9 +47,15 @@
   outline-offset: 0.25rem;
 }
 
-.features__fallback a:hover,
+.features__fallback a:hover {
+  color: var(--clr-white);
+}
+
 .features__fallback a:focus-visible {
   color: var(--clr-white);
+  outline: 2px solid var(--home-accent, #a3c2ff);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 body.three-earth-active .features__fallback:not(:focus-within) {
