@@ -4,7 +4,7 @@
 .three-earth-container {
   position: fixed;
   inset: 0;
-  z-index: var(--z-behind-deep);
+  z-index: var(--z-none);
   pointer-events: auto;
   overflow: hidden;
   contain: strict;
