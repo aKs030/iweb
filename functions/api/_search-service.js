@@ -9,11 +9,7 @@ import {
 } from "./_sitemap-data.js";
 import { detectCategory, normalizeUrl } from "./_search-url.js";
 import { CLEANUP_PATTERNS, HTML_ENTITIES } from "./_cleanup-patterns.js";
-import {
-  escapeHtml,
-  escapeRegExp,
-  normalizeForMatch,
-} from "../../content/core/utils/text-utils.js";
+import { escapeHtml, escapeRegExp, normalizeForMatch } from "../../content/core/utils/index.js";
 
 export const SEARCH_RESPONSE_CACHE_CONTROL = "public, max-age=300";
 

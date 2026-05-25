@@ -9,11 +9,14 @@
  * @version 6.0.0
  */
 
-import { normalizeTypes, withViewTransition } from "./view-transitions/core.js";
-import { createDocumentClickHandler } from "./view-transitions/navigation.js";
-import { injectViewTransitionRuntimeStyles } from "./view-transitions/runtime-style.js";
-import { applyViewTransitionTimingVars } from "./view-transitions/constants.js";
-import { DEFAULT_NAVIGATION_TRANSITION_TYPES } from "./view-transitions/constants.js";
+import {
+  normalizeTypes,
+  withViewTransition,
+  createDocumentClickHandler,
+  injectViewTransitionRuntimeStyles,
+  applyViewTransitionTimingVars,
+  DEFAULT_NAVIGATION_TRANSITION_TYPES,
+} from "./view-transitions/index.js";
 
 /**
  * @typedef {Object} ViewTransitionInitOptions

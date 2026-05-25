@@ -1,5 +1,244 @@
+/**
+ * Centralized Overlay & Focus Module
+ * Consolidates backdrop elements, body scroll lock, aria-isolation, registry, and focus trapping.
+ * @author Abdulkerim Sesli
+ * @version 7.0.0
+ */
+
 import { OVERLAY_MODES, activeOverlay, normalizeOverlayMode } from "../state/ui-store.js";
-/** @typedef {import('../types.js').OverlayFocusResolverName} OverlayFocusResolverName */
+
+// ============================================================================
+// 1. BACKDROP & BODY SCROLL LOCK (formerly core.js)
+// ============================================================================
+
+const GLOBAL_BACKDROP_ID = "menu-global-backdrop";
+const GLOBAL_BACKDROP_CLASS = "menu-global-backdrop overlay-backdrop overlay-backdrop--global";
+
+const BACKDROP_VISIBLE_MODES = new Set([
+  OVERLAY_MODES.MENU,
+  OVERLAY_MODES.SEARCH,
+  OVERLAY_MODES.ROBOT_CHAT,
+]);
+
+let backdropElement = null;
+let bodyScrollLockState = null;
+
+export function shouldModeShowBackdrop(mode) {
+  return BACKDROP_VISIBLE_MODES.has(normalizeOverlayMode(mode));
+}
+
+export function ensureBackdropElement() {
+  if (typeof document === "undefined" || !document.body) return null;
+  if (backdropElement?.isConnected) return backdropElement;
+
+  const existing = document.getElementById(GLOBAL_BACKDROP_ID);
+  if (existing instanceof HTMLElement) {
+    backdropElement = existing;
+    return backdropElement;
+  }
+
+  const element = document.createElement("div");
+  element.id = GLOBAL_BACKDROP_ID;
+  element.className = GLOBAL_BACKDROP_CLASS;
+  element.setAttribute("aria-hidden", "true");
+  document.body.appendChild(element);
+  backdropElement = element;
+  return backdropElement;
+}
+
+function shouldLockBodyScroll(mode) {
+  const normalizedMode = normalizeOverlayMode(mode);
+  if (normalizedMode === OVERLAY_MODES.SEARCH || normalizedMode === OVERLAY_MODES.ROBOT_CHAT) {
+    return true;
+  }
+  if (normalizedMode === OVERLAY_MODES.MENU) {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 900px)").matches;
+  }
+  return false;
+}
+
+function lockBodyScroll() {
+  if (typeof document === "undefined" || !document.body || bodyScrollLockState) return;
+
+  const body = document.body;
+  const scrollY = typeof window !== "undefined" ? window.scrollY || window.pageYOffset || 0 : 0;
+
+  bodyScrollLockState = {
+    scrollY,
+    style: {
+      position: body.style.position || "",
+      top: body.style.top || "",
+      left: body.style.left || "",
+      right: body.style.right || "",
+      width: body.style.width || "",
+      overflow: body.style.overflow || "",
+    },
+  };
+
+  body.style.position = "fixed";
+  body.style.top = `-${scrollY}px`;
+  body.style.left = "0";
+  body.style.right = "0";
+  body.style.width = "100%";
+  body.style.overflow = "hidden";
+  body.dataset.overlayScrollLocked = "true";
+}
+
+function unlockBodyScroll() {
+  if (typeof document === "undefined" || !document.body || !bodyScrollLockState) return;
+
+  const body = document.body;
+  const { scrollY, style } = bodyScrollLockState;
+
+  body.style.position = style.position;
+  body.style.top = style.top;
+  body.style.left = style.left;
+  body.style.right = style.right;
+  body.style.width = style.width;
+  body.style.overflow = style.overflow;
+  delete body.dataset.overlayScrollLocked;
+  bodyScrollLockState = null;
+
+  if (typeof window !== "undefined") {
+    window.scrollTo(0, Math.max(0, Number(scrollY) || 0));
+  }
+}
+
+export function syncBodyOverlayState(mode) {
+  if (typeof document === "undefined" || !document.body) return;
+  const normalizedMode = normalizeOverlayMode(mode);
+  document.body.dataset.activeOverlay = normalizedMode;
+
+  const root = document.documentElement;
+  if (root instanceof HTMLElement) {
+    root.dataset.activeOverlay = normalizedMode;
+  }
+
+  if (shouldLockBodyScroll(normalizedMode)) {
+    lockBodyScroll();
+  } else {
+    unlockBodyScroll();
+  }
+}
+
+export function syncBackdropState(mode) {
+  const normalizedMode = normalizeOverlayMode(mode);
+  const hasExistingBackdrop = Boolean(backdropElement?.isConnected);
+  const needsBackdrop = shouldModeShowBackdrop(normalizedMode) || hasExistingBackdrop;
+
+  if (!needsBackdrop) return;
+
+  const backdrop = ensureBackdropElement();
+  if (!backdrop) return;
+
+  const isOpen = shouldModeShowBackdrop(normalizedMode);
+  backdrop.classList.toggle("is-open", isOpen);
+  backdrop.dataset.mode = normalizedMode;
+}
+
+// ============================================================================
+// 2. ISOLATION
+// ============================================================================
+
+const OVERLAY_INERT_ATTR = "data-overlay-manager-inert";
+const BODY_CHILD_EXEMPT_SELECTOR = [
+  `#${GLOBAL_BACKDROP_ID}`,
+  "#live-region-status",
+  "#live-region-assertive",
+  "[aria-live]",
+  "[data-overlay-inert-exempt]",
+].join(", ");
+
+function isBodyChildExempt(element) {
+  return Boolean(element instanceof HTMLElement && element.matches(BODY_CHILD_EXEMPT_SELECTOR));
+}
+
+function shouldKeepBodyChildInteractive(element, protectedRoots) {
+  if (!(element instanceof HTMLElement)) return true;
+  if (isBodyChildExempt(element)) return true;
+  return protectedRoots.some(
+    root => root === element || root.contains(element) || element.contains(root)
+  );
+}
+
+export function syncBackgroundInteractivity(mode, { getInteractiveRootsForMode }) {
+  if (typeof document === "undefined" || !document.body) return;
+
+  const normalizedMode = normalizeOverlayMode(mode);
+  const overlayActive = normalizedMode !== OVERLAY_MODES.NONE;
+  const protectedRoots = overlayActive ? getInteractiveRootsForMode(normalizedMode) : [];
+  const canIsolateBackground = !overlayActive || protectedRoots.length > 0;
+
+  Array.from(document.body.children).forEach(element => {
+    if (!(element instanceof HTMLElement)) return;
+
+    const shouldInert =
+      canIsolateBackground &&
+      overlayActive &&
+      !shouldKeepBodyChildInteractive(element, protectedRoots);
+    const managedByOverlayManager = element.getAttribute(OVERLAY_INERT_ATTR) === "true";
+
+    if (shouldInert) {
+      element.inert = true;
+      element.setAttribute(OVERLAY_INERT_ATTR, "true");
+      return;
+    }
+
+    if (managedByOverlayManager) {
+      element.inert = false;
+      element.removeAttribute(OVERLAY_INERT_ATTR);
+    }
+  });
+}
+
+// ============================================================================
+// 3. REGISTRY
+// ============================================================================
+
+const overlayControllers = new Map();
+
+function normalizeElementList(values) {
+  if (!Array.isArray(values)) return [];
+  return values.filter(value => value instanceof HTMLElement && value.isConnected);
+}
+
+export function getOverlayController(mode) {
+  return overlayControllers.get(normalizeOverlayMode(mode)) || null;
+}
+
+export function getControllerRoots(mode, methodName, fallbackRoots = []) {
+  const controller = getOverlayController(mode);
+  const values = normalizeElementList(controller?.[methodName]?.() || []);
+  return values.length > 0 ? values : fallbackRoots;
+}
+
+export function getControllerFocusElement(mode, methodName) {
+  const controller = getOverlayController(mode);
+  const element = controller?.[methodName]?.();
+  return element instanceof HTMLElement && element.isConnected ? element : null;
+}
+
+export function setOverlayController(mode, controller = {}) {
+  overlayControllers.set(normalizeOverlayMode(mode), controller);
+}
+
+export function deleteOverlayController(mode, controller = null) {
+  const normalizedMode = normalizeOverlayMode(mode);
+  if (!controller) {
+    overlayControllers.delete(normalizedMode);
+    return;
+  }
+
+  const currentController = overlayControllers.get(normalizedMode);
+  if (currentController === controller) {
+    overlayControllers.delete(normalizedMode);
+  }
+}
+
+// ============================================================================
+// 4. FOCUS TRAPPING & Restoring (formerly focus.js)
+// ============================================================================
 
 const OVERLAY_TEMP_FOCUS_ATTR = "data-overlay-manager-temp-focus";
 const FOCUSABLE_SELECTOR = [
@@ -16,47 +255,18 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(", ");
 
-/** @type {string} */
 let currentFocusedOverlayMode = OVERLAY_MODES.NONE;
-/**
- * @type {Map<string, {restoreFocus?: boolean}>}
- */
 const pendingFocusChangeOptions = new Map();
-/**
- * @type {{
- *   mode: string,
- *   roots: HTMLElement[],
- *   originFocus: HTMLElement|null,
- *   restoreFocus: boolean,
- *   abortController: AbortController|null,
- *   tempFocusElement: HTMLElement|null
- * }|null}
- */
 let activeFocusSession = null;
-/**
- * @typedef {Object} OverlayFocusSyncOptions
- * @property {(mode: string) => HTMLElement[]} getFocusTrapRootsForMode
- * @property {(mode: string, methodName: OverlayFocusResolverName) => HTMLElement|null} getControllerFocusElement
- */
-/**
- * @typedef {Object} OverlayFocusTeardownOptions
- * @property {boolean} [restoreFocus]
- * @property {string} [mode]
- * @property {(mode: string, methodName: OverlayFocusResolverName) => HTMLElement|null} [getControllerFocusElement]
- */
 
 function focusSafely(element) {
-  if (!(element instanceof HTMLElement) || typeof element.focus !== "function") {
-    return false;
-  }
-
+  if (!(element instanceof HTMLElement) || typeof element.focus !== "function") return false;
   try {
     element.focus({ preventScroll: true });
     return document.activeElement === element || getDeepActiveElement() === element;
   } catch {
-    // fallback below
+    // noop
   }
-
   try {
     element.focus();
     return document.activeElement === element || getDeepActiveElement() === element;
@@ -67,13 +277,10 @@ function focusSafely(element) {
 
 function getDeepActiveElement() {
   if (typeof document === "undefined") return null;
-
-  /** @type {Element|null} */
   let active = document.activeElement;
   while (active instanceof HTMLElement && active.shadowRoot?.activeElement) {
     active = active.shadowRoot.activeElement;
   }
-
   return active instanceof HTMLElement ? active : null;
 }
 
@@ -87,7 +294,6 @@ function getActiveRestorableElement() {
   ) {
     return null;
   }
-
   return active;
 }
 
@@ -99,15 +305,12 @@ function isVisibleFocusableElement(element) {
 
   const style = window.getComputedStyle(element);
   if (style.display === "none" || style.visibility === "hidden") return false;
-
   return element.getClientRects().length > 0 || getDeepActiveElement() === element;
 }
 
 function getFocusableElements(roots) {
-  /** @type {HTMLElement[]} */
   const focusable = [];
   const seen = new Set();
-
   const pushFocusable = element => {
     if (!(element instanceof HTMLElement)) return;
     if (seen.has(element)) return;
@@ -118,15 +321,11 @@ function getFocusableElements(roots) {
 
   roots.forEach(root => {
     if (!(root instanceof HTMLElement) || !root.isConnected) return;
-    if (root.matches(FOCUSABLE_SELECTOR)) {
-      pushFocusable(root);
-    }
-
+    if (root.matches(FOCUSABLE_SELECTOR)) pushFocusable(root);
     root.querySelectorAll(FOCUSABLE_SELECTOR).forEach(element => {
-      pushFocusable(/** @type {HTMLElement} */ (element));
+      pushFocusable(element);
     });
   });
-
   return focusable;
 }
 
@@ -141,10 +340,7 @@ function cleanupTempFocusElement(session) {
     element.removeAttribute("tabindex");
     element.removeAttribute(OVERLAY_TEMP_FOCUS_ATTR);
   }
-
-  if (session) {
-    session.tempFocusElement = null;
-  }
+  if (session) session.tempFocusElement = null;
 }
 
 function focusOverlayElement(target, roots, session) {
@@ -164,13 +360,11 @@ function focusOverlayElement(target, roots, session) {
     fallbackRoot.setAttribute(OVERLAY_TEMP_FOCUS_ATTR, "true");
     session.tempFocusElement = fallbackRoot;
   }
-
   return focusSafely(fallbackRoot);
 }
 
 function scheduleOverlayInitialFocus(session, getControllerFocusElement, attempt = 0) {
   if (typeof requestAnimationFrame !== "function") return;
-
   requestAnimationFrame(() => {
     if (activeFocusSession !== session) return;
 
@@ -179,7 +373,6 @@ function scheduleOverlayInitialFocus(session, getControllerFocusElement, attempt
       getFocusableElements(session.roots)[0] ||
       null;
     const didFocus = focusOverlayElement(focusTarget, session.roots, session);
-
     if (!didFocus && attempt < 4) {
       scheduleOverlayInitialFocus(session, getControllerFocusElement, attempt + 1);
     }
@@ -208,7 +401,6 @@ function handleOverlayTrapTabKey(event, session) {
     }
     return;
   }
-
   if (!activeInside || active === last) {
     event.preventDefault();
     focusSafely(first);
@@ -217,7 +409,6 @@ function handleOverlayTrapTabKey(event, session) {
 
 function handleOverlayTrapFocusIn(session, getControllerFocusElement) {
   if (activeFocusSession !== session) return;
-
   const active = getDeepActiveElement();
   if (!active || isElementWithinRoots(active, session.roots)) return;
 
@@ -230,7 +421,6 @@ function handleOverlayTrapFocusIn(session, getControllerFocusElement) {
 
 function setupFocusSession(mode, originFocus, getFocusTrapRootsForMode, getControllerFocusElement) {
   if (typeof document === "undefined") return;
-
   const roots = getFocusTrapRootsForMode(mode);
   if (roots.length === 0) return;
 
@@ -258,10 +448,6 @@ function setupFocusSession(mode, originFocus, getFocusTrapRootsForMode, getContr
   );
 }
 
-/**
- * @param {OverlayFocusTeardownOptions} [options]
- * @returns {void}
- */
 function teardownFocusSession({
   restoreFocus = false,
   mode = currentFocusedOverlayMode,
@@ -285,10 +471,8 @@ function teardownFocusSession({
       originTarget instanceof HTMLElement &&
       originTarget.isConnected &&
       focusSafely(originTarget)
-    ) {
+    )
       return;
-    }
-
     if (fallbackTarget instanceof HTMLElement && fallbackTarget.isConnected) {
       focusSafely(fallbackTarget);
     }
@@ -304,20 +488,12 @@ function consumePendingFocusChangeOptions(mode) {
 
 export function prepareOverlayFocusChange(mode, options = {}) {
   const normalizedMode = normalizeOverlayMode(mode);
-  if (normalizedMode === OVERLAY_MODES.NONE || activeOverlay.value !== normalizedMode) {
-    return;
-  }
-
+  if (normalizedMode === OVERLAY_MODES.NONE || activeOverlay.value !== normalizedMode) return;
   pendingFocusChangeOptions.set(normalizedMode, {
     restoreFocus: options.restoreFocus !== false,
   });
 }
 
-/**
- * @param {string} mode
- * @param {OverlayFocusSyncOptions} options
- * @returns {void}
- */
 export function syncOverlayFocusState(
   mode,
   { getFocusTrapRootsForMode, getControllerFocusElement }

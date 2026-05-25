@@ -14,7 +14,7 @@
  */
 
 import { createLogger } from "../../core/logger.js";
-import { throttle } from "../../core/utils/async-utils.js";
+import { throttle } from "../../core/utils/index.js";
 
 const log = createLogger("sharedParticleSystem");
 

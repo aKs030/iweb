@@ -12,8 +12,8 @@ import { i18n } from "../../core/i18n.js";
 import { CookieManager } from "./modules/cookie-manager.js";
 import { AnalyticsManager } from "./footer-analytics.js";
 import { resetFooterState, setFooterExpanded, setFooterLoaded } from "./state.js";
-import { TimerManager } from "../../core/utils/timer-manager.js";
-import { fetchText } from "../../core/utils/fetch.js";
+import { TimerManager } from "../../core/utils/index.js";
+import { fetchText } from "../../core/utils/index.js";
 
 const log = createLogger("SiteFooter");
 const FOOTER_TEMPLATE_URL = new URL("./footer", import.meta.url);

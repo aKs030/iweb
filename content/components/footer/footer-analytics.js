@@ -1,4 +1,4 @@
-import { applyCspNonce } from "../../core/utils/csp-nonce.js";
+import { applyCspNonce } from "../../core/utils/index.js";
 import { createLogger } from "../../core/logger.js";
 
 const log = createLogger("AnalyticsManager");

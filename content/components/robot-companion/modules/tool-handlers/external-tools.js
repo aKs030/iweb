@@ -1,4 +1,4 @@
-import { normalizeHttpUrl } from "../../../../core/utils/url-utils.js";
+import { normalizeHttpUrl } from "../../../../core/utils/index.js";
 import { buildToolResult, createDetail } from "../tool-result.js";
 
 const SOCIAL_PROFILE_URLS = new Map([

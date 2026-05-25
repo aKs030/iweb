@@ -19,6 +19,18 @@
     <!-- View Transitions API -->
     <meta name="view-transition" content="same-origin" />
 
+    <!-- Import map for browser-based alias resolution (no build step) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "#core/": "/content/core/",
+          "#components/": "/content/components/",
+          "#pages/": "/pages/",
+          "#footer/": "/content/components/footer/"
+        }
+      }
+    </script>
+
     <!-- Icons and app metadata are injected by the global head template -->
   </head>
   <body>

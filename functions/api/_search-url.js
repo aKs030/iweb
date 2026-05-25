@@ -4,7 +4,7 @@
  */
 
 import { buildProjectDetailPath, extractProjectSlug } from "../../content/core/project-paths.js";
-import { canonicalizeUrlPath } from "../../content/core/utils/path-utils.js";
+import { canonicalizeUrlPath } from "../../content/core/utils/index.js";
 
 function extractAppSlugFromUrl(url) {
   try {

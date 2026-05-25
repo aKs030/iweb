@@ -10,7 +10,7 @@ import { createRoot } from "react-dom/client";
 import { createLogger } from "#core/logger.js";
 import { AppLoadManager } from "#core/load-manager.js";
 import { fetchJSON } from "#core/fetch.js";
-import { createUseTranslation } from "#core/react-utils.js";
+import { createUseTranslation } from "#core/utils/index.js";
 import { injectSchema } from "#core/schema.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
 import { i18n } from "#core/i18n.js";
@@ -20,7 +20,7 @@ import { ThreeGalleryScene } from "./components/ThreeGalleryScene.js";
 import { GALLERY_ITEMS as STATIC_GALLERY_ITEMS } from "./config.js";
 
 const log = createLogger("gallery-app");
-const useTranslation = createUseTranslation();
+const useTranslation = createUseTranslation(React);
 const h = React.createElement;
 
 function normalizeGalleryItem(item) {

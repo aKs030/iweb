@@ -4,9 +4,9 @@ import {
   humanizeSlug,
   normalizeText,
   sanitizeDiscoveryText,
-} from "../../content/core/utils/text-utils.js";
+  normalizePathname,
+} from "../../content/core/utils/index.js";
 import { buildProjectCanonicalUrl, extractProjectSlug } from "../../content/core/project-paths.js";
-import { normalizePathname } from "../../content/core/utils/path-utils.js";
 import { ROUTES } from "../../content/config/routes-config.js";
 import {
   buildProjectPreviewUrl,

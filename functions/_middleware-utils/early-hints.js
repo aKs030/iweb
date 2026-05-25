@@ -18,7 +18,7 @@ import { R2_PUBLIC_ORIGIN } from "../../content/config/media-urls.js";
  * Resources the browser should start fetching immediately on header receipt.
  * Order matters — CSS first (render-blocking), then modulepreload (parser hint).
  */
-import { normalizePathname } from "../../content/core/utils/path-utils.js";
+import { normalizePathname } from "../../content/core/utils/index.js";
 
 const CORE_RESOURCES = [
   // Core CSS is loaded immediately by the document head

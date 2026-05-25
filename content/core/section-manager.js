@@ -4,15 +4,14 @@
  */
 
 import { createLogger } from "./logger.js";
-import { createObserver } from "./utils/dom-utils.js";
-import { fetchText } from "./utils/fetch.js";
+import { createObserver, fetchText } from "./utils/index.js";
 import { i18n } from "./i18n.js";
 import { withViewTransition } from "./view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
-} from "./view-transitions/constants.js";
+} from "./view-transitions/index.js";
 
 const log = createLogger("SectionManager");
 const SECTION_SWAP_VT_NAME = "section-swap-target";

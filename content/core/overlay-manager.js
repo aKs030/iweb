@@ -16,8 +16,9 @@ import {
   syncBackdropState,
   syncBackgroundInteractivity,
   syncBodyOverlayState,
-} from "./overlay/core.js";
-import { prepareOverlayFocusChange, syncOverlayFocusState } from "./overlay/focus.js";
+  prepareOverlayFocusChange,
+  syncOverlayFocusState,
+} from "./overlay/index.js";
 /** @typedef {import('./types.js').OverlayController} OverlayController */
 
 export { OVERLAY_MODES } from "./state/ui-store.js";

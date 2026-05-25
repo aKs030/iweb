@@ -2,7 +2,7 @@
  * Lightweight Markdown Renderer for Robot Companion
  * Supports: Bold, Italic, Links, Lists, Inline Code, Code Blocks
  */
-import { sanitizeHTML } from "../../../core/utils/sanitization-utils.js";
+import { sanitizeHTML } from "../../../core/utils/index.js";
 
 export class MarkdownRenderer {
   /**

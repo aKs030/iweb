@@ -5,25 +5,27 @@
  * @version 1.0.0
  */
 
-import { MenuRenderer } from "./modules/MenuRenderer.js";
-import { MenuState } from "./modules/MenuState.js";
-import { MenuEvents } from "./modules/MenuEvents.js";
-import { MenuSearch } from "./modules/MenuSearch.js";
-import { MenuAccessibility } from "./modules/MenuAccessibility.js";
-import { MenuPerformance } from "./modules/MenuPerformance.js";
-import { MenuConfig } from "./modules/MenuConfig.js";
+import {
+  MenuRenderer,
+  MenuState,
+  MenuEvents,
+  MenuAccessibility,
+  MenuPerformance,
+  MenuConfig,
+} from "./modules/menu-engine.js";
+import { MenuSearch } from "./modules/search-engine.js";
 import {
   OVERLAY_MODES,
   initOverlayManager,
   registerOverlayController,
 } from "../../core/overlay-manager.js";
-import { applyCspNonce } from "../../core/utils/csp-nonce.js";
-import { loadHeadStylesheet, upsertHeadLink } from "../../core/utils/dom-utils.js";
-import { fetchText } from "../../core/utils/fetch.js";
+import { applyCspNonce } from "../../core/utils/index.js";
+import { loadHeadStylesheet, upsertHeadLink } from "../../core/utils/index.js";
+import { fetchText } from "../../core/utils/index.js";
 import { createLogger } from "../../core/logger.js";
 
 /**
- * @typedef {typeof import('./modules/MenuConfig.js').MenuConfig} MenuComponentConfig
+ * @typedef {typeof import('./modules/menu-engine.js').MenuConfig} MenuComponentConfig
  */
 
 const logger = createLogger("SiteMenu");

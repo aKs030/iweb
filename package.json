@@ -29,7 +29,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "check:format": "prettier --check .",
-    "check:lint": "eslint . --max-warnings=0"
+    "check:lint": "eslint . --max-warnings=0",
+    "build": "echo \"No build configured (project runs without bundling)\"",
+    "build:css": "echo \"No CSS build configured\""
   },
   "lint-staged": {
     "*.{js,mjs}": [

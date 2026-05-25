@@ -4,7 +4,7 @@ import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
-} from "../../../../core/view-transitions/constants.js";
+} from "../../../../core/view-transitions/index.js";
 import { buildToolResult, createDetail } from "../tool-result.js";
 
 export function executeSetTheme(args) {

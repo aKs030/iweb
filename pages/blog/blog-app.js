@@ -7,7 +7,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import htm from "htm";
 import { createLogger } from "#core/logger.js";
-import { createUseTranslation } from "#core/react-utils.js";
+import { createUseTranslation } from "#core/utils/index.js";
 import { sanitizeHTML } from "#core/sanitization-utils.js";
 import { AppLoadManager } from "#core/load-manager.js";
 import { Clock, ArrowRight } from "#components/icons/index.js";
@@ -21,7 +21,7 @@ import { CommentSection } from "#components/interactions/index.js";
 const log = createLogger("BlogApp");
 const html = htm.bind(React.createElement);
 const ErrorBoundary = createErrorBoundary(React);
-const useTranslation = createUseTranslation();
+const useTranslation = createUseTranslation(React);
 const MARKED_MODULE_URL = "https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js";
 
 const { marked } = await import(MARKED_MODULE_URL);

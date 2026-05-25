@@ -4,7 +4,7 @@ import {
   respondWithSnapshotOr503,
   saveSitemapSnapshot,
 } from "./api/_sitemap-snapshot.js";
-import { normalizeText, sanitizeDiscoveryText } from "../content/core/utils/text-utils.js";
+import { normalizeText, sanitizeDiscoveryText } from "../content/core/utils/index.js";
 import {
   buildBlogPath,
   buildProjectAppPath,

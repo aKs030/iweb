@@ -5,8 +5,7 @@
  */
 
 import { createLogger } from "./logger.js";
-import { fetchJSON } from "./utils/fetch.js";
-import { setSanitizedHTML } from "./utils/sanitization-utils.js";
+import { fetchJSON, setSanitizedHTML } from "./utils/index.js";
 
 const log = createLogger("LanguageManager");
 
@@ -391,3 +390,6 @@ class LanguageManager extends EventTarget {
 }
 
 export const i18n = new LanguageManager();
+if (typeof globalThis !== "undefined") {
+  globalThis.i18n = i18n;
+}

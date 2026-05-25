@@ -1,4 +1,4 @@
-import { normalizeSchemaText } from "../utils/text-utils.js";
+import { normalizeSchemaText } from "../utils/index.js";
 import { normalizeUserId } from "../user-id.js";
 
 const PROFILE_STATUSES = new Set([

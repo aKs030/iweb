@@ -1,4 +1,4 @@
-import { normalizePathname } from "./utils/path-utils.js";
+import { normalizePathname } from "./utils/index.js";
 
 export const PROJECTS_HOME_PATH = "/projekte/";
 

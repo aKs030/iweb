@@ -6,9 +6,9 @@
  */
 import { subscribeFooterState } from "#footer/index.js";
 import { createLogger } from "../../core/logger.js";
-import { getElementById } from "../../core/utils/dom-utils.js";
-import { TimerManager } from "../../core/utils/timer-manager.js";
-import { fetchJSON } from "../../core/utils/fetch.js";
+import { getElementById } from "../../core/utils/index.js";
+import { TimerManager } from "../../core/utils/index.js";
+import { fetchJSON } from "../../core/utils/index.js";
 
 const log = createLogger("TypeWriter");
 
