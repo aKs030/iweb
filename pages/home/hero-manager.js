@@ -25,6 +25,10 @@ const HeroManager = (() => {
   let auroraMotionChangeHandler = null;
   let auroraScrollHandler = null;
   let auroraResizeHandler = null;
+  let cosmosPointerHandler = null;
+  let cosmosPointerLeaveHandler = null;
+  let cosmosPointerFrame = 0;
+  let section3EntranceObserver = null;
   let clickHandler = null;
   let observerCleanup = null;
   let loaded = false;
@@ -258,6 +262,68 @@ const HeroManager = (() => {
     auroraFrame = requestAnimationFrame(updateAuroraPerspective);
   }
 
+  const starParallaxState = {
+    x: 0,
+    y: 0,
+  };
+
+  function updateStarParallax() {
+    cosmosPointerFrame = 0;
+
+    const stars = document.querySelector(".home-stars");
+    if (!stars) return;
+
+    if (auroraMotionQuery?.matches) {
+      stars.style.setProperty("--home-stars-shift-x", "0px");
+      stars.style.setProperty("--home-stars-shift-y", "0px");
+      return;
+    }
+
+    const shiftX = (-starParallaxState.x * 16).toFixed(1);
+    const shiftY = (-starParallaxState.y * 10).toFixed(1);
+    stars.style.setProperty("--home-stars-shift-x", `${shiftX}px`);
+    stars.style.setProperty("--home-stars-shift-y", `${shiftY}px`);
+  }
+
+  function requestStarParallaxUpdate() {
+    if (cosmosPointerFrame) return;
+    cosmosPointerFrame = requestAnimationFrame(updateStarParallax);
+  }
+
+  function resetStarParallax() {
+    starParallaxState.x = 0;
+    starParallaxState.y = 0;
+    requestStarParallaxUpdate();
+  }
+
+  function setupSection3Entrance() {
+    const section3 = getElementById("section3") || document.querySelector("section#section3");
+    if (!section3) return;
+
+    if (section3EntranceObserver) {
+      section3EntranceObserver.disconnect();
+      section3EntranceObserver = null;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      section3.classList.add("is-visible");
+      return;
+    }
+
+    section3EntranceObserver = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          section3.classList.add("is-visible");
+          section3EntranceObserver?.unobserve(section3);
+        });
+      },
+      { threshold: 0.22, rootMargin: "0px 0px -12% 0px" }
+    );
+
+    section3EntranceObserver.observe(section3);
+  }
+
   function setupHomeAuroraPerspective() {
     if (auroraScrollHandler || typeof window === "undefined") return;
 
@@ -267,12 +333,32 @@ const HeroManager = (() => {
       requestAuroraPerspectiveUpdate();
       adjustTitleFontSize();
     };
-    auroraMotionChangeHandler = requestAuroraPerspectiveUpdate;
+    auroraMotionChangeHandler = () => {
+      requestAuroraPerspectiveUpdate();
+      resetStarParallax();
+    };
+    cosmosPointerHandler = event => {
+      if (auroraMotionQuery?.matches) return;
+      starParallaxState.x = Math.max(
+        -1,
+        Math.min(1, (event.clientX / window.innerWidth - 0.5) * 2)
+      );
+      starParallaxState.y = Math.max(
+        -1,
+        Math.min(1, (event.clientY / window.innerHeight - 0.5) * 2)
+      );
+      requestStarParallaxUpdate();
+    };
+    cosmosPointerLeaveHandler = resetStarParallax;
 
     window.addEventListener("scroll", auroraScrollHandler, { passive: true });
     window.addEventListener("resize", auroraResizeHandler, { passive: true });
+    window.addEventListener("pointermove", cosmosPointerHandler, { passive: true });
+    window.addEventListener("blur", cosmosPointerLeaveHandler, { passive: true });
+    document.addEventListener("mouseleave", cosmosPointerLeaveHandler, { passive: true });
     auroraMotionQuery?.addEventListener?.("change", auroraMotionChangeHandler);
     updateAuroraPerspective();
+    updateStarParallax();
     adjustTitleFontSize();
   }
 
@@ -291,6 +377,10 @@ const HeroManager = (() => {
       cancelAnimationFrame(auroraFrame);
       auroraFrame = 0;
     }
+    if (cosmosPointerFrame) {
+      cancelAnimationFrame(cosmosPointerFrame);
+      cosmosPointerFrame = 0;
+    }
     if (auroraScrollHandler) {
       window.removeEventListener("scroll", auroraScrollHandler);
       auroraScrollHandler = null;
@@ -303,6 +393,19 @@ const HeroManager = (() => {
       auroraMotionQuery?.removeEventListener?.("change", auroraMotionChangeHandler);
       auroraMotionChangeHandler = null;
       auroraMotionQuery = null;
+    }
+    if (cosmosPointerHandler) {
+      window.removeEventListener("pointermove", cosmosPointerHandler);
+      cosmosPointerHandler = null;
+    }
+    if (cosmosPointerLeaveHandler) {
+      window.removeEventListener("blur", cosmosPointerLeaveHandler);
+      document.removeEventListener("mouseleave", cosmosPointerLeaveHandler);
+      cosmosPointerLeaveHandler = null;
+    }
+    if (section3EntranceObserver) {
+      section3EntranceObserver.disconnect();
+      section3EntranceObserver = null;
     }
 
     try {
@@ -368,6 +471,7 @@ const HeroManager = (() => {
       };
       document.addEventListener(ROBOT_EVENTS.HERO_TYPING_END, typingEndHandler);
     },
+    setupSection3Entrance,
   };
 })();
 
@@ -378,6 +482,7 @@ export const initHeroFeatureBundle = sectionManager => {
   HeroManager.setupLanguageListener();
   HeroManager.setupTypingEndListener();
   HeroManager.setupHomeAuroraPerspective();
+  HeroManager.setupSection3Entrance();
 
   HeroManager.initLazyHeroModules();
 

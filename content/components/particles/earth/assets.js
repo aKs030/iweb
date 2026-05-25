@@ -51,8 +51,9 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
     normalMap: normalTexture,
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
-    roughness: 0.7,
-    metalness: 0,
+    normalScale: new THREE.Vector2(1.06, 1.06),
+    roughness: 0.58,
+    metalness: 0.02,
   });
 
   const nightMaterial = new THREE.MeshStandardMaterial({
@@ -60,11 +61,12 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
     normalMap: normalTexture,
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
-    roughness: 0.7,
-    metalness: 0,
-    emissive: 0xffcc66,
+    normalScale: new THREE.Vector2(1.08, 1.08),
+    roughness: 0.62,
+    metalness: 0.02,
+    emissive: 0xffb65d,
     emissiveMap: nightTexture,
-    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4,
+    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.4,
   });
 
   // OPTIMIZATION: Reduce segments on mobile

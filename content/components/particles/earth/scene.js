@@ -58,13 +58,66 @@ export function setupLighting(THREE, scene) {
   directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
   scene.add(directionalLight);
 
+  const fillLight = new THREE.DirectionalLight(0x6ea8ff, CONFIG.LIGHTING.DAY.FILL_INTENSITY);
+  fillLight.position.set(-8, -1.5, 9);
+  scene.add(fillLight);
+
+  const rimLight = new THREE.PointLight(0xffc76a, CONFIG.LIGHTING.DAY.RIM_INTENSITY, 80, 1.8);
+  rimLight.position.set(-9, 6, 10);
+  scene.add(rimLight);
+
   const ambientLight = new THREE.AmbientLight(
     CONFIG.LIGHTING.DAY.AMBIENT_COLOR,
     CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY
   );
   scene.add(ambientLight);
 
-  return { directionalLight, ambientLight };
+  return { directionalLight, ambientLight, fillLight, rimLight };
+}
+
+export function createEarthDepthOverlay(THREE, isMobileDevice = false) {
+  const vertexShader = `
+    varying vec3 vNormal;
+    varying vec3 vWorldPosition;
+    void main() {
+      vNormal = normalize(mat3(modelMatrix) * normal);
+      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+      vWorldPosition = worldPosition.xyz;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+
+  const fragmentShader = `
+    varying vec3 vNormal;
+    varying vec3 vWorldPosition;
+
+    void main() {
+      vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
+      float facing = clamp(dot(normalize(vNormal), viewDirection), 0.0, 1.0);
+      float limbShadow = 1.0 - smoothstep(0.0, 0.34, facing);
+      float lowerShadow = smoothstep(-0.15, 0.75, -normalize(vNormal).y);
+      float alpha = limbShadow * 0.2 + lowerShadow * 0.045;
+      gl_FragColor = vec4(vec3(0.012, 0.02, 0.052), alpha);
+    }
+  `;
+
+  const depthMaterial = new THREE.ShaderMaterial({
+    vertexShader,
+    fragmentShader,
+    blending: THREE.NormalBlending,
+    transparent: true,
+    side: THREE.FrontSide,
+    depthWrite: false,
+  });
+
+  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+  const depthOverlay = new THREE.Mesh(
+    new THREE.SphereGeometry(CONFIG.EARTH.RADIUS * 1.003, segments, segments),
+    depthMaterial
+  );
+  depthOverlay.name = "earth-depth-overlay";
+
+  return depthOverlay;
 }
 
 export function createAtmosphere(THREE, isMobileDevice = false) {

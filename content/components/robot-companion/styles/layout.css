@@ -59,6 +59,23 @@ body[data-home-section="section3"] #robot-companion-container:not(.robot-chat--o
   pointer-events: auto;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  body[data-home-section="section3"] #robot-companion-container:not(.robot-chat--open) {
+    animation: robotAmbientFloat 5.8s ease-in-out infinite;
+    will-change: transform, translate;
+  }
+}
+
+@keyframes robotAmbientFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+}
+
 /* Galerie – oben mittig-rechts, aus dem Weg der Bilder */
 #robot-companion-container[data-page-context="gallery"] {
   bottom: auto;
@@ -102,6 +119,8 @@ body[data-home-section="section3"] #robot-companion-container:not(.robot-chat--o
   left: auto !important;
   align-items: flex-end !important;
   transition: none !important;
+  animation: none !important;
+  translate: 0 0;
 }
 
 /* View-transition pseudo-elements for the robot morph animation */

@@ -19,7 +19,12 @@ import {
 } from "./shared-particle-system.js";
 
 import { CONFIG } from "./earth/config.js";
-import { setupScene, setupLighting, createAtmosphere } from "./earth/scene.js";
+import {
+  setupScene,
+  setupLighting,
+  createAtmosphere,
+  createEarthDepthOverlay,
+} from "./earth/scene.js";
 import { createEarthSystem, createMoonSystem, createCloudLayer } from "./earth/assets.js";
 import { CameraManager } from "./earth/camera.js";
 import { StarManager, ShootingStarManager } from "./earth/stars.js";
@@ -47,7 +52,15 @@ const WEBGL_RENDER_SECTIONS = new Set(["hero", "features", "section3"]);
  *   earth: SectionObjectConfig,
  *   moon?: SectionObjectConfig,
  *   mode?: 'day'|'night',
- *   lighting?: { ambientColor?: number, ambientIntensity?: number, sunIntensity?: number },
+ *   lighting?: {
+ *     ambientColor?: number,
+ *     ambientIntensity?: number,
+ *     sunIntensity?: number,
+ *     fillIntensity?: number,
+ *     fillColor?: number,
+ *     rimIntensity?: number,
+ *     rimColor?: number,
+ *   },
  *   scroll?: {
  *     pos?: { x?: number, y?: number, z?: number },
  *     scale?: number,
@@ -98,6 +111,8 @@ const SECTION_CONFIGS = {
       ambientColor: 0x5f6678,
       ambientIntensity: 1.55,
       sunIntensity: 1.45,
+      fillIntensity: 0.3,
+      rimIntensity: 0.32,
     },
     mode: "day",
     scroll: {
@@ -112,8 +127,12 @@ const SECTION_CONFIGS = {
     moon: { pos: { x: 5.2, y: 2.8, z: -9.4 }, scale: 0.48 },
     lighting: {
       ambientColor: 0x2d375d,
-      ambientIntensity: 0.58,
-      sunIntensity: 0.62,
+      ambientIntensity: 0.62,
+      sunIntensity: 0.68,
+      fillColor: 0x6ea8ff,
+      fillIntensity: 0.42,
+      rimColor: 0xffc76a,
+      rimIntensity: 0.82,
     },
     mode: "night",
     scroll: {
@@ -174,6 +193,9 @@ class ThreeEarthSystem {
     // Lights
     /** @type {THREE.DirectionalLight|null} */ this.directionalLight = null;
     /** @type {THREE.AmbientLight|null} */ this.ambientLight = null;
+    /** @type {THREE.DirectionalLight|null} */ this.fillLight = null;
+    /** @type {THREE.PointLight|null} */ this.rimLight = null;
+    this.earthAmbientRotation = 0;
 
     // Managers
     /** @type {CameraManager|null} */ this.cameraManager = null;
@@ -466,6 +488,8 @@ class ThreeEarthSystem {
       const lights = setupLighting(this.THREE, this.scene);
       this.directionalLight = lights.directionalLight;
       this.ambientLight = lights.ambientLight;
+      this.fillLight = lights.fillLight;
+      this.rimLight = lights.rimLight;
     } catch (err) {
       log.warn("Stars/Lighting init ignored", err);
     }
@@ -479,6 +503,8 @@ class ThreeEarthSystem {
     }
     const atmosphere = createAtmosphere(this.THREE, this.isMobileDevice);
     this.earthMesh.add(atmosphere);
+    const depthOverlay = createEarthDepthOverlay(this.THREE, this.isMobileDevice);
+    this.earthMesh.add(depthOverlay);
   }
 
   /**
@@ -745,6 +771,7 @@ class ThreeEarthSystem {
     if (this.moonMesh) {
       this.moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED * 20 * delta;
     }
+    this.earthAmbientRotation += CONFIG.EARTH.AMBIENT_ROTATION_SPEED * delta;
     if (!capabilities.isLowEnd) this.starManager?.update(totalTime);
 
     this._updateNightPulse(totalTime, capabilities);
@@ -798,7 +825,8 @@ class ThreeEarthSystem {
       em.scale.y = em.scale.z = em.scale.x;
     }
     if (em.userData.targetRotation !== undefined) {
-      const diff = em.userData.targetRotation - em.rotation.y;
+      const targetRotation = em.userData.targetRotation + this.earthAmbientRotation;
+      const diff = targetRotation - em.rotation.y;
       if (Math.abs(diff) > 0.001) em.rotation.y += diff * scaleLerp;
     }
 
@@ -1104,6 +1132,20 @@ class ThreeEarthSystem {
       this.directionalLight.intensity = sectionLight.sunIntensity ?? lightCfg.SUN_INTENSITY;
       this.ambientLight.intensity = sectionLight.ambientIntensity ?? lightCfg.AMBIENT_INTENSITY;
       this.ambientLight.color.setHex(sectionLight.ambientColor ?? lightCfg.AMBIENT_COLOR);
+    }
+    if (this.fillLight) {
+      const mode = this.earthMesh.userData.currentMode;
+      const lightCfg = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
+      const sectionLight = config.lighting || {};
+      this.fillLight.intensity = sectionLight.fillIntensity ?? lightCfg.FILL_INTENSITY;
+      this.fillLight.color.setHex(sectionLight.fillColor ?? 0x6ea8ff);
+    }
+    if (this.rimLight) {
+      const mode = this.earthMesh.userData.currentMode;
+      const lightCfg = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
+      const sectionLight = config.lighting || {};
+      this.rimLight.intensity = sectionLight.rimIntensity ?? lightCfg.RIM_INTENSITY;
+      this.rimLight.color.setHex(sectionLight.rimColor ?? 0xffc76a);
     }
   }
 
