@@ -3,7 +3,12 @@ import { resolveR2Path } from "../../../config/media-urls.js";
 const EARTH_TEXTURE_BASE_PATH = "content/media/img/earth/textures";
 
 function withTexturePath(filename) {
-  return resolveR2Path(`${EARTH_TEXTURE_BASE_PATH}/${filename}`);
+  const resolved = resolveR2Path(`${EARTH_TEXTURE_BASE_PATH}/${filename}`);
+  // If dev server doesn't provide R2 proxy, fall back to local static path
+  if (typeof resolved === "string" && resolved.startsWith("/r2-proxy")) {
+    return `/${EARTH_TEXTURE_BASE_PATH}/${filename}`;
+  }
+  return resolved;
 }
 
 export const EARTH_TEXTURES = Object.freeze({
