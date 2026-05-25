@@ -171,12 +171,25 @@ const HeroManager = (() => {
     [
       [".hero__title", content.title],
       [".hero__lede", content.lede],
-      [".home-btn-group--hero .home-btn--primary", content.primaryBtn],
-      [".home-btn-group--hero .home-btn--secondary", content.secondaryBtn],
     ].forEach(([selector, value]) => {
       const element = document.querySelector(selector);
       if (element && value) {
         element.textContent = value;
+      }
+    });
+
+    [
+      [".home-btn-group--hero .home-btn--primary", content.primaryBtn],
+      [".home-btn-group--hero .home-btn--secondary", content.secondaryBtn],
+    ].forEach(([selector, value]) => {
+      const button = document.querySelector(selector);
+      if (button && value) {
+        const textSpan = button.querySelector(".home-btn-text");
+        if (textSpan) {
+          textSpan.textContent = value;
+        } else {
+          button.textContent = value;
+        }
       }
     });
 
@@ -324,6 +337,15 @@ const HeroManager = (() => {
     section3EntranceObserver.observe(section3);
   }
 
+  function toggleCosmosPointerListener() {
+    if (auroraMotionQuery?.matches) {
+      window.removeEventListener("pointermove", cosmosPointerHandler);
+    } else {
+      window.removeEventListener("pointermove", cosmosPointerHandler);
+      window.addEventListener("pointermove", cosmosPointerHandler, { passive: true });
+    }
+  }
+
   function setupHomeAuroraPerspective() {
     if (auroraScrollHandler || typeof window === "undefined") return;
 
@@ -336,9 +358,9 @@ const HeroManager = (() => {
     auroraMotionChangeHandler = () => {
       requestAuroraPerspectiveUpdate();
       resetStarParallax();
+      toggleCosmosPointerListener();
     };
     cosmosPointerHandler = event => {
-      if (auroraMotionQuery?.matches) return;
       starParallaxState.x = Math.max(
         -1,
         Math.min(1, (event.clientX / window.innerWidth - 0.5) * 2)
@@ -353,10 +375,11 @@ const HeroManager = (() => {
 
     window.addEventListener("scroll", auroraScrollHandler, { passive: true });
     window.addEventListener("resize", auroraResizeHandler, { passive: true });
-    window.addEventListener("pointermove", cosmosPointerHandler, { passive: true });
     window.addEventListener("blur", cosmosPointerLeaveHandler, { passive: true });
     document.addEventListener("mouseleave", cosmosPointerLeaveHandler, { passive: true });
     auroraMotionQuery?.addEventListener?.("change", auroraMotionChangeHandler);
+
+    toggleCosmosPointerListener();
     updateAuroraPerspective();
     updateStarParallax();
     adjustTitleFontSize();

@@ -740,13 +740,7 @@
   text-align: center;
   max-inline-size: 48rem;
   margin-inline: auto;
-  transform: perspective(1000px) rotateX(12deg) rotateY(-4deg) translateZ(30px);
   transform-style: preserve-3d;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.section3__header:hover {
-  transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);
 }
 
 .section3__eyebrow {
@@ -830,13 +824,7 @@
   text-align: center;
   max-inline-size: 36rem;
   margin-inline: auto;
-  transform: perspective(1000px) rotateX(10deg) rotateY(3deg) translateZ(20px);
   transform-style: preserve-3d;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.section3__closing:hover {
-  transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);
 }
 
 .section3__closing-text {
@@ -879,6 +867,61 @@
   }
 }
 
+@keyframes s3TitleShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes s3HeaderFloat3D {
+  0% {
+    transform: perspective(1200px) rotateX(12deg) rotateY(-4deg) translateZ(30px) translateY(0px)
+      rotateZ(0.5deg);
+  }
+  25% {
+    transform: perspective(1200px) rotateX(7deg) rotateY(4deg) translateZ(15px) translateY(-5px)
+      rotateZ(-0.5deg);
+  }
+  50% {
+    transform: perspective(1200px) rotateX(-5deg) rotateY(3deg) translateZ(20px) translateY(4px)
+      rotateZ(0.2deg);
+  }
+  75% {
+    transform: perspective(1200px) rotateX(4deg) rotateY(-5deg) translateZ(25px) translateY(-3px)
+      rotateZ(-0.3deg);
+  }
+  100% {
+    transform: perspective(1200px) rotateX(12deg) rotateY(-4deg) translateZ(30px) translateY(0px)
+      rotateZ(0.5deg);
+  }
+}
+
+@keyframes s3ClosingFloat3D {
+  0% {
+    transform: perspective(1200px) rotateX(10deg) rotateY(3deg) translateZ(20px) translateY(0px)
+      rotateZ(-0.4deg);
+  }
+  25% {
+    transform: perspective(1200px) rotateX(-4deg) rotateY(-4deg) translateZ(12px) translateY(4px)
+      rotateZ(0.4deg);
+  }
+  50% {
+    transform: perspective(1200px) rotateX(6deg) rotateY(2deg) translateZ(25px) translateY(-5px)
+      rotateZ(-0.2deg);
+  }
+  75% {
+    transform: perspective(1200px) rotateX(-3deg) rotateY(5deg) translateZ(18px) translateY(3px)
+      rotateZ(0.3deg);
+  }
+  100% {
+    transform: perspective(1200px) rotateX(10deg) rotateY(3deg) translateZ(20px) translateY(0px)
+      rotateZ(-0.4deg);
+  }
+}
+
 .home-btn-arrow {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -902,7 +945,7 @@
   .section3__eyebrow,
   .section3__title,
   .section3__subtitle,
-  .section3__closing,
+  .section3__closing-text,
   .section3__cta {
     opacity: 0;
     translate: 0 26px;
@@ -911,7 +954,7 @@
   .section.section3.is-visible .section3__eyebrow,
   .section.section3.is-visible .section3__title,
   .section.section3.is-visible .section3__subtitle,
-  .section.section3.is-visible .section3__closing,
+  .section.section3.is-visible .section3__closing-text,
   .section.section3.is-visible .section3__cta {
     animation: s3EntranceFadeSlide 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -925,11 +968,19 @@
   .section.section3.is-visible .section3__subtitle {
     animation-delay: 0.22s;
   }
-  .section.section3.is-visible .section3__closing {
+  .section.section3.is-visible .section3__closing-text {
     animation-delay: 0.34s;
   }
   .section.section3.is-visible .section3__cta {
     animation-delay: 0.46s;
+  }
+
+  /* ── 3D Ambient Float Animations ── */
+  .section3__header {
+    animation: s3HeaderFloat3D 16s ease-in-out infinite;
+  }
+  .section3__closing {
+    animation: s3ClosingFloat3D 18s ease-in-out infinite;
   }
 }
 
@@ -1070,7 +1121,7 @@
     --hero-content-inline: max(1rem, var(--safe-left)) max(1rem, var(--safe-right));
     --hero-content-block: clamp(4.75rem, 13vh, 5.75rem)
       max(clamp(3.5rem, 8vh, 4.25rem), calc(var(--content-bottom-offset) + 0.5rem));
-    --hero-title-size: clamp(1.05rem, 4.2vw + 0.1rem, 1.8rem);
+    --hero-title-size: clamp(1.05rem, calc(4.2vw + 0.1rem), 1.8rem);
     --hero-title-line: 1;
   }
   .hero__welcome {
@@ -1094,11 +1145,16 @@
   .section3__eyebrow,
   .section3__title,
   .section3__subtitle,
-  .section3__closing,
+  .section3__closing-text,
   .section3__cta {
     opacity: 1;
     translate: 0 0;
     animation: none;
+  }
+  .section3__header,
+  .section3__closing {
+    animation: none;
+    transform: none;
   }
   .is-visible .hero__header-group,
   .is-visible .hero__title,

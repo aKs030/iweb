@@ -230,10 +230,6 @@ function trimSnippetLength(raw, maxLength = RESULT_DESCRIPTION_MAX_LENGTH) {
   return `${truncated.trim()}...`;
 }
 
-function hasMarkHighlight(value) {
-  return /<mark>[\s\S]*?<\/mark>/i.test(String(value || "").trim());
-}
-
 function tokenizeQuery(query) {
   const rawTokens = String(query || "")
     .split(/[^0-9A-Za-zÀ-ÖØ-öø-ÿ]+/g)
@@ -747,13 +743,7 @@ export function buildSearchPayload({
   );
   const facetCounts = buildFacetCounts(rerankedResults);
   const facetedResults = filterResultsByFacet(rerankedResults, activeFacet);
-  const highlightedResults = facetedResults.filter(item =>
-    hasMarkHighlight(item.highlightedDescription)
-  );
-  const uniqueResults = (highlightedResults.length > 0 ? highlightedResults : facetedResults).slice(
-    0,
-    topK
-  );
+  const uniqueResults = facetedResults.slice(0, topK);
 
   const allowedPaths = buildAllowedResultPathSet(uniqueResults);
   const sanitizedSummary = sanitizeAiSummary(aiSummary, allowedPaths);
