@@ -681,11 +681,7 @@ export class MenuSearchKeyboardController {
 // 4. RESOURCE PRELOAD INTENTS (formerly search-preload-controller.js)
 // ============================================================================
 
-const SEARCH_PRELOAD_URLS = Object.freeze([
-  "https://esm.sh/htm@3.1.1",
-  "https://esm.sh/react-dom@19.2.4?deps=react@19.2.4",
-  "https://esm.sh/react-dom@19.2.4/client?deps=react@19.2.4",
-]);
+const SEARCH_PRELOAD_URLS = Object.freeze(["/content/components/menu/search-deps.js"]);
 
 export class MenuSearchPreloadController {
   constructor(options = {}) {
