@@ -28,28 +28,38 @@ import { CACHE_CONTROL_NO_STORE, mergeHeaders } from "../_shared/http-headers.js
 // Auth
 // ---------------------------------------------------------------------------
 
+const textEncoder = new TextEncoder();
+
+function timingSafeEqualFallback(a, b) {
+  const aBytes = textEncoder.encode(String(a));
+  const bBytes = textEncoder.encode(String(b));
+  const maxLength = Math.max(aBytes.length, bBytes.length);
+
+  let diff = aBytes.length ^ bBytes.length;
+  for (let i = 0; i < maxLength; i++) {
+    diff |= (aBytes[i] || 0) ^ (bBytes[i] || 0);
+  }
+  return diff === 0;
+}
+
 /**
- * Constant-time string equality check to prevent timing-oracle attacks.
- * Falls back to false if the lengths differ (short-circuit is safe here
- * because length is not secret — the attacker already knows the expected
- * token length from the format).
+ * Compare secret values without leaking token length or prefix timing.
  *
  * @param {string} a
  * @param {string} b
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-function timingSafeEqual(a, b) {
-  const enc = new TextEncoder();
-  const aBytes = enc.encode(String(a));
-  const bBytes = enc.encode(String(b));
-
-  if (aBytes.length !== bBytes.length) return false;
-
-  let diff = 0;
-  for (let i = 0; i < aBytes.length; i++) {
-    diff |= aBytes[i] ^ bBytes[i];
+async function timingSafeEqual(a, b) {
+  const subtle = globalThis.crypto?.subtle;
+  if (subtle?.digest && typeof subtle.timingSafeEqual === "function") {
+    const [aHash, bHash] = await Promise.all([
+      subtle.digest("SHA-256", textEncoder.encode(String(a))),
+      subtle.digest("SHA-256", textEncoder.encode(String(b))),
+    ]);
+    return subtle.timingSafeEqual(aHash, bHash);
   }
-  return diff === 0;
+
+  return timingSafeEqualFallback(a, b);
 }
 
 const MAX_AUTH_FAILURES = 5;
@@ -82,7 +92,7 @@ async function authenticateAdmin(request, env) {
     return { ok: false, reason: await authFailureReason(ip, env, "missing-token") };
   }
 
-  const valid = timingSafeEqual(token, env.ADMIN_TOKEN);
+  const valid = await timingSafeEqual(token, env.ADMIN_TOKEN);
   if (!valid) {
     return { ok: false, reason: await authFailureReason(ip, env, "invalid-token") };
   }

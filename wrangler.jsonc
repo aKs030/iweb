@@ -2,8 +2,12 @@
 // Production repeats non-inheritable bindings by design.
 {
   "name": "1web",
-  "compatibility_date": "2025-03-07",
+  "compatibility_date": "2026-07-04",
   "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+  },
   "pages_build_output_dir": ".",
   "vars": {
     "MAX_SEARCH_RESULTS": "10",
