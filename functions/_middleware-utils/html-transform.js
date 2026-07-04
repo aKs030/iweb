@@ -1,4 +1,4 @@
-import { buildCspHeader, buildCspReportOnlyHeader, generateNonce } from "./csp-manager.js";
+import { buildCspHeader, generateNonce } from "./csp-manager.js";
 import { EdgeSpeculationRules, StaticSpeculationRemover } from "./edge-speculation.js";
 import { buildResponseLinkHeaders } from "./early-hints.js";
 import { HeaderInjector, FooterInjector } from "./esi-shell.js";
@@ -48,7 +48,7 @@ export function createHtmlSecurityContext(isLocal) {
   const nonce = isLocal ? null : generateNonce();
   return {
     cspHeader: nonce ? buildCspHeader(nonce) : "",
-    cspReportOnlyHeader: nonce ? buildCspReportOnlyHeader(nonce, "/api/csp-report") : "",
+    cspReportOnlyHeader: "",
     nonce,
   };
 }
