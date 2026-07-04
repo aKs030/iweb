@@ -38,6 +38,8 @@ export function buildCspHeader(nonce) {
       "script-src",
       "'self'",
       nonceSource,
+      "https://www.abdulkerimsesli.de",
+      "https://abdulkerimsesli.de",
       "https://cdn.jsdelivr.net",
       "https://esm.sh",
       "https://unpkg.com",
@@ -110,6 +112,21 @@ export function buildCspReportOnlyHeader(nonce, reportUri = "/api/csp-report") {
   const base = buildCspHeader(nonce);
   if (!base) return "";
   const normalized = String(reportUri || "").trim();
-  if (!normalized) return base;
-  return `${base}; report-uri ${normalized}`;
+  const reportOnlyBase = omitCspDirective(base, "frame-ancestors");
+  if (!normalized) return reportOnlyBase;
+  return `${reportOnlyBase}; report-uri ${normalized}`;
+}
+
+function omitCspDirective(policy, directiveName) {
+  const normalizedName = String(directiveName || "")
+    .trim()
+    .toLowerCase();
+  if (!normalizedName) return policy;
+
+  return String(policy || "")
+    .split(";")
+    .map(part => part.trim())
+    .filter(Boolean)
+    .filter(part => !part.toLowerCase().startsWith(`${normalizedName} `))
+    .join("; ");
 }
