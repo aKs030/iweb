@@ -28,7 +28,6 @@
   color: red;
 }
 /* content/components/contact/contact.css */
-/* merged with contact-component.css — 2026-02-15 */
 
 .contact-page-shell {
   background-color: var(--bg-primary);
@@ -200,7 +199,7 @@
 }
 
 /* ----------------------------------------------------------------------------- */
-/* Component styles (moved from `contact-component.css`)                             */
+/* Component styles                                                               */
 /* ----------------------------------------------------------------------------- */
 
 .contact-form-card {

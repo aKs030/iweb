@@ -191,20 +191,7 @@ const createFooterShell = () => {
     el(
       "div",
       { className: "footer-min" },
-      el("div", { className: "footer-min-main" }, copyright, createCookieBanner(), nav),
-      el(
-        "button",
-        {
-          className: "footer-expand-toggle",
-          type: "button",
-          "data-footer-trigger": true,
-          "aria-expanded": "false",
-          "aria-controls": "footer-content",
-          "aria-label": "Footer erweitern",
-        },
-        el("span", { "aria-hidden": "true" }, "+"),
-        el("span", { className: "visually-hidden" }, "Footer erweitern")
-      )
+      el("div", { className: "footer-min-main" }, copyright, createCookieBanner(), nav)
     )
   );
 };

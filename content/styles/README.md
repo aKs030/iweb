@@ -5,6 +5,7 @@
 - `content/styles/foundation.css` - CSS variables, theme overrides and layout defaults.
 - `content/styles/utilities.css` - small reusable utility helpers.
 - `content/styles/main.css` - app-shell base styles.
+- `content/styles/pages-consolidated.css` - consolidated page-specific styles shared by route HTML.
 - `content/styles/overlays.css` - overlay-layer rules.
 
 ## Workflow

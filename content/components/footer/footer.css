@@ -31,7 +31,12 @@
 
   /* utility base for footer buttons */
   :is(.footer-btn, .btn-accept, .btn-reject) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--size-4);
     padding: var(--btn-padding);
+    min-height: var(--size-30);
     border-radius: var(--btn-radius);
     border: var(--size-1) solid transparent;
     font-size: var(--btn-font-size);
@@ -182,7 +187,8 @@
   .cookie-inline {
     display: flex;
     align-items: center;
-    gap: var(--footer-gap);
+    gap: var(--size-6);
+    padding: 0;
     flex-shrink: 0;
     animation: none;
     pointer-events: auto;
@@ -288,38 +294,6 @@
     background: var(--component-fill-primary);
     border-color: var(--component-separator);
     outline: none;
-  }
-
-  .footer-expand-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--size-36);
-    height: var(--size-36);
-    flex-shrink: 0;
-    border: var(--size-1) solid var(--component-separator);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--clr-white) 6%, transparent);
-    color: var(--clr-white);
-    cursor: pointer;
-    font: inherit;
-    font-size: var(--size-18);
-    line-height: 1;
-  }
-
-  .footer-expand-toggle:hover,
-  .footer-expand-toggle:focus {
-    background: var(--component-fill-primary);
-    color: var(--clr-white);
-    border-color: color-mix(in srgb, var(--clr-white) 24%, transparent);
-    outline: none;
-  }
-
-  .footer-expand-toggle:focus-visible {
-    outline: var(--size-2) solid var(--component-accent-blue);
-    outline-offset: var(--size-2);
-    box-shadow: 0 0 0 var(--size-4)
-      color-mix(in srgb, var(--component-accent-blue) 20%, transparent);
   }
 
   .nav-btn:active {
@@ -959,6 +933,7 @@
 
     .cookie-inline {
       flex-shrink: 0;
+      gap: var(--size-4);
     }
 
     .cookie-emoji {
@@ -1003,12 +978,6 @@
       min-height: var(--size-44);
       justify-content: center;
       border-radius: var(--size-12);
-    }
-
-    .footer-expand-toggle {
-      width: var(--size-44);
-      height: var(--size-44);
-      font-size: var(--size-20);
     }
 
     .footer-max {
@@ -1199,22 +1168,29 @@
     .cookie-inline {
       flex-wrap: wrap;
       justify-content: center;
-      gap: var(--size-4);
+      gap: var(--size-3);
     }
 
     .cookie-text {
       font-size: var(--size-11);
     }
 
+    :root.footer-cookie-visible .site-footer .footer-min-main {
+      justify-content: center;
+    }
+
+    :root.footer-cookie-visible .site-footer .footer-copyright {
+      display: none;
+    }
+
+    :root.footer-cookie-visible .site-footer .footer-nav {
+      display: none;
+    }
+
     .nav-btn {
       padding: var(--size-8);
       min-width: var(--size-40);
       min-height: var(--size-40);
-    }
-
-    .footer-expand-toggle {
-      width: var(--size-40);
-      height: var(--size-40);
     }
 
     .footer-max {
@@ -1258,14 +1234,16 @@
     }
 
     .footer-cta {
-      padding: var(--size-4) var(--size-8);
-      font-size: var(--size-8);
+      min-height: var(--size-32);
+      padding: var(--size-6) var(--size-10);
+      font-size: var(--size-10);
     }
 
     .links a,
     .links-compact a {
-      padding: var(--size-3) var(--size-5);
-      font-size: var(--size-8);
+      min-height: var(--size-32);
+      padding: var(--size-5) var(--size-7);
+      font-size: var(--size-9);
     }
 
     .skill-tags {
@@ -1306,9 +1284,9 @@
     }
 
     .social-btn {
-      padding: var(--size-4);
-      min-width: var(--size-24);
-      min-height: var(--size-24);
+      padding: var(--size-5);
+      min-width: var(--size-30);
+      min-height: var(--size-30);
     }
 
     .social-btn svg {
@@ -1323,8 +1301,9 @@
     }
 
     .legal-btn {
-      padding: var(--size-5) var(--size-7);
-      font-size: var(--size-8);
+      min-height: var(--size-30);
+      padding: var(--size-6) var(--size-8);
+      font-size: var(--size-9);
       gap: var(--size-3);
     }
 
@@ -1459,4 +1438,86 @@
 .site-footer .links a:active,
 .site-footer .links-compact a:active {
   color: var(--clr-white);
+}
+
+/* Unlayered sizing guard: page bundles include unlayered resets that zero padding/margins. */
+.site-footer
+  :is(
+    .footer-min,
+    .brand-link,
+    .nav-btn,
+    .cookie-inline,
+    .btn-accept,
+    .btn-reject,
+    .footer-max,
+    .settings-header,
+    .settings-content,
+    .cookie-category,
+    .settings-footer,
+    .footer-btn-secondary,
+    .footer-btn-primary,
+    .footer-card,
+    .footer-cta,
+    .links a,
+    .links-compact a,
+    .tag,
+    .status-bar,
+    .social-btn,
+    .legal-btn
+  ) {
+  padding: revert-layer;
+}
+
+.site-footer
+  :is(
+    .brand-link,
+    .cookie-inline,
+    .cookie-emoji,
+    .cookie-text,
+    .btn-accept,
+    .btn-reject,
+    .settings-header h2,
+    .category-header h2,
+    .category-header h3,
+    .footer-card h2,
+    .footer-card .name,
+    .footer-card .role,
+    .footer-card .bio
+  ) {
+  margin: revert-layer;
+}
+
+.site-footer
+  :is(
+    .cookie-emoji,
+    .cookie-text,
+    .btn-accept,
+    .btn-reject,
+    .settings-header h2,
+    .category-header h2,
+    .category-header h3,
+    .footer-btn-secondary,
+    .footer-btn-primary,
+    .footer-card h2,
+    .footer-card .name,
+    .footer-card .role,
+    .footer-card .bio,
+    .footer-cta,
+    .links a,
+    .links-compact a,
+    .tag,
+    .social-btn,
+    .legal-btn,
+    .footer-max .legal .nav-btn
+  ) {
+  font-size: revert-layer;
+}
+
+.site-footer .links-compact {
+  align-content: start;
+}
+
+.site-footer .links-compact a {
+  align-self: start;
+  min-height: var(--size-32);
 }
