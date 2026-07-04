@@ -27,6 +27,8 @@ export function buildCspHeader(nonce) {
   const normalizedNonce = String(nonce || "").trim();
   if (!normalizedNonce) return "";
   const nonceSource = `'nonce-${normalizedNonce}'`;
+  const cloudflareGoogleTagBootstrapHash = "'sha256-UnHw8EKlqQSvt21NBIRkASjT9PmkkCQjBIUBK+dn2Bk='";
+  const cloudflareGoogleTagConfigHash = "'sha256-IJD97QaiL1gr5I9bVDGDNpUdsf4FkdyneF8a1o6cZPk='";
 
   const directives = [
     "default-src 'self'",
@@ -38,6 +40,10 @@ export function buildCspHeader(nonce) {
       "script-src",
       "'self'",
       nonceSource,
+      // Cloudflare may inject Google Tags first-party bootstrap snippets
+      // before our nonced head scripts for browser UAs.
+      cloudflareGoogleTagBootstrapHash,
+      cloudflareGoogleTagConfigHash,
       "https://www.abdulkerimsesli.de",
       "https://abdulkerimsesli.de",
       "https://cdn.jsdelivr.net",
