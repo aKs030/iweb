@@ -69,6 +69,8 @@ export function buildCspHeader(nonce) {
     [
       "connect-src",
       "'self'",
+      "https://www.abdulkerimsesli.de",
+      "https://abdulkerimsesli.de",
       "https://www.googleapis.com",
       "https://api.github.com",
       "https://raw.githubusercontent.com",
@@ -109,5 +111,5 @@ export function buildCspReportOnlyHeader(nonce, reportUri = "/api/csp-report") {
   if (!base) return "";
   const normalized = String(reportUri || "").trim();
   if (!normalized) return base;
-  return `${base}; report-uri "${normalized}"`;
+  return `${base}; report-uri ${normalized}`;
 }

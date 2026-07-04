@@ -42,7 +42,7 @@ function appendVary(headers, value) {
 
 /**
  * @param {boolean} isLocal
- * @returns {{ cspHeader: string, nonce: string | null }}
+ * @returns {{ cspHeader: string, cspReportOnlyHeader: string, nonce: string | null }}
  */
 export function createHtmlSecurityContext(isLocal) {
   const nonce = isLocal ? null : generateNonce();
@@ -55,7 +55,7 @@ export function createHtmlSecurityContext(isLocal) {
 
 /**
  * @param {Response} cachedResponse
- * @param {{ cspHeader: string, deployVersion: string, nonce: string }} options
+ * @param {{ cspHeader: string, cspReportOnlyHeader?: string, deployVersion: string, nonce: string }} options
  * @returns {Response}
  */
 export function buildCacheHitHtmlResponse(cachedResponse, options) {
@@ -90,10 +90,10 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
  *   resolvedGlobalHeadTemplate: string,
  *   routeMeta: any,
  * }} options
- * @returns {{ cspHeader: string, nonce: string | null, rewriter: any }}
+ * @returns {{ cspHeader: string, cspReportOnlyHeader: string, nonce: string | null, rewriter: any }}
  */
 export function createHtmlRewriter(context, url, options) {
-  const { cspHeader, nonce } = createHtmlSecurityContext(options.isLocal);
+  const { cspHeader, cspReportOnlyHeader, nonce } = createHtmlSecurityContext(options.isLocal);
   const rewriter = new HTMLRewriter();
 
   rewriter.on("section[data-section-src]", new SectionInjector(context));
@@ -143,7 +143,7 @@ export function createHtmlRewriter(context, url, options) {
     });
   }
 
-  return { cspHeader, nonce, rewriter };
+  return { cspHeader, cspReportOnlyHeader, nonce, rewriter };
 }
 
 /**

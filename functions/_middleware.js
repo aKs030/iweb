@@ -50,9 +50,10 @@ export async function onRequest(context) {
   if (!isLocal) {
     const cachedResponse = await matchEdgeCache(context.request);
     if (cachedResponse) {
-      const { cspHeader, nonce } = createHtmlSecurityContext(isLocal);
+      const { cspHeader, cspReportOnlyHeader, nonce } = createHtmlSecurityContext(isLocal);
       return buildCacheHitHtmlResponse(cachedResponse, {
         cspHeader,
+        cspReportOnlyHeader,
         deployVersion: DEPLOY_VERSION,
         nonce: /** @type {string} */ (nonce),
       });
@@ -98,7 +99,7 @@ export async function onRequest(context) {
     });
   }
 
-  const { cspHeader, nonce, rewriter } = createHtmlRewriter(context, url, {
+  const { cspHeader, cspReportOnlyHeader, nonce, rewriter } = createHtmlRewriter(context, url, {
     injectShell: shouldInjectShell(url.pathname),
     isLocal,
     resolvedGlobalHeadTemplate,
@@ -107,6 +108,7 @@ export async function onRequest(context) {
   const transformedResponse = rewriter.transform(response);
   const finalResponse = buildFinalHtmlResponse(response, transformedResponse, {
     cspHeader,
+    cspReportOnlyHeader,
     deployVersion: DEPLOY_VERSION,
     initialHeaders,
     nonce,
