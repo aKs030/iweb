@@ -41,6 +41,33 @@ function appendVary(headers, value) {
 }
 
 /**
+ * @param {Headers} headers
+ * @param {string} directive
+ */
+function appendCacheControlDirective(headers, directive) {
+  const normalizedDirective = String(directive || "").trim();
+  if (!normalizedDirective) return;
+
+  const current = headers.get("Cache-Control");
+  if (!current) {
+    headers.set("Cache-Control", normalizedDirective);
+    return;
+  }
+
+  const normalized = current
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  if (normalized.some(item => item.toLowerCase() === normalizedDirective.toLowerCase())) {
+    return;
+  }
+
+  normalized.push(normalizedDirective);
+  headers.set("Cache-Control", normalized.join(", "));
+}
+
+/**
  * @param {boolean} isLocal
  * @returns {{ cspHeader: string, cspReportOnlyHeader: string, nonce: string | null }}
  */
@@ -68,6 +95,7 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
   const headers = new Headers(withNonce.headers);
   stripTransformedEntityHeaders(headers);
   appendVary(headers, "Accept-Language");
+  appendCacheControlDirective(headers, "no-transform");
   headers.set("X-Deploy-Version", options.deployVersion);
   headers.delete("Content-Security-Policy-Report-Only");
   headers.set("Content-Security-Policy", options.cspHeader);
@@ -164,6 +192,7 @@ export function buildFinalHtmlResponse(response, transformedResponse, options) {
   const newHeaders = new Headers(options.initialHeaders);
   stripTransformedEntityHeaders(newHeaders);
   appendVary(newHeaders, "Accept-Language");
+  appendCacheControlDirective(newHeaders, "no-transform");
 
   const responseLinkHeaders = buildResponseLinkHeaders(options.pathname);
   for (const linkValue of responseLinkHeaders) {
