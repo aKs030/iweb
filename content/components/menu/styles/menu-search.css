@@ -284,6 +284,17 @@
   border-radius: var(--radius-xs);
   padding: 0 var(--size-3);
   font-weight: 600;
+  animation: searchMatchPulse 0.8s ease-out both;
+}
+
+@keyframes searchMatchPulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--menu-rgb-255-194-70) 48%, transparent);
+  }
+
+  100% {
+    box-shadow: 0 0 0 var(--size-8) transparent;
+  }
 }
 
 .menu-search__ai-chat {

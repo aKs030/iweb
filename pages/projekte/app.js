@@ -641,6 +641,19 @@ const App = () => {
           )
         ),
         h(
+          "div",
+          { className: "launch-skeleton", "aria-hidden": "true" },
+          h("span", { className: "launch-skeleton__line launch-skeleton__line--wide" }),
+          h("span", { className: "launch-skeleton__line" }),
+          h(
+            "div",
+            { className: "launch-skeleton__tiles" },
+            h("span", { className: "launch-skeleton__tile" }),
+            h("span", { className: "launch-skeleton__tile" }),
+            h("span", { className: "launch-skeleton__tile" })
+          )
+        ),
+        h(
           "p",
           { className: "launch-hint" },
           t("projects.launch.hint", "After startup you can explore the app list by scrolling.")

@@ -62,9 +62,8 @@
    VIEW TRANSITIONS API
 ======================= */
 
-  /* In-Page View Transitions für Chat-Toggle.
-   Cross-Document VT (navigation: auto) ist NICHT aktiviert —
-   Unterseiten haben eigenes CSS/JS und brauchen volle Seitenlade. */
+  /* In-Page View Transitions für UI-Zustände.
+   Cross-Document VT wird progressiv über core/view-transitions.js aktiviert. */
 
   /* --- Default root: sofort, kein Effekt (verhindert Seiten-Flash) --- */
   ::view-transition-old(root),

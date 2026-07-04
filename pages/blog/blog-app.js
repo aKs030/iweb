@@ -178,8 +178,25 @@ const BlogApp = () => {
   };
 
   if (loading) {
-    return html`<div className="blog-loading">
-      <p>${t("loader.loading_blog")}</p>
+    return html`<div className="blog-loading" aria-label=${t("loader.loading_blog")}>
+      <div className="blog-skeleton-header" aria-hidden="true">
+        <span className="blog-skeleton-line blog-skeleton-line--title"></span>
+        <span className="blog-skeleton-line blog-skeleton-line--subtitle"></span>
+      </div>
+      <div className="blog-skeleton-grid" aria-hidden="true">
+        ${Array.from(
+          { length: 6 },
+          (_, index) => html`
+            <article key=${index} className="blog-skeleton-card">
+              <span className="blog-skeleton-media"></span>
+              <span className="blog-skeleton-line blog-skeleton-line--meta"></span>
+              <span className="blog-skeleton-line blog-skeleton-line--heading"></span>
+              <span className="blog-skeleton-line"></span>
+              <span className="blog-skeleton-line blog-skeleton-line--short"></span>
+            </article>
+          `
+        )}
+      </div>
     </div>`;
   }
 

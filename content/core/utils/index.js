@@ -771,6 +771,7 @@ const DEFAULT_ALLOWED_TAGS = new Set([
   "i",
   "img",
   "li",
+  "mark",
   "ol",
   "p",
   "pre",

@@ -1551,6 +1551,10 @@
     0 var(--size-8) 22px color-mix(in srgb, var(--clr-black) 10%, transparent);
 }
 
+.chat-composer--voice-enabled {
+  grid-template-columns: 40px 40px minmax(0, 1fr) 42px;
+}
+
 .chat-composer:focus-within {
   border-color: color-mix(in srgb, var(--robot-cyan) 24%, transparent);
   box-shadow:
@@ -1617,6 +1621,20 @@
   background: color-mix(in srgb, var(--clr-white) 4%, transparent);
   border-color: color-mix(in srgb, var(--clr-white) 12%, transparent);
   color: var(--clr-slate-100);
+}
+
+.chat-composer .voice-btn--chat {
+  --_size: 40px;
+  border-radius: var(--size-15);
+  border: var(--size-1) solid color-mix(in srgb, var(--clr-white) 12%, transparent);
+  background: color-mix(in srgb, var(--clr-white) 4%, transparent);
+  color: var(--clr-slate-100);
+}
+
+.chat-composer .voice-btn--chat:hover {
+  background: color-mix(in srgb, var(--robot-cyan) 12%, transparent);
+  border-color: color-mix(in srgb, var(--robot-cyan) 34%, transparent);
+  box-shadow: 0 var(--size-8) 20px color-mix(in srgb, var(--clr-black) 12%, transparent);
 }
 
 .chat-composer .chat-image-btn:hover {

@@ -1,7 +1,7 @@
 /**
  * Enhancements Module — Single Entry Point
  *
- * Phase 1: Section Dots · Reveal on Scroll · Blog Enhancements
+ * Phase 1: Section Dots · Reveal on Scroll
  * Phase 2: Skill Radar Chart · Search Filters
  * Phase 3: Voice Input/TTS · Easter Eggs
  *
@@ -26,10 +26,6 @@ const ICON_DEFS = {
     { tag: "polygon", attrs: { points: "11 5 6 9 2 9 2 15 6 15 11 19 11 5" } },
     { tag: "path", attrs: { d: "M19.07 4.93a10 10 0 0 1 0 14.14" } },
     { tag: "path", attrs: { d: "M15.54 8.46a5 5 0 0 1 0 7.07" } },
-  ],
-  clock: [
-    { tag: "circle", attrs: { cx: "12", cy: "12", r: "10" } },
-    { tag: "polyline", attrs: { points: "12 6 12 12 16 14" } },
   ],
 };
 
@@ -125,77 +121,6 @@ function initRevealOnScroll() {
 
   elements.forEach(el => observer.observe(el));
   log.debug(`Reveal: ${elements.length} elements`);
-}
-
-// ─── 1C: Blog Reading Time + ToC ────────────────────────────────────
-function initBlogEnhancements() {
-  if (!location.pathname.startsWith("/blog/")) return;
-
-  const article = document.querySelector(".blog-content, .post-content, article");
-  if (!article) return;
-
-  // Reading time
-  const words = (article.textContent || "").trim().split(/\s+/).length;
-  const minutes = Math.max(1, Math.ceil(words / 220));
-  const timeEl = document.createElement("span");
-  timeEl.className = "reading-time";
-  timeEl.append(createIcon("clock"), document.createTextNode(` ${minutes} min`));
-
-  const meta = article.querySelector(".post-meta, .blog-meta, header");
-  if (meta) meta.append(timeEl);
-
-  // Table of Contents
-  const headings = article.querySelectorAll("h2, h3, h4");
-  if (headings.length < 3) return;
-
-  const toc = document.createElement("nav");
-  toc.className = "toc";
-  toc.setAttribute("aria-label", "Inhaltsverzeichnis");
-  const tocTitle = document.createElement("div");
-  tocTitle.className = "toc__title";
-  tocTitle.textContent = "Inhalt";
-  const list = document.createElement("ol");
-  list.className = "toc__list";
-  toc.append(tocTitle, list);
-
-  headings.forEach((h, i) => {
-    if (!h.id) h.id = `heading-${i}`;
-    const li = document.createElement("li");
-    li.className = `toc--${h.tagName.toLowerCase()}`;
-    const link = document.createElement("a");
-    link.href = `#${h.id}`;
-    link.textContent = h.textContent || "";
-    li.appendChild(link);
-    list.append(li);
-  });
-
-  const firstH = article.querySelector("h2, h3");
-  if (firstH) firstH.before(toc);
-
-  // Active heading tracking - optimized with cached reference
-  let currentActiveLink = null;
-  const tocObserver = new IntersectionObserver(
-    entries => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-
-        // Remove active class from previous link if it exists
-        if (currentActiveLink) {
-          currentActiveLink.classList.remove("toc--active");
-        }
-
-        // Add active class to new link
-        currentActiveLink = toc.querySelector(`a[href="#${entry.target.id}"]`);
-        if (currentActiveLink) {
-          currentActiveLink.classList.add("toc--active");
-        }
-      }
-    },
-    { threshold: 0.5, rootMargin: "-80px 0px -60% 0px" }
-  );
-
-  headings.forEach(h => tocObserver.observe(h));
-  log.debug("Blog enhancements ready");
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -429,11 +354,19 @@ function initVoiceInput() {
   if (!SpeechRecognition) return;
 
   const insertVoiceBtn = () => {
-    const chatInput = document.querySelector(".robot-chat-input, .chat-input, [data-chat-input]");
-    if (!chatInput || chatInput.parentElement?.querySelector(".voice-btn")) return;
+    const chatInput = document.querySelector(
+      "#robot-chat-input, .robot-chat-input, .chat-input, [data-chat-input]"
+    );
+    if (!chatInput) return;
+
+    const composer = chatInput.closest?.(".chat-composer");
+    const inputStack = chatInput.closest?.(".chat-input-stack");
+    const scope = composer || chatInput.parentElement;
+    if (scope?.querySelector(".voice-btn")) return;
 
     const btn = document.createElement("button");
     btn.className = "voice-btn";
+    btn.type = "button";
     btn.setAttribute("aria-label", "Spracheingabe starten");
     btn.setAttribute("title", "Spracheingabe");
     btn.appendChild(createIcon("mic"));
@@ -450,12 +383,14 @@ function initVoiceInput() {
       if (chatInput instanceof HTMLInputElement || chatInput instanceof HTMLTextAreaElement) {
         chatInput.value = transcript;
         chatInput.dispatchEvent(new Event("input", { bubbles: true }));
+        chatInput.focus();
       }
     };
 
     const stopListening = () => {
       isListening = false;
       btn.removeAttribute("data-listening");
+      btn.setAttribute("aria-label", "Spracheingabe starten");
     };
 
     recognition.onend = stopListening;
@@ -472,11 +407,18 @@ function initVoiceInput() {
         recognition.start();
         isListening = true;
         btn.setAttribute("data-listening", "");
+        btn.setAttribute("aria-label", "Spracheingabe stoppen");
       }
     });
 
-    chatInput.parentElement.style.position = "relative";
-    chatInput.after(btn);
+    if (composer && inputStack) {
+      btn.classList.add("voice-btn--chat");
+      composer.classList.add("chat-composer--voice-enabled");
+      composer.insertBefore(btn, inputStack);
+    } else {
+      chatInput.parentElement.style.position = "relative";
+      chatInput.after(btn);
+    }
   };
 
   insertVoiceBtn();
@@ -616,7 +558,6 @@ export function initEnhancements() {
     // Phase 1
     initSectionDots();
     initRevealOnScroll();
-    initBlogEnhancements();
 
     // Phase 2
     initSkillRadar();

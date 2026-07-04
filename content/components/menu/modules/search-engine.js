@@ -35,6 +35,18 @@ const log = createLogger("SearchEngine");
 const SEARCH_ENDPOINT = "/api/search";
 const MARK_HIGHLIGHT_PATTERN = /<mark>[\s\S]*?<\/mark>/i;
 const SEARCH_FACETS = Object.freeze(["all", "blog", "projects", "videos", "pages"]);
+const SEARCH_HIGHLIGHT_TOKEN_LIMIT = 8;
+
+const escapeSearchHighlightPattern = value =>
+  String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const tokenizeSearchHighlightQuery = query =>
+  String(query || "")
+    .split(/[^0-9A-Za-zÀ-ÖØ-öø-ÿ]+/g)
+    .map(token => token.trim())
+    .filter(token => token.length >= 2)
+    .sort((a, b) => b.length - a.length)
+    .slice(0, SEARCH_HIGHLIGHT_TOKEN_LIMIT);
 
 // ============================================================================
 // 1. SEARCH API INTERFACE (formerly search-api.js)
@@ -816,6 +828,41 @@ export class MenuSearchRenderer {
     return suggestionsWrap;
   }
 
+  appendClientHighlightedText(target, text = "", query = "") {
+    const source = String(text || "").trim();
+    if (!target || !source) return false;
+
+    const tokens = tokenizeSearchHighlightQuery(query);
+    if (!tokens.length) return false;
+
+    const regex = new RegExp(
+      `(${tokens.map(token => escapeSearchHighlightPattern(token)).join("|")})`,
+      "gi"
+    );
+
+    if (!regex.test(source)) return false;
+    regex.lastIndex = 0;
+
+    let lastIndex = 0;
+    for (const match of source.matchAll(regex)) {
+      const index = match.index ?? 0;
+      if (index > lastIndex) {
+        target.append(document.createTextNode(source.slice(lastIndex, index)));
+      }
+
+      const mark = document.createElement("mark");
+      mark.textContent = match[0];
+      target.append(mark);
+      lastIndex = index + match[0].length;
+    }
+
+    if (lastIndex < source.length) {
+      target.append(document.createTextNode(source.slice(lastIndex)));
+    }
+
+    return true;
+  }
+
   renderEmptyState(query = "", providedSuggestions = []) {
     const wrap = document.createElement("div");
     wrap.className = "menu-search__empty";
@@ -1040,7 +1087,8 @@ export class MenuSearchRenderer {
           : String(item.url || "");
       button.appendChild(url);
 
-      if (item.highlightedDescription) {
+      const descriptionText = String(item.description || "").trim();
+      if (item.highlightedDescription || descriptionText) {
         const desc = document.createElement("span");
         desc.className = "menu-search__desc";
         if (
@@ -1048,6 +1096,11 @@ export class MenuSearchRenderer {
           this.hasMarkedHighlight(item.highlightedDescription)
         ) {
           setSanitizedHTML(desc, item.highlightedDescription);
+          button.appendChild(desc);
+        } else if (this.appendClientHighlightedText(desc, descriptionText, query)) {
+          button.appendChild(desc);
+        } else if (descriptionText) {
+          desc.textContent = descriptionText;
           button.appendChild(desc);
         }
       }

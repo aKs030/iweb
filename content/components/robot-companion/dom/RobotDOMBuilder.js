@@ -139,6 +139,8 @@ export class RobotDOMBuilder {
     input.name = "robot-message";
     input.placeholder = "Frag mich etwas...";
     input.autocomplete = "off";
+    input.className = "robot-chat-input";
+    input.dataset.chatInput = "true";
     input.setAttribute("aria-label", "Chat-Nachricht eingeben");
 
     const sendBtn = document.createElement("button");

@@ -148,11 +148,12 @@ export const ThreeGalleryScene = ({ items }) => {
       h(
         "div",
         {
-          className: "gallery-loader",
+          className: "gallery-loader gallery-loader--skeleton",
+          "aria-hidden": "true",
         },
-        h("div", {
-          className: "gallery-loader__spinner",
-        })
+        h("span", { className: "gallery-loader__panel gallery-loader__panel--main" }),
+        h("span", { className: "gallery-loader__panel gallery-loader__panel--side" }),
+        h("span", { className: "gallery-loader__line" })
       ),
 
     // Lightbox Overlay

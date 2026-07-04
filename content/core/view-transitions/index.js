@@ -513,6 +513,18 @@ const shouldHandleInternalNavigation = (link, destination, captureInternalLinks)
   return true;
 };
 
+const shouldUseNativeCrossDocumentNavigation = (options, link, destination) => {
+  if (typeof options.getEnableCrossDocument !== "function") return false;
+  if (!options.getEnableCrossDocument()) return false;
+  if (destination.origin !== globalThis.location.origin) return false;
+  if (isSameDocumentURL(destination)) return false;
+  if (getNavigationTypesFromLink(link).length > 0) return false;
+  if (getNavigationRootClassesFromLink(link).length > 0) return false;
+  if (getNavigationTimeoutFromLink(link) !== undefined) return false;
+  if (shouldReplaceNavigationFromLink(link)) return false;
+  return true;
+};
+
 function navigateWithViewTransition(href, options = {}, defaults = { navigationTypes: [] }) {
   const url = toURL(href);
   if (!url) return false;
@@ -578,6 +590,13 @@ export const createDocumentClickHandler = options => {
     const captureInternalLinks = options.getCaptureInternalLinks();
     if (!shouldHandleInternalNavigation(link, destination, captureInternalLinks)) return;
 
+    if (shouldUseNativeCrossDocumentNavigation(options, link, destination)) {
+      debugViewTransition("navigation:native-cross-document", {
+        href: destination.toString(),
+      });
+      return;
+    }
+
     event.preventDefault();
     const customTypes = getNavigationTypesFromLink(link);
     const fallbackTypes = normalizeTypes(options.getNavigationTypes());
@@ -599,9 +618,25 @@ export const createDocumentClickHandler = options => {
 // ============================================================================
 
 const VIEW_TRANSITION_RUNTIME_STYLE_ID = "core-view-transition-runtime-style";
+const UNTYPED_VIEW_TRANSITION_SELECTOR = `:root${Object.values(VIEW_TRANSITION_TYPES)
+  .map(type => `:not(:active-view-transition-type(${type}))`)
+  .join("")}`;
 
 const getRuntimeStyles = enableCrossDocument => `
-${enableCrossDocument ? "@view-transition { navigation: auto; }" : ""}
+${
+  enableCrossDocument
+    ? `@view-transition { navigation: auto; }
+
+${UNTYPED_VIEW_TRANSITION_SELECTOR}::view-transition-old(root) {
+  animation: vt-page-old var(--vt-page-old-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_OLD)}) cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+${UNTYPED_VIEW_TRANSITION_SELECTOR}::view-transition-new(root) {
+  animation: vt-page-new var(--vt-page-new-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_NEW)}) cubic-bezier(0, 0, 0.2, 1) both;
+}
+`
+    : ""
+}
 :root:active-view-transition-type(page-navigate)::view-transition-old(root),
 :root:active-view-transition-type(same-page-scroll)::view-transition-old(root) {
   animation: vt-page-old var(--vt-page-old-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_OLD)}) cubic-bezier(0.4, 0, 1, 1) both;
@@ -623,6 +658,8 @@ ${enableCrossDocument ? "@view-transition { navigation: auto; }" : ""}
 }
 
 @media (prefers-reduced-motion: reduce) {
+  ${UNTYPED_VIEW_TRANSITION_SELECTOR}::view-transition-old(root),
+  ${UNTYPED_VIEW_TRANSITION_SELECTOR}::view-transition-new(root),
   :root:active-view-transition-type(page-navigate)::view-transition-old(root),
   :root:active-view-transition-type(page-navigate)::view-transition-new(root),
   :root:active-view-transition-type(same-page-scroll)::view-transition-old(root),

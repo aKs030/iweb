@@ -1717,6 +1717,14 @@ body.blog-page #main-content {
     background-position: var(--size-1000) 0;
   }
 }
+@keyframes pageSkeletonShimmer {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -180% 0;
+  }
+}
 @keyframes cardFloat {
   0%,
   100% {
@@ -1728,13 +1736,96 @@ body.blog-page #main-content {
   }
 }
 
-.blog-loading,
+.blog-loading {
+  min-height: 50vh;
+  max-width: var(--size-1400);
+  margin: 0 auto;
+  padding: var(--size-r-2);
+}
+
 .blog-error {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 50vh;
   padding: var(--size-r-2);
+}
+
+.blog-skeleton-header {
+  display: grid;
+  gap: var(--size-r-0-75);
+  max-width: var(--size-600);
+  margin-bottom: var(--size-r-1-25);
+}
+
+.blog-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--size-240), 1fr));
+  gap: var(--size-r-1-25);
+}
+
+.blog-skeleton-card {
+  min-height: var(--size-360);
+  padding: var(--size-r-1);
+  border-radius: var(--size-20);
+  border: var(--size-1) solid color-mix(in srgb, var(--clr-blue-500) 22%, transparent);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--blog-rgb-30-30-60) 28%, transparent),
+      color-mix(in srgb, var(--blog-rgb-15-15-40) 58%, transparent)
+    ),
+    color-mix(in srgb, var(--clr-black) 30%, transparent);
+  box-shadow:
+    0 var(--size-15) var(--size-50) color-mix(in srgb, var(--clr-black) 42%, transparent),
+    inset 0 0 0 var(--size-1) color-mix(in srgb, var(--clr-blue-500) 12%, transparent);
+}
+
+.blog-skeleton-line,
+.blog-skeleton-media {
+  display: block;
+  border-radius: var(--size-10);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--clr-white) 7%, transparent) 25%,
+    color-mix(in srgb, var(--clr-blue-400) 16%, transparent) 50%,
+    color-mix(in srgb, var(--clr-white) 7%, transparent) 75%
+  );
+  background-size: 220% 100%;
+  animation: pageSkeletonShimmer 1.35s ease-in-out infinite;
+}
+
+.blog-skeleton-media {
+  aspect-ratio: 16 / 9;
+  margin-bottom: var(--size-r-1);
+}
+
+.blog-skeleton-line {
+  height: var(--size-r-0-85);
+  margin-top: var(--size-r-0-65);
+}
+
+.blog-skeleton-line--title {
+  width: min(62vw, var(--size-420));
+  height: var(--size-r-2);
+}
+
+.blog-skeleton-line--subtitle {
+  width: min(78vw, var(--size-560));
+}
+
+.blog-skeleton-line--meta {
+  width: 35%;
+  height: var(--size-r-0-72);
+}
+
+.blog-skeleton-line--heading {
+  width: 82%;
+  height: var(--size-r-1-2);
+}
+
+.blog-skeleton-line--short {
+  width: 56%;
 }
 
 .blog-inline-error {
@@ -3031,13 +3122,103 @@ main.about-main.container {
   background: var(--clr-black);
 }
 
-.gallery-loader__spinner {
-  width: var(--size-r-4);
-  height: var(--size-r-4);
-  border-radius: var(--radius-full);
-  border: var(--size-4) solid color-mix(in srgb, var(--primary-color) 80%, transparent);
-  border-top-color: transparent;
-  animation: gallery-spin 0.9s linear infinite;
+.gallery-shell--loading {
+  display: grid;
+  place-items: center;
+}
+
+.gallery-skeleton,
+.gallery-loader--skeleton {
+  display: grid;
+  place-items: center;
+  gap: var(--size-r-1);
+}
+
+.gallery-skeleton {
+  width: min(88vw, var(--size-720));
+}
+
+.gallery-skeleton__title,
+.gallery-skeleton__hint,
+.gallery-skeleton__frame,
+.gallery-loader__line,
+.gallery-loader__panel {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--clr-white) 7%, transparent) 25%,
+    color-mix(in srgb, var(--clr-pink-500) 14%, var(--clr-blue-500) 16%) 50%,
+    color-mix(in srgb, var(--clr-white) 7%, transparent) 75%
+  );
+  background-size: 220% 100%;
+  animation: pageSkeletonShimmer 1.4s ease-in-out infinite;
+}
+
+.gallery-skeleton__title {
+  width: min(60vw, var(--size-420));
+  height: var(--size-r-2);
+  border-radius: var(--size-999);
+}
+
+.gallery-skeleton__orbit {
+  position: relative;
+  width: min(78vw, var(--size-620));
+  aspect-ratio: 16 / 9;
+  margin-block: var(--size-r-1);
+}
+
+.gallery-skeleton__frame,
+.gallery-loader__panel {
+  position: absolute;
+  border-radius: var(--size-r-1);
+  border: var(--size-1) solid color-mix(in srgb, var(--clr-white) 14%, transparent);
+  box-shadow: 0 var(--size-18) var(--size-60) color-mix(in srgb, var(--clr-black) 42%, transparent);
+}
+
+.gallery-skeleton__frame--a,
+.gallery-loader__panel--main {
+  inset: 12% 20%;
+}
+
+.gallery-skeleton__frame--b,
+.gallery-loader__panel--side {
+  inset: 28% 4% 22% auto;
+  width: 22%;
+  opacity: 0.62;
+}
+
+.gallery-skeleton__frame--c {
+  inset: 32% auto 18% 0;
+  width: 24%;
+  opacity: 0.5;
+}
+
+.gallery-skeleton__hint,
+.gallery-loader__line {
+  width: min(44vw, var(--size-320));
+  height: var(--size-r-0-85);
+  border-radius: var(--size-999);
+}
+
+.gallery-loader--skeleton {
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      color-mix(in srgb, var(--clr-blue-500) 18%, transparent),
+      transparent 56%
+    ),
+    var(--clr-black);
+}
+
+.gallery-loader__panel {
+  position: static;
+  width: min(70vw, var(--size-460));
+  aspect-ratio: 16 / 9;
+}
+
+.gallery-loader__panel--side {
+  width: min(42vw, var(--size-260));
+  aspect-ratio: 16 / 7;
 }
 
 .gallery-lightbox {
@@ -3376,6 +3557,48 @@ body.projekte-page canvas {
   gap: var(--size-r-0-6);
   color: var(--clr-slate-200);
   font-size: var(--size-r-0-94);
+}
+
+.launch-skeleton {
+  display: grid;
+  gap: var(--size-r-0-75);
+  margin-top: var(--size-r-1-15);
+}
+
+.launch-skeleton__line,
+.launch-skeleton__tile {
+  display: block;
+  border-radius: var(--size-999);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--clr-white) 7%, transparent) 25%,
+    color-mix(in srgb, var(--clr-blue-400) 18%, transparent) 50%,
+    color-mix(in srgb, var(--clr-white) 7%, transparent) 75%
+  );
+  background-size: 220% 100%;
+  animation: pageSkeletonShimmer 1.35s ease-in-out infinite;
+}
+
+.launch-skeleton__line {
+  height: var(--size-r-0-75);
+  width: 74%;
+  margin-inline: auto;
+}
+
+.launch-skeleton__line--wide {
+  width: 88%;
+}
+
+.launch-skeleton__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--size-r-0-65);
+  margin-top: var(--size-r-0-2);
+}
+
+.launch-skeleton__tile {
+  height: var(--size-r-3-25);
+  border-radius: var(--size-r-0-75);
 }
 
 .launch-dot {

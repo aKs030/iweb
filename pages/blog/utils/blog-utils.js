@@ -43,6 +43,11 @@ export const stripMarkdown = (text = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
+export const estimateReadTime = (content = "") => {
+  const words = stripMarkdown(content).split(/\s+/).filter(Boolean).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min`;
+};
+
 export const parseFrontmatter = text => {
   const match = text.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return { content: text, data: {} };
@@ -79,8 +84,7 @@ export const normalizePost = (raw = {}) => {
       ? toKeywordArray(raw.keywords)
       : buildFallbackKeywords({ ...raw, category });
 
-  const wordCount = (raw.content || "").split(/\s+/).length;
-  const readTime = `${Math.max(1, Math.round(wordCount / 200))} min`;
+  const computedReadTime = raw.content ? estimateReadTime(raw.content) : "";
 
   return {
     ...raw,
@@ -93,7 +97,7 @@ export const normalizePost = (raw = {}) => {
     keywords,
     timestamp: raw.date ? new Date(raw.date).getTime() : 0,
     dateDisplay: raw.dateDisplay || raw.date || "",
-    readTime: raw.readTime || readTime,
+    readTime: computedReadTime || raw.readTime || "1 min",
     file: raw.file || null,
   };
 };

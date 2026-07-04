@@ -166,7 +166,28 @@ const GalleryApp = () => {
     injectSchema([schema], { scriptId: "gallery-schema-json-ld" });
   };
 
-  if (!isReady) return null;
+  if (!isReady) {
+    return h(
+      "div",
+      {
+        className: "gallery-shell gallery-shell--loading",
+        "aria-label": t("gallery.loading.assets") || "Loading Assets...",
+      },
+      h(
+        "div",
+        { className: "gallery-skeleton", "aria-hidden": "true" },
+        h("span", { className: "gallery-skeleton__title" }),
+        h(
+          "div",
+          { className: "gallery-skeleton__orbit" },
+          h("span", { className: "gallery-skeleton__frame gallery-skeleton__frame--a" }),
+          h("span", { className: "gallery-skeleton__frame gallery-skeleton__frame--b" }),
+          h("span", { className: "gallery-skeleton__frame gallery-skeleton__frame--c" })
+        ),
+        h("span", { className: "gallery-skeleton__hint" })
+      )
+    );
+  }
 
   return h(
     "div",

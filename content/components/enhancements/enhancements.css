@@ -1,6 +1,6 @@
 /**
  * Enhancements CSS
- * Section Dots · Micro-Interactions · Blog · Skill Radar · Voice UI · Easter Eggs
+ * Section Dots · Micro-Interactions · Skill Radar · Voice UI · Easter Eggs
  * @version 2.0.0
  */
 
@@ -111,81 +111,6 @@ body[data-active-overlay="robot-chat"] .section-dots {
 [data-reveal].revealed {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* ============================================
-   BLOG ENHANCEMENTS
-   ============================================ */
-.reading-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: var(--text-secondary, #94a3b8);
-  opacity: 0.85;
-}
-
-.reading-time svg {
-  width: 14px;
-  height: 14px;
-  opacity: 0.7;
-}
-
-.toc {
-  --_bg: color-mix(in srgb, var(--bg-secondary, #1e293b) 60%, transparent);
-  position: relative;
-  padding: 1rem 1.25rem;
-  margin-block: 1.5rem;
-  border-radius: 12px;
-  background: var(--_bg);
-  border-inline-start: 3px solid var(--accent-gradient-mid, #8b5cf6);
-  backdrop-filter: blur(8px);
-}
-
-.toc__title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary, #94a3b8);
-  margin-block-end: 0.6rem;
-}
-
-.toc__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.toc__list li {
-  padding-block: 0.25rem;
-}
-
-.toc__list a {
-  color: var(--text-primary, #e2e8f0);
-  text-decoration: none;
-  font-size: 0.88rem;
-  opacity: 0.8;
-  transition:
-    opacity 0.2s,
-    padding-inline-start 0.2s;
-}
-
-.toc__list a:hover,
-.toc__list a.toc--active {
-  opacity: 1;
-  color: var(--accent-gradient-mid, #8b5cf6);
-}
-
-.toc__list a:hover {
-  padding-inline-start: 6px;
-}
-
-.toc__list .toc--h3 {
-  padding-inline-start: 1rem;
-}
-.toc__list .toc--h4 {
-  padding-inline-start: 2rem;
 }
 
 /* ============================================
@@ -414,10 +339,6 @@ body[data-active-overlay="robot-chat"] .section-dots {
 
   .skill-radar {
     padding: 1rem;
-  }
-  .toc {
-    margin-inline: -0.5rem;
-    padding: 0.75rem 1rem;
   }
   .voice-btn {
     --_size: 36px;

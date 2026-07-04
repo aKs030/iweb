@@ -28,7 +28,7 @@ import {
 
 const INIT_CONFIG = {
   captureInternalLinks: true,
-  enableCrossDocument: false,
+  enableCrossDocument: true,
   injectNavigationStyles: true,
   /** @type {string[]} */
   navigationTypes: [...DEFAULT_NAVIGATION_TRANSITION_TYPES],
@@ -85,6 +85,7 @@ export function initViewTransitions(options = {}) {
 
   clickHandler = createDocumentClickHandler({
     getCaptureInternalLinks: () => INIT_CONFIG.captureInternalLinks,
+    getEnableCrossDocument: () => INIT_CONFIG.enableCrossDocument,
     getNavigationTypes: () => INIT_CONFIG.navigationTypes,
   });
 

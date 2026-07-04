@@ -84,6 +84,7 @@ const RESULT_DESCRIPTION_MAX_LENGTH = 220;
 const AI_SUGGESTION_LIMIT = 6;
 const DETERMINISTIC_SEARCH_CACHE_TTL_MS = 5 * 60 * 1000;
 const DETERMINISTIC_RESULT_BASE_SCORE = 0.35;
+const FUZZY_RESULT_SCORE_BOOST_MAX = 0.32;
 const SEARCH_FACETS = Object.freeze(["all", "blog", "projects", "videos", "pages"]);
 const STATIC_SEARCH_RESULTS = Object.freeze([
   {
@@ -251,6 +252,90 @@ function tokenizeQuery(query) {
     if (deduped.length >= MAX_QUERY_TOKENS) break;
   }
   return deduped;
+}
+
+function tokenizeSearchableText(value) {
+  return normalizeForMatch(value)
+    .split(/[^0-9a-z]+/g)
+    .map(token => token.trim())
+    .filter(token => token.length >= 2);
+}
+
+function getFuzzyDistanceLimit(token) {
+  const length = String(token || "").length;
+  if (length <= 4) return 1;
+  if (length <= 8) return 2;
+  return 3;
+}
+
+function calculateLevenshteinDistance(a, b) {
+  const left = String(a || "");
+  const right = String(b || "");
+  if (left === right) return 0;
+  if (!left) return right.length;
+  if (!right) return left.length;
+
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  const current = new Array(right.length + 1);
+
+  for (let i = 1; i <= left.length; i += 1) {
+    current[0] = i;
+    for (let j = 1; j <= right.length; j += 1) {
+      const substitutionCost = left[i - 1] === right[j - 1] ? 0 : 1;
+      current[j] = Math.min(
+        current[j - 1] + 1,
+        previous[j] + 1,
+        previous[j - 1] + substitutionCost
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+
+  return previous[right.length];
+}
+
+function computeFuzzyScore(result, queryTokens) {
+  if (!Array.isArray(queryTokens) || queryTokens.length === 0) {
+    return 0;
+  }
+
+  const searchableTokens = new Set(
+    tokenizeSearchableText(
+      [
+        result?.title || "",
+        result?.category || "",
+        result?.url || "",
+        result?.description || "",
+        getSearchableKeywordText(result),
+      ].join(" ")
+    )
+  );
+  if (searchableTokens.size === 0) return 0;
+
+  let score = 0;
+  for (const rawToken of queryTokens) {
+    const queryToken = normalizeForMatch(rawToken);
+    if (queryToken.length < 3) continue;
+
+    const maxDistance = getFuzzyDistanceLimit(queryToken);
+    let bestTokenScore = 0;
+
+    for (const candidateToken of searchableTokens) {
+      if (Math.abs(candidateToken.length - queryToken.length) > maxDistance) continue;
+      if (candidateToken[0] !== queryToken[0] && candidateToken.at(-1) !== queryToken.at(-1)) {
+        continue;
+      }
+
+      const distance = calculateLevenshteinDistance(queryToken, candidateToken);
+      if (distance > maxDistance) continue;
+      const tokenScore = Math.max(0, 18 - distance * 5);
+      bestTokenScore = Math.max(bestTokenScore, tokenScore);
+    }
+
+    score += bestTokenScore;
+  }
+
+  return score;
 }
 
 function computeKeywordScore(result, queryTokens, normalizedQuery) {
@@ -671,18 +756,36 @@ export async function loadDeterministicSearchDataset(context) {
 export function buildDeterministicMatches(candidates, query) {
   const queryTokens = tokenizeQuery(query);
   const normalizedQuery = normalizeForMatch(query).replace(/\s+/g, " ").trim();
+  const normalizedCandidates = (Array.isArray(candidates) ? candidates : []).map(candidate => {
+    const keyword = computeKeywordScore(candidate, queryTokens, normalizedQuery);
+    return {
+      ...candidate,
+      score: Math.max(Number(candidate.score) || 0, DETERMINISTIC_RESULT_BASE_SCORE),
+      _keywordScore: keyword.score,
+    };
+  });
 
-  return (Array.isArray(candidates) ? candidates : [])
-    .map(candidate => {
-      const keyword = computeKeywordScore(candidate, queryTokens, normalizedQuery);
-      return {
-        ...candidate,
-        score: Math.max(Number(candidate.score) || 0, DETERMINISTIC_RESULT_BASE_SCORE),
-        _keywordScore: keyword.score,
-      };
-    })
+  const exactMatches = normalizedCandidates
     .filter(candidate => candidate._keywordScore > 0)
     .map(({ _keywordScore, ...candidate }) => candidate);
+
+  if (exactMatches.length > 0) {
+    return exactMatches;
+  }
+
+  return normalizedCandidates
+    .map(candidate => {
+      const fuzzyScore = computeFuzzyScore(candidate, queryTokens);
+      return {
+        ...candidate,
+        score:
+          candidate.score + Math.min(FUZZY_RESULT_SCORE_BOOST_MAX, Math.max(0, fuzzyScore) / 100),
+        _fuzzyScore: fuzzyScore,
+      };
+    })
+    .filter(candidate => candidate._fuzzyScore > 0)
+    .sort((a, b) => b._fuzzyScore - a._fuzzyScore)
+    .map(({ _keywordScore, _fuzzyScore, ...candidate }) => candidate);
 }
 
 export function resolveSearchInput(request, body = null) {
