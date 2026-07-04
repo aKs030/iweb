@@ -65,7 +65,3 @@ export function buildAgentResponsePayload(payload = {}) {
     forcedFromNonStreamFallback: Boolean(payload.forcedFromNonStreamFallback),
   };
 }
-
-export function normalizeAgentResponsePayload(payload = {}) {
-  return buildAgentResponsePayload(payload);
-}

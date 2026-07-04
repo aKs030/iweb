@@ -19,16 +19,19 @@ import { R2_PUBLIC_ORIGIN } from "../../content/config/media-urls.js";
  * Order matters — CSS first (render-blocking), then modulepreload (parser hint).
  */
 import { normalizePathname } from "../../content/core/utils/index.js";
+import { DEPLOY_VERSION } from "./template-cache.js";
+
+const v = DEPLOY_VERSION ? `?v=${DEPLOY_VERSION}` : "";
 
 const CORE_RESOURCES = [
   // Core CSS is loaded immediately by the document head
-  { href: "/content/styles/main.css", rel: "preload", as: "style" },
-  { href: "/content/styles/animations.css", rel: "preload", as: "style" },
+  { href: `/content/styles/main.css${v}`, rel: "preload", as: "style" },
+  { href: `/content/styles/animations.css${v}`, rel: "preload", as: "style" },
 
   // Core JS modules — start parsing before HTML fully loaded
-  { href: "/content/main.js", rel: "modulepreload" },
-  { href: "/content/components/head/index.js", rel: "modulepreload" },
-  { href: "/content/components/menu/index.js", rel: "modulepreload" },
+  { href: `/content/main.js${v}`, rel: "modulepreload" },
+  { href: `/content/components/head/index.js${v}`, rel: "modulepreload" },
+  { href: `/content/components/menu/index.js${v}`, rel: "modulepreload" },
 
   // Third-party preconnect — start DNS + TLS handshake early
   { href: "https://cdn.jsdelivr.net", rel: "preconnect", crossorigin: true },
@@ -40,6 +43,7 @@ const CORE_RESOURCES = [
   },
 ];
 
+// Bare paths (no query string) — compared against href without ?v= suffix.
 const STANDALONE_SHELL_EXCLUSIONS = new Set([
   "/content/styles/main.css",
   "/content/styles/animations.css",
@@ -63,7 +67,8 @@ function getResourcesForPath(pathname = "/") {
     return CORE_RESOURCES;
   }
 
-  return CORE_RESOURCES.filter(({ href }) => !STANDALONE_SHELL_EXCLUSIONS.has(href));
+  // Strip ?v= query param before checking exclusions so the versioned URLs still match.
+  return CORE_RESOURCES.filter(({ href }) => !STANDALONE_SHELL_EXCLUSIONS.has(href.split("?")[0]));
 }
 
 /**

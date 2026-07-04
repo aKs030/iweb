@@ -5,10 +5,7 @@
  */
 
 import { createLogger } from "../../core/logger.js";
-import {
-  buildAgentResponsePayload,
-  normalizeAgentResponsePayload,
-} from "../../core/ai-agent-contracts.js";
+import { buildAgentResponsePayload } from "../../core/ai-agent-contracts.js";
 import { fetchWithRetry } from "../../core/utils/index.js";
 import { createUserId, normalizeUserId } from "../../core/user-id.js";
 import { executeTool } from "./modules/tool-executor.js";
@@ -470,7 +467,7 @@ async function callAgent(payload, callbacks = {}, { stream = true, signal = unde
   // ── JSON response ──
   let result;
   try {
-    result = normalizeAgentResponsePayload(await response.json());
+    result = buildAgentResponsePayload(await response.json());
   } catch (err) {
     const txt = await response.text().catch(() => "");
     log.error("[AIAgent] JSON parse failed on non-SSE response", err, txt);

@@ -272,10 +272,16 @@ class LanguageManager extends EventTarget {
 
   /**
    * Translates the entire page by traversing from document.body.
+   * Uses `requestIdleCallback` when available so the full DOM scan
+   * runs during browser idle time instead of blocking the main thread.
    * @returns {void}
    */
   translatePage() {
-    this.translateElement(document.body);
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(() => this.translateElement(document.body), { timeout: 500 });
+    } else {
+      this.translateElement(document.body);
+    }
   }
 
   /**

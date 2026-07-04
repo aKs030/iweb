@@ -179,6 +179,12 @@ function getSearchableKeywordText(item) {
     .join(" ");
 }
 
+// Compiled once — SNIPPET_METADATA_LABELS is a static constant.
+const SNIPPET_METADATA_LABEL_PATTERN = new RegExp(
+  `\\b(?:${SNIPPET_METADATA_LABELS.join("|")})\\s*:`,
+  "gi"
+);
+
 function cleanSnippetText(rawText) {
   let text = String(rawText || "");
   if (!text) return "";
@@ -196,8 +202,9 @@ function cleanSnippetText(rawText) {
   text = text.replace(/\b(?:image|thumbnail|file|url|source|loc)\s*:\s*https?:\/\/\S+/gi, " ");
   text = text.replace(/https?:\/\/\S+/gi, " ");
 
-  const labelPattern = SNIPPET_METADATA_LABELS.join("|");
-  text = text.replace(new RegExp(`\\b(?:${labelPattern})\\s*:`, "gi"), " ");
+  // Reuse pre-compiled regex
+  SNIPPET_METADATA_LABEL_PATTERN.lastIndex = 0;
+  text = text.replace(SNIPPET_METADATA_LABEL_PATTERN, " ");
   text = text.replace(/[`*_#]+/g, " ");
   text = text.replace(/\(\s*[^)]{40,}\)/g, " ");
   text = text.replace(/\(\s*[^)]*$/g, " ");

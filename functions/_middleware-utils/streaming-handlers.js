@@ -9,6 +9,8 @@
  * @version 1.0.0
  */
 
+import { buildNonceAttribute } from "./_nonce-utils.js";
+
 // ---------------------------------------------------------------------------
 // Template Comment Handler (replaces string-based template injection)
 // ---------------------------------------------------------------------------
@@ -94,8 +96,10 @@ export class SeoMetaHandler {
     this.extraHeadEndHtml = extraHeadEndHtml;
     /** @type {Set<string>} Track which fields were already upserted in-place */
     this._handledKeys = new Set();
-    /** @type {string[]} Extra tags to append before </head> */
-    this._pendingAppend = [];
+    // Pre-compute maps once — avoids rebuilding them for every meta element
+    // encountered during the streaming HTMLRewriter pass.
+    this._nameMap = buildSeoMetaNameMap(meta);
+    this._propMap = buildSeoMetaPropertyMap(meta);
   }
 
   /** @param {Element} el */
@@ -146,20 +150,16 @@ export class SeoMetaHandler {
 
   /** @private */
   _handleMetaName(el, name) {
-    const map = buildSeoMetaNameMap(this.meta);
-
-    if (name in map && map[name]) {
-      el.setAttribute("content", map[name]);
+    if (name in this._nameMap && this._nameMap[name]) {
+      el.setAttribute("content", this._nameMap[name]);
       this._handledKeys.add(`name:${name}`);
     }
   }
 
   /** @private */
   _handleMetaProp(el, prop) {
-    const map = buildSeoMetaPropertyMap(this.meta);
-
-    if (prop in map && map[prop]) {
-      el.setAttribute("content", map[prop]);
+    if (prop in this._propMap && this._propMap[prop]) {
+      el.setAttribute("content", this._propMap[prop]);
       this._handledKeys.add(`prop:${prop}`);
     }
   }
@@ -343,9 +343,4 @@ function applyNonceToHtml(html, nonce) {
 
 function stripNonceAttribute(attrs = "") {
   return String(attrs || "").replace(/\snonce\s*=\s*(?:"[^"]*"|'[^']*')/gi, "");
-}
-
-function buildNonceAttribute(nonce) {
-  if (!nonce) return "";
-  return ` nonce="${escapeForHtml(nonce)}"`;
 }

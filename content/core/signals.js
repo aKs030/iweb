@@ -53,18 +53,23 @@ export function signal(initialValue) {
 
 /**
  * Derive a read-only signal.
+ *
+ * Returns a `dispose()` function that tears down the internal tracking effect.
+ * Call it when the computed is no longer needed to prevent subscription leaks
+ * in short-lived component or modal contexts.
+ *
  * @template T
  * @param {() => T} fn
  * @returns {{
  *   readonly value: T,
  *   peek: () => T,
- *   subscribe: (listener: (value: T) => void) => () => boolean
+ *   subscribe: (listener: (value: T) => void) => () => boolean,
+ *   dispose: () => void
  * }}
  */
 export function computed(fn) {
   const derived = signal(undefined);
-
-  effect(() => {
+  const dispose = effect(() => {
     derived.value = fn();
   });
 
@@ -74,6 +79,7 @@ export function computed(fn) {
     },
     peek: () => derived.peek(),
     subscribe: listener => derived.subscribe(listener),
+    dispose,
   };
 }
 

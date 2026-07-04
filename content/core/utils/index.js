@@ -291,7 +291,7 @@ let globalCache = null;
  * @param {Object} [options] - Cache configuration
  * @returns {CacheManager} Global cache instance
  */
-export function getCache(options) {
+function getCache(options) {
   if (!globalCache) {
     globalCache = new CacheManager(options);
   }
@@ -1087,13 +1087,15 @@ export function escapeRegExp(value) {
  * @param {string} input - Text to strip
  * @returns {string} Text without branding
  */
+// Compiled once at module load — SITE_NAME and SITE_OWNER_NAME are static constants.
+const BRAND_REGEX = new RegExp(
+  `\\s*(?:[—–-]\\s*${escapeRegExp(SITE_OWNER_NAME)}|\\|\\s*${escapeRegExp(
+    SITE_OWNER_NAME
+  )}|${escapeRegExp(SITE_NAME)})\\s*$`,
+  "i"
+);
+
 export function stripBranding(input) {
-  const BRAND_REGEX = new RegExp(
-    `\\s*(?:[—–-]\\s*${escapeRegExp(SITE_OWNER_NAME)}|\\|\\s*${escapeRegExp(
-      SITE_OWNER_NAME
-    )}|${escapeRegExp(SITE_NAME)})\\s*$`,
-    "i"
-  );
   return String(input || "")
     .replace(BRAND_REGEX, "")
     .trim();

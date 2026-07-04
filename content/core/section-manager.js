@@ -66,11 +66,16 @@ export class SectionManager {
     }
 
     try {
+      // Try both URL forms in parallel (with and without .html extension).
+      // Promise.any() resolves as soon as one succeeds — no wasted sequential
+      // round-trip if the first variant returns a 404.
+      const urlWithoutExt = url.replace(/\.html$/, "") || url;
+      const urlWithExt = url;
       let html;
-      try {
-        html = await fetchText(url.replace(/\.html$/, "") || url);
-      } catch {
+      if (urlWithoutExt === urlWithExt) {
         html = await fetchText(url);
+      } else {
+        html = await Promise.any([fetchText(urlWithoutExt), fetchText(urlWithExt)]);
       }
 
       const htmlEl = document.documentElement;

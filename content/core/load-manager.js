@@ -30,8 +30,10 @@ export const loadSignals = Object.freeze({
 
 const toPendingList = () => Object.freeze(Array.from(pending));
 
-let stopAppReadyBridge = () => {};
-stopAppReadyBridge = effect(() => {
+// Dispatches "app-ready" once, then self-disposes via queueMicrotask.
+// The closure captures `stopAppReadyBridge` — JS const semantics allow
+// this because the reference is resolved after the const is fully initialised.
+const stopAppReadyBridge = effect(() => {
   if (!loadSignals.done.value || loadSignals.blocked.value) return;
 
   untracked(() => {

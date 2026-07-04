@@ -69,6 +69,8 @@ export const resolvedTheme = computed(() =>
 let _initialized = false;
 let _mediaQueryList = null;
 let _handleSystemChange = null;
+/** @type {(() => void) | null} */
+let _themeSubscriptionCleanup = null;
 
 function applyThemeToDocument(theme) {
   if (typeof document === "undefined") return;
@@ -86,7 +88,9 @@ export function initThemeState() {
   systemTheme.value = readSystemTheme();
   themePreference.value = readStoredPreference();
   applyThemeToDocument(resolvedTheme.value);
-  resolvedTheme.subscribe(theme => {
+
+  // Store unsubscribe handle so destroyThemeState() can clean up properly.
+  _themeSubscriptionCleanup = resolvedTheme.subscribe(theme => {
     applyThemeToDocument(theme);
   });
 
@@ -102,6 +106,21 @@ export function initThemeState() {
   if (typeof _mediaQueryList.addEventListener === "function") {
     _mediaQueryList.addEventListener("change", _handleSystemChange);
   }
+}
+
+/**
+ * Tear down the theme state listeners.
+ * Useful in tests and SSR environments to avoid state leakage.
+ */
+export function destroyThemeState() {
+  _themeSubscriptionCleanup?.();
+  _themeSubscriptionCleanup = null;
+  if (_mediaQueryList && _handleSystemChange) {
+    _mediaQueryList.removeEventListener?.("change", _handleSystemChange);
+    _mediaQueryList = null;
+    _handleSystemChange = null;
+  }
+  _initialized = false;
 }
 
 function setThemePreference(preference = SYSTEM) {

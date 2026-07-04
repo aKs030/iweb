@@ -36,10 +36,18 @@ function isCacheablePath(pathname) {
 
 /**
  * Normalize the coarse language variant that affects edge-rendered HTML.
- * Only English currently changes markup (`<html lang="en">`).
+ *
+ * Only English currently changes markup (`<html lang="en">`). All other
+ * languages — including German (the site default), French, etc. — map to
+ * `"default"` because the server renders DE as the baseline.
+ *
+ * ⚠️ If a third language variant is added (e.g. `fr` changes server-rendered
+ * markup), this function must be extended to emit a distinct key for it, and
+ * the `CACHE_KEY_QUERY_ALLOWLIST` / `_headers` `Vary` directives must be
+ * reviewed accordingly.
  *
  * @param {string | null} acceptLanguage
- * @returns {string}
+ * @returns {"en" | "default"}
  */
 function normalizeLanguageVariant(acceptLanguage) {
   return String(acceptLanguage || "")

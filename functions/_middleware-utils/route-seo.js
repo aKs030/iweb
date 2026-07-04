@@ -37,8 +37,46 @@ const DEFAULT_IMAGE_HEIGHT = "630";
 const DEFAULT_IMAGE_TYPE = "image/png";
 const JSON_CACHE_TTL_MS = 5 * 60 * 1000;
 const VIDEO_CACHE_TTL_MS = 30 * 60 * 1000;
-const jsonCache = new Map();
-const videoCache = new Map();
+
+/**
+ * Bounded FIFO cache — prevents unbounded growth in long-lived Worker isolates.
+ * Evicts the oldest entry when `maxSize` is reached.
+ *
+ * @param {number} maxSize
+ */
+function createBoundedCache(maxSize = 50) {
+  /** @type {Map<string, any>} */
+  const map = new Map();
+  return {
+    /** @param {string} key */
+    get: key => map.get(key),
+    /**
+     * @param {string} key
+     * @param {any} value
+     */
+    set: (key, value) => {
+      if (map.size >= maxSize) {
+        // Evict the oldest (first inserted) entry
+        map.delete(map.keys().next().value);
+      }
+      map.set(key, value);
+    },
+    /** @param {string} key */
+    has: key => map.has(key),
+  };
+}
+
+const jsonCache = createBoundedCache(50);
+const videoCache = createBoundedCache(100);
+
+/**
+ * WeakMap cache for blog slug maps.
+ * Keyed on the posts array reference — automatically rebuilt when the
+ * array changes (i.e. when jsonCache returns a fresh fetch).
+ *
+ * @type {WeakMap<any[], Map<string, any>>}
+ */
+const blogSlugMapCache = new WeakMap();
 
 function buildAiInfoSchema({ canonicalUrl, origin }) {
   const personId = `${origin}/#person`;
@@ -322,12 +360,19 @@ async function buildBlogMeta(context, requestUrl, postId) {
   const origin = resolveOrigin(requestUrl.toString());
   const postsIndex = await loadJsonCached(context, BLOG_INDEX_PATH);
   const posts = Array.isArray(postsIndex) ? postsIndex : [];
-  const bySlug = new Map();
 
-  for (const post of posts) {
-    const id = normalizeText(post?.id);
-    if (!id) continue;
-    bySlug.set(normalizeSlug(id), post);
+  // Cache the slug map keyed on the posts array reference.
+  // The WeakMap automatically re-builds when the array reference changes
+  // (i.e. after a fresh fetch invalidates the jsonCache entry).
+  let bySlug = blogSlugMapCache.get(posts);
+  if (!bySlug) {
+    bySlug = new Map();
+    for (const post of posts) {
+      const id = normalizeText(post?.id);
+      if (!id) continue;
+      bySlug.set(normalizeSlug(id), post);
+    }
+    blogSlugMapCache.set(posts, bySlug);
   }
 
   const post = bySlug.get(normalizeSlug(postId));
