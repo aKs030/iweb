@@ -6,6 +6,12 @@ import { resourceHints } from "../../../core/seo/index.js";
 import { EARTH_PRIMARY_TEXTURE_URL } from "#components/particles/index.js";
 
 const log = createLogger("head-assets");
+const DEPLOY_VERSION =
+  document.querySelector('meta[name="deploy-version"]')?.getAttribute("content") || "";
+const withVersion = href => {
+  if (!href || !href.startsWith("/") || href.includes("?")) return href;
+  return DEPLOY_VERSION ? `${href}?v=${DEPLOY_VERSION}` : href;
+};
 
 function getNormalizedPathname() {
   return (globalThis.location?.pathname || "").replace(/\/+$/g, "") || "/";
@@ -45,16 +51,32 @@ function injectHomeLcpHints() {
 }
 
 function getStylesForPath() {
-  const pageSpecific = [];
+  const sharedPageStyles = [
+    "/content/components/interactions/interactions.css",
+    "/content/styles/pages/common.css",
+  ];
+  const stylesByPath = new Map([
+    [
+      "/",
+      [
+        ...sharedPageStyles,
+        "/content/styles/pages/home.css",
+        "/content/components/particles/three-earth.css",
+        "/content/components/typewriter/typewriter.css",
+      ],
+    ],
+    ["/videos", [...sharedPageStyles, "/content/styles/pages/videos.css"]],
+    ["/blog", [...sharedPageStyles, "/content/styles/pages/blog.css"]],
+    ["/about", [...sharedPageStyles, "/content/styles/pages/about.css"]],
+    ["/gallery", [...sharedPageStyles, "/content/styles/pages/gallery.css"]],
+    ["/projekte", [...sharedPageStyles, "/content/styles/pages/projects.css"]],
+  ]);
 
-  if (getNormalizedPathname() === "/") {
-    pageSpecific.push(
-      "/content/styles/pages-consolidated.css",
-      "/content/components/typewriter/typewriter.css"
-    );
-  }
+  const pathname = getNormalizedPathname();
+  if (stylesByPath.has(pathname)) return stylesByPath.get(pathname);
+  if (pathname.startsWith("/blog/")) return stylesByPath.get("/blog");
 
-  return pageSpecific;
+  return [];
 }
 
 function deferNonCriticalAssets() {
@@ -97,7 +119,7 @@ export function injectCoreAssets({
       }
 
       getStylesForPath().forEach(href => {
-        upsertStyle(href);
+        upsertStyle(withVersion(href));
       });
 
       injectHomeLcpHints();

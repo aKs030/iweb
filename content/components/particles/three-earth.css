@@ -1,103 +1,105 @@
-/* ===== Three.js Earth System Styles v4.0 ===== */
+@layer components {
+  /* ===== Three.js Earth System Styles v4.0 ===== */
 
-/* Three.js Container */
-.three-earth-container {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-none);
-  pointer-events: auto;
-  overflow: hidden;
-  contain: strict;
-  isolation: isolate;
-  cursor: grab;
-  transition: opacity var(--transition-slow);
-}
-
-.three-earth-container canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: translateZ(0); /* Hardware acceleration */
-  will-change: transform;
-  /* Ensure sharp rendering */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-}
-
-/* Loading & Error States */
-.three-earth-error {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: var(--three-earth-error-width);
-  text-align: center;
-  color: color-mix(in srgb, var(--clr-white) 90%, transparent);
-  font-family: var(--font-inter);
-  -webkit-backdrop-filter: var(--blur-md);
-  backdrop-filter: var(--blur-md);
-  padding: var(--space-6);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--three-earth-error-bg) 90%, transparent);
-  border: var(--size-1) solid var(--border-color);
-  box-shadow: var(--component-shadow-depth-2);
-  opacity: 1;
-  transition: opacity var(--transition-base);
-}
-
-.three-earth-error.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* merged duplicate background definition removed to avoid duplicate selector */
-
-.three-earth-error p {
-  margin: 0 0 var(--size-r-0-5);
-}
-
-.three-earth-error .retry-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--gap-xs);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--component-fill-primary);
-  color: var(--clr-white);
-  border: var(--size-1) solid var(--card-border);
-  cursor: pointer;
-}
-
-.three-earth-error .retry-btn:hover {
-  background: var(--component-fill-secondary);
-}
-
-/* Section-based Opacity Transitions */
-.three-earth-container[data-section="hero"] {
-  opacity: 0.96;
-}
-
-.three-earth-container[data-section="features"] {
-  opacity: 1;
-}
-
-.three-earth-container[data-section="section3"] {
-  opacity: 0.76;
-  pointer-events: none;
-}
-
-.three-earth-container[data-section="site-footer"] {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition-duration: 0ms;
-}
-
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
+  /* Three.js Container */
   .three-earth-container {
-    transition: none;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-none);
+    pointer-events: auto;
+    overflow: hidden;
+    contain: strict;
+    isolation: isolate;
+    cursor: grab;
+    transition: opacity var(--transition-slow);
+  }
+
+  .three-earth-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translateZ(0); /* Hardware acceleration */
+    will-change: transform;
+    /* Ensure sharp rendering */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  /* Loading & Error States */
+  .three-earth-error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: var(--three-earth-error-width);
+    text-align: center;
+    color: color-mix(in srgb, var(--clr-white) 90%, transparent);
+    font-family: var(--font-inter);
+    -webkit-backdrop-filter: var(--blur-md);
+    backdrop-filter: var(--blur-md);
+    padding: var(--space-6);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--three-earth-error-bg) 90%, transparent);
+    border: var(--size-1) solid var(--border-color);
+    box-shadow: var(--component-shadow-depth-2);
+    opacity: 1;
+    transition: opacity var(--transition-base);
+  }
+
+  .three-earth-error.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* merged duplicate background definition removed to avoid duplicate selector */
+
+  .three-earth-error p {
+    margin: 0 0 var(--size-r-0-5);
+  }
+
+  .three-earth-error .retry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--component-fill-primary);
+    color: var(--clr-white);
+    border: var(--size-1) solid var(--card-border);
+    cursor: pointer;
+  }
+
+  .three-earth-error .retry-btn:hover {
+    background: var(--component-fill-secondary);
+  }
+
+  /* Section-based Opacity Transitions */
+  .three-earth-container[data-section="hero"] {
+    opacity: 0.96;
+  }
+
+  .three-earth-container[data-section="features"] {
+    opacity: 1;
+  }
+
+  .three-earth-container[data-section="section3"] {
+    opacity: 0.76;
+    pointer-events: none;
+  }
+
+  .three-earth-container[data-section="site-footer"] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition-duration: 0ms;
+  }
+
+  /* Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    .three-earth-container {
+      transition: none;
+    }
   }
 }

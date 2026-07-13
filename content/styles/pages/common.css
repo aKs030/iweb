@@ -1,0 +1,97 @@
+@layer pages {
+  /* Shared route-page motion and mobile blur safety rules. */
+  @media (prefers-reduced-motion: reduce) {
+    .video-card,
+    .blog-card,
+    .blog-card::before,
+    .blog-card::after,
+    .blog-card-image,
+    .card-category::before,
+    .blog-card .card-title,
+    .blog-card .btn-read,
+    body.blog-page .btn-back,
+    .scroll-to-top-btn,
+    .scroll-to-top-btn::before,
+    .about-main .btn,
+    .about-main .btn-primary::before,
+    .social-item,
+    .stack-tag,
+    .mini-card,
+    .projects-discovery__chip,
+    .hud-category--button,
+    .hud-pill--button,
+    .hud-related-link,
+    .hud-panel,
+    .section-view.active,
+    .confirm-overlay,
+    .confirm-dialog,
+    .nav-item,
+    .btn,
+    .memory-card,
+    .user-card,
+    .gallery-item,
+    .kv-tab,
+    .toast,
+    .toast.is-leaving {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .video-card:hover,
+    .blog-card:hover,
+    .blog-card:hover .blog-card-image,
+    .blog-card .btn-read:hover,
+    body.blog-page .btn-back:hover,
+    .scroll-to-top-btn,
+    .scroll-to-top-btn.visible,
+    .scroll-to-top-btn:hover,
+    .about-main .btn-primary:hover,
+    .stack-tag:hover,
+    .projects-discovery__chip:hover,
+    .projects-discovery__chip:focus-visible,
+    .hud-category--button:hover,
+    .hud-category--button:focus-visible,
+    .hud-pill--button:hover,
+    .hud-pill--button:focus-visible,
+    .hud-related-link:hover,
+    .gallery-item:hover,
+    .toast.is-leaving {
+      transform: none;
+    }
+
+    .blog-skeleton-line,
+    .blog-skeleton-avatar,
+    .gallery-skeleton-line,
+    .launch-skeleton__tile,
+    .launch-overlay-card,
+    .scroll-hint,
+    .typing-dot {
+      animation: none !important;
+    }
+  }
+
+  @media (width <= 640px) {
+    .projects-discovery-card {
+      -webkit-backdrop-filter: blur(var(--size-10));
+      backdrop-filter: blur(var(--size-10));
+    }
+
+    .hud-panel.visible {
+      -webkit-backdrop-filter: var(--blur-md);
+      backdrop-filter: var(--blur-md);
+    }
+
+    .blog-card,
+    .blog-article,
+    body.blog-page .btn-back,
+    .about-main .btn-outline {
+      -webkit-backdrop-filter: blur(var(--size-8));
+      backdrop-filter: blur(var(--size-8));
+    }
+
+    .app-popup.visible {
+      -webkit-backdrop-filter: blur(var(--size-8));
+      backdrop-filter: blur(var(--size-8));
+    }
+  }
+}

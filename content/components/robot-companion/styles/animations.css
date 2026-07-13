@@ -332,17 +332,6 @@
   }
 }
 
-/* Bounce squash/stretch (for bounce-across entry) */
-@keyframes bounceSquash {
-  0%,
-  100% {
-    transform: scaleX(1) scaleY(1);
-  }
-  50% {
-    transform: scaleX(1.15) scaleY(0.85);
-  }
-}
-
 @keyframes blink {
   0%,
   48%,
@@ -395,11 +384,15 @@
 }
 
 @media (width <= 480px) {
+  #robot-companion-container,
+  .robot-avatar {
+    width: var(--size-64);
+    height: var(--size-64);
+  }
+
   #robot-companion-container {
     bottom: max(var(--size-6), var(--safe-bottom));
     right: max(var(--size-6), var(--safe-right));
-    width: var(--size-64);
-    height: var(--size-64);
   }
 
   /* On mobile, disable per-page vertical offsets – always bottom-right */
@@ -410,11 +403,6 @@
     left: auto;
     align-items: flex-end;
     transition: none;
-  }
-
-  .robot-avatar {
-    width: var(--size-64);
-    height: var(--size-64);
   }
 
   .robot-chat-window {
@@ -462,7 +450,7 @@
 
   .chat-header-btn {
     padding: var(--size-5) var(--size-8);
-    font-size: var(--size-r-0-68, 0.68rem);
+    font-size: var(--size-r-0-68);
     min-height: var(--size-30);
   }
 
@@ -644,6 +632,9 @@
 
 /* Particle Effects */
 .robot-particle-star {
+  --tx: var(--size-0);
+  --ty: var(--size-0);
+
   position: absolute;
   font-size: var(--size-16);
   pointer-events: none;
@@ -658,13 +649,11 @@
   }
   50% {
     opacity: 1;
-    transform: translate(var(--tx, var(--size-0)), var(--ty, var(--size-0))) scale(1.2)
-      rotate(180deg);
+    transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(180deg);
   }
   100% {
     opacity: 0;
-    transform: translate(var(--tx, var(--size-0)), var(--ty, var(--size-0))) scale(0.5)
-      rotate(360deg);
+    transform: translate(var(--tx), var(--ty)) scale(0.5) rotate(360deg);
   }
 }
 
@@ -879,14 +868,14 @@
 .chat-image-btn {
   background: none;
   border: var(--size-1) solid color-mix(in srgb, var(--robot-cyan) 30%, transparent);
-  width: var(--size-36, 36px);
-  height: var(--size-36, 36px);
+  width: var(--size-36);
+  height: var(--size-36);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--size-r-1, 1rem);
+  font-size: var(--size-r-1);
   transition:
     background-color 0.25s ease,
     border-color 0.25s ease,
@@ -929,7 +918,7 @@
 
 .chat-preview-name {
   flex: 1;
-  font-size: var(--size-r-0-8, 0.8rem);
+  font-size: var(--size-r-0-8);
   color: var(--robot-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -941,7 +930,7 @@
   border: none;
   color: var(--robot-text-muted);
   cursor: pointer;
-  font-size: var(--size-r-1-2, 1.2rem);
+  font-size: var(--size-r-1-2);
   padding: var(--size-4);
   line-height: 1;
   border-radius: 50%;
@@ -952,8 +941,8 @@
 }
 
 .chat-preview-remove:hover {
-  background: color-mix(in srgb, var(--clr-red-500, #ef4444) 20%, transparent);
-  color: var(--clr-red-400, #f87171);
+  background: color-mix(in srgb, var(--clr-red-500) 20%, transparent);
+  color: var(--clr-red-400);
 }
 
 /* Tool call cards */
@@ -1001,7 +990,7 @@
 
 .chat-tool-call[data-accent="error"],
 .chat-tool-call[data-status="error"] {
-  --tool-card-accent: var(--clr-red-500, #ff6b6b);
+  --tool-card-accent: var(--clr-red-500);
 }
 
 .chat-tool-call__header {
@@ -1027,7 +1016,7 @@
   border-radius: var(--size-12);
   background: color-mix(in srgb, var(--tool-card-accent) 16%, transparent);
   box-shadow: inset 0 0 0 var(--size-1) color-mix(in srgb, var(--tool-card-accent) 28%, transparent);
-  font-size: var(--size-r-1, 1rem);
+  font-size: var(--size-r-1);
   flex-shrink: 0;
 }
 
@@ -1039,14 +1028,14 @@
 
 .chat-tool-call__title {
   color: var(--robot-tool-card-text);
-  font-size: var(--size-r-0-92, 0.92rem);
+  font-size: var(--size-r-0-92);
   font-weight: 700;
-  letter-spacing: var(--size-0-2);
+  letter-spacing: 0;
 }
 
 .chat-tool-call__summary {
   color: var(--robot-tool-card-text-muted);
-  font-size: var(--size-r-0-8, 0.8rem);
+  font-size: var(--size-r-0-8);
   line-height: 1.5;
 }
 
@@ -1055,13 +1044,13 @@
   align-items: center;
   justify-content: center;
   padding: var(--size-4) var(--size-10);
-  border-radius: var(--size-999, 999px);
+  border-radius: var(--size-999);
   background: color-mix(in srgb, var(--tool-card-accent) 16%, transparent);
   border: var(--size-1) solid color-mix(in srgb, var(--tool-card-accent) 26%, transparent);
   color: var(--tool-card-accent);
-  font-size: var(--size-r-0-68, 0.68rem);
+  font-size: var(--size-r-0-68);
   font-weight: 700;
-  letter-spacing: var(--size-0-3);
+  letter-spacing: 0;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1078,22 +1067,22 @@
   gap: var(--size-6);
   min-width: 0;
   padding: var(--size-6) var(--size-10);
-  border-radius: var(--size-999, 999px);
+  border-radius: var(--size-999);
   background: color-mix(in srgb, var(--clr-white) 4%, transparent);
   border: var(--size-1) solid color-mix(in srgb, var(--clr-white) 8%, transparent);
 }
 
 .chat-tool-call__meta-label {
   color: var(--robot-tool-card-meta-label);
-  font-size: var(--size-r-0-68, 0.68rem);
+  font-size: var(--size-r-0-68);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: var(--size-0-3);
+  letter-spacing: 0;
 }
 
 .chat-tool-call__meta-value {
   color: var(--robot-tool-card-text);
-  font-size: var(--size-r-0-72, 0.72rem);
+  font-size: var(--size-r-0-72);
   white-space: nowrap;
 }
 
@@ -1104,7 +1093,7 @@
 
 .chat-tool-call__btn {
   border: 0;
-  border-radius: var(--size-999, 999px);
+  border-radius: var(--size-999);
   padding: var(--size-8) var(--size-14);
   background: linear-gradient(
     135deg,
@@ -1112,9 +1101,9 @@
     var(--tool-card-accent)
   );
   color: var(--clr-black);
-  font-size: var(--size-r-0-74, 0.74rem);
+  font-size: var(--size-r-0-74);
   font-weight: 700;
-  letter-spacing: var(--size-0-2);
+  letter-spacing: 0;
   cursor: pointer;
   transition:
     transform 0.2s ease,
@@ -1137,7 +1126,7 @@
 .chat-memory-badge {
   display: inline-flex;
   align-items: center;
-  font-size: var(--size-r-0-7, 0.7rem);
+  font-size: var(--size-r-0-7);
   margin-left: var(--size-4);
   opacity: 0.7;
   cursor: help;
@@ -1162,11 +1151,11 @@
   padding: var(--size-4) var(--size-8);
   background: color-mix(in srgb, var(--robot-cyan) 5%, transparent);
   border-radius: var(--size-6);
-  font-size: var(--size-r-0-8, 0.8rem);
+  font-size: var(--size-r-0-8);
 }
 
 .tool-result .tool-status {
-  font-size: var(--size-r-0-9, 0.9rem);
+  font-size: var(--size-r-0-9);
 }
 
 /* Slide up animation */

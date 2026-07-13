@@ -16,6 +16,8 @@ export const ProgressiveImage = React.memo(function ProgressiveImage({
   className,
   loading = "lazy",
   fetchpriority,
+  width = 800,
+  height = 420,
 }) {
   const [loaded, setLoaded] = React.useState(false);
   const imgRef = React.useRef(null);
@@ -33,6 +35,8 @@ export const ProgressiveImage = React.memo(function ProgressiveImage({
         src=${src}
         alt=${alt}
         className=${className}
+        width=${width}
+        height=${height}
         loading=${loading}
         fetchpriority=${fetchpriority}
         decoding="async"

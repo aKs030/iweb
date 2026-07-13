@@ -1,5 +1,30 @@
-@import "./styles/theme.css";
-@import "./styles/layout.css";
-@import "./styles/avatar.css";
-@import "./styles/chat.css";
-@import "./styles/animations.css";
+@media (prefers-reduced-motion: reduce) {
+  #robot-companion-container,
+  #robot-companion-container *,
+  #robot-companion-container *::before,
+  #robot-companion-container *::after,
+  #robot-chat-window,
+  #robot-chat-window *,
+  #robot-chat-window *::before,
+  #robot-chat-window *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .robot-avatar,
+  .robot-head,
+  .robot-body,
+  .robot-arm,
+  .robot-leg,
+  .robot-mouth {
+    transform: none !important;
+  }
+
+  .robot-trail,
+  .robot-spark,
+  .robot-particle,
+  .streaming-cursor,
+  .typing-dot {
+    opacity: 0 !important;
+  }
+}

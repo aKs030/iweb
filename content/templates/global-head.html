@@ -1,10 +1,8 @@
 <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 <meta name="format-detection" content="telephone=no,email=no" />
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-/>
+<meta name="deploy-version" content="{{DEPLOY_VERSION}}" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
 <!-- Import Map for no-build ES modules: vendors + internal aliases -->
 <!-- Must be as early as possible in the head for both base and standalone pages -->
@@ -156,7 +154,12 @@
   media="print"
   data-async-css
 />
-<link rel="stylesheet" href="/content/styles/overlays.css?v={{DEPLOY_VERSION}}" />
+<link
+  rel="stylesheet"
+  href="/content/styles/overlays.css?v={{DEPLOY_VERSION}}"
+  media="print"
+  data-async-css
+/>
 <link rel="stylesheet" href="/content/components/menu/styles/menu-base.css?v={{DEPLOY_VERSION}}" />
 <link
   rel="stylesheet"

@@ -6,6 +6,26 @@ import { TemplateCommentHandler, NonceInjector, SeoMetaHandler } from "./streami
 import { SectionInjector } from "./template-injector.js";
 
 const TRANSFORMED_ENTITY_HEADERS = ["Content-Length", "ETag", "Expires", "Last-Modified"];
+const VERSIONED_STYLESHEET_PREFIXES = ["/content/", "/pages/"];
+
+class VersionedStylesheetHandler {
+  /**
+   * @param {string} deployVersion
+   */
+  constructor(deployVersion = "") {
+    this.deployVersion = String(deployVersion || "").trim();
+  }
+
+  element(element) {
+    if (!this.deployVersion) return;
+
+    const href = element.getAttribute("href") || "";
+    if (!href || href.includes("?")) return;
+    if (!VERSIONED_STYLESHEET_PREFIXES.some(prefix => href.startsWith(prefix))) return;
+
+    element.setAttribute("href", `${href}?v=${this.deployVersion}`);
+  }
+}
 
 /**
  * @param {Headers} headers
@@ -113,6 +133,7 @@ export function buildCacheHitHtmlResponse(cachedResponse, options) {
  * @param {any} context
  * @param {URL} url
  * @param {{
+ *   deployVersion?: string,
  *   isLocal: boolean,
  *   injectShell?: boolean,
  *   resolvedGlobalHeadTemplate: string,
@@ -125,6 +146,7 @@ export function createHtmlRewriter(context, url, options) {
   const rewriter = new HTMLRewriter();
 
   rewriter.on("section[data-section-src]", new SectionInjector(context));
+  rewriter.on('link[rel="stylesheet"]', new VersionedStylesheetHandler(options.deployVersion));
 
   if (options.resolvedGlobalHeadTemplate) {
     rewriter.on(

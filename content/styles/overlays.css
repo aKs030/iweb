@@ -1,12 +1,12 @@
 @layer components {
   :root {
-    --overlay-layer-backdrop: calc(var(--z-overlay) - var(--z-base) - var(--z-base));
-    --overlay-layer-surface: calc(var(--z-overlay) - var(--z-base));
-    --overlay-layer-top-backdrop: var(--z-top-overlay);
-    --overlay-layer-top-surface: calc(var(--z-top-overlay) + var(--z-base));
     --overlay-backdrop-filter-rest: blur(0px) saturate(100%) brightness(1);
     --overlay-backdrop-filter-soft: blur(var(--size-14)) saturate(128%) brightness(1.04);
     --overlay-backdrop-filter-immersive: blur(var(--size-16)) saturate(118%) brightness(0.78);
+    --overlay-backdrop-background: var(--overlay-backdrop-background-soft);
+    --overlay-backdrop-layer: var(--overlay-layer-backdrop);
+    --overlay-backdrop-transition-duration: 160ms;
+    --overlay-backdrop-transition-ease: ease;
     --overlay-backdrop-background-soft: linear-gradient(
       180deg,
       color-mix(in srgb, var(--component-header-bg) 32%, transparent) 0%,
@@ -26,19 +26,17 @@
     visibility: hidden;
     pointer-events: none;
     touch-action: none;
-    background: var(--overlay-backdrop-background, var(--overlay-backdrop-background-soft));
+    background: var(--overlay-backdrop-background);
     backdrop-filter: var(--overlay-backdrop-filter-rest);
     -webkit-backdrop-filter: var(--overlay-backdrop-filter-rest);
     transition:
-      opacity var(--overlay-backdrop-transition-duration, 160ms)
-        var(--overlay-backdrop-transition-ease, ease),
-      visibility var(--overlay-backdrop-transition-duration, 160ms)
-        var(--overlay-backdrop-transition-ease, ease),
-      backdrop-filter var(--overlay-backdrop-transition-duration, 160ms)
-        var(--overlay-backdrop-transition-ease, ease),
-      -webkit-backdrop-filter var(--overlay-backdrop-transition-duration, 160ms)
-        var(--overlay-backdrop-transition-ease, ease);
-    z-index: var(--overlay-backdrop-layer, var(--overlay-layer-backdrop));
+      opacity var(--overlay-backdrop-transition-duration) var(--overlay-backdrop-transition-ease),
+      visibility var(--overlay-backdrop-transition-duration) var(--overlay-backdrop-transition-ease),
+      backdrop-filter var(--overlay-backdrop-transition-duration)
+        var(--overlay-backdrop-transition-ease),
+      -webkit-backdrop-filter var(--overlay-backdrop-transition-duration)
+        var(--overlay-backdrop-transition-ease);
+    z-index: var(--overlay-backdrop-layer);
   }
 
   .overlay-backdrop:is(.is-open, .open) {

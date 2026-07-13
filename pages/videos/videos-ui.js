@@ -351,6 +351,8 @@ export function renderVideoCard(container, item, detailsMap, index = 0) {
 
   const thumbImg = document.createElement("img");
   thumbImg.alt = `Thumbnail: ${title}`;
+  thumbImg.width = 480;
+  thumbImg.height = 360;
   thumbImg.loading = index < 4 ? "eager" : "lazy";
   thumbImg.decoding = "async";
   thumbImg.className = "video-thumb__img";

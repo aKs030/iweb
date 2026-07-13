@@ -100,6 +100,7 @@ export async function onRequest(context) {
   }
 
   const { cspHeader, cspReportOnlyHeader, nonce, rewriter } = createHtmlRewriter(context, url, {
+    deployVersion: DEPLOY_VERSION,
     injectShell: shouldInjectShell(url.pathname),
     isLocal,
     resolvedGlobalHeadTemplate,

@@ -254,12 +254,20 @@ const App = () => {
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
 
-    document.body.style.setProperty(
-      "--projects-scroll-multiplier",
-      String(getScrollMultiplier(isDetailRouteActive ? projects.length : filteredProjects.length))
-    );
+    const projectCount = isDetailRouteActive ? projects.length : filteredProjects.length;
+    const compactQuery = window.matchMedia("(max-width: 768px)");
+    const applyScrollMultiplier = () => {
+      document.body.style.setProperty(
+        "--projects-scroll-multiplier",
+        String(getScrollMultiplier(projectCount, { compact: compactQuery.matches }))
+      );
+    };
+
+    applyScrollMultiplier();
+    compactQuery.addEventListener("change", applyScrollMultiplier);
 
     return () => {
+      compactQuery.removeEventListener("change", applyScrollMultiplier);
       document.body.style.removeProperty("--projects-scroll-multiplier");
     };
   }, [filteredProjects.length, isDetailRouteActive, projects.length]);
@@ -791,7 +799,10 @@ const App = () => {
   const popupPanelStyle = popupSize
     ? {
         width: `min(calc(100vw - 1rem), ${Math.max(420, popupSize.width + 36)}px)`,
-        height: `min(calc(100vh - 1rem), ${Math.max(380, popupSize.height + 86)}px)`,
+        height: `min(calc(var(--viewport-height, 100vh) - 1rem), ${Math.max(
+          380,
+          popupSize.height + 86
+        )}px)`,
       }
     : null;
 
@@ -1307,6 +1318,8 @@ const App = () => {
                 className: "hud-preview-image",
                 src: activeProject.previewUrl,
                 alt: activeProject.previewAlt || `${activeProject.title} Vorschau`,
+                width: 800,
+                height: 600,
                 loading: "eager",
                 decoding: "async",
               })

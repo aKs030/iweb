@@ -228,6 +228,34 @@ class SiteMenu extends HTMLElement {
     return allCssUrls;
   }
 
+  getDeployVersion() {
+    return document.querySelector('meta[name="deploy-version"]')?.getAttribute("content") || "";
+  }
+
+  versionCssUrl(cssUrl) {
+    if (!cssUrl || !cssUrl.startsWith("/") || cssUrl.includes("?")) return cssUrl;
+
+    const deployVersion = this.getDeployVersion();
+    return deployVersion ? `${cssUrl}?v=${deployVersion}` : cssUrl;
+  }
+
+  findHeadStylesheet(cssUrl) {
+    if (!cssUrl) return null;
+
+    const expectedPath = new URL(cssUrl, globalThis.location?.origin || "http://localhost")
+      .pathname;
+    return [...document.head.querySelectorAll('link[rel="stylesheet"]')].find(link => {
+      try {
+        return (
+          new URL(link.getAttribute("href") || "", globalThis.location.href).pathname ===
+          expectedPath
+        );
+      } catch {
+        return false;
+      }
+    });
+  }
+
   /**
    * @param {string[]} cssUrls
    * @param {string} [injectedBy]
@@ -236,12 +264,13 @@ class SiteMenu extends HTMLElement {
     if (!cssUrls.length) return;
 
     for (const cssUrl of cssUrls) {
-      const existing = document.head.querySelector(`link[href="${cssUrl}"]`);
+      const existing = this.findHeadStylesheet(cssUrl);
       if (existing) continue;
+      const href = this.versionCssUrl(cssUrl);
 
       upsertHeadLink({
         rel: "stylesheet",
-        href: cssUrl,
+        href,
         attrs: { media: "all" },
         dataset: { injectedBy },
       });
@@ -255,7 +284,9 @@ class SiteMenu extends HTMLElement {
   ensureHeadStylesAsync(cssUrls, injectedBy = "site-menu-deferred") {
     if (!cssUrls.length) return Promise.resolve([]);
 
-    return Promise.all(cssUrls.map(cssUrl => loadHeadStylesheet(cssUrl, { injectedBy })));
+    return Promise.all(
+      cssUrls.map(cssUrl => loadHeadStylesheet(this.versionCssUrl(cssUrl), { injectedBy }))
+    );
   }
 
   async ensureStyles() {

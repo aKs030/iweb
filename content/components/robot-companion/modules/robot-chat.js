@@ -820,6 +820,7 @@ export class RobotChat {
     // (VT darf nur DOM-Mutationen wrappen, nicht DOM-Erstellung)
     if (newState) {
       this.robot.ensureChatWindowCreated();
+      void this.robot.loadChatCSS?.();
     }
 
     // Visuelle State-Änderungen in View Transition wrappen.
@@ -910,7 +911,9 @@ export class RobotChat {
     }
 
     (async () => {
+      const stylesReady = this.robot.loadChatCSS?.();
       await this.robot.animationModule.playPokeAnimation();
+      await stylesReady;
       // ensure name is set before opening chat to prompt user if needed
       try {
         await this.robot.ensureName();

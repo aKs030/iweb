@@ -30,6 +30,12 @@ const shuffle = array => {
 const EVENTS = {
   HERO_TYPING_END: "hero:typingEnd",
 };
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+const prefersReducedMotion = () =>
+  typeof globalThis !== "undefined" &&
+  typeof globalThis.matchMedia === "function" &&
+  globalThis.matchMedia(REDUCED_MOTION_QUERY).matches;
 
 /** @type {TypeWriter|null} Internal instance reference */
 let typeWriterInstance = null;
@@ -163,10 +169,8 @@ function makeLineMeasurer(subtitleEl) {
       setCSSVars(subtitleEl, {
         "--lh-px": lh ? `${lh}px` : "0px",
         "--gap-px": lh ? `${lh * 0.25}px` : "0px",
-        "--lines": String(lines),
       });
 
-      subtitleEl.setAttribute("data-lines", String(lines));
       return lines;
     },
     /** Remove the off-screen measurer element from the DOM */
@@ -245,6 +249,25 @@ class TypeWriter {
       const res = this.onBeforeType(this._current.text);
       if (typeof res === "string") this._current.text = res;
     }
+
+    if (prefersReducedMotion()) {
+      const text = String(this._current.text);
+      const author = String(this._current.author ?? "");
+      this._txt = text;
+      this._renderText(text);
+      if (this.authorEl) this.authorEl.textContent = author;
+      try {
+        document.dispatchEvent(
+          new CustomEvent(EVENTS.HERO_TYPING_END, {
+            detail: { text, author },
+          })
+        );
+      } catch (err) {
+        log.warn("TypeWriter: dispatch hero:typingEnd failed", err);
+      }
+      return;
+    }
+
     this._tick();
   }
 

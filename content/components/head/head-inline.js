@@ -268,7 +268,8 @@ function setupThemeObservers() {
     };
 
     const syncDisplayMode = () => {
-      let mode = "browser";
+      const isIosStandalone = /** @type {any} */ (navigator).standalone === true;
+      let mode = isIosStandalone ? "standalone" : "browser";
       const modes = ["fullscreen", "standalone", "minimal-ui"];
       if (window.matchMedia) {
         for (let i = 0; i < modes.length; i++) {
@@ -277,8 +278,6 @@ function setupThemeObservers() {
             break;
           }
         }
-      } else if (/** @type {any} */ (navigator).standalone) {
-        mode = "standalone";
       }
 
       root.setAttribute("data-display-mode", mode);
@@ -296,6 +295,8 @@ function setupThemeObservers() {
         const mq = window.matchMedia(`(display-mode: ${mode})`);
         if (typeof mq.addEventListener === "function") {
           mq.addEventListener("change", syncDisplayMode);
+        } else if (typeof mq.addListener === "function") {
+          mq.addListener(syncDisplayMode);
         }
       });
     }

@@ -45,7 +45,7 @@ body.ai-info-page {
   font-size: 0.82rem;
   font-weight: 700;
   gap: 0.5rem;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   padding: 0.35rem 0.9rem;
 }
 
@@ -53,7 +53,7 @@ body.ai-info-page {
 .ai-info-page h2,
 .ai-info-page h3 {
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   margin: 0;
 }
 

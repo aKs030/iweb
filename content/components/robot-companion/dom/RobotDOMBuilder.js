@@ -731,7 +731,7 @@ export class RobotDOMBuilder {
 
     const leftArm = document.createElementNS("http://www.w3.org/2000/svg", "path");
     // Adjusted grip to wrap around the handle at approx (22, 82) - Viewer's Left
-    // Mirrored from old right arm: M30,62 Q18,72 22,82
+    // Mirrored from the right-arm path: M30,62 Q18,72 22,82
     leftArm.setAttribute("d", "M30,62 Q18,72 22,82");
     leftArm.setAttribute("fill", "none");
     leftArm.setAttribute("stroke", "#40e0d0");
@@ -784,7 +784,7 @@ export class RobotDOMBuilder {
 
     const rightArm = document.createElementNS("http://www.w3.org/2000/svg", "path");
     // Normal arm for right side (Viewer's Right)
-    // Mirrored from old left arm: M70,62 Q80,70 75,80
+    // Mirrored from the left-arm path: M70,62 Q80,70 75,80
     rightArm.setAttribute("d", "M70,62 Q80,70 75,80");
     rightArm.setAttribute("fill", "none");
     rightArm.setAttribute("stroke", "#40e0d0");
@@ -845,11 +845,11 @@ export class RobotDOMBuilder {
 
     const outerFlame = document.createElementNS("http://www.w3.org/2000/svg", "path");
     outerFlame.setAttribute("d", "M35,88 Q50,115 65,88 Q50,108 35,88");
-    // fill is handled by CSS (.robot-flame path { fill: var(--flame-outer-color) })
+    // fill is handled by CSS (.robot-flame path { fill: var(--robot-flame-outer-color) })
 
     const innerFlame = document.createElementNS("http://www.w3.org/2000/svg", "path");
     innerFlame.setAttribute("d", "M42,88 Q50,108 58,88");
-    // fill is handled by CSS (.robot-flame path:nth-child(2) { fill: var(--flame-inner-color) })
+    // fill is handled by CSS (.robot-flame path:nth-child(2) { fill: var(--robot-flame-inner-color) })
 
     g.append(outerFlame, innerFlame);
 

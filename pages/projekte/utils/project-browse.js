@@ -245,5 +245,8 @@ export const findFacetLabel = (items, token) => {
   return match?.label || String(token || "").replace(/-/g, " ");
 };
 
-export const getScrollMultiplier = projectCount =>
-  Math.max(3.6, Math.min(6.2, 2.4 + Math.max(1, projectCount) * 0.16));
+export const getScrollMultiplier = (projectCount, { compact = false } = {}) => {
+  const value = Math.max(3.6, Math.min(6.2, 2.4 + Math.max(1, projectCount) * 0.16));
+
+  return compact ? Math.min(4.3, value) : value;
+};

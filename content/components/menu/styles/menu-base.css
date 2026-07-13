@@ -79,19 +79,19 @@ site-menu {
 }
 
 .nav-icon {
-  width: var(--menu-icon-size, var(--size-16));
-  height: var(--menu-icon-size, var(--size-16));
-  min-width: var(--menu-icon-size, var(--size-16));
-  min-height: var(--menu-icon-size, var(--size-16));
+  width: var(--menu-icon-size);
+  height: var(--menu-icon-size);
+  min-width: var(--menu-icon-size);
+  min-height: var(--menu-icon-size);
   fill: currentcolor;
   flex-shrink: 0;
   filter: drop-shadow(
     0 var(--size-0-5) var(--size-1) color-mix(in srgb, var(--clr-black) 15%, transparent)
   );
   transition:
-    transform 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    opacity 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    filter 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
+    transform 0.2s var(--component-spring-quick),
+    opacity 0.2s var(--component-spring-quick),
+    filter 0.2s var(--component-spring-quick);
   opacity: 0.85;
   display: inline-block;
   position: relative;
@@ -153,14 +153,13 @@ site-menu {
   justify-content: space-between;
   align-items: center;
   z-index: var(--z-overlay);
-  animation: headerAppear 0.8s
-    var(--component-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)) forwards;
+  animation: headerAppear 0.8s var(--component-spring-bounce) forwards;
   opacity: 0;
   transform: translateX(-50%) translateY(calc(var(--size-20) * -1)) scale(0.95);
   touch-action: pan-y;
   font-family: var(--font-primary);
   font-weight: 500;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 @container sitemenu (width >= 901px) {
@@ -194,7 +193,7 @@ site-menu {
   font-weight: 600;
   font-size: var(--size-r-1);
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   white-space: nowrap;
 }
 
@@ -244,7 +243,7 @@ site-menu {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  transition: transform 0.4s var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
+  transition: transform 0.4s var(--component-spring-smooth);
   overflow: visible;
   margin: 0;
   flex: 1 0 auto;
@@ -306,14 +305,14 @@ site-menu {
   background: transparent;
   border: var(--size-1) solid transparent;
   font-size: clamp(var(--size-13), 1.1vw, var(--size-14));
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   touch-action: manipulation;
   transition:
-    background 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    color 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    transform 0.15s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    border-color 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    box-shadow 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
+    background 0.2s var(--component-spring-quick),
+    color 0.2s var(--component-spring-quick),
+    transform 0.15s var(--component-spring-quick),
+    border-color 0.2s var(--component-spring-quick),
+    box-shadow 0.2s var(--component-spring-quick);
   -webkit-tap-highlight-color: color-mix(in srgb, var(--component-accent-blue) 10%, transparent);
   -webkit-user-select: none;
   user-select: none;
@@ -362,10 +361,10 @@ site-menu {
 
 .site-menu__list button.search-trigger .nav-icon,
 .site-menu__list button.contact-trigger .nav-icon {
-  width: var(--menu-action-icon-size, var(--size-18));
-  height: var(--menu-action-icon-size, var(--size-18));
-  min-width: var(--menu-action-icon-size, var(--size-18));
-  min-height: var(--menu-action-icon-size, var(--size-18));
+  width: var(--menu-action-icon-size);
+  height: var(--menu-action-icon-size);
+  min-width: var(--menu-action-icon-size);
+  min-height: var(--menu-action-icon-size);
   opacity: 0.9;
   filter: drop-shadow(
     0 var(--size-1) var(--size-2) color-mix(in srgb, var(--clr-black) 10%, transparent)
@@ -400,14 +399,14 @@ site-menu {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: var(--menu-action-icon-size, var(--size-18));
-  height: var(--menu-action-icon-size, var(--size-18));
-  min-width: var(--menu-action-icon-size, var(--size-18));
-  min-height: var(--menu-action-icon-size, var(--size-18));
+  width: var(--menu-action-icon-size);
+  height: var(--menu-action-icon-size);
+  min-width: var(--menu-action-icon-size);
+  min-height: var(--menu-action-icon-size);
   pointer-events: none;
   transition:
-    opacity 0.3s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    transform 0.4s var(--component-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55));
+    opacity 0.3s var(--component-spring-quick),
+    transform 0.4s var(--component-spring-bounce);
 }
 
 .site-menu .theme-icon--sun {

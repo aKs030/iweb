@@ -628,23 +628,23 @@ ${
     ? `@view-transition { navigation: auto; }
 
 ${UNTYPED_VIEW_TRANSITION_SELECTOR}::view-transition-old(root) {
-  animation: vt-page-old var(--vt-page-old-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_OLD)}) cubic-bezier(0.4, 0, 1, 1) both;
+  animation: vt-page-old var(--vt-page-old-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_OLD)}) var(--motion-ease-exit, cubic-bezier(0.4, 0, 1, 1)) both;
 }
 
 ${UNTYPED_VIEW_TRANSITION_SELECTOR}::view-transition-new(root) {
-  animation: vt-page-new var(--vt-page-new-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_NEW)}) cubic-bezier(0, 0, 0.2, 1) both;
+  animation: vt-page-new var(--vt-page-new-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_NEW)}) var(--motion-ease-enter, cubic-bezier(0, 0, 0.2, 1)) both;
 }
 `
     : ""
 }
 :root:active-view-transition-type(page-navigate)::view-transition-old(root),
 :root:active-view-transition-type(same-page-scroll)::view-transition-old(root) {
-  animation: vt-page-old var(--vt-page-old-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_OLD)}) cubic-bezier(0.4, 0, 1, 1) both;
+  animation: vt-page-old var(--vt-page-old-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_OLD)}) var(--motion-ease-exit, cubic-bezier(0.4, 0, 1, 1)) both;
 }
 
 :root:active-view-transition-type(page-navigate)::view-transition-new(root),
 :root:active-view-transition-type(same-page-scroll)::view-transition-new(root) {
-  animation: vt-page-new var(--vt-page-new-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_NEW)}) cubic-bezier(0, 0, 0.2, 1) both;
+  animation: vt-page-new var(--vt-page-new-duration, ${toCssMs(VIEW_TRANSITION_TIMINGS_MS.PAGE_NEW)}) var(--motion-ease-enter, cubic-bezier(0, 0, 0.2, 1)) both;
 }
 
 @keyframes vt-page-old {

@@ -22,11 +22,11 @@ import { normalizePathname } from "../../content/core/utils/index.js";
 import { DEPLOY_VERSION } from "./template-cache.js";
 
 const v = DEPLOY_VERSION ? `?v=${DEPLOY_VERSION}` : "";
+const withVersion = href => (href.startsWith("/") ? `${href}${v}` : href);
 
 const CORE_RESOURCES = [
   // Core CSS is loaded immediately by the document head
   { href: `/content/styles/main.css${v}`, rel: "preload", as: "style" },
-  { href: `/content/styles/animations.css${v}`, rel: "preload", as: "style" },
 
   // Core JS modules — start parsing before HTML fully loaded
   { href: `/content/main.js${v}`, rel: "modulepreload" },
@@ -43,10 +43,32 @@ const CORE_RESOURCES = [
   },
 ];
 
+const SHARED_ROUTE_STYLES = [
+  "/content/components/interactions/interactions.css",
+  "/content/styles/pages/common.css",
+];
+
+const ROUTE_STYLE_RESOURCES = new Map([
+  [
+    "/",
+    [
+      ...SHARED_ROUTE_STYLES,
+      "/content/styles/pages/home.css",
+      "/content/components/particles/three-earth.css",
+      "/content/components/typewriter/typewriter.css",
+    ],
+  ],
+  ["/videos", [...SHARED_ROUTE_STYLES, "/content/styles/pages/videos.css"]],
+  ["/blog", [...SHARED_ROUTE_STYLES, "/content/styles/pages/blog.css"]],
+  ["/about", [...SHARED_ROUTE_STYLES, "/content/styles/pages/about.css"]],
+  ["/gallery", [...SHARED_ROUTE_STYLES, "/content/styles/pages/gallery.css"]],
+  ["/projekte", [...SHARED_ROUTE_STYLES, "/content/styles/pages/projects.css"]],
+  ["/admin", [...SHARED_ROUTE_STYLES, "/content/styles/pages/admin.css"]],
+]);
+
 // Bare paths (no query string) — compared against href without ?v= suffix.
 const STANDALONE_SHELL_EXCLUSIONS = new Set([
   "/content/styles/main.css",
-  "/content/styles/animations.css",
   "/content/main.js",
   "/content/components/head/index.js",
   "/content/components/menu/index.js",
@@ -63,12 +85,30 @@ function isStandaloneShellPath(pathname = "/") {
 }
 
 function getResourcesForPath(pathname = "/") {
+  const normalized = normalizePathname(pathname);
   if (!isStandaloneShellPath(pathname)) {
-    return CORE_RESOURCES;
+    return [...CORE_RESOURCES, ...getRouteStyleResources(normalized)];
   }
 
   // Strip ?v= query param before checking exclusions so the versioned URLs still match.
-  return CORE_RESOURCES.filter(({ href }) => !STANDALONE_SHELL_EXCLUSIONS.has(href.split("?")[0]));
+  return [
+    ...CORE_RESOURCES.filter(({ href }) => !STANDALONE_SHELL_EXCLUSIONS.has(href.split("?")[0])),
+    ...getRouteStyleResources(normalized),
+  ];
+}
+
+function getRouteStyleResources(pathname = "/") {
+  const exact = ROUTE_STYLE_RESOURCES.get(pathname);
+  if (exact) return exact.map(href => ({ href: withVersion(href), rel: "preload", as: "style" }));
+  if (pathname.startsWith("/blog/")) {
+    return (ROUTE_STYLE_RESOURCES.get("/blog") || []).map(href => ({
+      href: withVersion(href),
+      rel: "preload",
+      as: "style",
+    }));
+  }
+
+  return [];
 }
 
 /**

@@ -226,7 +226,7 @@ const HeroManager = (() => {
     if (hero) {
       const heroHeight = hero.offsetHeight || window.innerHeight;
       const vignetteOpacity = Math.max(0, Math.min(1, 1 - window.scrollY / (heroHeight * 0.8)));
-      hero.style.setProperty("--hero-vignette-opacity", vignetteOpacity.toFixed(2));
+      hero.style.setProperty("--home-hero-vignette-opacity", vignetteOpacity.toFixed(2));
     }
 
     const reduceMotion = auroraMotionQuery?.matches;
@@ -234,14 +234,14 @@ const HeroManager = (() => {
     const progress = Math.min(1, Math.max(0, window.scrollY / maxScroll));
 
     if (reduceMotion) {
-      aurora.style.setProperty("--aurora-depth", "0px");
-      aurora.style.setProperty("--aurora-perspective-x", "50%");
-      aurora.style.setProperty("--aurora-perspective-y", "50%");
-      aurora.style.setProperty("--aurora-scale", "1");
-      aurora.style.setProperty("--aurora-shift-x", "0px");
-      aurora.style.setProperty("--aurora-shift-y", "0px");
-      aurora.style.setProperty("--aurora-tilt-x", "0deg");
-      aurora.style.setProperty("--aurora-tilt-y", "0deg");
+      aurora.style.setProperty("--home-aurora-depth", "0px");
+      aurora.style.setProperty("--home-aurora-perspective-x", "50%");
+      aurora.style.setProperty("--home-aurora-perspective-y", "50%");
+      aurora.style.setProperty("--home-aurora-scale", "1");
+      aurora.style.setProperty("--home-aurora-shift-x", "0px");
+      aurora.style.setProperty("--home-aurora-shift-y", "0px");
+      aurora.style.setProperty("--home-aurora-tilt-x", "0deg");
+      aurora.style.setProperty("--home-aurora-tilt-y", "0deg");
       return;
     }
 
@@ -260,14 +260,14 @@ const HeroManager = (() => {
     const perspectiveX = (50 + orbit * 15 + slowOrbit * 5).toFixed(2);
     const perspectiveY = (50 + counterOrbit * 12).toFixed(2);
 
-    aurora.style.setProperty("--aurora-depth", `${depth}px`);
-    aurora.style.setProperty("--aurora-perspective-x", `${perspectiveX}%`);
-    aurora.style.setProperty("--aurora-perspective-y", `${perspectiveY}%`);
-    aurora.style.setProperty("--aurora-scale", scale);
-    aurora.style.setProperty("--aurora-shift-x", `${shiftX}px`);
-    aurora.style.setProperty("--aurora-shift-y", `${shiftY}px`);
-    aurora.style.setProperty("--aurora-tilt-x", `${tiltX}deg`);
-    aurora.style.setProperty("--aurora-tilt-y", `${tiltY}deg`);
+    aurora.style.setProperty("--home-aurora-depth", `${depth}px`);
+    aurora.style.setProperty("--home-aurora-perspective-x", `${perspectiveX}%`);
+    aurora.style.setProperty("--home-aurora-perspective-y", `${perspectiveY}%`);
+    aurora.style.setProperty("--home-aurora-scale", scale);
+    aurora.style.setProperty("--home-aurora-shift-x", `${shiftX}px`);
+    aurora.style.setProperty("--home-aurora-shift-y", `${shiftY}px`);
+    aurora.style.setProperty("--home-aurora-tilt-x", `${tiltX}deg`);
+    aurora.style.setProperty("--home-aurora-tilt-y", `${tiltY}deg`);
   }
 
   function requestAuroraPerspectiveUpdate() {

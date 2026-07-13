@@ -247,6 +247,10 @@ export const ThreeGalleryScene = ({ items }) => {
                     src: selectedItem.url,
                     alt: selectedItem.title,
                     className: "gallery-lightbox__media-item is-image",
+                    width: selectedItem.width || 1200,
+                    height: selectedItem.height || 800,
+                    loading: "eager",
+                    decoding: "async",
                     style: {
                       backgroundColor: selectedItem.dominantColor || "#111827",
                     },

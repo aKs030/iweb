@@ -30,7 +30,6 @@ Weitere Projektbefehle:
 ```bash
 npm run lint                 # JS-Checks ohne Dateiaenderungen
 npm run lint:fix             # JS-Fixes anwenden
-npm run check:lint           # Linting ohne Warnungen pruefen
 npm run check:format         # Formatierung pruefen
 npm run format               # Formatierung anwenden
 ```

@@ -24,6 +24,7 @@ import { RobotAnimation } from "./modules/robot-animation.js";
 import { RobotChat } from "./modules/robot-chat.js";
 import { createLogger } from "../../core/logger.js";
 import { createObserver } from "../../core/utils/index.js";
+import { loadHeadStylesheet } from "../../core/utils/index.js";
 import { TimerManager } from "../../core/utils/index.js";
 import { uiStore } from "../../core/state/ui-store.js";
 import {
@@ -42,6 +43,15 @@ import {
 } from "./modules/name-identity.js";
 
 const log = createLogger("RobotCompanion");
+const ROBOT_BASE_CSS_URL = "/content/components/robot-companion/robot-companion.css";
+const ROBOT_BASE_CSS_URLS = [
+  "/content/components/robot-companion/styles/theme.css",
+  "/content/components/robot-companion/styles/layout.css",
+  "/content/components/robot-companion/styles/avatar.css",
+  ROBOT_BASE_CSS_URL,
+];
+const ROBOT_CHAT_CSS_URL = "/content/components/robot-companion/styles/chat.css";
+const ROBOT_MOTION_CSS_URL = "/content/components/robot-companion/styles/animations.css";
 
 /**
  * Robot Companion Class
@@ -70,6 +80,12 @@ export class RobotCompanion {
     this._intelligenceModulePromise = null;
     /** @type {Promise<void>|null} */
     this._interactiveModulesPromise = null;
+    /** @type {Promise<any>|null} */
+    this._baseStylesPromise = null;
+    /** @type {Promise<any>|null} */
+    this._chatStylesPromise = null;
+    /** @type {Promise<any>|null} */
+    this._motionStylesPromise = null;
     /** @type {string} */
     this._agentIdentitySyncedFor = "";
     /** @type {boolean} */
@@ -1124,12 +1140,41 @@ export class RobotCompanion {
   }
 
   loadCSS() {
-    if (!document.querySelector('link[href*="robot-companion.css"]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "/content/components/robot-companion/robot-companion.css";
-      document.head.appendChild(link);
+    if (!this._baseStylesPromise) {
+      this._baseStylesPromise = Promise.all(
+        ROBOT_BASE_CSS_URLS.map(href =>
+          loadHeadStylesheet(href, {
+            injectedBy: "robot-companion",
+          })
+        )
+      );
     }
+    return this._baseStylesPromise;
+  }
+
+  loadMotionCSS() {
+    if (globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+      return Promise.resolve(null);
+    }
+
+    if (!this._motionStylesPromise) {
+      this._motionStylesPromise = loadHeadStylesheet(ROBOT_MOTION_CSS_URL, {
+        injectedBy: "robot-companion-motion",
+      });
+    }
+    return this._motionStylesPromise;
+  }
+
+  loadChatCSS() {
+    const styles = [];
+    if (!this._chatStylesPromise) {
+      this._chatStylesPromise = loadHeadStylesheet(ROBOT_CHAT_CSS_URL, {
+        injectedBy: "robot-companion-chat",
+      });
+    }
+    styles.push(this._chatStylesPromise);
+    styles.push(this.loadMotionCSS());
+    return Promise.all(styles);
   }
 
   createDOM() {
@@ -1459,9 +1504,13 @@ export class RobotCompanion {
 
   // ─── Chat Module Proxy Methods (used by collision/animation/intelligence modules) ───
   toggleChat(force) {
+    if (force ?? !this.chatModule.isOpen) {
+      void this.loadChatCSS();
+    }
     return this.chatModule.toggleChat(force);
   }
   handleAvatarClick() {
+    void this.loadChatCSS();
     return this.chatModule.handleAvatarClick();
   }
   handleUserMessage() {
