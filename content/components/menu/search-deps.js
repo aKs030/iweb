@@ -3,6 +3,3 @@
 import "htm";
 import "react-dom";
 import "react-dom/client";
-
-// Export a no-op default to make this a valid module for modulepreload.
-export default {};

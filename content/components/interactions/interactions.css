@@ -28,7 +28,7 @@
     box-shadow 0.4s var(--ease-standard),
     color 0.4s var(--ease-standard),
     transform 0.4s var(--ease-standard);
-  font-size: var(--size-r-0-8);
+  font-size: var(--type-sm);
   margin-top: var(--size-r-0-5);
   box-shadow:
     0 var(--size-2) var(--size-12) color-mix(in srgb, var(--clr-black) 30%, transparent),
@@ -192,8 +192,7 @@
 
 .clap-count {
   font-family: var(--font-mono);
-  font-size: var(--size-r-0-75);
-  letter-spacing: 0;
+  font-size: var(--type-xs);
   font-weight: 700;
 }
 
@@ -205,7 +204,7 @@
 }
 
 .comment-title {
-  font-size: var(--size-r-1-5);
+  font-size: var(--type-2xl);
   margin-bottom: var(--size-r-2);
   color: var(--clr-white);
 }
@@ -252,7 +251,7 @@
 
 .comment-error {
   color: var(--clr-red-400);
-  font-size: var(--size-r-0-85);
+  font-size: var(--type-sm);
   margin-bottom: var(--size-r-1);
 }
 
@@ -277,13 +276,13 @@
 }
 
 .comment-date {
-  font-size: var(--size-r-0-75);
+  font-size: var(--type-xs);
   color: var(--clr-slate-400);
 }
 
 .comment-content {
   color: var(--clr-slate-200);
-  line-height: 1.5;
+  line-height: var(--leading-body);
   white-space: pre-wrap;
 }
 

@@ -10,20 +10,20 @@ import React, {
   startTransition,
   useDeferredValue,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { createRoot } from "react-dom/client";
-import { createPortal } from "react-dom";
 import { useProjects } from "./hooks/useProjects.js";
+import { useProjectCatalog } from "./hooks/useProjectCatalog.js";
+import { useProjectPopup } from "./hooks/useProjectPopup.js";
+import { useProjectSeo } from "./hooks/useProjectSeo.js";
 import { ThreeScene } from "./components/ThreeScene.js";
+import { ProjectAppPopup } from "./components/ProjectAppPopup.js";
+import { ProjectLaunchState } from "./components/ProjectLaunchState.js";
 import {
   DEFAULT_BROWSE_STATE,
   buildBrowseSearch,
   buildProjectsOverviewPath,
-  collectFacetCounts,
-  filterProjects,
-  findFacetLabel,
   findProjectIndexBySlug,
   getProjectSlug,
   getScrollMultiplier,
@@ -37,19 +37,52 @@ import {
 import * as Icons from "#components/icons/index.js";
 import { LikeButton } from "#components/interactions/index.js";
 import { i18n } from "#core/i18n.js";
-import { BASE_URL } from "#config/constants.js";
 import {
   PROJECTS_HOME_PATH,
   buildProjectDetailPath,
   extractProjectSlugFromLocation,
 } from "#core/project-paths.js";
-import { injectSchema } from "#core/schema.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
 
 const ErrorBoundary = createErrorBoundary(React);
-const DEFAULT_PROJECTS_TITLE = "Projekte | Abdulkerim Sesli";
-const DEFAULT_PROJECTS_DESCRIPTION =
-  "Entdecke interaktive Web-Experimente und produktionsnahe Apps mit Fokus auf Performance, UI-Systeme und spielerische Interfaces.";
+
+function ProjectFacetGroup({ label, items, activeToken, onSelect, children }) {
+  if (!children && items.length === 0) return null;
+
+  return h(
+    "div",
+    { className: "projects-discovery__facet-group" },
+    h("span", { className: "projects-discovery__facet-label" }, label),
+    h(
+      "div",
+      { className: "projects-discovery__chip-list" },
+      children,
+      items.map(item =>
+        h(
+          "button",
+          {
+            key: item.token,
+            type: "button",
+            className: `projects-discovery__chip ${
+              activeToken === item.token ? "projects-discovery__chip--active" : ""
+            }`,
+            "aria-pressed": activeToken === item.token,
+            onClick: () => onSelect(item.token),
+          },
+          `${item.label} · ${item.count}`
+        )
+      )
+    )
+  );
+}
+
+const ProjectDetailCard = ({ label, value }) =>
+  h(
+    "div",
+    { className: "hud-detail-card" },
+    h("span", { className: "hud-detail-label" }, label),
+    h("strong", { className: "hud-detail-value" }, value)
+  );
 
 /**
  * Main App Component
@@ -69,31 +102,35 @@ const App = () => {
   );
   const [isSceneReady, setIsSceneReady] = useState(false);
   const [isThreeSceneEnabled] = useState(() => !shouldDisableThreeScene());
-  const [popupApp, setPopupApp] = useState(null);
-  const [popupSize, setPopupSize] = useState(null);
   const [showCaseStudy, setShowCaseStudy] = useState(false);
-  const popupFrameRef = useRef(null);
-  const popupOverlayRef = useRef(null);
   const deferredQuery = useDeferredValue(browseState.query);
 
   const t = (key, fallback, params = {}) => i18n.tOrFallback(key, fallback, params);
-  const categoryItems = collectFacetCounts(projects, "category");
-  const tagItems = collectFacetCounts(projects, "tags");
-  const stackItems = collectFacetCounts(projects, "techStack");
-  const filteredProjects = filterProjects(projects, {
-    ...browseState,
-    query: deferredQuery,
-  });
+  const {
+    categoryItems,
+    filteredProjects,
+    catalogStats,
+    topTagItems,
+    topStackItems,
+    activeCategoryLabel,
+    activeTagLabel,
+    activeStackLabel,
+  } = useProjectCatalog(projects, browseState, deferredQuery);
+  const {
+    popupApp,
+    popupFrameRef,
+    popupOverlayRef,
+    popupPanelStyle,
+    closeAppPopup,
+    openAppPopup,
+    requestPopupFit,
+  } = useProjectPopup(t("projects.card.btn_open", "Open App"));
   const sceneProjects = isDetailRouteActive ? projects : filteredProjects;
   const activeProject = sceneProjects[activeProjectIndex] || null;
   const activeProjectSlug = activeProject ? getProjectSlug(activeProject, activeProjectIndex) : "";
   const activeProjectPath = activeProjectSlug
     ? buildProjectDetailPath(activeProjectSlug)
     : PROJECTS_HOME_PATH;
-  const activeCategoryLabel =
-    browseState.category !== "all" ? findFacetLabel(categoryItems, browseState.category) : "";
-  const activeTagLabel = browseState.tag ? findFacetLabel(tagItems, browseState.tag) : "";
-  const activeStackLabel = browseState.stack ? findFacetLabel(stackItems, browseState.stack) : "";
   const totalProjectCount = projects.length;
   const hasActiveBrowseFilters =
     Boolean(browseState.query) ||
@@ -103,14 +140,6 @@ const App = () => {
     browseState.caseStudyOnly ||
     browseState.livePreviewOnly ||
     browseState.sort !== DEFAULT_BROWSE_STATE.sort;
-  const catalogStats = {
-    total: totalProjectCount,
-    live: projects.filter(project => project?.hasLivePreview).length,
-    caseStudies: projects.filter(project => project?.hasCaseStudy).length,
-    source: projects.filter(project => project?.hasSource).length,
-  };
-  const topTagItems = tagItems.slice(0, 6);
-  const topStackItems = stackItems.slice(0, 6);
   const projectProgressLabel = activeProject
     ? `${Math.min(activeProjectIndex + 1, sceneProjects.length)}/${sceneProjects.length}${
         !isDetailRouteActive && sceneProjects.length < totalProjectCount
@@ -272,85 +301,17 @@ const App = () => {
     };
   }, [filteredProjects.length, isDetailRouteActive, projects.length]);
 
-  useEffect(() => {
-    if (projects.length === 0) {
-      document.getElementById("projects-schema-ldjson")?.remove();
-      setIsSceneReady(false);
-      return;
-    }
-
-    const CATEGORY_MAP = {
-      game: "GameApplication",
-      utility: "WebApplication",
-      productivity: "WebApplication",
-      ui: "WebApplication",
-      web: "WebApplication",
-    };
-
-    const projectsListId = `${BASE_URL}/projekte/#projects-list`;
-    const seenSlugs = new Set();
-    const projectNodes = [];
-
-    projects.forEach((project, index) => {
-      const slug = getProjectSlug(project, index);
-      if (seenSlugs.has(slug)) return;
-      seenSlugs.add(slug);
-
-      const canonicalUrl = `${BASE_URL}${buildProjectDetailPath(slug)}`;
-      const nodeId = `${canonicalUrl}#app`;
-      const name = project.title || project.name || `Projekt ${index + 1}`;
-      const appUrl = toAbsoluteAppUrl(project.appPath);
-
-      projectNodes.push({
-        "@type": "SoftwareApplication",
-        "@id": nodeId,
-        name,
-        description: project.description,
-        applicationCategory: CATEGORY_MAP[project.category] || "WebApplication",
-        applicationSubCategory: project.category || undefined,
-        operatingSystem: "Any",
-        url: canonicalUrl,
-        ...(appUrl ? { sameAs: appUrl } : {}),
-        ...(project.image ? { image: [project.image] } : {}),
-        ...(Array.isArray(project.tags) && project.tags.length
-          ? { keywords: project.tags.join(", ") }
-          : {}),
-        ...(project.version ? { softwareVersion: project.version } : {}),
-        author: {
-          "@type": "Person",
-          name: "Abdulkerim Sesli",
-          url: `${BASE_URL}/`,
-        },
-        offers: {
-          "@type": "Offer",
-          price: "0",
-          priceCurrency: "EUR",
-          availability: "https://schema.org/InStock",
-        },
-        isPartOf: { "@id": projectsListId },
-      });
-    });
-
-    const listNode = {
-      "@type": "ItemList",
-      "@id": projectsListId,
-      name: "Projekte von Abdulkerim Sesli",
-      numberOfItems: projectNodes.length,
-      itemListElement: projectNodes.map((node, index) => ({
-        "@type": "ListItem",
-        position: index + 1,
-        item: {
-          "@id": node["@id"],
-          name: node.name,
-          url: node.url,
-        },
-      })),
-    };
-
-    injectSchema([listNode, ...projectNodes], {
-      scriptId: "projects-schema-ldjson",
-    });
-  }, [projects]);
+  useProjectSeo({
+    projects,
+    activeProject,
+    activeProjectPath,
+    activeCategoryLabel,
+    activeTagLabel,
+    activeStackLabel,
+    isDetailRouteActive,
+    isInitialRouteResolved,
+    setSceneReady: setIsSceneReady,
+  });
 
   useEffect(() => {
     if (loading || projects.length === 0) return;
@@ -365,64 +326,6 @@ const App = () => {
     }, 280);
     return () => window.clearTimeout(timer);
   }, [loading, projects.length, isThreeSceneEnabled]);
-
-  useEffect(() => {
-    if (!popupApp) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    document.body.classList.add("projects-popup-open");
-    setPopupSize(null);
-
-    const onKeyDown = event => {
-      if (event.key === "Escape") {
-        setPopupApp(null);
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.body.classList.remove("projects-popup-open");
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [popupApp]);
-
-  useEffect(() => {
-    if (!popupApp) return;
-
-    const onMessage = event => {
-      const payload = event.data;
-      if (!payload || payload.type !== "card-fit-size") return;
-
-      const frameWindow = popupFrameRef.current?.contentWindow;
-      if (frameWindow && event.source !== frameWindow) return;
-
-      const width = Number(payload.width);
-      const height = Number(payload.height);
-      if (!Number.isFinite(width) || !Number.isFinite(height)) return;
-
-      const clampedWidth = Math.max(320, Math.min(1600, Math.round(width)));
-      const clampedHeight = Math.max(240, Math.min(1200, Math.round(height)));
-      setPopupSize({ width: clampedWidth, height: clampedHeight });
-    };
-
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, [popupApp]);
-
-  // Animate backdrop-filter on popup overlay
-  useEffect(() => {
-    const el = popupOverlayRef.current;
-    if (!el) return;
-    const raf = requestAnimationFrame(() => el.classList.add("is-active"));
-    return () => cancelAnimationFrame(raf);
-  }, [popupApp]);
-
-  const normalizeAppUrl = url => {
-    return toAbsoluteAppUrl(url);
-  };
 
   const markPreferredProject = (slug = activeProjectSlug || lastBrowseProjectSlug) => {
     if (slug) {
@@ -439,6 +342,13 @@ const App = () => {
         return normalizeBrowseState(nextState);
       });
     });
+  };
+
+  const toggleBrowseFacet = (facet, token, emptyValue = "") => {
+    updateBrowseFilters(currentState => ({
+      ...currentState,
+      [facet]: currentState[facet] === token ? emptyValue : token,
+    }));
   };
 
   const resetBrowseFilters = () => {
@@ -500,67 +410,6 @@ const App = () => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
 
-  const popupAppUrl = url => {
-    const normalized = normalizeAppUrl(url);
-    if (!normalized) return normalized;
-
-    try {
-      const parsed = new URL(normalized, window.location.origin);
-      parsed.searchParams.set("card", "1");
-      parsed.searchParams.set("popup", "1");
-      return parsed.toString();
-    } catch {
-      const separator = normalized.includes("?") ? "&" : "?";
-      return `${normalized}${separator}card=1&popup=1`;
-    }
-  };
-
-  const openAppPopup = (event, project) => {
-    event.preventDefault();
-    const url = popupAppUrl(project?.appPath);
-    if (!url) return;
-
-    setPopupApp({
-      title: project?.title || t("projects.card.btn_open", "Open App"),
-      url,
-    });
-  };
-
-  const closeAppPopup = () => setPopupApp(null);
-
-  const requestPopupFit = () => {
-    const frameWindow = popupFrameRef.current?.contentWindow;
-    if (!frameWindow) return;
-
-    try {
-      frameWindow.postMessage({ type: "card-fit-request" }, "*");
-    } catch {
-      // no-op
-    }
-  };
-
-  useEffect(() => {
-    if (!popupApp) return;
-
-    const runFitRequest = () => {
-      window.requestAnimationFrame(() => {
-        requestPopupFit();
-      });
-    };
-
-    const resizeTimer = window.setTimeout(runFitRequest, 120);
-    const lateTimer = window.setTimeout(runFitRequest, 420);
-
-    const onResize = () => runFitRequest();
-    window.addEventListener("resize", onResize, { passive: true });
-
-    return () => {
-      window.clearTimeout(resizeTimer);
-      window.clearTimeout(lateTimer);
-      window.removeEventListener("resize", onResize);
-    };
-  }, [popupApp]);
-
   // Update active project based on scroll
   const handleScrollUpdate = index => {
     if (isDetailRouteActive) return;
@@ -571,158 +420,16 @@ const App = () => {
     setShowCaseStudy(false);
   }, [activeProjectIndex]);
 
-  useEffect(() => {
-    if (!activeProject || !isInitialRouteResolved) return;
-
-    const nextTitle = isDetailRouteActive
-      ? `${activeProject.title} — Projekte | Abdulkerim Sesli`
-      : activeStackLabel
-        ? `${activeStackLabel} Projekte | Abdulkerim Sesli`
-        : activeTagLabel
-          ? `${activeTagLabel} Projekte | Abdulkerim Sesli`
-          : activeCategoryLabel
-            ? `${activeCategoryLabel} Projekte | Abdulkerim Sesli`
-            : DEFAULT_PROJECTS_TITLE;
-    if (document.title !== nextTitle) {
-      document.title = nextTitle;
-    }
-
-    const descriptionTag = document.querySelector('meta[name="description"]');
-    if (descriptionTag instanceof HTMLMetaElement) {
-      descriptionTag.content =
-        (isDetailRouteActive && activeProject.description) || DEFAULT_PROJECTS_DESCRIPTION;
-    }
-
-    const canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (canonicalLink instanceof HTMLLinkElement) {
-      canonicalLink.href = `${BASE_URL}${
-        isDetailRouteActive ? activeProjectPath : PROJECTS_HOME_PATH
-      }`;
-    }
-
-    if (
-      isDetailRouteActive &&
-      (window.location.pathname !== activeProjectPath ||
-        String(window.location.search || "").length > 0)
-    ) {
-      window.history.replaceState(null, "", activeProjectPath);
-    }
-  }, [
-    activeProject,
-    activeCategoryLabel,
-    activeProjectPath,
-    activeStackLabel,
-    activeTagLabel,
-    isDetailRouteActive,
-    isInitialRouteResolved,
-  ]);
-
   if (loading) {
-    return h(
-      "div",
-      {
-        className: "launch-screen",
-        "data-lang": lang,
-        "aria-live": "polite",
-      },
-      h(
-        "div",
-        { className: "launch-card" },
-        h("span", { className: "launch-badge" }, t("projects.launch.badge", "3D Project Gallery")),
-        h("h1", { className: "launch-title" }, t("projects.launch.title", "Starting project view")),
-        h(
-          "p",
-          { className: "launch-subtitle" },
-          t(
-            "projects.launch.subtitle",
-            "Apps are loaded from the maintained project catalog and prepared for 3D navigation."
-          )
-        ),
-        h(
-          "div",
-          { className: "launch-status" },
-          h("span", { className: "launch-dot", "aria-hidden": "true" }),
-          h(
-            "span",
-            null,
-            t("projects.launch.loading", "Loading projects and preparing the scene...")
-          )
-        ),
-        h(
-          "div",
-          { className: "launch-skeleton", "aria-hidden": "true" },
-          h("span", { className: "launch-skeleton__line launch-skeleton__line--wide" }),
-          h("span", { className: "launch-skeleton__line" }),
-          h(
-            "div",
-            { className: "launch-skeleton__tiles" },
-            h("span", { className: "launch-skeleton__tile" }),
-            h("span", { className: "launch-skeleton__tile" }),
-            h("span", { className: "launch-skeleton__tile" })
-          )
-        ),
-        h(
-          "p",
-          { className: "launch-hint" },
-          t("projects.launch.hint", "After startup you can explore the app list by scrolling.")
-        )
-      )
-    );
+    return h(ProjectLaunchState, { state: "loading", lang, t });
   }
 
   if (error) {
-    return h(
-      "div",
-      {
-        className: "launch-screen launch-screen--error",
-        "data-lang": lang,
-        "aria-live": "assertive",
-      },
-      h(
-        "div",
-        { className: "launch-card" },
-        h(
-          "h2",
-          { className: "launch-title" },
-          t("projects.launch.error_title", "Projects could not be loaded at startup")
-        ),
-        h("p", { className: "launch-error-copy" }, error),
-        h(
-          "button",
-          {
-            type: "button",
-            className: "btn btn-primary launch-retry",
-            onClick: () => window.location.reload(),
-          },
-          t("projects.launch.retry", "Reload page")
-        )
-      )
-    );
+    return h(ProjectLaunchState, { state: "error", lang, error, t });
   }
 
   if (projects.length === 0) {
-    return h(
-      "div",
-      {
-        className: "launch-screen launch-screen--error",
-        "data-lang": lang,
-        "aria-live": "polite",
-      },
-      h(
-        "div",
-        { className: "launch-card" },
-        h("h2", { className: "launch-title" }, t("error.no_content", "No projects available")),
-        h(
-          "button",
-          {
-            type: "button",
-            className: "btn btn-primary launch-retry",
-            onClick: () => window.location.reload(),
-          },
-          t("projects.launch.retry", "Reload page")
-        )
-      )
-    );
+    return h(ProjectLaunchState, { state: "empty", lang, t });
   }
 
   const relatedMatchLabel = project => {
@@ -796,16 +503,6 @@ const App = () => {
     },
   ];
 
-  const popupPanelStyle = popupSize
-    ? {
-        width: `min(calc(100vw - 1rem), ${Math.max(420, popupSize.width + 36)}px)`,
-        height: `min(calc(var(--viewport-height, 100vh) - 1rem), ${Math.max(
-          380,
-          popupSize.height + 86
-        )}px)`,
-      }
-    : null;
-
   return h(
     Fragment,
     null,
@@ -834,82 +531,15 @@ const App = () => {
         )
       ),
 
-    popupApp &&
-      typeof document !== "undefined" &&
-      document.body &&
-      createPortal(
-        h(
-          "div",
-          {
-            className: "app-popup",
-            ref: popupOverlayRef,
-            role: "dialog",
-            "aria-modal": "true",
-            "aria-label": t("projects.app.popup_title", "App popup"),
-            onClick: event => {
-              if (event.target === event.currentTarget) {
-                closeAppPopup();
-              }
-            },
-          },
-          h(
-            "div",
-            { className: "app-popup__panel", style: popupPanelStyle },
-            h(
-              "div",
-              { className: "app-popup__header" },
-              h(
-                "div",
-                { className: "app-popup__title-wrap" },
-                h(
-                  "span",
-                  { className: "app-popup__label" },
-                  t("projects.launch.source", "Curated app catalog")
-                ),
-                h("strong", { className: "app-popup__title" }, popupApp.title)
-              ),
-              h(
-                "div",
-                { className: "app-popup__actions" },
-                h(
-                  "a",
-                  {
-                    href: popupApp.url,
-                    target: "_blank",
-                    rel: "noopener noreferrer",
-                    className: "btn btn-outline app-popup__action",
-                  },
-                  t("projects.app.open_tab", "Open in new tab")
-                ),
-                h(
-                  "button",
-                  {
-                    type: "button",
-                    className: "btn btn-primary app-popup__action",
-                    onClick: closeAppPopup,
-                  },
-                  t("projects.app.close", "Close")
-                )
-              )
-            ),
-            h(
-              "div",
-              { className: "app-popup__frame-wrap" },
-              h("iframe", {
-                className: "app-popup__frame",
-                ref: popupFrameRef,
-                src: popupApp.url,
-                title: popupApp.title,
-                loading: "eager",
-                allow: "clipboard-read; clipboard-write; fullscreen",
-                referrerPolicy: "no-referrer-when-downgrade",
-                onLoad: () => requestPopupFit(),
-              })
-            )
-          )
-        ),
-        document.body
-      ),
+    h(ProjectAppPopup, {
+      popupApp,
+      panelStyle: popupPanelStyle,
+      frameRef: popupFrameRef,
+      overlayRef: popupOverlayRef,
+      onClose: closeAppPopup,
+      onRequestFit: requestPopupFit,
+      t,
+    }),
 
     !isDetailRouteActive &&
       h(
@@ -1087,49 +717,24 @@ const App = () => {
               )
             ),
             h(
-              "div",
-              { className: "projects-discovery__facet-group" },
+              ProjectFacetGroup,
+              {
+                label: t("projects.discovery.category_all", "Alle Kategorien"),
+                items: categoryItems,
+                activeToken: browseState.category,
+                onSelect: token => toggleBrowseFacet("category", token, "all"),
+              },
               h(
-                "span",
-                { className: "projects-discovery__facet-label" },
+                "button",
+                {
+                  type: "button",
+                  className: `projects-discovery__chip ${
+                    browseState.category === "all" ? "projects-discovery__chip--active" : ""
+                  }`,
+                  "aria-pressed": browseState.category === "all",
+                  onClick: () => updateBrowseFilters({ category: "all" }),
+                },
                 t("projects.discovery.category_all", "Alle Kategorien")
-              ),
-              h(
-                "div",
-                { className: "projects-discovery__chip-list" },
-                h(
-                  "button",
-                  {
-                    type: "button",
-                    className: `projects-discovery__chip ${
-                      browseState.category === "all" ? "projects-discovery__chip--active" : ""
-                    }`,
-                    "aria-pressed": browseState.category === "all",
-                    onClick: () => updateBrowseFilters({ category: "all" }),
-                  },
-                  t("projects.discovery.category_all", "Alle Kategorien")
-                ),
-                categoryItems.map(item =>
-                  h(
-                    "button",
-                    {
-                      key: item.token,
-                      type: "button",
-                      className: `projects-discovery__chip ${
-                        browseState.category === item.token
-                          ? "projects-discovery__chip--active"
-                          : ""
-                      }`,
-                      "aria-pressed": browseState.category === item.token,
-                      onClick: () =>
-                        updateBrowseFilters(currentState => ({
-                          ...currentState,
-                          category: currentState.category === item.token ? "all" : item.token,
-                        })),
-                    },
-                    `${item.label} · ${item.count}`
-                  )
-                )
               )
             ),
             activeBrowseChips.length > 0 &&
@@ -1158,72 +763,18 @@ const App = () => {
                   )
                 )
               ),
-            topTagItems.length > 0 &&
-              h(
-                "div",
-                { className: "projects-discovery__facet-group" },
-                h(
-                  "span",
-                  { className: "projects-discovery__facet-label" },
-                  t("projects.discovery.tags_label", "Beliebte Tags")
-                ),
-                h(
-                  "div",
-                  { className: "projects-discovery__chip-list" },
-                  topTagItems.map(item =>
-                    h(
-                      "button",
-                      {
-                        key: item.token,
-                        type: "button",
-                        className: `projects-discovery__chip ${
-                          browseState.tag === item.token ? "projects-discovery__chip--active" : ""
-                        }`,
-                        "aria-pressed": browseState.tag === item.token,
-                        onClick: () =>
-                          updateBrowseFilters(currentState => ({
-                            ...currentState,
-                            tag: currentState.tag === item.token ? "" : item.token,
-                          })),
-                      },
-                      `${item.label} · ${item.count}`
-                    )
-                  )
-                )
-              ),
-            topStackItems.length > 0 &&
-              h(
-                "div",
-                { className: "projects-discovery__facet-group" },
-                h(
-                  "span",
-                  { className: "projects-discovery__facet-label" },
-                  t("projects.discovery.stack_label", "Stack-Fokus")
-                ),
-                h(
-                  "div",
-                  { className: "projects-discovery__chip-list" },
-                  topStackItems.map(item =>
-                    h(
-                      "button",
-                      {
-                        key: item.token,
-                        type: "button",
-                        className: `projects-discovery__chip ${
-                          browseState.stack === item.token ? "projects-discovery__chip--active" : ""
-                        }`,
-                        "aria-pressed": browseState.stack === item.token,
-                        onClick: () =>
-                          updateBrowseFilters(currentState => ({
-                            ...currentState,
-                            stack: currentState.stack === item.token ? "" : item.token,
-                          })),
-                      },
-                      `${item.label} · ${item.count}`
-                    )
-                  )
-                )
-              )
+            h(ProjectFacetGroup, {
+              label: t("projects.discovery.tags_label", "Beliebte Tags"),
+              items: topTagItems,
+              activeToken: browseState.tag,
+              onSelect: token => toggleBrowseFacet("tag", token),
+            }),
+            h(ProjectFacetGroup, {
+              label: t("projects.discovery.stack_label", "Stack-Fokus"),
+              items: topStackItems,
+              activeToken: browseState.stack,
+              onSelect: token => toggleBrowseFacet("stack", token),
+            })
           )
         )
       ),
@@ -1328,42 +879,19 @@ const App = () => {
           h(
             "div",
             { className: "hud-detail-grid" },
-            h(
-              "div",
-              { className: "hud-detail-card" },
-              h("span", { className: "hud-detail-label" }, "Version"),
-              h("strong", { className: "hud-detail-value" }, activeProject.version || "1.0.0")
-            ),
-            h(
-              "div",
-              { className: "hud-detail-card" },
-              h("span", { className: "hud-detail-label" }, "Update"),
-              h(
-                "strong",
-                { className: "hud-detail-value" },
-                activeProject.datePublished || "Aktuell"
-              )
-            ),
-            h(
-              "div",
-              { className: "hud-detail-card" },
-              h("span", { className: "hud-detail-label" }, "Preview"),
-              h(
-                "strong",
-                { className: "hud-detail-value" },
-                activeProject.appPath ? "Live Demo" : "Katalog"
-              )
-            ),
-            h(
-              "div",
-              { className: "hud-detail-card" },
-              h("span", { className: "hud-detail-label" }, "Code"),
-              h(
-                "strong",
-                { className: "hud-detail-value" },
-                activeProject.githubPath ? "GitHub" : "Privat"
-              )
-            )
+            h(ProjectDetailCard, { label: "Version", value: activeProject.version || "1.0.0" }),
+            h(ProjectDetailCard, {
+              label: "Update",
+              value: activeProject.datePublished || "Aktuell",
+            }),
+            h(ProjectDetailCard, {
+              label: "Preview",
+              value: activeProject.appPath ? "Live Demo" : "Katalog",
+            }),
+            h(ProjectDetailCard, {
+              label: "Code",
+              value: activeProject.githubPath ? "GitHub" : "Privat",
+            })
           ),
 
           // Dynamic Edge Likes/Claps
@@ -1526,7 +1054,7 @@ const App = () => {
               h(
                 "a",
                 {
-                  href: normalizeAppUrl(activeProject.appPath),
+                  href: toAbsoluteAppUrl(activeProject.appPath),
                   onClick: event => openAppPopup(event, activeProject),
                   className: "btn btn-primary",
                 },

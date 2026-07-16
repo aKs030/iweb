@@ -1092,12 +1092,12 @@ export class CardManager {
       ctx,
       titleText,
       560 * S,
-      "800",
-      70 * S,
-      44 * S,
+      "700",
+      64 * S,
+      42 * S,
       titleFontFamily
     );
-    ctx.font = `800 ${titleSize}px ${titleFontFamily}`;
+    ctx.font = `700 ${titleSize}px ${titleFontFamily}`;
     ctx.fillStyle = textStrong;
     ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
     ctx.shadowBlur = 18 * S;

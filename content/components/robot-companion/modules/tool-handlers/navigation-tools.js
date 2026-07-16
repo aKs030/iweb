@@ -6,11 +6,11 @@ import {
   menuOpen,
   setActiveOverlayMode,
 } from "../../../../core/state/ui-store.js";
-import { withViewTransition } from "../../../../core/view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
+  withViewTransition,
 } from "../../../../core/view-transitions/index.js";
 import { buildToolResult, createDetail } from "../tool-result.js";
 import { getMenuToggleButton, getSiteMenuHost, queryFirst } from "../tool-dom-utils.js";
@@ -261,11 +261,9 @@ export function executeToggleMenu(args) {
     "toggleMenu",
     args,
     true,
-    newState ? "Menue geoeffnet." : "Menue geschlossen.",
+    newState ? "Menü geöffnet." : "Menü geschlossen.",
     {
-      summary: newState
-        ? "Das Hauptmenue ist jetzt sichtbar."
-        : "Das Hauptmenue wurde geschlossen.",
+      summary: newState ? "Das Hauptmenü ist jetzt sichtbar." : "Das Hauptmenü wurde geschlossen.",
       details: [createDetail("Status", newState ? "Offen" : "Geschlossen")],
     }
   );
@@ -280,8 +278,8 @@ export function executeScrollToSection(args) {
   const selectors = SECTION_SELECTORS.get(section);
   if (!selectors) {
     return buildToolResult("scrollToSection", args, false, "Bereich unbekannt.", {
-      summary: `Bereich "${section}" ist nicht verfuegbar.`,
-      details: [createDetail("Verfuegbar", [...SECTION_SELECTORS.keys()].join(", "))],
+      summary: `Bereich "${section}" ist nicht verfügbar.`,
+      details: [createDetail("Verfügbar", [...SECTION_SELECTORS.keys()].join(", "))],
       accent: "error",
       cta: false,
     });
@@ -290,7 +288,7 @@ export function executeScrollToSection(args) {
   const target = queryFirst(selectors);
   if (!target) {
     return buildToolResult("scrollToSection", args, false, `Bereich "${section}" nicht gefunden.`, {
-      summary: `Fuer "${section}" wurde kein passendes Ziel gefunden.`,
+      summary: `Für "${section}" wurde kein passendes Ziel gefunden.`,
       accent: "error",
       cta: false,
     });
@@ -312,7 +310,7 @@ export function executeRecommend(args) {
       true,
       "Nenne ein Thema, dann suche ich passende Inhalte.",
       {
-        summary: "Fuer Empfehlungen wird noch ein Thema benoetigt.",
+        summary: "Für Empfehlungen wird noch ein Thema benötigt.",
         cta: false,
       }
     );
@@ -346,8 +344,8 @@ export function executeOpenSearch() {
     setActiveOverlayMode(OVERLAY_MODES.SEARCH);
   }
 
-  return buildToolResult("openSearch", {}, true, "Suche geoeffnet.", {
-    summary: "Die Suchoberflaeche wurde geoeffnet.",
+  return buildToolResult("openSearch", {}, true, "Suche geöffnet.", {
+    summary: "Die Suchoberfläche wurde geöffnet.",
   });
 }
 
@@ -356,7 +354,7 @@ export function executeCloseSearch() {
     clearActiveOverlayMode(OVERLAY_MODES.SEARCH);
   }
   return buildToolResult("closeSearch", {}, true, "Suche geschlossen.", {
-    summary: "Die Suchoberflaeche wurde geschlossen.",
+    summary: "Die Suchoberfläche wurde geschlossen.",
   });
 }
 

@@ -132,10 +132,10 @@ function buildAiInfoSchema({ canonicalUrl, origin }) {
           {
             "@type": "Question",
             "@id": `${canonicalUrl}#faq-profile`,
-            name: "Wo gibt es die vollstaendige Profil-Information?",
+            name: "Wo gibt es die vollständigen Profilinformationen?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Unter /about/, /person.jsonld, /llms-full.txt und /ai-index.json.",
+              text: "Unter /about/, /person.jsonld, /llms.txt und /ai-index.json.",
             },
           },
         ],

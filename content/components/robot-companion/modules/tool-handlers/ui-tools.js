@@ -1,9 +1,9 @@
 import { getResolvedTheme, setTheme, toggleTheme } from "../../../../core/state/theme-state.js";
-import { withViewTransition } from "../../../../core/view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
+  withViewTransition,
 } from "../../../../core/view-transitions/index.js";
 import { buildToolResult, createDetail } from "../tool-result.js";
 
@@ -32,16 +32,16 @@ export function executeSetTheme(args) {
     }
   );
 
-  return buildToolResult("setTheme", args, true, `Theme auf ${newTheme} gesetzt.`, {
+  return buildToolResult("setTheme", args, true, `Design auf ${newTheme} gesetzt.`, {
     summary: `Das Erscheinungsbild wurde auf ${newTheme} umgestellt.`,
-    details: [createDetail("Theme", newTheme)],
+    details: [createDetail("Design", newTheme)],
   });
 }
 
 export function executeCopyCurrentUrl() {
   const url = globalThis.location?.href || "";
   if (!url) {
-    return buildToolResult("copyCurrentUrl", {}, false, "URL nicht verfuegbar.", {
+    return buildToolResult("copyCurrentUrl", {}, false, "URL nicht verfügbar.", {
       summary: "Der aktuelle Seitenlink konnte nicht gelesen werden.",
       accent: "error",
       cta: false,
@@ -57,7 +57,7 @@ export function executeCopyCurrentUrl() {
   }
 
   return buildToolResult("copyCurrentUrl", {}, true, "Aktueller Link bereit.", {
-    summary: "Die Zwischenablage ist nicht verfuegbar, der Link wurde aber vorbereitet.",
+    summary: "Die Zwischenablage ist nicht verfügbar, der Link wurde aber vorbereitet.",
     details: [createDetail("Link", url)],
   });
 }

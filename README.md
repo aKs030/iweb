@@ -1,12 +1,11 @@
 # Portfolio Website
 
-[![CI/CD](https://github.com/aKs030/iweb/actions/workflows/main.yml/badge.svg)](https://github.com/aKs030/iweb/actions/workflows/main.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen)](https://nodejs.org/)
-[![Lighthouse](https://img.shields.io/badge/lighthouse-95%2B-brightgreen)](https://www.abdulkerimsesli.de)
 [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-orange)](https://pages.cloudflare.com/)
 
-Modernes Portfolio auf Cloudflare Pages mit Vanilla JavaScript, Three.js und Cloudflare Functions.
+Modernes No-Build-Portfolio auf Cloudflare Pages mit JavaScript, React, Web Components, Three.js
+und Cloudflare Functions.
 
 ## Quick Start
 
@@ -34,17 +33,11 @@ npm run check:format         # Formatierung pruefen
 npm run format               # Formatierung anwenden
 ```
 
-## CI/CD
-
-GitHub Workflows:
-Preview-Deployments bleiben auf das Deployment reduziert.
-
 ## Projektstruktur
 
 - `content/` - Frontend-Code (Komponenten, Core, Styles, Media)
 - `pages/` - Seiten-spezifische Entry-Points
 - `functions/` - Cloudflare Pages Functions + API-Endpunkte
-- `.github/` - CI/CD Workflows
 
 ## Root-Dateien
 
@@ -52,7 +45,7 @@ Preview-Deployments bleiben auf das Deployment reduziert.
 - `sw.js` - kleiner Legacy-Cleanup fuer alte Service-Worker-Registrierungen
 - `package.json`, `wrangler.jsonc`, `.env.example` - Projekt- und Laufzeitkonfiguration
 - `_headers`, `_redirects` - Cloudflare Header- und Routing-Regeln
-- `robots.txt`, `ai-index.json`, `llms.txt`, `llms-full.txt`, `person.jsonld`, `bio.md`, `.well-known/*` - AI-Discovery und SEO
+- `robots.txt`, `ai-index.json`, `llms.txt`, `person.jsonld`, `bio.md`, `.well-known/*` - AI-Discovery und SEO
 
 ## Architektur
 
@@ -66,8 +59,7 @@ Preview-Deployments bleiben auf das Deployment reduziert.
 
 ## Deployment
 
-- Pull Request -> Preview-Deploy über GitHub Actions
-- `wrangler.jsonc` enthält das gemeinsame Setup für lokale Entwicklung und Preview
+- `wrangler.jsonc` enthält das gemeinsame Setup für lokale Entwicklung und Produktions-Bindings
 - Secrets gehören nicht ins Repo; lokal werden nur `.dev.vars`, `.env.local` oder `.env` verwendet
 
 ## Dokumentation
@@ -82,7 +74,7 @@ Preview-Deployments bleiben auf das Deployment reduziert.
 Diese Website ist optimiert für KI-Systeme, Suchmaschinen und Entwickler-Tools:
 
 - **AI Index**: [`ai-index.json`](ai-index.json) - Strukturierter Gesamtindex
-- **LLM Context**: [`llms.txt`](llms.txt) & [`llms-full.txt`](llms-full.txt)
+- **LLM Context**: [`llms.txt`](llms.txt)
 - **Person Data**: [`person.jsonld`](person.jsonld) - Schema.org
 - **API Docs**: [`.well-known/openapi.json`](.well-known/openapi.json)
 - **Sitemaps**: Dynamisch generiert via Cloudflare Functions

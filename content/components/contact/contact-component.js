@@ -1,35 +1,64 @@
 import React from "react";
 import { AlertCircle, CheckCircle, Loader2, Send } from "lucide-react";
+import { i18n } from "../../core/i18n.js";
 import { createLogger } from "../../core/logger.js";
 
 const log = createLogger("ContactForm");
 
 const { createElement: h, Fragment } = React;
 
-const copy = {
-  formTitle: "Nachricht senden",
-  formSubtitle: "Beschreibe dein Anliegen kurz und konkret.",
-  nameLabel: "Dein Name",
-  namePlaceholder: "Max Mustermann",
-  emailFieldLabel: "Deine E-Mail",
-  emailPlaceholder: "name@beispiel.de",
-  subjectLabel: "Worum geht es?",
-  subjectPlaceholder: "Projekt, Kooperation oder Frage",
-  messageLabel: "Nachricht",
-  messagePlaceholder: "Worum geht es genau?",
-  submitLabel: "Nachricht senden",
-  submittingLabel: "Wird gesendet …",
-  successTitle: "Nachricht gesendet",
-  successText: "Danke! Ich melde mich so schnell wie möglich.",
-  newMessageLabel: "Neue Nachricht schreiben",
-  errorNetwork: "Die Nachricht konnte gerade nicht gesendet werden.",
-  errorFormat: "Die Antwort des Servers war nicht lesbar.",
-  errorGeneric: "Beim Senden ist ein Fehler aufgetreten.",
-  antiSpamLabel: "Spam-Schutzfeld",
-  formNote: "Name, E-Mail und Nachricht sind Pflicht. Betreff ist optional.",
-};
+const COPY = Object.freeze({
+  de: Object.freeze({
+    eyebrow: "Kontakt & Zusammenarbeit",
+    formTitle: "Erzähl mir von deiner Idee.",
+    formSubtitle: "Ein paar klare Eckpunkte reichen für den Anfang.",
+    nameLabel: "Dein Name",
+    namePlaceholder: "Max Mustermann",
+    emailFieldLabel: "Deine E-Mail",
+    emailPlaceholder: "name@beispiel.de",
+    subjectLabel: "Thema",
+    subjectPlaceholder: "Projekt, Zusammenarbeit oder Frage",
+    messageLabel: "Nachricht",
+    messagePlaceholder: "Was möchtest du umsetzen, verbessern oder besprechen?",
+    submitLabel: "Anfrage senden",
+    submittingLabel: "Wird gesendet …",
+    successTitle: "Deine Anfrage ist angekommen.",
+    successText: "Danke! Ich melde mich so bald wie möglich bei dir.",
+    newMessageLabel: "Neue Nachricht schreiben",
+    errorNetwork: "Die Nachricht konnte gerade nicht gesendet werden.",
+    errorFormat: "Die Antwort des Servers war nicht lesbar.",
+    errorGeneric: "Beim Senden ist ein Fehler aufgetreten.",
+    antiSpamLabel: "Spam-Schutzfeld",
+    formNote: "Name, E-Mail und Nachricht sind erforderlich. Das Thema ist optional.",
+  }),
+  en: Object.freeze({
+    eyebrow: "Contact & collaboration",
+    formTitle: "Tell me about your idea.",
+    formSubtitle: "A few clear details are enough to get started.",
+    nameLabel: "Your name",
+    namePlaceholder: "Alex Example",
+    emailFieldLabel: "Your email",
+    emailPlaceholder: "name@example.com",
+    subjectLabel: "Subject",
+    subjectPlaceholder: "Project, collaboration, or question",
+    messageLabel: "Message",
+    messagePlaceholder: "What would you like to build, improve, or discuss?",
+    submitLabel: "Send inquiry",
+    submittingLabel: "Sending …",
+    successTitle: "Your inquiry has arrived.",
+    successText: "Thank you! I will get back to you as soon as possible.",
+    newMessageLabel: "Write another message",
+    errorNetwork: "The message could not be sent right now.",
+    errorFormat: "The server response could not be read.",
+    errorGeneric: "Something went wrong while sending the message.",
+    antiSpamLabel: "Spam protection field",
+    formNote: "Name, email, and message are required. The subject is optional.",
+  }),
+});
 
 function ContactForm() {
+  const [lang, setLang] = React.useState(i18n.currentLang);
+  const copy = COPY[lang] || COPY.de;
   const [formData, setFormData] = React.useState({
     name: "",
     email: "",
@@ -41,6 +70,8 @@ function ContactForm() {
   const [status, setStatus] = React.useState("idle");
   const [errorMessage, setErrorMessage] = React.useState("");
   const successRef = React.useRef(null);
+
+  React.useEffect(() => i18n.subscribe(setLang), []);
 
   React.useEffect(() => {
     if (status === "success" && successRef.current) {
@@ -126,7 +157,8 @@ function ContactForm() {
   return h("div", { className: "contact-page-content" }, [
     h("div", { className: "contact-form-card" }, [
       h("div", { className: "contact-form-header" }, [
-        h("h2", null, copy.formTitle),
+        h("p", { className: "contact-eyebrow text-eyebrow" }, copy.eyebrow),
+        h("h1", null, copy.formTitle),
         h("p", null, copy.formSubtitle),
       ]),
       h("form", { onSubmit: handleSubmit, className: "contact-form" }, [

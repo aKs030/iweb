@@ -43,7 +43,7 @@ export const stripMarkdown = (text = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
-export const estimateReadTime = (content = "") => {
+const estimateReadTime = (content = "") => {
   const words = stripMarkdown(content).split(/\s+/).filter(Boolean).length;
   return `${Math.max(1, Math.ceil(words / 200))} min`;
 };

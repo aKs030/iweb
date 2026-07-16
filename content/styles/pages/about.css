@@ -16,9 +16,8 @@
       );
   }
   .about-main h1 {
-    font-size: clamp(var(--size-r-2-5), 5vw, var(--size-r-4));
+    font-size: var(--type-4xl);
     margin-bottom: var(--size-r-1);
-    letter-spacing: 0;
   }
   .gradient-text {
     background: var(--gradient-text);
@@ -26,10 +25,10 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .about-main p {
+  .about-main :where(p) {
     color: var(--text-muted);
     margin-bottom: var(--size-r-1-5);
-    font-size: var(--size-r-1-05);
+    font-size: var(--type-body);
   }
   .about-main a {
     color: inherit;
@@ -53,7 +52,7 @@
       border-color 0.3s,
       color 0.3s,
       transform 0.3s;
-    font-size: var(--size-r-0-95);
+    font-size: var(--type-body);
   }
   .about-main .btn-primary {
     background: var(--text-main);
@@ -108,6 +107,11 @@
     position: relative;
     overflow: hidden;
   }
+  .about-main .card h3 {
+    font-family: var(--font-display);
+    font-size: var(--type-xl);
+    line-height: var(--leading-tight);
+  }
   .about-main .card:hover {
     border-color: color-mix(in srgb, var(--clr-white) 20%, transparent);
     transform: translateY(calc(var(--size-2) * -1));
@@ -148,8 +152,8 @@
     color: var(--clr-blue-500);
     padding: var(--size-r-0-35) var(--size-r-0-75);
     border-radius: var(--radius-full);
-    font-size: var(--size-r-0-85);
-    font-weight: 600;
+    font-size: var(--type-xs);
+    font-weight: 700;
     margin-bottom: var(--size-r-1-5);
     width: fit-content;
     border: var(--size-1) solid color-mix(in srgb, var(--clr-blue-500) 20%, transparent);
@@ -180,7 +184,7 @@
     padding: var(--size-r-0-5) var(--size-r-1);
     background: color-mix(in srgb, var(--clr-white) 5%, transparent);
     border-radius: var(--size-r-0-75);
-    font-size: var(--size-r-0-9);
+    font-size: var(--type-sm);
     color: var(--text-main);
     border: var(--size-1) solid var(--card-border);
     transition:
@@ -213,7 +217,7 @@
     box-shadow: 0 0 var(--size-8) var(--accent);
   }
   .timeline-date {
-    font-size: var(--size-r-0-85);
+    font-size: var(--type-sm);
     color: var(--accent);
     font-weight: 600;
     margin-bottom: var(--size-r-0-25);
@@ -222,10 +226,10 @@
   .timeline-title {
     color: var(--text-main);
     font-weight: 600;
-    font-size: var(--size-r-1-1);
+    font-size: var(--type-lg);
   }
   .timeline-role {
-    font-size: var(--size-r-0-95);
+    font-size: var(--type-body);
     color: var(--text-muted);
   }
   .playground-grid {
@@ -250,10 +254,10 @@
   .mini-card h4 {
     color: var(--text-main);
     margin-bottom: var(--size-r-0-5);
-    font-size: var(--size-r-1);
+    font-size: var(--type-body);
   }
   .mini-card span {
-    font-size: var(--size-r-0-8);
+    font-size: var(--type-sm);
     color: var(--text-muted);
   }
   .about-main .fade-in {
@@ -289,30 +293,32 @@
   }
   .about__intro-text {
     max-width: var(--size-600);
+    color: var(--text-secondary);
+    font-size: var(--type-lg);
+    line-height: var(--leading-relaxed);
   }
-  .about__location {
-    font-size: var(--size-r-0-9);
+  .about-main .about__location {
+    font-size: var(--type-sm);
     margin-bottom: 0;
   }
   .about__header {
     margin-bottom: var(--size-r-1);
   }
-  .about__subheading {
-    font-size: var(--size-r-0-85);
+  .about-main .about__subheading {
+    font-size: var(--type-sm);
     text-transform: uppercase;
     color: var(--text-muted);
-    letter-spacing: 0;
     margin-bottom: var(--size-r-0-5);
   }
   .about__stack {
     margin-bottom: var(--size-r-1-5);
   }
-  .about__small {
-    font-size: var(--size-r-0-9);
+  .about-main .about__small {
+    font-size: var(--type-sm);
   }
-  .about__timeline-desc {
+  .about-main .about__timeline-desc {
     margin-top: var(--size-r-0-5);
-    font-size: var(--size-r-0-95);
+    font-size: var(--type-body);
   }
   .about__exp-footer {
     margin-top: var(--size-r-3);
@@ -323,8 +329,9 @@
     margin-bottom: var(--size-r-1);
   }
   .about__link--accent {
-    font-size: var(--size-r-0-9);
+    font-size: var(--type-sm);
     color: var(--accent);
+    font-weight: 600;
   }
   .mini-card .about__mini-icon {
     margin-bottom: var(--size-r-0-5);
@@ -349,12 +356,12 @@
   }
   .about__stat-card strong {
     display: block;
-    font-size: var(--size-r-1-25);
+    font-size: var(--type-xl);
     color: var(--text-main);
   }
   .about__stat-card span {
     color: var(--text-muted);
-    font-size: var(--size-r-0-83);
+    font-size: var(--type-sm);
   }
   .about__bullet-list {
     margin: 0;

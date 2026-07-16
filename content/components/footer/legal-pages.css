@@ -3,12 +3,12 @@
  * Refactored to avoid body collisions and support main layout
  */
 .legal-content {
-  font-family: var(--font-system);
-  line-height: 1.6;
+  font-family: var(--font-sans);
+  line-height: var(--leading-body);
   color: var(--text-primary);
   background: transparent;
   padding: var(--size-r-1) var(--size-r-2) var(--size-r-4);
-  max-width: var(--size-960);
+  max-width: var(--measure-text);
   margin: 0 auto;
   min-height: calc(
     var(--viewport-height) - var(--content-top-offset) - var(--content-bottom-offset)
@@ -16,13 +16,13 @@
 }
 
 .legal-content h1 {
-  font-size: clamp(var(--size-r-2), 5vw, var(--size-r-2-5));
+  font-size: var(--type-3xl);
   margin-bottom: var(--size-r-0-5);
   color: var(--clr-white);
 }
 
 .legal-content h2 {
-  font-size: var(--size-r-1-75);
+  font-size: var(--type-2xl);
   margin-top: var(--size-r-2-5);
   margin-bottom: var(--size-r-1);
   color: var(--legal-link-color);
@@ -31,14 +31,14 @@
 }
 
 .legal-content h3 {
-  font-size: var(--size-r-1-25);
+  font-size: var(--type-xl);
   margin-top: var(--size-r-1-5);
   margin-bottom: var(--size-r-0-75);
   color: var(--legal-link-hover);
 }
 
 .legal-content h4 {
-  font-size: var(--size-r-1-125);
+  font-size: var(--type-lg);
   margin-top: var(--size-r-1-25);
   margin-bottom: var(--size-r-0-5);
   color: var(--legal-link-hover);
@@ -96,13 +96,13 @@
   border-left: var(--size-3) solid color-mix(in srgb, var(--clr-white) 20%, transparent);
   padding: var(--size-r-1);
   margin: var(--size-r-1-5) 0;
-  font-size: var(--size-r-0-9);
+  font-size: var(--type-sm);
   border-radius: var(--size-4);
 }
 
 .legal-content .last-updated {
   color: var(--surface-toast-muted);
-  font-size: var(--size-r-0-9);
+  font-size: var(--type-sm);
   margin-top: var(--size-r-1);
   font-style: italic;
 }
@@ -154,15 +154,15 @@
   }
 
   .legal-content h1 {
-    font-size: var(--size-r-2);
+    font-size: var(--type-3xl);
   }
 
   .legal-content h2 {
-    font-size: var(--size-r-1-5);
+    font-size: var(--type-2xl);
   }
 
   .legal-content h3 {
-    font-size: var(--size-r-1-125);
+    font-size: var(--type-lg);
   }
 
   .legal-content .contact-box,
@@ -183,11 +183,11 @@
   }
 
   .legal-content h1 {
-    font-size: var(--size-r-1-75);
+    font-size: var(--type-2xl);
   }
 
   .legal-content h2 {
-    font-size: var(--size-r-1-25);
+    font-size: var(--type-xl);
     margin-top: var(--size-r-2);
   }
 

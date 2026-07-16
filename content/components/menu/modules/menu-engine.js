@@ -20,11 +20,11 @@ import {
   uiStore,
 } from "../../../core/state/ui-store.js";
 import { resolvedTheme, setTheme } from "../../../core/state/theme-state.js";
-import { withViewTransition } from "../../../core/view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
+  withViewTransition,
 } from "../../../core/view-transitions/index.js";
 import { prepareOverlayFocusChange } from "../../../core/overlay-manager.js";
 
@@ -349,7 +349,7 @@ export class MenuAccessibility {
         }
 
         if (window.innerWidth <= mobileBreakpoint) {
-          this.announce(isOpen ? "Hauptmenü geöffnet" : "Hauptmenü geschlossen");
+          this.announce(i18n.t(isOpen ? "menu.opened" : "menu.closed"));
         }
       })
     );

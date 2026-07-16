@@ -8,7 +8,7 @@
 import { BASE_URL } from "#config/constants.js";
 import { FAVICON_512_URL } from "#config/media-urls.js";
 import { i18n } from "#core/i18n.js";
-import { getElementById } from "#core/dom-utils.js";
+import { getElementById } from "#core/utils/index.js";
 
 const VIDEO_PAGE_BASE_URL = `${BASE_URL}/videos/`;
 const SVG_NS = "http://www.w3.org/2000/svg";

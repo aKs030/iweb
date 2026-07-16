@@ -4,6 +4,8 @@
  * @version 1.0.0
  */
 
+import { i18n } from "../../../core/i18n.js";
+
 /**
  * Robot DOM Builder Class
  * Erstellt DOM-Elemente auf sichere Weise
@@ -298,12 +300,14 @@ export class RobotDOMBuilder {
 
     const text = document.createElement("span");
     text.id = "robot-bubble-text";
-    text.textContent = "Hallo!";
+    text.textContent = i18n.t("robot.bubble_greeting");
+    text.dataset.i18n = "robot.bubble_greeting";
 
     const closeBtn = document.createElement("div");
     closeBtn.className = "robot-bubble-close";
     closeBtn.textContent = "×";
-    closeBtn.setAttribute("aria-label", "Bubble schließen");
+    closeBtn.setAttribute("aria-label", i18n.t("robot.bubble_close"));
+    closeBtn.setAttribute("data-i18n-attrs", "aria-label:robot.bubble_close");
 
     bubble.append(text, closeBtn);
 
@@ -317,7 +321,8 @@ export class RobotDOMBuilder {
   createAvatar() {
     const button = document.createElement("button");
     button.className = "robot-avatar";
-    button.setAttribute("aria-label", "Chat öffnen");
+    button.setAttribute("aria-label", i18n.t("robot.chat_open"));
+    button.setAttribute("data-i18n-attrs", "aria-label:robot.chat_open");
 
     const svg = this.createRobotSVG();
     button.appendChild(svg);
@@ -717,6 +722,32 @@ export class RobotDOMBuilder {
     return path;
   }
 
+  createHand(side, palmPosition, fingers) {
+    const hand = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    hand.classList.add("robot-hand", side);
+
+    fingers.forEach((finger, index) => {
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.classList.add("robot-finger", `finger-${index}`);
+      Object.entries(finger).forEach(([attribute, value]) => {
+        line.setAttribute(attribute, String(value));
+      });
+      line.setAttribute("stroke", "#40e0d0");
+      line.setAttribute("stroke-width", "1.2");
+      line.setAttribute("stroke-linecap", "round");
+      hand.appendChild(line);
+    });
+
+    const palm = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    palm.setAttribute("cx", String(palmPosition.x));
+    palm.setAttribute("cy", String(palmPosition.y));
+    palm.setAttribute("r", "3");
+    palm.setAttribute("fill", "#40e0d0");
+    hand.appendChild(palm);
+
+    return hand;
+  }
+
   /**
    * Create arms
    * @returns {SVGGElement}
@@ -738,45 +769,18 @@ export class RobotDOMBuilder {
     leftArm.setAttribute("stroke-width", "3");
     leftArm.setAttribute("stroke-linecap", "round");
 
-    // Left Hand (Detailed with fingers) - Viewer's Left (kleiner: r=4 -> 3, stroke-width=1.5 -> 1.2)
-    const leftHandGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    leftHandGroup.classList.add("robot-hand", "left");
-
-    // Palm
-    const leftPalm = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    leftPalm.setAttribute("cx", "22");
-    leftPalm.setAttribute("cy", "82");
-    leftPalm.setAttribute("r", "3");
-    leftPalm.setAttribute("fill", "#40e0d0");
-
-    // Fingers (5 small lines) - kürzere Finger
-    const fingers = [
+    const leftHand = this.createHand("left", { x: 22, y: 82 }, [
       { x1: 20.5, y1: 79.5, x2: 19, y2: 77 }, // Thumb
       { x1: 21, y1: 79, x2: 20.5, y2: 76.5 }, // Index
       { x1: 22, y1: 79, x2: 22, y2: 76 }, // Middle
       { x1: 23, y1: 79, x2: 23.5, y2: 76.5 }, // Ring
       { x1: 23.5, y1: 79.5, x2: 25, y2: 77 }, // Pinky
-    ];
-
-    fingers.forEach((finger, index) => {
-      const fingerLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      fingerLine.classList.add("robot-finger", `finger-${index}`);
-      fingerLine.setAttribute("x1", String(finger.x1));
-      fingerLine.setAttribute("y1", String(finger.y1));
-      fingerLine.setAttribute("x2", String(finger.x2));
-      fingerLine.setAttribute("y2", String(finger.y2));
-      fingerLine.setAttribute("stroke", "#40e0d0");
-      fingerLine.setAttribute("stroke-width", "1.2");
-      fingerLine.setAttribute("stroke-linecap", "round");
-      leftHandGroup.appendChild(fingerLine);
-    });
-
-    leftHandGroup.appendChild(leftPalm);
+    ]);
 
     // Add magnifying glass to left arm group
     const magnifyingGlass = this.createMagnifyingGlass();
 
-    leftArmGroup.append(leftArm, leftHandGroup, magnifyingGlass);
+    leftArmGroup.append(leftArm, leftHand, magnifyingGlass);
 
     // Right Arm Group (includes arm and hand)
     const rightArmGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -791,42 +795,15 @@ export class RobotDOMBuilder {
     rightArm.setAttribute("stroke-width", "3");
     rightArm.setAttribute("stroke-linecap", "round");
 
-    // Right Hand (Detailed with fingers) - Viewer's Right (kleiner: r=4 -> 3, stroke-width=1.5 -> 1.2)
-    const rightHandGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    rightHandGroup.classList.add("robot-hand", "right");
-
-    // Palm
-    const rightPalm = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    rightPalm.setAttribute("cx", "75");
-    rightPalm.setAttribute("cy", "80");
-    rightPalm.setAttribute("r", "3");
-    rightPalm.setAttribute("fill", "#40e0d0");
-
-    // Fingers (5 small lines) - mirrored, kürzere Finger
-    const rightFingers = [
+    const rightHand = this.createHand("right", { x: 75, y: 80 }, [
       { x1: 76.5, y1: 77.5, x2: 78, y2: 75 }, // Thumb
       { x1: 76, y1: 77, x2: 76.5, y2: 74.5 }, // Index
       { x1: 75, y1: 77, x2: 75, y2: 74 }, // Middle
       { x1: 74, y1: 77, x2: 73.5, y2: 74.5 }, // Ring
       { x1: 73.5, y1: 77.5, x2: 72, y2: 75 }, // Pinky
-    ];
+    ]);
 
-    rightFingers.forEach((finger, index) => {
-      const fingerLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      fingerLine.classList.add("robot-finger", `finger-${index}`);
-      fingerLine.setAttribute("x1", String(finger.x1));
-      fingerLine.setAttribute("y1", String(finger.y1));
-      fingerLine.setAttribute("x2", String(finger.x2));
-      fingerLine.setAttribute("y2", String(finger.y2));
-      fingerLine.setAttribute("stroke", "#40e0d0");
-      fingerLine.setAttribute("stroke-width", "1.2");
-      fingerLine.setAttribute("stroke-linecap", "round");
-      rightHandGroup.appendChild(fingerLine);
-    });
-
-    rightHandGroup.appendChild(rightPalm);
-
-    rightArmGroup.append(rightArm, rightHandGroup);
+    rightArmGroup.append(rightArm, rightHand);
 
     g.append(leftArmGroup, rightArmGroup);
 

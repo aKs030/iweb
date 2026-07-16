@@ -2,7 +2,7 @@
 # Cloudflare Pages Redirects Configuration
 # ============================================================================
 # Optimized redirect rules for canonical URLs and legacy path cleanup
-# Last updated: 2026-03-01
+# Last updated: 2026-07-13
 #
 # Rule Priority (Cloudflare processes top to bottom):
 # 1. Exact path redirects (most performant — no pattern matching)
@@ -21,6 +21,7 @@
 # Legacy web-app cleanup
 /offline.html        /              301
 /manifest.json       /              301
+/llms-full.txt       /llms.txt      301
 
 # Public RSS feed alias
 /blog/feed.xml       /feed.xml      301

@@ -27,9 +27,9 @@ const TIMING_CSS_VARS = Object.freeze({
   "--vt-page-new-duration": VIEW_TRANSITION_TIMINGS_MS.PAGE_NEW,
 });
 
-export const toCssMs = valueMs => `${Math.max(0, Math.round(valueMs))}ms`;
+const toCssMs = valueMs => `${Math.max(0, Math.round(valueMs))}ms`;
 
-export const applyViewTransitionTimingVars = () => {
+const applyViewTransitionTimingVars = () => {
   if (typeof document === "undefined") return;
   const rootStyle = document.documentElement?.style;
   if (!rootStyle) return;
@@ -57,15 +57,11 @@ export const VIEW_TRANSITION_TYPES = Object.freeze({
   CHAT_CLEAR: "chat-clear",
 });
 
-export const DEFAULT_NAVIGATION_TRANSITION_TYPES = Object.freeze([
-  VIEW_TRANSITION_TYPES.PAGE_NAVIGATE,
-]);
+const DEFAULT_NAVIGATION_TRANSITION_TYPES = Object.freeze([VIEW_TRANSITION_TYPES.PAGE_NAVIGATE]);
 
-export const DEFAULT_SCROLL_TRANSITION_TYPES = Object.freeze([
-  VIEW_TRANSITION_TYPES.SAME_PAGE_SCROLL,
-]);
+const DEFAULT_SCROLL_TRANSITION_TYPES = Object.freeze([VIEW_TRANSITION_TYPES.SAME_PAGE_SCROLL]);
 
-export const BACKDROP_SENSITIVE_TRANSITION_TYPES = Object.freeze([
+const BACKDROP_SENSITIVE_TRANSITION_TYPES = Object.freeze([
   VIEW_TRANSITION_TYPES.MENU_OPEN,
   VIEW_TRANSITION_TYPES.MENU_CLOSE,
   VIEW_TRANSITION_TYPES.SEARCH_OPEN,
@@ -124,7 +120,7 @@ const isViewTransitionDebugEnabled = () => {
   return false;
 };
 
-export const debugViewTransition = (message, detail = {}) => {
+const debugViewTransition = (message, detail = {}) => {
   if (!isViewTransitionDebugEnabled()) return;
   try {
     console.debug("[view-transitions]", message, detail);
@@ -171,10 +167,10 @@ const normalizeTokens = (value, maxCount = MAX_TOKEN_COUNT) => {
   return [...unique];
 };
 
-export const normalizeTypes = value => normalizeTokens(value);
-export const normalizeClassTokens = value => normalizeTokens(value);
+const normalizeTypes = value => normalizeTokens(value);
+const normalizeClassTokens = value => normalizeTokens(value);
 
-export const normalizeTimeout = value => {
+const normalizeTimeout = value => {
   const timeout = Number(value);
   if (!Number.isFinite(timeout) || timeout <= 0) {
     return VIEW_TRANSITION_TIMINGS_MS.DEFAULT_TIMEOUT;
@@ -564,7 +560,7 @@ function navigateWithViewTransition(href, options = {}, defaults = { navigationT
   return true;
 }
 
-export const createDocumentClickHandler = options => {
+const createDocumentClickHandler = options => {
   return event => {
     if (event.defaultPrevented) return;
     if (event.button !== 0) return;
@@ -669,7 +665,7 @@ ${UNTYPED_VIEW_TRANSITION_SELECTOR}::view-transition-new(root) {
 }
 `;
 
-export const injectViewTransitionRuntimeStyles = options => {
+const injectViewTransitionRuntimeStyles = options => {
   if (!options.injectNavigationStyles) return;
   if (typeof document === "undefined") return;
 
@@ -683,3 +679,48 @@ export const injectViewTransitionRuntimeStyles = options => {
   }
   styleEl.textContent = getRuntimeStyles(options.enableCrossDocument);
 };
+
+const INIT_CONFIG = {
+  captureInternalLinks: true,
+  enableCrossDocument: true,
+  injectNavigationStyles: true,
+  navigationTypes: [...DEFAULT_NAVIGATION_TRANSITION_TYPES],
+};
+
+let isInitialized = false;
+
+function configureViewTransitions(options = {}) {
+  if (typeof options.captureInternalLinks === "boolean") {
+    INIT_CONFIG.captureInternalLinks = options.captureInternalLinks;
+  }
+  if (typeof options.enableCrossDocument === "boolean") {
+    INIT_CONFIG.enableCrossDocument = options.enableCrossDocument;
+  }
+  if (typeof options.injectNavigationStyles === "boolean") {
+    INIT_CONFIG.injectNavigationStyles = options.injectNavigationStyles;
+  }
+
+  const navigationTypes = normalizeTypes(options.navigationTypes);
+  if (navigationTypes.length) INIT_CONFIG.navigationTypes = navigationTypes;
+
+  applyViewTransitionTimingVars();
+  injectViewTransitionRuntimeStyles({
+    injectNavigationStyles: INIT_CONFIG.injectNavigationStyles,
+    enableCrossDocument: INIT_CONFIG.enableCrossDocument,
+  });
+}
+
+export function initViewTransitions(options = {}) {
+  configureViewTransitions(options);
+  if (isInitialized || typeof document === "undefined") return;
+  isInitialized = true;
+
+  document.addEventListener(
+    "click",
+    createDocumentClickHandler({
+      getCaptureInternalLinks: () => INIT_CONFIG.captureInternalLinks,
+      getEnableCrossDocument: () => INIT_CONFIG.enableCrossDocument,
+      getNavigationTypes: () => INIT_CONFIG.navigationTypes,
+    })
+  );
+}

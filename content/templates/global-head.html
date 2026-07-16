@@ -1,8 +1,13 @@
 <meta charset="utf-8" />
-<meta http-equiv="X-UA-Compatible" content="ie=edge" />
 <meta name="format-detection" content="telephone=no,email=no" />
 <meta name="deploy-version" content="{{DEPLOY_VERSION}}" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&amp;family=Space+Grotesk:wght@700&amp;display=swap"
+/>
 
 <!-- Import Map for no-build ES modules: vendors + internal aliases -->
 <!-- Must be as early as possible in the head for both base and standalone pages -->
@@ -17,37 +22,9 @@
       "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.min.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/",
       "htm": "https://esm.sh/htm@3.1.1",
-      "#core/async-utils.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/cache.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/canonical-manager.js": "/content/core/seo/index.js?v={{DEPLOY_VERSION}}",
-      "#core/content-extractors.js": "/content/core/seo/index.js?v={{DEPLOY_VERSION}}",
-      "#core/csp-nonce.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/dom-utils.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/fetch.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/path-utils.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/react-utils.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/profile-state.js": "/content/core/state/profile-state.js?v={{DEPLOY_VERSION}}",
-      "#core/resource-hints-matrix.js": "/content/core/seo/index.js?v={{DEPLOY_VERSION}}",
-      "#core/resource-hints.js": "/content/core/seo/index.js?v={{DEPLOY_VERSION}}",
-      "#core/sanitization-utils.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/schema-media.js": "/content/core/seo/index.js?v={{DEPLOY_VERSION}}",
-      "#core/schema-page-types.js": "/content/core/seo/index.js?v={{DEPLOY_VERSION}}",
-      "#core/schema.js": "/content/core/seo/index.js?v={{DEPLOY_VERSION}}",
-      "#core/text-utils.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/theme-state.js": "/content/core/state/theme-state.js?v={{DEPLOY_VERSION}}",
-      "#core/timer-manager.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/ui-store.js": "/content/core/state/ui-store.js?v={{DEPLOY_VERSION}}",
-      "#core/url-utils.js": "/content/core/utils/index.js?v={{DEPLOY_VERSION}}",
-      "#core/view-transition-constants.js": "/content/core/view-transitions/index.js?v={{DEPLOY_VERSION}}",
-      "#core/view-transitions-core.js": "/content/core/view-transitions/index.js?v={{DEPLOY_VERSION}}",
-      "#core/view-transitions-navigation.js": "/content/core/view-transitions/index.js?v={{DEPLOY_VERSION}}",
-      "#core/view-transitions-runtime-style.js": "/content/core/view-transitions/index.js?v={{DEPLOY_VERSION}}",
-      "#core/overlay-core.js": "/content/core/overlay/index.js?v={{DEPLOY_VERSION}}",
-      "#core/overlay-focus.js": "/content/core/overlay/index.js?v={{DEPLOY_VERSION}}",
       "#core/": "/content/core/",
       "#components/": "/content/components/",
       "#footer/": "/content/components/footer/",
-      "#menu/": "/content/components/menu/",
       "#config/": "/content/config/",
       "#pages/": "/pages/"
     },

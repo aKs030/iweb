@@ -439,7 +439,7 @@
   }
 
   .chat-title {
-    font-size: var(--size-r-0-95);
+    font-size: var(--type-body);
     gap: var(--size-8);
   }
 
@@ -450,27 +450,24 @@
 
   .chat-header-btn {
     padding: var(--size-5) var(--size-8);
-    font-size: var(--size-r-0-68);
+    font-size: var(--type-xs);
     min-height: var(--size-30);
   }
 
   .message {
     max-width: 92%;
     padding: var(--size-10) var(--size-14);
-    font-size: var(--size-r-0-9);
+    font-size: var(--type-sm);
   }
 
   /* When keyboard is open via JS, remove safe-area-inset because keyboard already pushes layout up */
-  .robot-chat-window.keyboard-open .chat-input-area {
-    padding-bottom: var(--size-12) !important;
-  }
 }
 
 /* Mobile Optimization: Prevent iOS Zoom on Input Focus */
 /* Mobile: input font-size für iOS Zoom-Prevention */
 @media (width <= 480px) {
   #robot-chat-input {
-    font-size: 16px !important; /* Force exact 16px so iOS Safari never zooms */
+    font-size: var(--type-body) !important; /* Force exact 16px so iOS Safari never zooms */
   }
 }
 
@@ -499,11 +496,6 @@
 }
 
 /* Glass Lens Effect */
-.robot-lens {
-  mix-blend-mode: hard-light;
-  filter: drop-shadow(0 0 var(--size-5) color-mix(in srgb, var(--robot-cyan) 30%, transparent));
-}
-
 .robot-antenna-light.is-thinking {
   animation: thinkingAntenna 0.5s infinite alternate;
 }
@@ -531,20 +523,6 @@
     opacity 0.2s ease,
     fill 0.2s ease;
   transform-origin: center;
-}
-
-/* Grip animation - fingers close */
-.robot-hand.gripping .robot-finger {
-  animation: fingerGrip 0.3s ease-out forwards;
-}
-
-@keyframes fingerGrip {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(-15deg);
-  }
 }
 
 /* Wave animation for fingers */
@@ -636,7 +614,7 @@
   --ty: var(--size-0);
 
   position: absolute;
-  font-size: var(--size-16);
+  font-size: var(--type-body);
   pointer-events: none;
   animation: particleStar 1s ease-out forwards;
   z-index: var(--z-robot);
@@ -659,7 +637,7 @@
 
 .robot-particle-heart {
   position: absolute;
-  font-size: var(--size-20);
+  font-size: var(--type-lg);
   pointer-events: none;
   animation: particleHeart 1.5s ease-out forwards;
   z-index: var(--z-robot);
@@ -682,7 +660,7 @@
 
 .robot-particle-question {
   position: absolute;
-  font-size: var(--size-18);
+  font-size: var(--type-lg);
   pointer-events: none;
   animation: particleQuestion 1s ease-out forwards;
   z-index: var(--z-robot);
@@ -707,7 +685,7 @@
 
 .robot-particle-sweat {
   position: absolute;
-  font-size: var(--size-14);
+  font-size: var(--type-sm);
   pointer-events: none;
   animation: particleSweat 0.8s ease-in forwards;
   z-index: var(--z-robot);
@@ -812,35 +790,6 @@
   }
 }
 
-/* Scared Animation (fast scroll) */
-.robot-avatar.scared {
-  animation: robotScared 0.3s ease-in-out;
-}
-
-@keyframes robotScared {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.9) translateY(calc(var(--size-5) * -1));
-  }
-}
-
-.robot-avatar.scared .robot-eyes {
-  animation: eyesScared 0.3s ease-in-out;
-}
-
-@keyframes eyesScared {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.3);
-  }
-}
-
 /* Applause Animation */
 .robot-avatar.applauding .robot-arm {
   animation: armApplause 0.4s ease-in-out infinite;
@@ -875,7 +824,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--size-r-1);
+  font-size: var(--type-body);
   transition:
     background-color 0.25s ease,
     border-color 0.25s ease,
@@ -918,7 +867,7 @@
 
 .chat-preview-name {
   flex: 1;
-  font-size: var(--size-r-0-8);
+  font-size: var(--type-sm);
   color: var(--robot-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -930,7 +879,7 @@
   border: none;
   color: var(--robot-text-muted);
   cursor: pointer;
-  font-size: var(--size-r-1-2);
+  font-size: var(--type-lg);
   padding: var(--size-4);
   line-height: 1;
   border-radius: 50%;
@@ -968,165 +917,11 @@
   animation: toolCallPulse 0.5s ease-out;
 }
 
-.chat-tool-call[data-accent="navigation"] {
-  --tool-card-accent: var(--clr-blue-500);
-}
-
-.chat-tool-call[data-accent="search"] {
-  --tool-card-accent: var(--robot-cyan);
-}
-
-.chat-tool-call[data-accent="appearance"] {
-  --tool-card-accent: var(--robot-sky);
-}
-
-.chat-tool-call[data-accent="external"] {
-  --tool-card-accent: var(--clr-blue-400);
-}
-
-.chat-tool-call[data-accent="utility"] {
-  --tool-card-accent: var(--robot-green);
-}
-
-.chat-tool-call[data-accent="error"],
-.chat-tool-call[data-status="error"] {
-  --tool-card-accent: var(--clr-red-500);
-}
-
-.chat-tool-call__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--size-12);
-}
-
-.chat-tool-call__identity {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--size-12);
-  min-width: 0;
-}
-
-.chat-tool-call__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--size-32);
-  height: var(--size-32);
-  border-radius: var(--size-12);
-  background: color-mix(in srgb, var(--tool-card-accent) 16%, transparent);
-  box-shadow: inset 0 0 0 var(--size-1) color-mix(in srgb, var(--tool-card-accent) 28%, transparent);
-  font-size: var(--size-r-1);
-  flex-shrink: 0;
-}
-
-.chat-tool-call__titles {
-  display: grid;
-  gap: var(--size-4);
-  min-width: 0;
-}
-
-.chat-tool-call__title {
-  color: var(--robot-tool-card-text);
-  font-size: var(--size-r-0-92);
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.chat-tool-call__summary {
-  color: var(--robot-tool-card-text-muted);
-  font-size: var(--size-r-0-8);
-  line-height: 1.5;
-}
-
-.chat-tool-call__badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--size-4) var(--size-10);
-  border-radius: var(--size-999);
-  background: color-mix(in srgb, var(--tool-card-accent) 16%, transparent);
-  border: var(--size-1) solid color-mix(in srgb, var(--tool-card-accent) 26%, transparent);
-  color: var(--tool-card-accent);
-  font-size: var(--size-r-0-68);
-  font-weight: 700;
-  letter-spacing: 0;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.chat-tool-call__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--size-8);
-}
-
-.chat-tool-call__meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--size-6);
-  min-width: 0;
-  padding: var(--size-6) var(--size-10);
-  border-radius: var(--size-999);
-  background: color-mix(in srgb, var(--clr-white) 4%, transparent);
-  border: var(--size-1) solid color-mix(in srgb, var(--clr-white) 8%, transparent);
-}
-
-.chat-tool-call__meta-label {
-  color: var(--robot-tool-card-meta-label);
-  font-size: var(--size-r-0-68);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0;
-}
-
-.chat-tool-call__meta-value {
-  color: var(--robot-tool-card-text);
-  font-size: var(--size-r-0-72);
-  white-space: nowrap;
-}
-
-.chat-tool-call__actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.chat-tool-call__btn {
-  border: 0;
-  border-radius: var(--size-999);
-  padding: var(--size-8) var(--size-14);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--tool-card-accent) 90%, var(--clr-white)),
-    var(--tool-card-accent)
-  );
-  color: var(--clr-black);
-  font-size: var(--size-r-0-74);
-  font-weight: 700;
-  letter-spacing: 0;
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    filter 0.2s ease;
-  box-shadow: 0 var(--size-8) var(--size-20)
-    color-mix(in srgb, var(--tool-card-accent) 28%, transparent);
-}
-
-.chat-tool-call__btn:hover {
-  transform: translateY(calc(var(--size-2) * -1));
-  filter: brightness(1.04);
-}
-
-.chat-tool-call__btn:active {
-  transform: translateY(0);
-}
-
 /* Memory badge */
 .chat-memory-badge {
   display: inline-flex;
   align-items: center;
-  font-size: var(--size-r-0-7);
+  font-size: var(--type-xs);
   margin-left: var(--size-4);
   opacity: 0.7;
   cursor: help;
@@ -1140,22 +935,6 @@
   margin-top: var(--size-4);
   object-fit: cover;
   border: var(--size-1) solid color-mix(in srgb, var(--robot-cyan) 20%, transparent);
-}
-
-/* Tool result in message */
-.message .tool-result {
-  display: flex;
-  align-items: center;
-  gap: var(--size-6);
-  margin-top: var(--size-4);
-  padding: var(--size-4) var(--size-8);
-  background: color-mix(in srgb, var(--robot-cyan) 5%, transparent);
-  border-radius: var(--size-6);
-  font-size: var(--size-r-0-8);
-}
-
-.tool-result .tool-status {
-  font-size: var(--size-r-0-9);
 }
 
 /* Slide up animation */

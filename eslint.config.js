@@ -19,12 +19,8 @@ export default [
       sourceType: "module",
       globals: {
         ...globals.browser,
-        ...globals.node,
         // Cloudflare Workers globals
         HTMLRewriter: "readonly",
-        request: "readonly",
-        response: "readonly",
-        env: "readonly",
       },
     },
     rules: {
@@ -47,12 +43,6 @@ export default [
       "no-constant-condition": "warn",
       "prefer-const": "error",
       "no-var": "error",
-    },
-  },
-  {
-    files: ["**/*.mjs", "**/*.cjs"],
-    languageOptions: {
-      sourceType: "module",
     },
   },
 ];

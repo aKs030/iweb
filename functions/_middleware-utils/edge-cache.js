@@ -13,9 +13,11 @@
  * @version 1.0.0
  */
 
+import { DEPLOY_VERSION } from "./template-cache.js";
+
 // Cache TTL for HTML responses (edge-side, not browser-side)
 const EDGE_HTML_TTL_S = 300; // 5 minutes
-const EDGE_CACHE_KEY_VERSION = "20260419-csp-4";
+const EDGE_CACHE_KEY_VERSION = DEPLOY_VERSION;
 const CACHE_KEY_QUERY_ALLOWLIST = new Set(["menuShadow"]);
 
 /**

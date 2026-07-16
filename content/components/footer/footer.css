@@ -23,11 +23,11 @@
 
     --btn-padding: var(--space-2) var(--space-4);
     --btn-radius: var(--menu-item-radius);
-    --btn-font-size: clamp(var(--size-12), 1vw, var(--size-13));
+    --btn-font-size: var(--type-xs);
   }
 
   /* utility base for footer buttons */
-  :is(.footer-btn, .btn-accept, .btn-reject) {
+  :is(.btn-accept, .btn-reject) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -40,7 +40,6 @@
     font-weight: 600;
     cursor: pointer;
     transition: none;
-    letter-spacing: 0;
     white-space: nowrap;
     flex-shrink: 0;
     font-family: inherit;
@@ -94,9 +93,8 @@
     z-index: var(--z-fixed);
     font-family: var(--font-primary);
     color: var(--component-label-primary);
-    font-size: var(--size-13);
-    font-weight: 510;
-    letter-spacing: 0;
+    font-size: var(--type-xs);
+    font-weight: 500;
     opacity: 1;
   }
 
@@ -139,10 +137,9 @@
 
   .footer-copyright {
     color: var(--clr-white);
-    font-size: clamp(var(--size-11), 1vw, var(--size-13));
-    font-weight: 510;
+    font-size: var(--type-xs);
+    font-weight: 500;
     white-space: nowrap;
-    letter-spacing: 0;
     flex-shrink: 1;
     min-width: 0;
     overflow: hidden;
@@ -155,7 +152,7 @@
     margin-left: var(--size-6);
     padding: var(--size-4) var(--size-8);
     border-radius: var(--radius-sm);
-    font-weight: 590;
+    font-weight: 600;
     white-space: nowrap;
   }
 
@@ -194,17 +191,16 @@
   }
 
   .cookie-emoji {
-    font-size: var(--size-16);
+    font-size: var(--type-body);
     line-height: 1;
     flex-shrink: 0;
     animation: none;
   }
 
   .cookie-text {
-    font-size: clamp(var(--size-12), 1.1vw, var(--size-14));
-    font-weight: 510;
+    font-size: var(--type-sm);
+    font-weight: 500;
     color: var(--clr-white);
-    letter-spacing: 0;
     white-space: nowrap;
     flex-shrink: 1;
     min-width: 0;
@@ -270,9 +266,8 @@
     border-radius: var(--menu-item-radius);
     color: var(--clr-white);
     text-decoration: none;
-    font-size: clamp(var(--size-13), 1.1vw, var(--size-14));
-    font-weight: 510;
-    letter-spacing: 0;
+    font-size: var(--type-sm);
+    font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
     -webkit-tap-highlight-color: color-mix(in srgb, var(--component-accent-blue) 10%, transparent);
@@ -353,7 +348,7 @@
   }
 
   .settings-header h2 {
-    font-size: var(--size-14);
+    font-size: var(--type-sm);
     font-weight: 600;
     margin: 0;
     display: flex;
@@ -368,7 +363,7 @@
     border: none;
     background: var(--footer-soft-fill);
     color: var(--footer-quiet-text);
-    font-size: var(--size-20);
+    font-size: var(--type-lg);
     line-height: 1;
     cursor: pointer;
     display: flex;
@@ -392,8 +387,8 @@
   .settings-intro {
     color: var(--footer-quiet-text);
     margin: 0 0 var(--size-4);
-    font-size: var(--size-12);
-    line-height: 1.3;
+    font-size: var(--type-xs);
+    line-height: var(--leading-snug);
   }
 
   .cookie-category {
@@ -418,26 +413,25 @@
   }
 
   .category-header :is(h2, h3) {
-    font-size: var(--size-13);
+    font-size: var(--type-xs);
     font-weight: 600;
     margin: 0;
   }
 
   .cookie-category > p {
-    font-size: var(--size-11);
+    font-size: var(--type-xs);
     color: var(--footer-quiet-text);
     margin: 0;
-    line-height: 1.3;
+    line-height: var(--leading-snug);
   }
 
   .status {
     padding: var(--size-3) var(--size-8);
     background: var(--component-fill-primary);
     border-radius: var(--radius-xs);
-    font-size: var(--size-9);
+    font-size: var(--type-xs);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0;
   }
 
   /* ===== Toggle Switch ===== */
@@ -511,12 +505,11 @@
     min-width: var(--size-100);
     padding: var(--size-9) var(--size-14);
     border-radius: var(--size-8);
-    font-size: var(--size-12);
+    font-size: var(--type-xs);
     font-weight: 600;
     cursor: pointer;
     border: none;
     font-family: inherit;
-    letter-spacing: 0;
   }
 
   .footer-btn-secondary {
@@ -588,7 +581,7 @@
   }
 
   .footer-card h2 {
-    font-size: var(--size-13);
+    font-size: var(--type-xs);
     font-weight: 600;
     margin: 0 0 var(--size-10);
     display: flex;
@@ -598,21 +591,21 @@
   }
 
   .footer-card .name {
-    font-size: var(--size-13);
+    font-size: var(--type-xs);
     font-weight: 600;
     margin: 0 0 var(--size-4);
     color: var(--component-label-primary);
   }
 
   .footer-card .role {
-    font-size: var(--size-11);
+    font-size: var(--type-xs);
     color: var(--footer-quiet-text);
     margin: 0 0 var(--size-8);
   }
 
   .footer-card .bio {
-    font-size: var(--size-11);
-    line-height: 1.5;
+    font-size: var(--type-xs);
+    line-height: var(--leading-body);
     color: var(--component-label-secondary);
     margin: 0 0 var(--size-10);
     flex: 1;
@@ -634,7 +627,7 @@
     color: var(--clr-white);
     text-decoration: none;
     border-radius: var(--radius-sm);
-    font-size: var(--size-11);
+    font-size: var(--type-xs);
     font-weight: 600;
     flex: 1;
     justify-content: center;
@@ -662,7 +655,7 @@
     color: var(--footer-quiet-text);
     text-decoration: none;
     border-radius: var(--radius-xs);
-    font-size: var(--size-10);
+    font-size: var(--type-xs);
   }
 
   .links a svg {
@@ -699,7 +692,7 @@
     color: var(--footer-quiet-text);
     text-decoration: none;
     border-radius: var(--radius-xs);
-    font-size: var(--size-10);
+    font-size: var(--type-xs);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -740,11 +733,10 @@
     background: var(--footer-soft-fill-2);
     border: var(--size-1) solid color-mix(in srgb, var(--component-separator) 100%, transparent);
     border-radius: var(--radius-md);
-    font-size: var(--size-10);
+    font-size: var(--type-xs);
     font-weight: 600;
     color: color-mix(in srgb, var(--clr-white) 80%, transparent);
     cursor: default;
-    letter-spacing: 0;
   }
 
   .tag:hover {
@@ -768,7 +760,7 @@
   }
 
   .copyright {
-    font-size: var(--size-11);
+    font-size: var(--type-xs);
     color: var(--clr-white);
     white-space: nowrap;
     flex-shrink: 1;
@@ -801,11 +793,10 @@
     border-radius: var(--radius-sm);
     color: var(--clr-white);
     text-decoration: none;
-    font-size: var(--size-11);
-    font-weight: 510;
+    font-size: var(--type-xs);
+    font-weight: 500;
     cursor: pointer;
     font-family: inherit;
-    letter-spacing: 0;
     white-space: nowrap;
   }
 
@@ -833,7 +824,7 @@
 
   .legal .nav-btn {
     padding: var(--size-6) var(--size-10);
-    font-size: var(--size-10);
+    font-size: var(--type-xs);
     min-height: auto;
     border-radius: var(--size-8);
   }
@@ -855,7 +846,7 @@
     border-radius: var(--radius-sm);
     color: var(--clr-white);
     text-decoration: none;
-    font-size: var(--size-10);
+    font-size: var(--type-xs);
   }
 
   .social-btn:hover {
@@ -927,7 +918,7 @@
     }
 
     .cookie-emoji {
-      font-size: var(--size-14);
+      font-size: var(--type-sm);
     }
 
     .cookie-text .full {
@@ -1008,23 +999,23 @@
     }
 
     .footer-card h2 {
-      font-size: var(--size-11);
+      font-size: var(--type-xs);
       margin: 0 0 var(--size-6);
     }
 
     .footer-card .name {
-      font-size: var(--size-11);
+      font-size: var(--type-xs);
       margin: 0 0 var(--size-3);
     }
 
     .footer-card .role {
-      font-size: var(--size-9);
+      font-size: var(--type-xs);
       margin: 0 0 var(--size-6);
     }
 
     .footer-card .bio {
-      font-size: var(--size-9);
-      line-height: 1.3;
+      font-size: var(--type-xs);
+      line-height: var(--leading-snug);
       margin: 0 0 var(--size-6);
     }
 
@@ -1034,7 +1025,7 @@
 
     .footer-cta {
       padding: var(--size-5) var(--size-8);
-      font-size: var(--size-9);
+      font-size: var(--type-xs);
       gap: var(--size-3);
     }
 
@@ -1046,7 +1037,7 @@
     .links a,
     .links-compact a {
       padding: var(--size-4) var(--size-6);
-      font-size: var(--size-9);
+      font-size: var(--type-xs);
       gap: var(--size-4);
     }
 
@@ -1061,7 +1052,7 @@
     }
 
     .tag {
-      font-size: var(--size-8);
+      font-size: var(--type-xs);
       padding: var(--size-3) var(--size-6);
     }
 
@@ -1079,7 +1070,7 @@
     }
 
     .copyright {
-      font-size: var(--size-8);
+      font-size: var(--type-xs);
       flex-shrink: 1;
       text-align: left;
       white-space: nowrap;
@@ -1120,7 +1111,7 @@
 
     .legal-btn {
       padding: var(--size-6) var(--size-8);
-      font-size: var(--size-9);
+      font-size: var(--type-xs);
       gap: var(--size-4);
     }
 
@@ -1131,7 +1122,7 @@
 
     .legal .nav-btn {
       padding: var(--size-4) var(--size-6);
-      font-size: var(--size-8);
+      font-size: var(--type-xs);
       min-height: var(--size-28);
       border-radius: var(--size-6);
     }
@@ -1142,17 +1133,17 @@
       --footer-padding: var(--space-3);
       --footer-gap: var(--space-1);
       --btn-padding: var(--space-1) var(--space-2);
-      --btn-font-size: var(--size-11);
+      --btn-font-size: var(--type-xs);
     }
 
     .footer-copyright {
-      font-size: var(--size-10);
+      font-size: var(--type-xs);
       flex-shrink: 2;
     }
 
     .brand-link {
       padding: var(--size-3) var(--size-6);
-      font-size: var(--size-10);
+      font-size: var(--type-xs);
     }
 
     .cookie-inline {
@@ -1162,7 +1153,7 @@
     }
 
     .cookie-text {
-      font-size: var(--size-11);
+      font-size: var(--type-xs);
     }
 
     :root.footer-cookie-visible .site-footer .footer-min-main {
@@ -1203,37 +1194,37 @@
     }
 
     .footer-card h2 {
-      font-size: var(--size-10);
+      font-size: var(--type-xs);
       margin: 0 0 var(--size-5);
     }
 
     .footer-card .name {
-      font-size: var(--size-10);
+      font-size: var(--type-xs);
       margin: 0 0 var(--size-2);
     }
 
     .footer-card .role {
-      font-size: var(--size-8);
+      font-size: var(--type-xs);
       margin: 0 0 var(--size-5);
     }
 
     .footer-card .bio {
-      font-size: var(--size-8);
-      line-height: 1.3;
+      font-size: var(--type-xs);
+      line-height: var(--leading-snug);
       margin: 0 0 var(--size-5);
     }
 
     .footer-cta {
       min-height: var(--size-32);
       padding: var(--size-6) var(--size-10);
-      font-size: var(--size-10);
+      font-size: var(--type-xs);
     }
 
     .links a,
     .links-compact a {
       min-height: var(--size-32);
       padding: var(--size-5) var(--size-7);
-      font-size: var(--size-9);
+      font-size: var(--type-xs);
     }
 
     .skill-tags {
@@ -1241,7 +1232,7 @@
     }
 
     .tag {
-      font-size: var(--size-7);
+      font-size: var(--type-xs);
       padding: var(--size-2) var(--size-5);
     }
 
@@ -1258,7 +1249,7 @@
     }
 
     .copyright {
-      font-size: var(--size-7);
+      font-size: var(--type-xs);
       flex-shrink: 2;
       min-width: 0;
     }
@@ -1293,7 +1284,7 @@
     .legal-btn {
       min-height: var(--size-30);
       padding: var(--size-6) var(--size-8);
-      font-size: var(--size-9);
+      font-size: var(--type-xs);
       gap: var(--size-3);
     }
 
@@ -1304,7 +1295,7 @@
 
     .legal .nav-btn {
       padding: var(--size-3) var(--size-5);
-      font-size: var(--size-7);
+      font-size: var(--type-xs);
       min-height: var(--size-24);
     }
 
@@ -1317,7 +1308,7 @@
     }
 
     .settings-header h2 {
-      font-size: var(--size-12);
+      font-size: var(--type-xs);
     }
 
     .settings-content {
@@ -1326,7 +1317,7 @@
     }
 
     .settings-intro {
-      font-size: var(--size-10);
+      font-size: var(--type-xs);
       margin: 0 0 var(--size-3);
     }
 
@@ -1335,11 +1326,11 @@
     }
 
     .category-header :is(h2, h3) {
-      font-size: var(--size-11);
+      font-size: var(--type-xs);
     }
 
     .cookie-category > p {
-      font-size: var(--size-9);
+      font-size: var(--type-xs);
     }
 
     .settings-footer {
@@ -1350,7 +1341,7 @@
     .footer-btn-secondary,
     .footer-btn-primary {
       padding: var(--size-7) var(--size-10);
-      font-size: var(--size-10);
+      font-size: var(--type-xs);
     }
   }
 

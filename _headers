@@ -2,7 +2,7 @@
 # Cloudflare Pages Headers Configuration
 # ============================================================================
 # Optimized caching strategy and security headers for performance and protection
-# Last updated: 2026-03-29
+# Last updated: 2026-07-13
 
 # ============================================================================
 # Static Assets - Long-term Immutable Caching
@@ -40,11 +40,6 @@
   X-Robots-Tag: all
 
 /llms.txt
-  Content-Type: text/plain; charset=utf-8
-  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
-  X-Robots-Tag: all
-
-/llms-full.txt
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
   X-Robots-Tag: all
@@ -92,7 +87,7 @@
   Content-Type: application/javascript
 
 # ============================================================================
-# JavaScript Bundles - Modern Optimization
+# JavaScript Modules - Caching
 # ============================================================================
 # Pages scripts (blog/gallery/videos/projekte/about)
 /pages/*.js

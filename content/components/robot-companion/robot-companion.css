@@ -12,17 +12,11 @@
   }
 
   .robot-avatar,
-  .robot-head,
-  .robot-body,
   .robot-arm,
-  .robot-leg,
   .robot-mouth {
     transform: none !important;
   }
 
-  .robot-trail,
-  .robot-spark,
-  .robot-particle,
   .streaming-cursor,
   .typing-dot {
     opacity: 0 !important;

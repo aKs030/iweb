@@ -15,7 +15,6 @@ export const SEARCH_RESPONSE_CACHE_CONTROL = "public, max-age=300";
 
 const TECHNICAL_RESULT_PATHS = new Set([
   "/llms.txt",
-  "/llms-full.txt",
   "/ai-index.json",
   "/person.jsonld",
   "/robots.txt",

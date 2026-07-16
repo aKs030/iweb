@@ -301,6 +301,7 @@ class ThreeEarthSystem {
       this.cloudMesh = cloudObj;
 
       this._assembleScene();
+      this._precompileEarthMaterials();
       this._initManagers(container);
       this._setupManagersAndCards(container);
       this._setupShowcaseTriggers();
@@ -505,6 +506,32 @@ class ThreeEarthSystem {
     this.earthMesh.add(atmosphere);
     const depthOverlay = createEarthDepthOverlay(this.THREE, this.isMobileDevice);
     this.earthMesh.add(depthOverlay);
+  }
+
+  _precompileEarthMaterials() {
+    if (
+      !this.renderer ||
+      !this.scene ||
+      !this.camera ||
+      !this.earthMesh ||
+      !this.dayMaterial ||
+      !this.nightMaterial
+    ) {
+      return;
+    }
+
+    const originalMaterial = this.earthMesh.material;
+
+    try {
+      [this.dayMaterial, this.nightMaterial].forEach(material => {
+        this.earthMesh.material = material;
+        this.renderer.compile(this.scene, this.camera);
+      });
+    } catch (err) {
+      log.debug("Earth material precompile skipped", err);
+    } finally {
+      this.earthMesh.material = originalMaterial;
+    }
   }
 
   /**
@@ -922,15 +949,13 @@ class ThreeEarthSystem {
     const newSection = target.id || "";
     if (!newSection || newSection === this.currentSection) return;
 
-    const prev = this.currentSection;
     this.currentSection = newSection;
     this._currentSectionEl = target;
     document.body.dataset.homeSection = newSection;
 
     this.cameraManager?.updateCameraForSection(newSection);
 
-    const forceMode = prev === "features" && newSection === "section3";
-    this._updateEarthForSection(newSection, forceMode);
+    this._updateEarthForSection(newSection);
     this._syncFeatureCardsForSection();
 
     const container = document.querySelector(".three-earth-container");
@@ -1054,6 +1079,15 @@ class ThreeEarthSystem {
     return progress * progress * (3 - 2 * progress);
   }
 
+  _applyMoonTarget(moonConfig) {
+    if (!this.moonMesh || !moonConfig) return;
+
+    const moon = this.moonMesh;
+    moon.userData.targetPosition ||= new this.THREE.Vector3();
+    moon.userData.targetPosition.set(moonConfig.pos.x, moonConfig.pos.y, moonConfig.pos.z);
+    moon.userData.targetScale = moonConfig.scale;
+  }
+
   _updateScrollLinkedEarthTarget() {
     if (!this.earthMesh || !this.active || !this._isWebGLSectionVisible()) return;
 
@@ -1080,14 +1114,7 @@ class ThreeEarthSystem {
     em.userData.targetRotation =
       (config.earth.rotation || 0) + (scroll.rotation || 0) * centeredProgress;
 
-    if (this.moonMesh && config.moon) {
-      const mm = this.moonMesh;
-      if (!mm.userData.targetPosition) {
-        mm.userData.targetPosition = new this.THREE.Vector3();
-      }
-      mm.userData.targetPosition.set(config.moon.pos.x, config.moon.pos.y, config.moon.pos.z);
-      mm.userData.targetScale = config.moon.scale;
-    }
+    this._applyMoonTarget(config.moon);
 
     const baseOrbit = em.userData.currentMode === "night" ? Math.PI : 0;
     this.cameraManager?.setTargetOrbitAngle(baseOrbit + (scroll.orbit || 0) * centeredProgress);
@@ -1122,20 +1149,18 @@ class ThreeEarthSystem {
 
   /**
    * @param {string} sectionName
-   * @param {boolean} forceMode – apply config.mode even if it matches the current mode
    */
-  _updateEarthForSection(sectionName, forceMode) {
+  _updateEarthForSection(sectionName) {
     if (!this.earthMesh || !this.active) return;
 
     const config = SECTION_CONFIGS[this._resolveSectionKey(sectionName)] || SECTION_CONFIGS.hero;
     this._applyConfigToMeshes(config);
 
-    if (config.mode && (forceMode || config.mode !== this.earthMesh.userData.currentMode)) {
+    if (config.mode && config.mode !== this.earthMesh.userData.currentMode) {
       const newMode = config.mode;
       const nextMaterial = newMode === "day" ? this.dayMaterial : this.nightMaterial;
       if (!nextMaterial) return;
       this.earthMesh.material = nextMaterial;
-      this.earthMesh.material.needsUpdate = true;
       this.earthMesh.userData.currentMode = newMode;
       this.cameraManager?.setTargetOrbitAngle(newMode === "day" ? 0 : Math.PI);
     }
@@ -1179,14 +1204,7 @@ class ThreeEarthSystem {
     em.userData.targetScale = config.earth.scale;
     em.userData.targetRotation = config.earth.rotation;
 
-    if (this.moonMesh && config.moon) {
-      const mm = this.moonMesh;
-      if (!mm.userData.targetPosition) {
-        mm.userData.targetPosition = new this.THREE.Vector3();
-      }
-      mm.userData.targetPosition.set(config.moon.pos.x, config.moon.pos.y, config.moon.pos.z);
-      mm.userData.targetScale = config.moon.scale;
-    }
+    this._applyMoonTarget(config.moon);
   }
 
   /**

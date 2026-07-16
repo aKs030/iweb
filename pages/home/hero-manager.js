@@ -1,6 +1,6 @@
-import { getElementById, observeOnce } from "#core/dom-utils.js";
+import { getElementById, observeOnce } from "#core/utils/index.js";
 import { createLogger } from "#core/logger.js";
-import { TimerManager } from "#core/timer-manager.js";
+import { TimerManager } from "#core/utils/index.js";
 import { i18n } from "#core/i18n.js";
 import { ROBOT_EVENTS } from "#components/robot-companion/index.js";
 
@@ -16,6 +16,48 @@ const HERO_LOOKUP_MAX = 3;
 const HERO_LOOKUP_DELAY_MS = 900;
 const HERO_MARKUP_DELAYS_MS = Object.freeze([0, 50, 120, 240, 480, 900, 1500, 2400]);
 const GREETING_LOOKUP_DELAYS_MS = Object.freeze([0, 50, 120, 240, 480]);
+const HERO_REVEAL = Object.freeze({
+  enterRatio: 0.68,
+  exitRatio: 0.38,
+  thresholds: Object.freeze([0, 0.38, 0.68]),
+});
+const SECTION3_REVEAL = Object.freeze({
+  enterRatio: 0.32,
+  exitRatio: 0.88,
+  thresholds: Object.freeze([0, 0.32, 0.88, 1]),
+});
+const SECTION_EXIT_BEFORE_SCROLL_MS = 660;
+const SECTION_EXIT_SCROLL_MS = 900;
+const SECTION_SNAP_TOLERANCE_PX = 64;
+const SECTION_TOUCH_INTENT_PX = 8;
+
+function updateRepeatedReveal(element, entry, { enterRatio, exitRatio }) {
+  const isVisible = element.classList.contains("is-visible");
+
+  if (!isVisible && entry.isIntersecting && entry.intersectionRatio >= enterRatio) {
+    element.classList.add("is-visible");
+    return;
+  }
+
+  if (isVisible && (!entry.isIntersecting || entry.intersectionRatio <= exitRatio)) {
+    element.classList.remove("is-visible");
+  }
+}
+
+function updateDirectionalReveal(element, entry, { enterRatio, exitRatio }, previousRatio) {
+  const ratio = entry.intersectionRatio;
+  const isVisible = element.classList.contains("is-visible");
+  const isEntering = ratio > previousRatio + 0.001;
+  const isLeaving = ratio < previousRatio - 0.001;
+
+  if (!isVisible && isEntering && ratio >= enterRatio) {
+    element.classList.add("is-visible");
+  } else if (isVisible && (!entry.isIntersecting || (isLeaving && ratio <= exitRatio))) {
+    element.classList.remove("is-visible");
+  }
+
+  return ratio;
+}
 
 const HeroManager = (() => {
   let heroData = null;
@@ -29,6 +71,14 @@ const HeroManager = (() => {
   let cosmosPointerLeaveHandler = null;
   let cosmosPointerFrame = 0;
   let section3EntranceObserver = null;
+  let section3LastRatio = 0;
+  let sectionExitElements = [];
+  let sectionExitWheelHandler = null;
+  let sectionExitTouchStartHandler = null;
+  let sectionExitTouchMoveHandler = null;
+  let sectionExitTouchEndHandler = null;
+  let sectionExitTouchStartY = null;
+  let sectionExitLocked = false;
   let clickHandler = null;
   let observerCleanup = null;
   let loaded = false;
@@ -66,14 +116,10 @@ const HeroManager = (() => {
     scrollObserver = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            heroEl.classList.add("is-visible");
-          } else {
-            heroEl.classList.remove("is-visible");
-          }
+          updateRepeatedReveal(heroEl, entry, HERO_REVEAL);
         });
       },
-      { threshold: 0.1 }
+      { threshold: HERO_REVEAL.thresholds }
     );
 
     scrollObserver.observe(heroEl);
@@ -92,8 +138,6 @@ const HeroManager = (() => {
         applyRandomHeroContent(dataModule);
         await setRandomGreetingHTML();
         await loadTyped(dataModule);
-        adjustTitleFontSize();
-
         isInitialized = true;
       };
     }
@@ -143,27 +187,6 @@ const HeroManager = (() => {
     return null;
   }
 
-  function adjustTitleFontSize() {
-    const title = document.querySelector(".hero__title");
-    if (!title) return;
-
-    const parent = title.parentElement;
-    if (!parent) return;
-
-    title.style.fontSize = "";
-
-    const parentWidth = parent.clientWidth;
-    const titleWidth = title.scrollWidth;
-
-    if (titleWidth > parentWidth && parentWidth > 0) {
-      const computedStyle = window.getComputedStyle(title);
-      const currentSize = parseFloat(computedStyle.fontSize);
-      const ratio = parentWidth / titleWidth;
-      const newSize = Math.floor(currentSize * ratio * 0.97);
-      title.style.fontSize = `${newSize}px`;
-    }
-  }
-
   function applyRandomHeroContent(dataModule) {
     if (!dataModule?.getHeroContent) return;
 
@@ -192,8 +215,6 @@ const HeroManager = (() => {
         }
       }
     });
-
-    adjustTitleFontSize();
   }
 
   async function setRandomGreetingHTML() {
@@ -317,6 +338,7 @@ const HeroManager = (() => {
       section3EntranceObserver.disconnect();
       section3EntranceObserver = null;
     }
+    section3LastRatio = 0;
 
     if (!("IntersectionObserver" in window)) {
       section3.classList.add("is-visible");
@@ -326,15 +348,238 @@ const HeroManager = (() => {
     section3EntranceObserver = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          section3.classList.add("is-visible");
-          section3EntranceObserver?.unobserve(section3);
+          section3LastRatio = updateDirectionalReveal(
+            section3,
+            entry,
+            SECTION3_REVEAL,
+            section3LastRatio
+          );
         });
       },
-      { threshold: 0.22, rootMargin: "0px 0px -12% 0px" }
+      { threshold: SECTION3_REVEAL.thresholds }
     );
 
     section3EntranceObserver.observe(section3);
+  }
+
+  function getAdjacentSection(section, direction) {
+    let sibling = direction > 0 ? section.nextElementSibling : section.previousElementSibling;
+
+    while (sibling && !(sibling instanceof HTMLElement && sibling.matches("section"))) {
+      sibling = direction > 0 ? sibling.nextElementSibling : sibling.previousElementSibling;
+    }
+
+    return sibling instanceof HTMLElement ? sibling : null;
+  }
+
+  function isSectionAtExitBoundary(section, direction) {
+    const sectionRect = section.getBoundingClientRect();
+    const rootStyle = getComputedStyle(document.documentElement);
+    const sectionStyle = getComputedStyle(section);
+    const scrollPaddingTop = Number.parseFloat(rootStyle.scrollPaddingTop) || 0;
+    const scrollPaddingBottom = Number.parseFloat(rootStyle.scrollPaddingBottom) || 0;
+    const scrollMarginTop = Number.parseFloat(sectionStyle.scrollMarginTop) || 0;
+    const scrollMarginBottom = Number.parseFloat(sectionStyle.scrollMarginBottom) || 0;
+
+    if (direction < 0) {
+      const snapTop = scrollPaddingTop + scrollMarginTop;
+
+      return (
+        Math.abs(sectionRect.top - snapTop) <= SECTION_SNAP_TOLERANCE_PX ||
+        Math.abs(sectionRect.top - scrollPaddingTop) <= SECTION_SNAP_TOLERANCE_PX
+      );
+    }
+
+    const viewportBottom = window.innerHeight - scrollPaddingBottom;
+    const snapBottom = viewportBottom - scrollMarginBottom;
+
+    return (
+      Math.abs(sectionRect.bottom - snapBottom) <= SECTION_SNAP_TOLERANCE_PX ||
+      Math.abs(sectionRect.bottom - viewportBottom) <= SECTION_SNAP_TOLERANCE_PX
+    );
+  }
+
+  function scrollToSection(section, reduceMotion) {
+    try {
+      section.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "start",
+      });
+    } catch (err) {
+      log.warn("Section exit scrollIntoView failed, using fallback", err);
+      const top = section.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+    }
+  }
+
+  function setSectionExitState(section, active) {
+    section.classList.toggle("is-leaving-before-scroll", active);
+  }
+
+  function findSectionExitContext(direction) {
+    for (const section of sectionExitElements) {
+      const destination = getAdjacentSection(section, direction);
+      if (!isSectionAtExitBoundary(section, direction)) continue;
+
+      if (destination) return { section, destination, openFooter: false };
+
+      const shouldOpenFooter =
+        direction > 0 &&
+        section.id === "section3" &&
+        !document.body.classList.contains("footer-expanded");
+      if (shouldOpenFooter) return { section, destination: null, openFooter: true };
+    }
+
+    return null;
+  }
+
+  function isSectionExitGestureIgnored(event, includeInteractiveControls = false) {
+    const target = event.target instanceof Element ? event.target : null;
+    const interactiveSelector = includeInteractiveControls
+      ? 'a, button, summary, [role="button"], [role="link"], '
+      : "";
+
+    return Boolean(
+      target?.closest(
+        `${interactiveSelector}input, textarea, select, [contenteditable="true"], [role="dialog"], .robot-companion`
+      )
+    );
+  }
+
+  async function moveToSectionExitDestination(context, reduceMotion) {
+    if (context.destination) {
+      scrollToSection(context.destination, reduceMotion);
+      return;
+    }
+
+    if (!context.openFooter) return;
+
+    try {
+      const { openFooter } = await import("#footer/index.js");
+      await openFooter();
+    } catch (err) {
+      log.warn("Section exit footer transition failed", err);
+    }
+  }
+
+  function startSectionExitBeforeScroll(context) {
+    if (sectionExitLocked) return;
+
+    const { section } = context;
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    sectionExitLocked = true;
+
+    if (reduceMotion) {
+      void moveToSectionExitDestination(context, true).finally(() => {
+        sectionExitLocked = false;
+      });
+      return;
+    }
+
+    setSectionExitState(section, true);
+
+    heroTimers.setTimeout(() => {
+      void moveToSectionExitDestination(context, false).finally(() => {
+        heroTimers.setTimeout(() => {
+          setSectionExitState(section, false);
+          sectionExitLocked = false;
+        }, SECTION_EXIT_SCROLL_MS);
+      });
+    }, SECTION_EXIT_BEFORE_SCROLL_MS);
+  }
+
+  function handleSectionExitIntent(direction, event) {
+    if (sectionExitLocked) {
+      event.preventDefault();
+      return;
+    }
+
+    if (isSectionExitGestureIgnored(event)) return;
+
+    const context = findSectionExitContext(direction);
+    if (!context) return;
+
+    event.preventDefault();
+    startSectionExitBeforeScroll(context);
+  }
+
+  function removeSectionExitBeforeScroll() {
+    if (sectionExitWheelHandler) {
+      window.removeEventListener("wheel", sectionExitWheelHandler);
+    }
+    if (sectionExitTouchStartHandler) {
+      window.removeEventListener("touchstart", sectionExitTouchStartHandler);
+    }
+    if (sectionExitTouchMoveHandler) {
+      window.removeEventListener("touchmove", sectionExitTouchMoveHandler);
+    }
+    if (sectionExitTouchEndHandler) {
+      window.removeEventListener("touchend", sectionExitTouchEndHandler);
+      window.removeEventListener("touchcancel", sectionExitTouchEndHandler);
+    }
+
+    sectionExitElements.forEach(section => {
+      section.classList.remove("is-leaving-before-scroll");
+    });
+
+    sectionExitElements = [];
+    sectionExitWheelHandler = null;
+    sectionExitTouchStartHandler = null;
+    sectionExitTouchMoveHandler = null;
+    sectionExitTouchEndHandler = null;
+    sectionExitTouchStartY = null;
+    sectionExitLocked = false;
+  }
+
+  function setupSectionExitBeforeScroll() {
+    removeSectionExitBeforeScroll();
+
+    sectionExitElements = ["hero", "features", "section3"]
+      .map(id => getElementById(id) || document.querySelector(`section#${id}`))
+      .filter(section => section instanceof HTMLElement);
+
+    if (!sectionExitElements.length) return;
+
+    sectionExitWheelHandler = event => {
+      if (event.ctrlKey || event.deltaY === 0 || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+        return;
+      }
+      handleSectionExitIntent(event.deltaY > 0 ? 1 : -1, event);
+    };
+    sectionExitTouchStartHandler = event => {
+      sectionExitTouchStartY =
+        event.touches.length === 1 && !isSectionExitGestureIgnored(event, true)
+          ? (event.touches[0]?.clientY ?? null)
+          : null;
+    };
+    sectionExitTouchMoveHandler = event => {
+      if (event.touches.length !== 1) {
+        sectionExitTouchStartY = null;
+        return;
+      }
+      if (sectionExitLocked) {
+        event.preventDefault();
+        return;
+      }
+      if (isSectionExitGestureIgnored(event, true)) return;
+
+      const currentY = event.touches[0]?.clientY;
+      if (currentY == null || sectionExitTouchStartY == null) return;
+
+      const scrollIntent = currentY - sectionExitTouchStartY;
+      if (Math.abs(scrollIntent) < SECTION_TOUCH_INTENT_PX) return;
+
+      handleSectionExitIntent(scrollIntent < 0 ? 1 : -1, event);
+    };
+    sectionExitTouchEndHandler = () => {
+      sectionExitTouchStartY = null;
+    };
+
+    window.addEventListener("wheel", sectionExitWheelHandler, { passive: false });
+    window.addEventListener("touchstart", sectionExitTouchStartHandler, { passive: true });
+    window.addEventListener("touchmove", sectionExitTouchMoveHandler, { passive: false });
+    window.addEventListener("touchend", sectionExitTouchEndHandler, { passive: true });
+    window.addEventListener("touchcancel", sectionExitTouchEndHandler, { passive: true });
   }
 
   function toggleCosmosPointerListener() {
@@ -353,7 +598,6 @@ const HeroManager = (() => {
     auroraScrollHandler = requestAuroraPerspectiveUpdate;
     auroraResizeHandler = () => {
       requestAuroraPerspectiveUpdate();
-      adjustTitleFontSize();
     };
     auroraMotionChangeHandler = () => {
       requestAuroraPerspectiveUpdate();
@@ -382,7 +626,6 @@ const HeroManager = (() => {
     toggleCosmosPointerListener();
     updateAuroraPerspective();
     updateStarParallax();
-    adjustTitleFontSize();
   }
 
   function cleanup() {
@@ -430,6 +673,8 @@ const HeroManager = (() => {
       section3EntranceObserver.disconnect();
       section3EntranceObserver = null;
     }
+    section3LastRatio = 0;
+    removeSectionExitBeforeScroll();
 
     try {
       typeWriterModule?.stopHeroSubtitle?.();
@@ -481,6 +726,8 @@ const HeroManager = (() => {
         const dataModule = await ensureHeroData();
         applyRandomHeroContent(dataModule);
         await setRandomGreetingHTML();
+        typeWriterModule?.stopHeroSubtitle?.();
+        await loadTyped(dataModule);
       };
       i18n.addEventListener("language-changed", languageChangeHandler);
     },
@@ -495,6 +742,7 @@ const HeroManager = (() => {
       document.addEventListener(ROBOT_EVENTS.HERO_TYPING_END, typingEndHandler);
     },
     setupSection3Entrance,
+    setupSectionExitBeforeScroll,
   };
 })();
 
@@ -506,6 +754,7 @@ export const initHeroFeatureBundle = sectionManager => {
   HeroManager.setupTypingEndListener();
   HeroManager.setupHomeAuroraPerspective();
   HeroManager.setupSection3Entrance();
+  HeroManager.setupSectionExitBeforeScroll();
 
   HeroManager.initLazyHeroModules();
 

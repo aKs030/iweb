@@ -1,6 +1,5 @@
 /* Robot companion theme tokens */
 :root {
-  --robot-text-strong: var(--robot-slate-100);
   --robot-text-muted: var(--clr-slate-300);
 
   --robot-chat-accent: color-mix(in srgb, var(--robot-cyan) 85%, var(--clr-blue-500));
@@ -10,9 +9,6 @@
 
   --robot-tool-card-surface-top: color-mix(in srgb, var(--robot-rgb-15-23-42) 26%, transparent);
   --robot-tool-card-surface-bottom: color-mix(in srgb, var(--robot-rgb-13-20-36) 72%, transparent);
-  --robot-tool-card-text: var(--robot-text-strong);
-  --robot-tool-card-text-muted: color-mix(in srgb, var(--robot-text-strong) 82%, transparent);
-  --robot-tool-card-meta-label: color-mix(in srgb, var(--robot-text-strong) 58%, transparent);
 
   --robot-flame-outer-color: #cc6600;
   --robot-flame-inner-color: #ffcc00;

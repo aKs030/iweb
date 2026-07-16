@@ -11,7 +11,7 @@ import { AppLoadManager, loadSignals } from "./core/load-manager.js";
 import { signal, effect, computed } from "./core/signals.js";
 import { ThreeEarthManager } from "#components/particles/index.js";
 import { TimerManager } from "./core/utils/index.js";
-import { initViewTransitions } from "./core/view-transitions.js";
+import { initViewTransitions } from "./core/view-transitions/index.js";
 import { i18n } from "./core/i18n.js";
 import { GlobalEventHandlers } from "./core/events.js";
 import { resourceHints } from "./core/seo/index.js";

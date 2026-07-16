@@ -6,8 +6,8 @@
   --tw-bottom: clamp(var(--size-12), 2vw, var(--size-24));
   --tw-fixed-bottom: clamp(var(--size-16), 2.5vw, var(--size-32));
   --tw-size: clamp(var(--size-r-0-9), 1.8vw, var(--size-r-1-1));
-  --tw-line-height: 1.22;
-  --tw-typed-line-height: 1.18;
+  --tw-line-height: var(--leading-tight);
+  --tw-typed-line-height: var(--leading-tight);
   --tw-min-height: calc(var(--size-r-1-6) * 2);
   --tw-gap: var(--size-r-0-5);
   --lh-px: 0px;
@@ -72,18 +72,17 @@ body.footer-expanded .typewriter-title--fixed {
 
 /* TypeWriter Text Elements */
 .typewriter-title .typed-author {
-  font-size: 0.75em;
+  font-size: max(var(--type-xs), 0.75em);
   color: color-mix(in srgb, var(--clr-white) 72%, transparent);
-  font-weight: 350;
-  letter-spacing: 0;
+  font-weight: 400;
   margin: 0;
   display: block;
   text-align: left;
 }
 
 .typed-text {
-  font-weight: 300;
-  font-size: 0.82em;
+  font-weight: 400;
+  font-size: max(var(--type-sm), 0.82em);
   line-height: var(--tw-typed-line-height);
   display: flex;
   flex-direction: column;
@@ -91,11 +90,9 @@ body.footer-expanded .typewriter-title--fixed {
   color: var(--text-secondary);
   text-shadow: none;
   white-space: normal;
-  letter-spacing: 0;
   overflow-wrap: anywhere;
   word-break: normal;
   hyphens: auto;
-  opacity: 0.8;
   /* Reserve at least two lines to avoid layout shift when text is typed */
   min-height: calc(var(--tw-typed-line-height) * 2em);
 }

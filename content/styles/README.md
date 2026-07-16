@@ -13,11 +13,14 @@
 - `npm run dev` starts the local Cloudflare Pages server.
 - Global CSS uses native cascade layers in this order: `foundation`, `base`, `components`, `pages`, `utilities`, `overrides`.
 - Theme toggling only changes `data-theme` on `<html>`.
+- Text uses the semantic `--type-*`, `--leading-*` and `--font-*` tokens from
+  `foundation.css`; do not introduce one-off pixel or rem font sizes.
 
 ## Rules
 
 - Keep shared utility classes in `main.css` small and only for repeated layout patterns.
 - Prefer `var(--...)` from `foundation.css` instead of hardcoded component values.
+- Keep body copy at `--type-body` or larger and compact UI copy at `--type-xs` or larger.
 - Page-local tokens in `content/styles/pages/*.css` use route prefixes such as `--home-*`, `--projects-*`, `--admin-*`.
 - Prefer container queries for component layout changes in cards, contact surfaces, menu, HUD and robot chat. Keep media queries for viewport height, safe-area, page scroll and overlay anchoring.
 - Blur budget: backdrop blur is capped at `20px` desktop, `14px` mobile and `12px` compact surfaces; decorative filter blur is capped at `72px`.

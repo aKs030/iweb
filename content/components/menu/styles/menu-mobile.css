@@ -197,7 +197,7 @@
   .site-menu__list button.lang-toggle,
   .site-menu__list button.theme-toggle {
     min-height: var(--size-48);
-    font-size: var(--size-15);
+    font-size: var(--type-sm);
     font-weight: 500;
     padding: 0 var(--size-12);
     border-radius: var(--size-14);
@@ -248,9 +248,8 @@
   .site-menu__list li.menu-utility-item--lang .lang-text {
     display: block;
     margin-left: 0;
-    font-size: var(--size-9);
+    font-size: var(--type-xs);
     font-weight: 700;
-    letter-spacing: 0;
     line-height: 1;
     opacity: 0.9;
   }
@@ -328,7 +327,7 @@
   }
 
   .menu-search__input {
-    font-size: var(--size-16);
+    font-size: var(--type-body);
   }
 
   .menu-search__results {
@@ -347,14 +346,14 @@
   }
 
   .menu-search__title {
-    font-size: var(--size-13);
+    font-size: var(--type-xs);
   }
 
   .menu-search__url {
-    font-size: var(--size-10);
+    font-size: var(--type-xs);
   }
 
   .menu-search__desc {
-    font-size: var(--size-11);
+    font-size: var(--type-xs);
   }
 }

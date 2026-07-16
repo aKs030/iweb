@@ -9,6 +9,7 @@
  */
 
 import { createLogger } from "../../core/logger.js";
+import { i18n } from "../../core/i18n.js";
 import { resolvedTheme } from "../../core/state/theme-state.js";
 
 const log = createLogger("Enhancements");
@@ -63,7 +64,11 @@ function initSectionDots() {
 
   const nav = document.createElement("nav");
   nav.className = "section-dots";
-  nav.setAttribute("aria-label", "Seitennavigation");
+  nav.setAttribute(
+    "aria-label",
+    i18n.tOrFallback("enhancements.section_navigation", "Seitennavigation")
+  );
+  nav.setAttribute("data-i18n-attrs", "aria-label:enhancements.section_navigation");
 
   /** @type {Array<{el: HTMLButtonElement, sectionId: string}>} */
   const dots = [];
@@ -73,9 +78,14 @@ function initSectionDots() {
     dot.className = "section-dots__dot";
     dot.dataset.target = section.id;
 
-    const label = section.getAttribute("aria-label") || section.id;
+    const labelKey = section.dataset.i18nSectionLabel || "";
+    const fallbackLabel = section.getAttribute("aria-label") || section.id;
+    const label = labelKey ? i18n.tOrFallback(labelKey, fallbackLabel) : fallbackLabel;
     dot.setAttribute("aria-label", label);
     dot.setAttribute("title", label);
+    if (labelKey) {
+      dot.setAttribute("data-i18n-attrs", `aria-label:${labelKey},title:${labelKey}`);
+    }
     dot.addEventListener("click", () => section.scrollIntoView({ behavior: "smooth" }));
 
     nav.append(dot);

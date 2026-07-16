@@ -4,13 +4,7 @@ const randomInt = (min, max) => {
 
 const GREETINGS = {
   de: {
-    morning: [
-      "Ein neuer Tag, ein neuer Raum",
-      "Erstes Licht im digitalen Garten",
-      "Wenn Formen langsam erwachen",
-      "Morgendämmerung im Browser",
-      "Die Stille der frühen Stunden",
-    ],
+    morning: ["Die Stille der frühen Stunden"],
     day: [
       "Im Zentrum der Bewegung",
       "Ein Raum für weiche Kontraste",
@@ -35,13 +29,7 @@ const GREETINGS = {
     ],
   },
   en: {
-    morning: [
-      "A new day, a new space",
-      "First light in the digital garden",
-      "When shapes slowly awaken",
-      "Dawn in the browser",
-      "The silence of early hours",
-    ],
+    morning: ["The silence of early hours"],
     day: [
       "At the center of movement",
       "A space for soft contrasts",
@@ -67,48 +55,25 @@ const GREETINGS = {
   },
 };
 
-const TITLES = {
-  de: [
-    "Digitale Welten, die atmen.",
-    "Wo Formen und Farben verschmelzen.",
-    "Visuelle Poesie im Raum.",
-    "Ein Echo in der digitalen Unendlichkeit.",
-    "Fließende Strukturen, greifbar nah.",
-    "Licht und Schatten im steten Wandel.",
-  ],
-  en: [
-    "Digital worlds that breathe.",
-    "Where forms and colors merge.",
-    "Visual poetry in space.",
-    "An echo in digital infinity.",
-    "Flowing structures, close to the touch.",
-    "Light and shadow in constant motion.",
-  ],
-};
-
-const LEDES = {
-  de: [
-    "Ein Ort, an dem sich Momente entfalten und visuelle Erzählungen ihren eigenen Rhythmus finden.",
-    "Ich gestalte Räume, die nicht nur betrachtet, sondern gefühlt werden – durch sanfte Bewegungen und leise Nuancen.",
-    "Eine Sammlung von Augenblicken, festgehalten in einer Symphonie aus Licht, Struktur und Atmosphäre.",
-    "Tauche ein in eine Welt, in der die Grenzen zwischen Realität und Vorstellung verschwimmen und Ästhetik lebendig wird.",
-  ],
-  en: [
-    "A place where moments unfold and visual narratives find their own rhythm.",
-    "I design spaces that are not just seen, but felt – through gentle movements and quiet nuances.",
-    "A collection of moments, captured in a symphony of light, structure, and atmosphere.",
-    "Immerse yourself in a world where the boundaries between reality and imagination blur and aesthetics come alive.",
-  ],
+const HERO_CONTENT = {
+  de: {
+    title: "Digitale Räume mit Charakter.",
+    lede: "Ein Portfolio für interaktive Interfaces, räumliche Experimente und sorgfältig entwickelte Webprodukte.",
+  },
+  en: {
+    title: "Digital spaces with character.",
+    lede: "A portfolio of interactive interfaces, spatial experiments, and carefully built web products.",
+  },
 };
 
 const BUTTONS = {
   de: {
-    primary: ["Eintreten", "Die Reise beginnen", "Eintauchen", "Räume erkunden"],
-    secondary: ["Reflexionen", "Gedanken", "Die Stille suchen", "Hinter den Kulissen"],
+    primary: "Arbeiten entdecken",
+    secondary: "Über mich",
   },
   en: {
-    primary: ["Enter", "Begin the Journey", "Dive In", "Explore Spaces"],
-    secondary: ["Reflections", "Thoughts", "Seek the Silence", "Behind the Scenes"],
+    primary: "Explore the work",
+    secondary: "About me",
   },
 };
 
@@ -130,18 +95,13 @@ const pickGreeting = (lastValue = null, set = null) => {
   return candidates[randomInt(0, candidates.length - 1)];
 };
 
-const getRandomItem = (obj, lang = "de") => {
-  const set = obj[lang] || obj["de"];
-  return set[randomInt(0, set.length - 1)];
-};
-
 const getHeroContent = (lang = "de") => {
   const btns = BUTTONS[lang] || BUTTONS["de"];
+  const content = HERO_CONTENT[lang] || HERO_CONTENT["de"];
   return {
-    title: getRandomItem(TITLES, lang),
-    lede: getRandomItem(LEDES, lang),
-    primaryBtn: btns.primary[randomInt(0, btns.primary.length - 1)],
-    secondaryBtn: btns.secondary[randomInt(0, btns.secondary.length - 1)],
+    ...content,
+    primaryBtn: btns.primary,
+    secondaryBtn: btns.secondary,
   };
 };
 

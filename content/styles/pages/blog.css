@@ -2,7 +2,7 @@
   /* Blog 3D Design System */
   body.blog-page {
     color: var(--clr-slate-200);
-    line-height: 1.6;
+    line-height: var(--leading-body);
     background: transparent !important;
     scroll-behavior: smooth;
   }
@@ -173,8 +173,12 @@
     padding: var(--size-r-1) 0 var(--size-r-1-5);
     margin-bottom: var(--size-r-1);
   }
+  .blog-eyebrow {
+    margin-bottom: var(--space-3);
+    color: var(--clr-blue-300);
+  }
   .blog-header h1 {
-    font-size: clamp(var(--size-r-1-75), 4vw, var(--size-r-2-5));
+    font-size: var(--type-3xl);
     font-weight: 800;
     margin: 0 0 var(--size-r-0-75);
     background: linear-gradient(
@@ -185,12 +189,13 @@
     );
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    line-height: 1.2;
+    line-height: var(--leading-tight);
   }
   .blog-subtitle {
-    font-size: var(--size-r-0-95);
+    font-size: var(--type-lg);
     color: color-mix(in srgb, var(--clr-slate-200) 80%, transparent);
     max-width: var(--size-600);
+    line-height: var(--leading-body);
   }
 
   @media (max-width: 768px) {
@@ -200,23 +205,22 @@
     }
 
     .blog-header h1 {
-      font-size: clamp(var(--size-r-1-5), 5vw, var(--size-r-2));
       margin-bottom: var(--size-r-0-5);
     }
 
     .blog-subtitle {
-      font-size: var(--size-r-0-85);
-      line-height: 1.4;
+      font-size: var(--type-sm);
+      line-height: var(--leading-snug);
     }
   }
 
   @media (max-width: 480px) {
     .blog-header h1 {
-      font-size: var(--size-r-1-5);
+      font-size: var(--type-2xl);
     }
 
     .blog-subtitle {
-      font-size: var(--size-r-0-8);
+      font-size: var(--type-sm);
     }
   }
 
@@ -472,9 +476,8 @@
 
   .blog-card .card-category,
   .blog-article .card-category {
-    font-size: var(--size-r-0-55);
+    font-size: var(--type-xs);
     text-transform: uppercase;
-    letter-spacing: 0;
     color: var(--clr-white);
     font-weight: 700;
     background: linear-gradient(135deg, var(--clr-blue-500), var(--clr-violet-500));
@@ -509,19 +512,18 @@
 
   .blog-card .card-date,
   .blog-article .card-date {
-    font-size: var(--size-r-0-65);
+    font-size: var(--type-xs);
     color: color-mix(in srgb, var(--clr-slate-400) 70%, transparent);
     font-weight: 500;
     text-shadow: 0 0 var(--size-10) color-mix(in srgb, var(--clr-blue-500) 30%, transparent);
   }
 
   .blog-card .card-title {
-    font-size: var(--size-r-0-9);
+    font-size: var(--type-lg);
     font-weight: 700;
     margin: 0 0 var(--size-r-0-5) 0;
-    line-height: 1.3;
+    line-height: var(--leading-snug);
     color: var(--clr-white);
-    letter-spacing: 0;
     text-shadow:
       0 var(--size-2) var(--size-8) color-mix(in srgb, var(--clr-black) 50%, transparent),
       0 0 var(--size-20) color-mix(in srgb, var(--clr-blue-500) 20%, transparent);
@@ -544,10 +546,10 @@
 
   .blog-card .card-excerpt {
     color: color-mix(in srgb, var(--clr-slate-200) 75%, transparent);
-    line-height: 1.5;
+    line-height: var(--leading-body);
     margin-bottom: var(--size-r-0-85);
     flex-grow: 1;
-    font-size: var(--size-r-0-8);
+    font-size: var(--type-sm);
     text-shadow: 0 var(--size-1) var(--size-3) color-mix(in srgb, var(--clr-black) 50%, transparent);
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -589,7 +591,7 @@
 
   .blog-card .card-read-time,
   .blog-article .card-read-time {
-    font-size: var(--size-r-0-7);
+    font-size: var(--type-xs);
     color: color-mix(in srgb, var(--clr-slate-400) 80%, transparent);
     display: flex;
     align-items: center;
@@ -612,9 +614,8 @@
       border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
       box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
       transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: var(--size-r-0-65);
+    font-size: var(--type-xs);
     text-transform: uppercase;
-    letter-spacing: 0;
     border-radius: var(--size-12);
     box-shadow:
       0 var(--size-2) var(--size-10) color-mix(in srgb, var(--clr-blue-500) 40%, transparent),
@@ -690,12 +691,11 @@
   }
 
   .blog-article header h1 {
-    font-size: clamp(var(--size-r-2-5), 5vw, var(--size-r-4));
-    line-height: 1.1;
+    font-size: var(--type-4xl);
+    line-height: var(--leading-tight);
     margin-bottom: var(--size-r-1-5);
     color: var(--clr-white);
-    letter-spacing: 0;
-    font-weight: 900;
+    font-weight: 800;
     text-shadow: 0 var(--size-4) var(--size-20)
       color-mix(in srgb, var(--clr-blue-500) 30%, transparent);
   }
@@ -703,7 +703,7 @@
   .blog-article .meta {
     color: color-mix(in srgb, var(--clr-slate-400) 90%, transparent);
     margin-bottom: var(--size-r-2-5);
-    font-size: var(--size-r-1-1);
+    font-size: var(--type-lg);
     border-bottom: var(--size-1) solid color-mix(in srgb, var(--clr-blue-500) 20%, transparent);
     padding-bottom: var(--size-r-1-5);
     display: flex;
@@ -716,7 +716,7 @@
   }
 
   .blog-post-excerpt {
-    font-size: 1.2rem;
+    font-size: var(--type-lg);
     color: rgba(226, 232, 240, 0.9);
     margin-bottom: 2rem;
   }
@@ -727,23 +727,22 @@
 
   .article-body {
     color: color-mix(in srgb, var(--clr-slate-200) 95%, transparent);
-    font-size: var(--size-r-1-15);
-    line-height: 1.9;
-    font-weight: 300;
+    font-size: var(--type-lg);
+    line-height: var(--leading-relaxed);
+    font-weight: 400;
   }
 
   .article-body h2 {
-    font-size: var(--size-r-2);
+    font-size: var(--type-2xl);
     margin: var(--size-r-4) 0 var(--size-r-1-5) 0;
     color: var(--clr-white);
-    letter-spacing: 0;
     font-weight: 800;
     text-shadow: 0 var(--size-2) var(--size-15)
       color-mix(in srgb, var(--clr-blue-500) 30%, transparent);
   }
 
   .article-body h3 {
-    font-size: var(--size-r-1-5);
+    font-size: var(--type-xl);
     margin: var(--size-r-3) 0 var(--size-r-1) 0;
     color: var(--clr-white);
     font-weight: 700;
@@ -791,7 +790,7 @@
     background: color-mix(in srgb, var(--clr-blue-500) 15%, transparent);
     padding: 0.3em 0.6em;
     border-radius: var(--size-6);
-    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-family: var(--font-mono);
     font-size: 0.9em;
     color: var(--clr-blue-300);
     border: var(--size-1) solid color-mix(in srgb, var(--clr-blue-500) 30%, transparent);
@@ -813,7 +812,7 @@
     padding: 0;
     color: var(--clr-gray-250);
     font-size: 0.95em;
-    line-height: 1.7;
+    line-height: var(--leading-relaxed);
     border: none;
   }
 
@@ -839,7 +838,7 @@
       border-color 0.3s,
       box-shadow 0.3s,
       transform 0.3s;
-    font-size: var(--size-r-0-95);
+    font-size: var(--type-body);
     font-weight: 600;
     display: inline-flex;
     align-items: center;
@@ -867,7 +866,7 @@
       top: calc(var(--content-top-offset) + var(--size-r-0-5));
       left: calc(var(--safe-left) + var(--size-r-1));
       padding: var(--size-r-0-6) var(--size-r-1-2);
-      font-size: var(--size-r-0-85);
+      font-size: var(--type-sm);
     }
   }
 
@@ -875,7 +874,7 @@
     body.blog-page .btn-back {
       left: calc(var(--safe-left) + var(--size-r-0-5));
       padding: var(--size-r-0-5) var(--size-r-1);
-      font-size: var(--size-r-0-8);
+      font-size: var(--type-sm);
     }
   }
 

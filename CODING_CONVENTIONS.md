@@ -5,7 +5,7 @@ Diese Regeln beschreiben die Zielarchitektur fuer neue und migrierte Module.
 ## Feature-Grenzen
 
 - Jedes Feature hat genau einen oeffentlichen Einstieg: `index.js` im Feature-Root.
-- Verbrauchercode importiert nur den Feature-Einstieg oder einen stabilen Alias wie `#menu/index.js`.
+- Verbrauchercode importiert nur den Feature-Einstieg oder einen stabilen Alias wie `#components/menu/index.js`.
 - Tiefe Pfade wie `modules/`, `state/`, `memory/`, `runtime/` und `styles/` sind intern und bleiben innerhalb des Features.
 - Wenn nur ein Feature ein Modul nutzt, gehoert es in dieses Feature und nicht nach `content/core`.
 

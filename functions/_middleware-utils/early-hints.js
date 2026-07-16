@@ -26,6 +26,7 @@ const withVersion = href => (href.startsWith("/") ? `${href}${v}` : href);
 
 const CORE_RESOURCES = [
   // Core CSS is loaded immediately by the document head
+  { href: `/content/styles/foundation.css${v}`, rel: "preload", as: "style" },
   { href: `/content/styles/main.css${v}`, rel: "preload", as: "style" },
 
   // Core JS modules — start parsing before HTML fully loaded
@@ -64,14 +65,11 @@ const ROUTE_STYLE_RESOURCES = new Map([
   ["/gallery", [...SHARED_ROUTE_STYLES, "/content/styles/pages/gallery.css"]],
   ["/projekte", [...SHARED_ROUTE_STYLES, "/content/styles/pages/projects.css"]],
   ["/admin", [...SHARED_ROUTE_STYLES, "/content/styles/pages/admin.css"]],
-]);
-
-// Bare paths (no query string) — compared against href without ?v= suffix.
-const STANDALONE_SHELL_EXCLUSIONS = new Set([
-  "/content/styles/main.css",
-  "/content/main.js",
-  "/content/components/head/index.js",
-  "/content/components/menu/index.js",
+  ["/contact", ["/content/components/contact/contact.css"]],
+  ["/impressum", ["/content/components/footer/legal-pages.css"]],
+  ["/datenschutz", ["/content/components/footer/legal-pages.css"]],
+  ["/cookies", ["/content/components/footer/legal-pages.css"]],
+  ["/ai-info", ["/content/styles/ai-info.css"]],
 ]);
 
 function isStandaloneShellPath(pathname = "/") {
@@ -90,11 +88,9 @@ function getResourcesForPath(pathname = "/") {
     return [...CORE_RESOURCES, ...getRouteStyleResources(normalized)];
   }
 
-  // Strip ?v= query param before checking exclusions so the versioned URLs still match.
-  return [
-    ...CORE_RESOURCES.filter(({ href }) => !STANDALONE_SHELL_EXCLUSIONS.has(href.split("?")[0])),
-    ...getRouteStyleResources(normalized),
-  ];
+  // Standalone pages do not load the app shell or its third-party module graph.
+  // Only advertise resources that the standalone document actually consumes.
+  return getRouteStyleResources(normalized);
 }
 
 function getRouteStyleResources(pathname = "/") {

@@ -25,7 +25,7 @@
     opacity: 0.3;
   }
   h1 {
-    font-size: var(--space-12);
+    font-size: var(--type-4xl);
     margin-bottom: var(--space-2);
     font-weight: 800;
     background: linear-gradient(
@@ -40,10 +40,18 @@
     animation: gradientShift 8s ease infinite;
     z-index: var(--z-base);
   }
+  .videos-eyebrow {
+    position: relative;
+    z-index: var(--z-base);
+    margin-bottom: var(--space-3);
+    color: color-mix(in srgb, var(--youtube-red) 72%, var(--clr-white));
+  }
   .lead {
     color: var(--text-secondary);
     margin-bottom: var(--space-8);
-    font-size: var(--size-r-1-2);
+    font-size: var(--type-lg);
+    max-width: 58ch;
+    line-height: var(--leading-body);
   }
   .video-grid {
     display: grid;
@@ -90,9 +98,9 @@
     opacity: 0.6;
   }
   .video-card h2 {
-    font-size: var(--size-r-1-5);
+    font-size: var(--type-2xl);
     margin: 0 0 var(--size-r-1) 0;
-    line-height: 1.3;
+    line-height: var(--leading-snug);
     font-weight: 700;
     color: var(--text-primary);
   }
@@ -122,6 +130,15 @@
     border-left: var(--size-4) solid var(--accent);
     border-radius: var(--radius-xl);
     color: var(--text-secondary);
+  }
+  .gmb-note h3 {
+    margin-bottom: var(--space-3);
+    font-family: var(--font-display);
+    font-size: var(--type-xl);
+  }
+  .gmb-note p {
+    max-width: 72ch;
+    margin-bottom: 0;
   }
   .video-error {
     margin: var(--space-8) 0;
@@ -216,7 +233,7 @@
   }
   .video-info .pub-date {
     color: var(--text-secondary);
-    font-size: var(--size-r-1);
+    font-size: var(--type-body);
     font-weight: 500;
   }
   .video-actions a {
@@ -294,8 +311,8 @@
     padding: var(--space-4) var(--space-8);
     border-radius: var(--radius-full);
     text-decoration: none;
-    font-weight: 700;
-    font-size: var(--size-r-1-125);
+    font-weight: 600;
+    font-size: var(--type-body);
     transition:
       transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
       box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
@@ -367,7 +384,7 @@
   }
   .lead.small {
     color: var(--text-secondary);
-    font-size: var(--size-r-1);
+    font-size: var(--type-body);
     margin: 0;
   }
   /* Mobile adjustments for header height */

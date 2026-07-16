@@ -46,8 +46,8 @@ function parseReminderDate(dateValue, timeValue = "09:00") {
 export function executeOpenExternalLink(args) {
   const normalized = normalizeHttpUrl(args?.url);
   if (!normalized) {
-    return buildToolResult("openExternalLink", args, false, "Kein gueltiger Link uebergeben.", {
-      summary: "Fuer den externen Link fehlt eine gueltige URL.",
+    return buildToolResult("openExternalLink", args, false, "Kein gültiger Link übergeben.", {
+      summary: "Für den externen Link fehlt eine gültige URL.",
       accent: "error",
       cta: false,
     });
@@ -57,7 +57,7 @@ export function executeOpenExternalLink(args) {
   try {
     parsed = new URL(normalized);
   } catch {
-    return buildToolResult("openExternalLink", args, false, "Link ist ungueltig.", {
+    return buildToolResult("openExternalLink", args, false, "Link ist ungültig.", {
       summary: "Die URL konnte nicht verarbeitet werden.",
       accent: "error",
       cta: false,
@@ -74,12 +74,12 @@ export function executeOpenExternalLink(args) {
 
   const opened = openUrl(parsed.toString(), args?.newTab !== false);
   return opened
-    ? buildToolResult("openExternalLink", args, true, "Externer Link geoeffnet.", {
-        summary: "Der externe Link wurde geoeffnet.",
+    ? buildToolResult("openExternalLink", args, true, "Externer Link geöffnet.", {
+        summary: "Der externe Link wurde geöffnet.",
         details: [createDetail("Ziel", parsed.hostname)],
       })
-    : buildToolResult("openExternalLink", args, false, "Link konnte nicht geoeffnet werden.", {
-        summary: "Der Link konnte nicht geoeffnet werden.",
+    : buildToolResult("openExternalLink", args, false, "Link konnte nicht geöffnet werden.", {
+        summary: "Der Link konnte nicht geöffnet werden.",
         accent: "error",
         cta: false,
       });
@@ -92,7 +92,7 @@ export function executeOpenSocialProfile(args) {
   const url = SOCIAL_PROFILE_URLS.get(platform);
   if (!url) {
     return buildToolResult("openSocialProfile", args, false, `Unbekannte Plattform: ${platform}`, {
-      summary: `Fuer "${platform}" ist kein Social-Profil hinterlegt.`,
+      summary: `Für "${platform}" ist kein Social-Profil hinterlegt.`,
       accent: "error",
       cta: false,
     });
@@ -100,17 +100,17 @@ export function executeOpenSocialProfile(args) {
 
   const opened = openUrl(url, true);
   return opened
-    ? buildToolResult("openSocialProfile", args, true, `${platform} Profil geoeffnet.`, {
-        summary: `Das ${platform}-Profil wurde in einem neuen Tab geoeffnet.`,
+    ? buildToolResult("openSocialProfile", args, true, `${platform}-Profil geöffnet.`, {
+        summary: `Das ${platform}-Profil wurde in einem neuen Tab geöffnet.`,
         details: [createDetail("Plattform", platform)],
       })
     : buildToolResult(
         "openSocialProfile",
         args,
         false,
-        `${platform} Profil konnte nicht geoeffnet werden.`,
+        `${platform}-Profil konnte nicht geöffnet werden.`,
         {
-          summary: `Das ${platform}-Profil konnte nicht geoeffnet werden.`,
+          summary: `Das ${platform}-Profil konnte nicht geöffnet werden.`,
           accent: "error",
           cta: false,
         }
@@ -120,8 +120,8 @@ export function executeOpenSocialProfile(args) {
 export function executeComposeEmail(args) {
   const to = String(args?.to || "").trim();
   if (!to || !to.includes("@")) {
-    return buildToolResult("composeEmail", args, false, "Ungueltige E-Mail-Adresse.", {
-      summary: "Fuer den E-Mail-Entwurf fehlt eine gueltige Empfaengeradresse.",
+    return buildToolResult("composeEmail", args, false, "Ungültige E-Mail-Adresse.", {
+      summary: "Für den E-Mail-Entwurf fehlt eine gültige Empfängeradresse.",
       accent: "error",
       cta: false,
     });
@@ -136,21 +136,15 @@ export function executeComposeEmail(args) {
 
   const opened = openUrl(mailto, false);
   return opened
-    ? buildToolResult("composeEmail", args, true, "E-Mail-Entwurf geoeffnet.", {
-        summary: "Der E-Mail-Client wurde mit einem vorbereiteten Entwurf geoeffnet.",
+    ? buildToolResult("composeEmail", args, true, "E-Mail-Entwurf geöffnet.", {
+        summary: "Der E-Mail-Client wurde mit einem vorbereiteten Entwurf geöffnet.",
         details: [createDetail("An", to), createDetail("Betreff", subject || "Ohne Betreff")],
       })
-    : buildToolResult(
-        "composeEmail",
-        args,
-        false,
-        "E-Mail-Entwurf konnte nicht geoeffnet werden.",
-        {
-          summary: "Der E-Mail-Client konnte nicht geoeffnet werden.",
-          accent: "error",
-          cta: false,
-        }
-      );
+    : buildToolResult("composeEmail", args, false, "E-Mail-Entwurf konnte nicht geöffnet werden.", {
+        summary: "Der E-Mail-Client konnte nicht geöffnet werden.",
+        accent: "error",
+        cta: false,
+      });
 }
 
 export function executeCreateCalendarReminder(args) {
@@ -161,9 +155,9 @@ export function executeCreateCalendarReminder(args) {
       "createCalendarReminder",
       args,
       false,
-      "Ungueltiges Datum fuer Erinnerung.",
+      "Ungültiges Datum für Erinnerung.",
       {
-        summary: "Fuer die Erinnerung konnte kein gueltiges Datum gelesen werden.",
+        summary: "Für die Erinnerung konnte kein gültiges Datum gelesen werden.",
         accent: "error",
         cta: false,
       }
@@ -184,8 +178,8 @@ export function executeCreateCalendarReminder(args) {
 
   const opened = openUrl(url, true);
   return opened
-    ? buildToolResult("createCalendarReminder", args, true, "Kalender-Erinnerung geoeffnet.", {
-        summary: "Ein Kalenderentwurf wurde in Google Calendar geoeffnet.",
+    ? buildToolResult("createCalendarReminder", args, true, "Kalender-Erinnerung geöffnet.", {
+        summary: "Ein Kalenderentwurf wurde in Google Calendar geöffnet.",
         details: [
           createDetail("Titel", title),
           createDetail("Zeit", start.toLocaleString("de-DE")),
@@ -195,9 +189,9 @@ export function executeCreateCalendarReminder(args) {
         "createCalendarReminder",
         args,
         false,
-        "Kalender konnte nicht geoeffnet werden.",
+        "Kalender konnte nicht geöffnet werden.",
         {
-          summary: "Der Kalenderentwurf konnte nicht geoeffnet werden.",
+          summary: "Der Kalenderentwurf konnte nicht geöffnet werden.",
           accent: "error",
           cta: false,
         }

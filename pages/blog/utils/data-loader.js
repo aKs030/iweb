@@ -5,7 +5,7 @@
 
 import { createLogger } from "#core/logger.js";
 import { AppLoadManager } from "#core/load-manager.js";
-import { fetchJSON, fetchText } from "#core/fetch.js";
+import { fetchJSON, fetchText } from "#core/utils/index.js";
 import { i18n } from "#core/i18n.js";
 import { parseFrontmatter, normalizePost } from "./blog-utils.js";
 

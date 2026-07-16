@@ -15,6 +15,8 @@
     "about_sub": "Profile",
     "contact_sub": "Exchange",
     "toggle": "Open menu",
+    "opened": "Main menu opened",
+    "closed": "Main menu closed",
     "main_nav": "Main navigation",
     "skip_main": "Skip to main content",
     "skip_nav": "Skip to navigation",
@@ -31,6 +33,8 @@
     "theme_toggle": "Switch theme (Light/Dark)"
   },
   "footer": {
+    "navigation_aria": "Footer navigation",
+    "home_aria": "Go to home page",
     "about": {
       "title": "Profile",
       "text": "Portfolio for code, 3D, AI, and visual experiments with a focus on speed, clarity, and atmosphere."
@@ -58,16 +62,20 @@
       "cookies": "Cookies"
     },
     "cookie_banner": {
+      "dialog_aria": "Cookie settings",
       "text": "We use analytics",
       "text_short": "Analytics?",
       "accept": "Accept",
       "accept_short": "✓",
       "decline": "Decline",
-      "decline_short": "✗"
+      "decline_short": "✗",
+      "accept_aria": "Accept cookies",
+      "decline_aria": "Decline cookies"
     },
     "cookie_settings": {
       "title": "Cookie Settings",
       "close": "Close",
+      "open_aria": "Open cookie settings",
       "intro": "We use necessary cookies and optional analytics.",
       "required": {
         "title": "Required",
@@ -128,14 +136,14 @@
       "open_tab": "Open in new tab"
     },
     "launch": {
-      "badge": "3D Project Gallery",
-      "title": "Starting project view",
-      "subtitle": "Apps are loaded from the maintained project catalog and prepared for 3D navigation.",
-      "loading": "Loading projects and preparing the scene...",
-      "scene": "Initializing 3D scene...",
-      "hint": "After startup you can explore the apps by scrolling.",
-      "scroll_hint": "SCROLL TO EXPLORE",
-      "source": "Curated app catalog",
+      "badge": "3D Project Archive",
+      "title": "Preparing the project space",
+      "subtitle": "The curated catalog is loading and being prepared for spatial navigation.",
+      "loading": "Loading projects · Preparing scene …",
+      "scene": "Initializing 3D scene …",
+      "hint": "Once ready, scroll to move through the projects.",
+      "scroll_hint": "SCROLL & EXPLORE",
+      "source": "Curated project catalog",
       "error_title": "Projects could not be loaded",
       "retry": "Reload page"
     },
@@ -173,8 +181,9 @@
     }
   },
   "gallery": {
-    "title": "Premium Photo Gallery",
-    "subtitle": "Professional photography in highest quality",
+    "eyebrow": "Photographic archive",
+    "title": "Photographic Perspectives",
+    "subtitle": "Moments, light, and atmosphere – curated in a spatial gallery.",
     "search_placeholder": "Search by title, tags or location...",
     "found": "{{count}} photo found",
     "found_plural": "{{count}} photos found",
@@ -221,7 +230,7 @@
       "favorite_add": "Add to favorites",
       "favorite_remove": "Remove from favorites"
     },
-    "instructions": "Scroll to explore • Click to view"
+    "instructions": "Scroll to explore · Click to open"
   },
   "videos": {
     "local_mode": "Local mode",
@@ -236,8 +245,9 @@
     "open_landing": "Open landing page for this video"
   },
   "blog": {
+    "eyebrow": "Notes & Process",
     "title": "Journal",
-    "subtitle": "Notes on frontend, 3D, AI, and web experiments",
+    "subtitle": "Thoughts on frontend, 3D, AI, and visual experiments.",
     "headline": "Build Notes & Journal",
     "subline": "Short entries on frontend architecture, 3D interfaces, AI features, and things learned along the way.",
     "read_more": "Read more",
@@ -322,6 +332,9 @@
     "btn_contact": "Contact"
   },
   "home": {
+    "earth_description": "An interactive 3D rendering of Earth with realistic textures and animation. Use the controls to zoom and switch between camera modes.",
+    "earth_fallback": "CSS mode",
+    "hero_region_label": "Welcome to the portfolio — Home",
     "hero_title": "Glad you're here.",
     "hero_lede": "Welcome to my digital world. Here I collect interfaces, web experiments, photography, videos, and build notes.",
     "hero_meta_code": "JavaScript ES2023+",
@@ -337,6 +350,7 @@
     "feature_portal_videos": "Videos",
     "feature_portal_journal": "Journal",
     "closing_eyebrow": "Portfolio Notes",
+    "closing_region_label": "Portfolio notes and further paths",
     "closing_title": "Not a pitch. More like an open archive.",
     "closing_p1": "This site is my public working field between engineering, image-making, and AI. Some parts are finished, others intentionally still in motion.",
     "closing_p2": "If something catches your attention, there is more in the projects, the journal, or directly through the linked channels.",
@@ -358,7 +372,13 @@
     "btn_about": "About Me",
     "aria_about": "Go to About"
   },
+  "robot": {
+    "bubble_greeting": "Hello!",
+    "bubble_close": "Close speech bubble",
+    "chat_open": "Open chat"
+  },
   "enhancements": {
+    "section_navigation": "Page navigation",
     "theme_toggle": "Switch theme",
     "theme_light": "Light mode",
     "theme_dark": "Dark mode",

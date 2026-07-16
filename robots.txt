@@ -14,7 +14,6 @@ Disallow: /*.log$
 
 # LLM and discovery resources
 Allow: /llms.txt
-Allow: /llms-full.txt
 Allow: /ai-index.json
 Allow: /ai-info/
 Allow: /person.jsonld

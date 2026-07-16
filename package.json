@@ -1,7 +1,7 @@
 {
   "name": "aks-website",
   "version": "1.0.0",
-  "description": "Portfolio Website mit Cloudflare Pages Functions (Vanilla JS)",
+  "description": "No-Build-Portfolio mit Cloudflare Pages Functions, React und Web Components",
   "private": true,
   "type": "module",
   "author": "Abdulkerim Sesli <kontakt@abdulkerimsesli.de>",
@@ -13,29 +13,29 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.6.0",
+    "@types/node": "^26.1.1",
+    "eslint": "^10.7.0",
     "globals": "^17.7.0",
     "lint-staged": "^17.0.8",
-    "prettier": "^3.9.4",
+    "prettier": "^3.9.5",
     "simple-git-hooks": "^2.13.1",
-    "wrangler": "^4.107.0"
+    "wrangler": "^4.110.0"
   },
   "scripts": {
     "dev": "wrangler pages dev . --port 8787 --show-interactive-dev-session=false",
     "prepare": "simple-git-hooks",
     "lint:staged": "lint-staged",
-    "lint:fix": "npm exec --yes -- eslint --fix",
-    "format:file": "npm exec --yes -- prettier --write",
+    "lint:fix": "eslint . --fix",
     "lint": "eslint .",
     "format": "prettier --write .",
     "check:format": "prettier --check ."
   },
   "lint-staged": {
     "*.{js,mjs}": [
-      "npm run -s lint:fix --",
-      "npm run -s format:file --"
+      "eslint --fix",
+      "prettier --write"
     ],
-    "*.{json,md,css,html,xml,svg,yml,yaml}": "npm run -s format:file --"
+    "*.{json,md,css,html,xml,svg,yml,yaml}": "prettier --write"
   },
   "simple-git-hooks": {
     "pre-commit": "npm run -s lint:staged"

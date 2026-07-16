@@ -69,7 +69,12 @@
     <div class="footer-min-main">
       <span class="footer-copyright">
         © <span class="year">2026</span>
-        <a href="/" class="brand-link" aria-label="Zur Startseite">
+        <a
+          href="/"
+          class="brand-link"
+          aria-label="Zur Startseite"
+          data-i18n-attrs="aria-label:footer.home_aria"
+        >
           <span class="full-name">Abdulkerim Sesli</span>
           <span class="short-name">aKs</span>
         </a>
@@ -81,6 +86,7 @@
         class="cookie-inline hidden"
         role="dialog"
         aria-label="Cookie-Einstellungen"
+        data-i18n-attrs="aria-label:footer.cookie_banner.dialog_aria"
       >
         <span class="cookie-emoji" aria-hidden="true">🍪</span>
         <span class="cookie-text">
@@ -92,23 +98,35 @@
           class="btn-accept"
           type="button"
           aria-label="Cookies akzeptieren"
+          data-i18n-attrs="aria-label:footer.cookie_banner.accept_aria"
         >
           <span class="full" data-i18n="footer.cookie_banner.accept">Akzeptieren</span>
           <span class="short" data-i18n="footer.cookie_banner.accept_short">✓</span>
         </button>
-        <button id="reject-cookies" class="btn-reject" type="button" aria-label="Cookies ablehnen">
+        <button
+          id="reject-cookies"
+          class="btn-reject"
+          type="button"
+          aria-label="Cookies ablehnen"
+          data-i18n-attrs="aria-label:footer.cookie_banner.decline_aria"
+        >
           <span class="full" data-i18n="footer.cookie_banner.decline">Ablehnen</span>
           <span class="short" data-i18n="footer.cookie_banner.decline_short">✗</span>
         </button>
       </div>
 
-      <nav class="footer-nav" aria-label="Footer Navigation">
+      <nav
+        class="footer-nav"
+        aria-label="Footer-Navigation"
+        data-i18n-attrs="aria-label:footer.navigation_aria"
+      >
         <button
           id="cookie-btn"
           class="nav-btn"
           type="button"
           data-cookie-trigger
           aria-label="Cookie-Einstellungen öffnen"
+          data-i18n-attrs="aria-label:footer.cookie_settings.open_aria"
         >
           <svg
             width="14"
@@ -123,7 +141,12 @@
           </svg>
           <span data-i18n="footer.legal.cookies">Cookies</span>
         </button>
-        <a href="/impressum/" class="nav-btn" aria-label="Impressum">
+        <a
+          href="/impressum/"
+          class="nav-btn"
+          aria-label="Impressum"
+          data-i18n-attrs="aria-label:footer.legal.impressum"
+        >
           <svg
             width="14"
             height="14"
@@ -137,7 +160,12 @@
           </svg>
           <span data-i18n="footer.legal.impressum">Legal</span>
         </a>
-        <a href="/datenschutz/" class="nav-btn" aria-label="Datenschutz">
+        <a
+          href="/datenschutz/"
+          class="nav-btn"
+          aria-label="Datenschutz"
+          data-i18n-attrs="aria-label:footer.legal.privacy"
+        >
           <svg
             width="14"
             height="14"
@@ -166,6 +194,7 @@
           class="btn-close"
           type="button"
           aria-label="Einstellungen schließen"
+          data-i18n-attrs="aria-label:footer.cookie_settings.close"
         >
           ×
         </button>
@@ -279,7 +308,7 @@
         </article>
 
         <article class="footer-card">
-          <h2 data-i18n="footer.work.title">Work</h2>
+          <h2 data-i18n="footer.work.title">Arbeiten</h2>
           <nav class="links links-compact" aria-label="Work Links">
             <a href="#features">
               <svg
@@ -341,7 +370,7 @@
         </article>
 
         <article class="footer-card">
-          <h2 data-i18n="footer.skills.title">Skills</h2>
+          <h2 data-i18n="footer.skills.title">Kompetenzen</h2>
           <div class="skill-tags">
             <span class="tag">React</span>
             <span class="tag">Three.js</span>
@@ -353,8 +382,8 @@
         </article>
 
         <article class="footer-card">
-          <h2 data-i18n="footer.quick_links.title">Quick Links</h2>
-          <nav class="links links-compact" aria-label="Quick Links">
+          <h2 data-i18n="footer.quick_links.title">Schnellzugriff</h2>
+          <nav class="links links-compact" aria-label="Schnellzugriff">
             <a href="/gallery/">
               <svg
                 width="12"

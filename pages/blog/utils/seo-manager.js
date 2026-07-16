@@ -4,7 +4,7 @@
  */
 
 import { FAVICON_512_URL } from "#config/media-urls.js";
-import { injectSchema } from "#core/schema.js";
+import { injectSchema } from "#core/seo/index.js";
 import {
   BLOG_BASE_URL,
   BLOG_HOME_URL,

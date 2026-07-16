@@ -9,12 +9,6 @@
     <link rel="me" href="https://linkedin.com/in/abdulkerim-s" />
     <link rel="alternate" type="application/ld+json" href="/person.jsonld" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&family=Space+Grotesk:wght@700&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="/content/components/interactions/interactions.css" />
     <link rel="stylesheet" href="/content/styles/pages/common.css" />
     <link rel="stylesheet" href="/content/styles/pages/home.css" />
@@ -26,7 +20,9 @@
     <!-- Icons and app metadata are injected by the global head template -->
   </head>
   <body>
-    <a href="#main-content" class="skip-link sr-only">Zum Hauptinhalt springen</a>
+    <a href="#main-content" class="skip-link sr-only" data-i18n="menu.skip_main"
+      >Zum Inhalt springen</a
+    >
 
     <div
       id="threeEarthContainer"
@@ -34,14 +30,14 @@
       data-section="hero"
       aria-describedby="earth-description"
     >
-      <div id="earth-description" class="sr-only">
-        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen.
-        Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
+      <div id="earth-description" class="sr-only" data-i18n="home.earth_description">
+        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. Nutze
+        die Steuerungstasten zum Zoomen und zum Wechseln zwischen den Kamera-Modi.
       </div>
 
       <div class="three-earth-error hidden">
         <div class="error-icon">🌍</div>
-        <p>CSS-Modus</p>
+        <p data-i18n="home.earth_fallback">CSS-Modus</p>
       </div>
     </div>
 
@@ -89,6 +85,8 @@
         id="hero"
         class="section hero"
         aria-label="Willkommen im Portfolio — Startseite"
+        data-i18n-attrs="aria-label:home.hero_region_label"
+        data-i18n-section-label="home.hero_region_label"
         data-section-src="/pages/home/hero"
         data-eager="true"
       ></section>
@@ -98,6 +96,7 @@
         class="section features full-screen-section"
         aria-label="Portfolio-Portale"
         data-i18n-attrs="aria-label:home.feature_portals_label"
+        data-i18n-section-label="home.feature_portals_label"
         data-eager="true"
       >
         <nav
@@ -132,6 +131,8 @@
         id="section3"
         class="section section3"
         aria-label="Portfolio-Notizen und weitere Wege"
+        data-i18n-attrs="aria-label:home.closing_region_label"
+        data-i18n-section-label="home.closing_region_label"
         data-section-src="/pages/home/section3"
         data-eager="true"
       ></section>

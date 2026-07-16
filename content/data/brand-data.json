@@ -24,8 +24,8 @@
   "hasOccupation": [
     {
       "name": "Full-Stack Web Developer",
-      "description": "Modern web applications with JavaScript ES2023+, Three.js, Web Components, and edge-ready architectures",
-      "skills": "JavaScript, Three.js, Web Components, API Integration, Technical SEO, Web Performance"
+      "description": "Modern web applications with JavaScript ES2023+, React, Three.js, Web Components, and edge-ready architectures",
+      "skills": "JavaScript, React, Three.js, Web Components, API Integration, Technical SEO, Web Performance"
     },
     {
       "name": "Creative Technologist",

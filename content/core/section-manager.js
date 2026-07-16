@@ -6,11 +6,11 @@
 import { createLogger } from "./logger.js";
 import { createObserver, fetchText } from "./utils/index.js";
 import { i18n } from "./i18n.js";
-import { withViewTransition } from "./view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
+  withViewTransition,
 } from "./view-transitions/index.js";
 
 const log = createLogger("SectionManager");

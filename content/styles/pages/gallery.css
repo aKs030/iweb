@@ -77,11 +77,16 @@
     top: calc(var(--content-top-offset) + var(--space-6));
   }
 
+  .gallery-eyebrow {
+    justify-content: center;
+    margin: 0 auto var(--space-3);
+    color: color-mix(in srgb, var(--primary-light) 82%, var(--clr-white));
+  }
+
   .gallery-title {
     margin: 0;
-    font-size: clamp(var(--size-r-2), 8vw, calc(var(--size-r-0-75) * 5));
+    font-size: var(--type-4xl);
     font-weight: 800;
-    letter-spacing: 0;
     background: var(--gradient-text);
     -webkit-background-clip: text;
     background-clip: text;
@@ -92,8 +97,10 @@
 
   .gallery-subtitle {
     margin: var(--space-2) 0 0;
-    font-size: clamp(var(--size-r-1), 2.6vw, var(--size-r-1-125));
+    font-size: var(--type-lg);
     color: color-mix(in srgb, var(--text-primary) 75%, transparent);
+    max-width: 58ch;
+    margin-inline: auto;
     text-shadow: 0 var(--size-4) var(--size-18)
       color-mix(in srgb, var(--clr-black) 30%, transparent);
   }
@@ -105,8 +112,9 @@
 
   .gallery-instructions__text {
     margin: 0;
-    color: color-mix(in srgb, var(--clr-white) 40%, transparent);
-    font-size: var(--size-r-0-875);
+    color: color-mix(in srgb, var(--clr-white) 64%, transparent);
+    font-size: var(--type-sm);
+    letter-spacing: 0.02em;
   }
 
   .gallery-loader {
@@ -264,7 +272,7 @@
     top: 50%;
     transform: translateY(-50%);
     padding: var(--space-3);
-    font-size: var(--size-r-1-5);
+    font-size: var(--type-2xl);
     line-height: 1;
     z-index: calc(var(--z-top-elements) + 1);
   }
@@ -296,7 +304,7 @@
     padding: var(--space-1) var(--space-3);
     background: var(--modal-control-bg);
     color: color-mix(in srgb, var(--clr-white) 70%, transparent);
-    font-size: var(--size-r-0-875);
+    font-size: var(--type-sm);
   }
 
   .gallery-lightbox__close {
@@ -348,8 +356,8 @@
 
   .gallery-lightbox__title {
     margin: 0;
-    font-size: clamp(var(--size-r-1-75), 5vw, var(--size-r-2));
-    line-height: 1.2;
+    font-size: var(--type-3xl);
+    line-height: var(--leading-tight);
     background: linear-gradient(
       90deg,
       color-mix(in srgb, var(--primary-light) 90%, var(--clr-white)),
@@ -363,8 +371,8 @@
   .gallery-lightbox__description {
     margin: 0;
     color: color-mix(in srgb, var(--clr-white) 80%, transparent);
-    line-height: 1.7;
-    font-size: var(--size-r-1);
+    line-height: var(--leading-relaxed);
+    font-size: var(--type-body);
   }
 
   .gallery-lightbox__meta {
@@ -382,7 +390,7 @@
     border: var(--size-1) solid color-mix(in srgb, var(--clr-white) 10%, transparent);
     background: color-mix(in srgb, var(--clr-white) 5%, transparent);
     color: color-mix(in srgb, var(--clr-white) 84%, transparent);
-    font-size: var(--size-r-0-78);
+    font-size: var(--type-sm);
     text-transform: capitalize;
   }
 

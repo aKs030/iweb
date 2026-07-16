@@ -2,7 +2,7 @@
 
 ## Short Bio (50 words)
 
-Abdulkerim Sesli (Abdul Sesli) is a Full-Stack Web Developer from Germany specializing in modern JavaScript, 3D graphics with Three.js, and AI integration. Known for zero-build architectures and performance-optimized web applications achieving 95+ Lighthouse scores.
+Abdulkerim Sesli (Abdul Sesli) is a Full-Stack Web Developer from Germany specializing in modern JavaScript, 3D graphics with Three.js, and AI integration. His work focuses on zero-build architectures, accessible interfaces, and performance-conscious web applications.
 
 ## Medium Bio (150 words)
 
@@ -10,7 +10,7 @@ Abdulkerim Sesli, also known as Abdul Sesli, is a passionate Full-Stack Web Deve
 
 Abdul specializes in zero-build architectures, deploying source code directly to Cloudflare Pages without traditional build tools. His portfolio showcases innovative projects including an interactive 3D Earth visualization, deterministic site search, and a context-aware chat bot powered by Cloudflare Workers AI.
 
-His work emphasizes performance optimization, achieving 95+ Lighthouse scores and maintaining a ~240 kB gzipped bundle size. He advocates for edge-first deployment strategies, modern web standards, and accessibility-first development.
+His work emphasizes performance optimization, lean delivery, modern web standards, and accessibility-first development. He advocates for edge-first deployment strategies and clear runtime boundaries.
 
 Abdul is available for freelance projects, technical consulting, and collaborations in web development, performance optimization, and AI integration.
 
@@ -24,13 +24,13 @@ Abdulkerim Sesli, professionally known as Abdul Sesli, is a Full-Stack Web Devel
 
 Abdul's technical expertise spans the full spectrum of modern web development:
 
-**Frontend Development**: Master of vanilla JavaScript (ES2023+), Three.js for 3D graphics, Web Components for reusable UI, and modern CSS3 with Container Queries and Nesting. He builds fast no-build interfaces with native browser APIs and clear runtime boundaries.
+**Frontend Development**: Modern JavaScript (ES2023+), React, Three.js for 3D graphics, Web Components for reusable UI, and CSS3 with Container Queries and Nesting. He builds fast no-build interfaces with native browser APIs and clear runtime boundaries.
 
 **Backend & Edge Computing**: Specialist in Cloudflare Workers and Pages Functions for serverless architecture. Expert in edge-first deployment strategies that leverage global CDN networks for optimal performance.
 
 **AI Integration**: Experienced in integrating AI services into web applications, including Cloudflare Workers AI chat experiences, memory-backed assistant flows, and machine-readable discovery resources.
 
-**Performance Engineering**: Obsessed with web performance, consistently achieving 95+ Lighthouse scores and optimizing Core Web Vitals. Expert in code splitting, lazy loading, and bundle optimization.
+**Performance Engineering**: Focused on Core Web Vitals, code splitting, lazy loading, rendering efficiency, and payload optimization.
 
 ### Philosophy & Approach
 
@@ -41,7 +41,7 @@ His development philosophy centers on:
 - **Performance First**: Every decision considers performance impact
 - **Modern Standards**: Using the latest web standards and APIs
 - **Accessibility**: Ensuring all users can access content
-- **Clean Code**: Maintaining 100/100 code quality scores
+- **Clean Code**: Clear, reviewable modules and consistent local validation
 - **Documentation**: Comprehensive documentation for all projects
 
 ### Notable Projects
@@ -52,7 +52,7 @@ His development philosophy centers on:
 
 **Robot Companion**: A context-aware AI chat bot using Cloudflare Workers AI with markdown rendering, memory, tool-calling, and personality-driven responses. Showcases AI integration and creative UI design.
 
-**Zero-Build Portfolio**: A modern portfolio website with zero-build architecture, achieving ~240 kB gzipped bundle size and 95+ Lighthouse score. Demonstrates best practices in performance optimization and modern web development.
+**Zero-Build Portfolio**: A modern portfolio website that combines native ES modules, selected React views, Web Components, and Cloudflare Pages Functions without an application bundling step.
 
 ### Skills & Technologies
 
@@ -60,7 +60,7 @@ His development philosophy centers on:
 - **Frameworks & Libraries**: Three.js, React, Web Components
 - **Backend**: Cloudflare Workers, Pages Functions, Node.js
 - **AI/ML**: Cloudflare Workers AI, vector memory, AI-assisted UX
-- **Tools**: Git, GitHub Actions, Wrangler, Chrome DevTools
+- **Tools**: Git, Wrangler, ESLint, Prettier, Chrome DevTools
 - **Cloud**: Cloudflare Pages, R2 Storage, KV Storage
 - **Other**: Photography, Video Production, Technical Writing
 
@@ -90,4 +90,4 @@ Abdul is available for:
 
 ---
 
-_Last Updated: February 2026_
+_Last Updated: July 2026_

@@ -5,6 +5,7 @@
  * @version 2.0.0
  */
 import { subscribeFooterState } from "#footer/index.js";
+import { i18n } from "../../core/i18n.js";
 import { createLogger } from "../../core/logger.js";
 import { getElementById } from "../../core/utils/index.js";
 import { TimerManager } from "../../core/utils/index.js";
@@ -434,7 +435,11 @@ export async function initHeroSubtitle(options = {}) {
 
     let quotes = null;
     try {
-      quotes = await fetchJSON("/content/data/typewriter-quotes.json", {
+      const quotesUrl =
+        i18n.currentLang === "en"
+          ? "/content/data/typewriter-quotes.en.json"
+          : "/content/data/typewriter-quotes.json";
+      quotes = await fetchJSON(quotesUrl, {
         retries: 1,
       });
     } catch {

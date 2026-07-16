@@ -4,7 +4,7 @@ import { setSanitizedHTML } from "../../../core/utils/index.js";
 import { ROBOT_ACTIONS } from "../constants/events.js";
 import { clearActiveOverlayMode, setActiveOverlayMode } from "../../../core/state/ui-store.js";
 import { OVERLAY_MODES, prepareOverlayFocusChange } from "../../../core/overlay-manager.js";
-import { withViewTransition } from "../../../core/view-transitions.js";
+import { withViewTransition } from "../../../core/view-transitions/index.js";
 import { ChatHistoryStore } from "./chat-history-store.js";
 import { getRobotUserName, normalizeRobotUserName } from "./name-identity.js";
 import { getRobotMemoryManagerFields } from "../memory/robot-memory-schema.js";
@@ -763,7 +763,7 @@ export class RobotChat {
 
     const label = document.createElement("div");
     label.className = "chat-quick-actions__label";
-    label.textContent = "Quick Links";
+    label.textContent = "Schnellzugriff";
 
     const copy = document.createElement("p");
     copy.className = "chat-quick-actions__copy";

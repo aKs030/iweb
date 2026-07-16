@@ -36,7 +36,7 @@
     max-width: var(--three-earth-error-width);
     text-align: center;
     color: color-mix(in srgb, var(--clr-white) 90%, transparent);
-    font-family: var(--font-inter);
+    font-family: var(--font-sans);
     -webkit-backdrop-filter: var(--blur-md);
     backdrop-filter: var(--blur-md);
     padding: var(--space-6);
@@ -85,7 +85,7 @@
   }
 
   .three-earth-container[data-section="section3"] {
-    opacity: 0.76;
+    opacity: 1;
     pointer-events: none;
   }
 

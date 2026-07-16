@@ -14,7 +14,9 @@
     <link rel="stylesheet" href="/content/styles/pages/about.css" />
   </head>
   <body class="about-page">
-    <a href="#main-content" class="skip-link sr-only">Zum Hauptinhalt springen</a>
+    <a href="#main-content" class="skip-link sr-only" data-i18n="menu.skip_main"
+      >Zum Inhalt springen</a
+    >
 
     <!-- Header und Footer werden dynamisch vom Head-Feature erstellt -->
 
@@ -22,18 +24,18 @@
       <div class="bento-grid">
         <!-- 1. Intro Section (Large) -->
         <div class="card area-intro intro-card fade-in delay-1 u-stack u-center">
-          <div class="profile-badge u-inline-center">
+          <div class="profile-badge text-eyebrow u-inline-center">
             <i data-lucide="code-2" width="16"></i>
-            Full-Stack Developer & Creative
+            Entwicklung · Design · Interaktion
           </div>
           <h1>
-            Code trifft <span class="gradient-text">Kreativität.</span><br />
+            Code trifft <span class="gradient-text">Gestaltung.</span><br />
             Digitale Erlebnisse, die bleiben.
           </h1>
           <p class="about__intro-text">
-            Ich bin Abdulkerim Sesli, auch als Abdul Sesli bekannt. Entwickler, Designer und
-            Problemlöser aus Berlin. Ich verbinde technische Präzision mit ästhetischem Anspruch, um
-            Webanwendungen zu schaffen, die nicht nur funktionieren, sondern begeistern.
+            Ich bin Abdulkerim Sesli, Full-Stack-Entwickler und Designer aus Berlin. Ich verbinde
+            technische Präzision mit klarer Gestaltung – für Webanwendungen, die schnell, zugänglich
+            und charakterstark sind.
           </p>
           <div class="about__cta u-row">
             <a href="/contact/" class="btn btn-primary">
@@ -54,15 +56,20 @@
               loading="lazy"
               decoding="async"
             />
-            <h3>Let's Connect</h3>
+            <h3>Direkter Kontakt</h3>
             <p class="about__location">Berlin, Deutschland</p>
           </div>
           <div class="social-links u-stack">
-            <a href="https://github.com/aKs030" target="_blank" class="social-item">
+            <a href="https://github.com/aKs030" target="_blank" rel="noopener" class="social-item">
               <i data-lucide="github"></i>
               <span>GitHub</span>
             </a>
-            <a href="https://linkedin.com/in/abdulkerim-s" target="_blank" class="social-item">
+            <a
+              href="https://linkedin.com/in/abdulkerim-s"
+              target="_blank"
+              rel="noopener"
+              class="social-item"
+            >
               <i data-lucide="linkedin"></i>
               <span>LinkedIn</span>
             </a>
@@ -77,12 +84,12 @@
         <div class="card area-stack fade-in delay-3">
           <div class="about__header u-row">
             <i data-lucide="cpu" color="#60a5fa"></i>
-            <h3>Tech Arsenal</h3>
+            <h3>Technologie-Stack</h3>
           </div>
-          <p class="about__small">Tools, mit denen ich Ideen in Realität verwandle.</p>
+          <p class="about__small">Technologien, mit denen aus Ideen belastbare Produkte werden.</p>
 
           <div class="about__stack">
-            <h4 class="about__subheading">Core & Frontend</h4>
+            <h4 class="about__subheading">Frontend & Interface</h4>
             <div class="stack-list u-row">
               <span class="stack-tag">JavaScript (ES2023+)</span>
               <span class="stack-tag">Web Components</span>
@@ -93,7 +100,7 @@
           </div>
 
           <div>
-            <h4 class="about__subheading">Backend & Ops</h4>
+            <h4 class="about__subheading">Backend & Betrieb</h4>
             <div class="stack-list u-row u-wrap">
               <span class="stack-tag">Node.js</span>
               <span class="stack-tag">Cloudflare Functions</span>
@@ -115,29 +122,28 @@
           <div class="timeline u-stack">
             <div class="timeline-item">
               <span class="timeline-date">2020 – Heute</span>
-              <h4 class="timeline-title">Freelance Full-Stack Developer</h4>
+              <h4 class="timeline-title">Freiberuflicher Full-Stack-Entwickler</h4>
               <span class="timeline-role">Selbstständig</span>
               <p class="about__timeline-desc">
-                Entwicklung hochperformanter Web-Lösungen und SPAs. Fokus auf interaktive User
-                Experience, SEO-Optimierung und skalierbare Architekturen für diverse
-                Kundenprojekte.
+                Entwicklung performanter Webanwendungen und SPAs mit Fokus auf Interaktion,
+                technischer SEO und skalierbaren Architekturen für unterschiedliche Projekte.
               </p>
             </div>
 
             <div class="timeline-item">
               <span class="timeline-date">2018 – 2020</span>
-              <h4 class="timeline-title">Web & Product Development</h4>
-              <span class="timeline-role">TechStartup Umfeld</span>
+              <h4 class="timeline-title">Web- & Produktentwicklung</h4>
+              <span class="timeline-role">Tech-Startup-Umfeld</span>
               <p class="about__timeline-desc">
-                Kernentwicklung von SaaS-Komponenten, REST-API Integrationen und UX-Optimierung in
-                einem agilen Team.
+                Entwicklung von SaaS-Komponenten, REST-API-Integrationen und Verbesserungen des
+                Nutzererlebnisses in einem agilen Team.
               </p>
             </div>
           </div>
 
           <div class="about__exp-footer">
             <div class="about__section-cta u-row u-between">
-              <h3>Coding Playground</h3>
+              <h3>Projektlabor</h3>
               <a href="/projekte/" class="about__link--accent">Alle Projekte →</a>
             </div>
 
@@ -145,12 +151,12 @@
               <a href="/projekte/#project-1" class="mini-card">
                 <i data-lucide="gamepad-2" class="about__mini-icon about__icon--pink"></i>
                 <h4>Schere Stein Papier</h4>
-                <span>Logik & State Management Experiment</span>
+                <span>Zustandslogik & Interaktion</span>
               </a>
               <a href="/projekte/#project-3" class="mini-card">
                 <i data-lucide="palette" class="about__mini-icon about__icon--purple"></i>
                 <h4>Color Changer</h4>
-                <span>Echtzeit DOM-Manipulation</span>
+                <span>DOM-Manipulation in Echtzeit</span>
               </a>
             </div>
           </div>
@@ -160,18 +166,18 @@
         <div class="card area-impact fade-in delay-5">
           <div class="about__header u-row">
             <i data-lucide="bar-chart-3" color="#f59e0b"></i>
-            <h3>Impact & Ergebnisse</h3>
+            <h3>Wirkung & Qualität</h3>
           </div>
-          <p class="about__small">Fokus auf messbare Resultate statt reiner Feature-Listen.</p>
+          <p class="about__small">Fokus auf messbare Resultate statt reiner Funktionslisten.</p>
 
           <div class="about__stats-grid">
             <div class="about__stat-card">
-              <strong>95+</strong>
-              <span>Lighthouse Performance</span>
+              <strong>Performance</strong>
+              <span>Core Web Vitals Fokus</span>
             </div>
             <div class="about__stat-card">
-              <strong>100/100</strong>
-              <span>Code Quality Pipeline</span>
+              <strong>Wartbar</strong>
+              <span>ESLint & Prettier</span>
             </div>
             <div class="about__stat-card">
               <strong>Edge-First</strong>
@@ -182,7 +188,7 @@
           <ul class="about__bullet-list">
             <li>Strukturierte AI-Discovery mit llms.txt, ai-index und schema.org</li>
             <li>Interaktive 3D-Erlebnisse ohne Framework-Overhead</li>
-            <li>SEO, Performance und Accessibility als Standard im Delivery-Prozess</li>
+            <li>SEO, Performance und Barrierefreiheit als Standard im Entwicklungsprozess</li>
           </ul>
         </div>
 
@@ -190,7 +196,7 @@
         <div class="card area-services fade-in delay-6">
           <div class="about__header u-row">
             <i data-lucide="sparkles" color="#818cf8"></i>
-            <h3>Zusammenarbeit & Leistungen</h3>
+            <h3>Leistungen & Zusammenarbeit</h3>
           </div>
           <p class="about__small">
             Ich begleite Projekte von der Idee bis zum produktiven Betrieb.
@@ -200,11 +206,11 @@
             <li>Konzeption und Umsetzung moderner Webanwendungen</li>
             <li>Integration von AI-Features wie RAG-Suche und Assistenten</li>
             <li>Performance-Optimierung und technische SEO-Audits</li>
-            <li>Architektur-Refactoring fuer skalierbare Frontend-Systeme</li>
+            <li>Architektur-Refactoring für skalierbare Frontend-Systeme</li>
           </ul>
 
           <div class="about__section-cta u-row u-between">
-            <h3>Bereit fuer ein Projekt?</h3>
+            <h3>Bereit für ein Projekt?</h3>
             <a href="/contact/" class="about__link--accent">Kontakt aufnehmen →</a>
           </div>
         </div>

@@ -8,7 +8,7 @@ import { createRoot } from "react-dom/client";
 import htm from "htm";
 import { createLogger } from "#core/logger.js";
 import { createUseTranslation } from "#core/utils/index.js";
-import { sanitizeHTML } from "#core/sanitization-utils.js";
+import { sanitizeHTML } from "#core/utils/index.js";
 import { AppLoadManager } from "#core/load-manager.js";
 import { Clock, ArrowRight } from "#components/icons/index.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
@@ -253,8 +253,9 @@ const BlogApp = () => {
   return html`
     <div className="blog-list-view">
       <header className="blog-header">
-        <h1>${t("blog.title")}</h1>
-        <p className="blog-subtitle">${t("blog.subtitle")}</p>
+        <p className="blog-eyebrow text-eyebrow">${t("blog.eyebrow")}</p>
+        <h1>${t("blog.headline")}</h1>
+        <p className="blog-subtitle">${t("blog.subline")}</p>
       </header>
       <div className="blog-grid">
         ${posts.map(

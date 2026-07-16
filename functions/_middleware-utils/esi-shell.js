@@ -64,7 +64,12 @@ const FOOTER_SHELL_MARKUP = `
 		<div class="footer-min-main">
 			<span class="footer-copyright">
 				© <span class="year">2026</span>
-				<a href="/" class="brand-link" aria-label="Zur Startseite">
+					<a
+						href="/"
+						class="brand-link"
+						aria-label="Zur Startseite"
+						data-i18n-attrs="aria-label:footer.home_aria"
+					>
 					<span class="full-name">Abdulkerim Sesli</span>
 					<span class="short-name">aKs</span>
 				</a>
@@ -72,9 +77,10 @@ const FOOTER_SHELL_MARKUP = `
 
 			<div
 				id="cookie-banner"
-				class="cookie-inline hidden"
-				role="dialog"
-				aria-label="Cookie-Einstellungen"
+					class="cookie-inline hidden"
+					role="dialog"
+					aria-label="Cookie-Einstellungen"
+					data-i18n-attrs="aria-label:footer.cookie_banner.dialog_aria"
 			>
 				<span class="cookie-emoji" aria-hidden="true">🍪</span>
 				<span class="cookie-text">
@@ -88,8 +94,9 @@ const FOOTER_SHELL_MARKUP = `
 				<button
 					id="accept-cookies"
 					class="btn-accept"
-					type="button"
-					aria-label="Cookies akzeptieren"
+						type="button"
+						aria-label="Cookies akzeptieren"
+						data-i18n-attrs="aria-label:footer.cookie_banner.accept_aria"
 				>
 					<span class="full" data-i18n="footer.cookie_banner.accept"
 						>Akzeptieren</span
@@ -101,8 +108,9 @@ const FOOTER_SHELL_MARKUP = `
 				<button
 					id="reject-cookies"
 					class="btn-reject"
-					type="button"
-					aria-label="Cookies ablehnen"
+						type="button"
+						aria-label="Cookies ablehnen"
+						data-i18n-attrs="aria-label:footer.cookie_banner.decline_aria"
 				>
 					<span class="full" data-i18n="footer.cookie_banner.decline"
 						>Ablehnen</span
@@ -113,13 +121,18 @@ const FOOTER_SHELL_MARKUP = `
 				</button>
 			</div>
 
-			<nav class="footer-nav" aria-label="Footer Navigation">
+				<nav
+					class="footer-nav"
+					aria-label="Footer-Navigation"
+					data-i18n-attrs="aria-label:footer.navigation_aria"
+				>
 				<button
 					id="cookie-btn"
 					class="nav-btn"
 					type="button"
-					data-cookie-trigger
-					aria-label="Cookie-Einstellungen öffnen"
+						data-cookie-trigger
+						aria-label="Cookie-Einstellungen öffnen"
+						data-i18n-attrs="aria-label:footer.cookie_settings.open_aria"
 				>
 					<svg
 						width="14"
@@ -134,7 +147,12 @@ const FOOTER_SHELL_MARKUP = `
 					</svg>
 					<span data-i18n="footer.legal.cookies">Cookies</span>
 				</button>
-				<a href="/impressum/" class="nav-btn" aria-label="Impressum">
+					<a
+						href="/impressum/"
+						class="nav-btn"
+						aria-label="Impressum"
+						data-i18n-attrs="aria-label:footer.legal.impressum"
+					>
 					<svg
 						width="14"
 						height="14"
@@ -148,7 +166,12 @@ const FOOTER_SHELL_MARKUP = `
 					</svg>
 					<span data-i18n="footer.legal.impressum">Legal</span>
 				</a>
-				<a href="/datenschutz/" class="nav-btn" aria-label="Datenschutz">
+					<a
+						href="/datenschutz/"
+						class="nav-btn"
+						aria-label="Datenschutz"
+						data-i18n-attrs="aria-label:footer.legal.privacy"
+					>
 					<svg
 						width="14"
 						height="14"

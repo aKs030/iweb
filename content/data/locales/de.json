@@ -10,11 +10,13 @@
     "home_sub": "Start",
     "projects_sub": "Portfolio",
     "gallery_sub": "Eindrücke",
-    "videos_sub": "Motion",
-    "blog_sub": "Notes",
+    "videos_sub": "Bewegtbild",
+    "blog_sub": "Notizen",
     "about_sub": "Profil",
     "contact_sub": "Austausch",
     "toggle": "Menü öffnen",
+    "opened": "Hauptmenü geöffnet",
+    "closed": "Hauptmenü geschlossen",
     "main_nav": "Hauptnavigation",
     "skip_main": "Zum Inhalt springen",
     "skip_nav": "Zur Navigation springen",
@@ -31,22 +33,24 @@
     "theme_toggle": "Design wechseln (Hell/Dunkel)"
   },
   "footer": {
+    "navigation_aria": "Footer-Navigation",
+    "home_aria": "Zur Startseite",
     "about": {
       "title": "Profil",
       "text": "Portfolio für Code, 3D, AI und visuelle Experimente mit Fokus auf Tempo, Klarheit und Atmosphäre."
     },
     "work": {
-      "title": "Work",
+      "title": "Arbeiten",
       "portfolio": "Portfolio",
       "projects": "Projekte",
       "blog": "Journal",
       "github": "GitHub"
     },
     "skills": {
-      "title": "Skills"
+      "title": "Kompetenzen"
     },
     "quick_links": {
-      "title": "Quick Links",
+      "title": "Schnellzugriff",
       "gallery": "Galerie",
       "videos": "Videos",
       "about": "Profil",
@@ -58,16 +62,20 @@
       "cookies": "Cookies"
     },
     "cookie_banner": {
-      "text": "Wir nutzen Analytics",
-      "text_short": "Analytics?",
+      "dialog_aria": "Cookie-Einstellungen",
+      "text": "Wir nutzen Analyse-Cookies",
+      "text_short": "Analyse?",
       "accept": "Akzeptieren",
       "accept_short": "✓",
       "decline": "Ablehnen",
-      "decline_short": "✗"
+      "decline_short": "✗",
+      "accept_aria": "Cookies akzeptieren",
+      "decline_aria": "Cookies ablehnen"
     },
     "cookie_settings": {
       "title": "Cookie-Einstellungen",
       "close": "Schließen",
+      "open_aria": "Cookie-Einstellungen öffnen",
       "intro": "Wir nutzen notwendige Cookies und optionale Analyse.",
       "required": {
         "title": "Erforderlich",
@@ -111,7 +119,7 @@
       "stats_project": "Projekt",
       "stats_tech": "Technologien",
       "stats_apps": "Apps offen",
-      "stats_source": "Source",
+      "stats_source": "Quelle",
       "stat_open_fallback": "Offen",
       "btn_view": "Projekte ansehen",
       "btn_github": "Alle auf GitHub"
@@ -124,18 +132,18 @@
     "app": {
       "fullscreen": "Vollbild",
       "close": "Schließen",
-      "popup_title": "App Popup",
+      "popup_title": "App-Ansicht",
       "open_tab": "Im neuen Tab öffnen"
     },
     "launch": {
-      "badge": "3D Projekt Galerie",
-      "title": "Projektansicht wird gestartet",
-      "subtitle": "Apps werden aus dem gepflegten Projektkatalog geladen und für die 3D-Navigation vorbereitet.",
-      "loading": "Lade Projekte und bereite die Szene vor...",
-      "scene": "Initialisiere 3D-Szene...",
-      "hint": "Danach kannst du per Scrollen durch die Apps navigieren.",
-      "scroll_hint": "SCROLLEN ZUM ENTDECKEN",
-      "source": "Kuratiert aus App-Katalog",
+      "badge": "3D-Projektarchiv",
+      "title": "Projektwelt wird vorbereitet",
+      "subtitle": "Der kuratierte Katalog wird geladen und für die räumliche Navigation vorbereitet.",
+      "loading": "Projekte laden · Szene vorbereiten …",
+      "scene": "3D-Szene initialisieren …",
+      "hint": "Anschließend kannst du per Scrollen durch die Projekte navigieren.",
+      "scroll_hint": "SCROLLEN & ENTDECKEN",
+      "source": "Kuratierter Projektkatalog",
       "error_title": "Projekte konnten nicht geladen werden",
       "retry": "Seite neu laden"
     },
@@ -173,8 +181,9 @@
     }
   },
   "gallery": {
-    "title": "Premium Fotogalerie",
-    "subtitle": "Professionelle Fotografie in höchster Qualität",
+    "eyebrow": "Fotografisches Archiv",
+    "title": "Fotografische Perspektiven",
+    "subtitle": "Momente, Licht und Atmosphäre – kuratiert in einer räumlichen Galerie.",
     "search_placeholder": "Suche nach Titel, Tags oder Orten...",
     "found": "{{count}} Foto gefunden",
     "found_plural": "{{count}} Fotos gefunden",
@@ -208,7 +217,7 @@
       "date": "Datum",
       "tags": "Tags"
     },
-    "instructions": "Scrollen zum Erkunden • Klicken zum Ansehen",
+    "instructions": "Scrollen zum Erkunden · Klicken zum Öffnen",
     "actions": {
       "toggle_info": "Foto-Details umschalten",
       "toggle_slideshow": "Diashow umschalten",
@@ -236,9 +245,10 @@
     "open_landing": "Öffne Landing-Page für dieses Video"
   },
   "blog": {
+    "eyebrow": "Notizen & Prozesse",
     "title": "Journal",
-    "subtitle": "Notizen zu Frontend, 3D, AI und Web-Experimenten",
-    "headline": "Build Notes & Journal",
+    "subtitle": "Gedanken zu Frontend, 3D, AI und visuellen Experimenten.",
+    "headline": "Notizen aus Entwicklung & Gestaltung",
     "subline": "Kurze Einblicke in Frontend-Architektur, 3D-Interfaces, AI-Features und Dinge, die unterwegs gelernt wurden.",
     "read_more": "Weiterlesen",
     "back": "Zurück",
@@ -260,7 +270,7 @@
   },
   "loader": {
     "init": "Initialisiere Projekte...",
-    "loading_app": "Lade Projekte App...",
+    "loading_app": "Lade Projekt-App...",
     "config_3d": "Konfiguriere 3D-Ansicht...",
     "almost_ready": "Fast fertig...",
     "ready": "Projekte bereit!",
@@ -313,21 +323,24 @@
   },
   "meta": {
     "title": "Portfolio für Code, 3D, AI & digitale Experimente",
-    "description": "Persönliches Portfolio mit Web-Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes."
+    "description": "Persönliches Portfolio mit Web-Projekten, 3D-Interfaces, Fotografie, Videos und Entwicklungsnotizen."
   },
   "hero": {
     "greeting": "Willkommen",
-    "btn_next": "Selected Work",
-    "aria_next": "Zu Selected Work",
+    "btn_next": "Ausgewählte Arbeiten",
+    "aria_next": "Zu den ausgewählten Arbeiten",
     "btn_contact": "Kontakt"
   },
   "home": {
+    "earth_description": "Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. Nutze die Steuerungstasten zum Zoomen und zum Wechseln zwischen den Kamera-Modi.",
+    "earth_fallback": "CSS-Modus",
+    "hero_region_label": "Willkommen im Portfolio — Startseite",
     "hero_title": "Schön, dass du da bist.",
-    "hero_lede": "Willkommen in meiner digitalen Welt. Hier sammle ich Interfaces, Web-Experimente, Fotografie, Videos und Build Notes.",
+    "hero_lede": "Willkommen in meiner digitalen Welt. Hier sammle ich Interfaces, Web-Experimente, Fotografie, Videos und Entwicklungsnotizen.",
     "hero_meta_code": "JavaScript ES2023+",
     "hero_meta_3d": "Three.js / WebGL",
-    "hero_meta_ai": "AI Search & Chat",
-    "hero_meta_media": "Foto / Motion / Journal",
+    "hero_meta_ai": "AI-Suche & Chat",
+    "hero_meta_media": "Foto / Bewegtbild / Journal",
     "hero_profile": "Profil",
     "hero_profile_aria": "Zur Profilseite",
     "feature_portals_label": "Portfolio-Portale",
@@ -336,7 +349,8 @@
     "feature_portal_photos": "Fotos",
     "feature_portal_videos": "Videos",
     "feature_portal_journal": "Journal",
-    "closing_eyebrow": "Portfolio Notes",
+    "closing_eyebrow": "Portfolio-Notizen",
+    "closing_region_label": "Portfolio-Notizen und weitere Wege",
     "closing_title": "Kein Pitch. Eher ein offenes Archiv.",
     "closing_p1": "Diese Seite ist mein öffentliches Arbeitsfeld zwischen Engineering, Bildsprache und AI. Manche Dinge sind fertig, andere bewusst im Fluss.",
     "closing_p2": "Wenn dich etwas genauer interessiert, findest du mehr in den Projekten, im Journal oder direkt über die einzelnen Kanäle.",
@@ -347,23 +361,29 @@
   },
   "farewell": {
     "heading": "Auf Wiedersehen!",
-    "p1": "Vielen herzlichen Dank, dass Sie sich die Zeit genommen haben, meine Website zu besuchen! Ich bin <strong>Abdulkerim Sesli</strong>, ein passionierter Webentwickler aus Berlin, der es liebt, digitale Visionen in die Realität umzusetzen.",
-    "p2": "Als Digital Creator kombiniere ich moderne Technologien mit kreativem Design, um Websites zu schaffen, die nicht nur effizient funktionieren, sondern auch die Besucher begeistern und inspirieren. Meine Mission ist es, das Internet zugänglicher und ästhetischer zu gestalten.",
-    "p3": "Ich hoffe, meine Projekte und Ideen haben Sie fasziniert. Jede Zeile Code, die ich schreibe, trägt ein Stück meiner Leidenschaft in sich – von der ersten Idee bis zur finalen Veröffentlichung.",
-    "p4": "Haben Sie Fragen, Interesse an einer Zusammenarbeit oder möchten Sie einfach nur plaudern? Zögern Sie nicht, mich über meine Kanäle zu kontaktieren. Es war mir eine echte Freude, Sie hier zu haben!",
-    "strong": "Herzlichen Dank für Ihr Interesse – ich freue mich auf Ihren nächsten Besuch!",
+    "p1": "Danke, dass du dir Zeit für mein Portfolio genommen hast. Ich bin <strong>Abdulkerim Sesli</strong>, Webentwickler aus Berlin mit Freude an klaren, lebendigen digitalen Produkten.",
+    "p2": "Ich verbinde moderne Technologie mit visueller Gestaltung – für Websites, die schnell, zugänglich und atmosphärisch sind.",
+    "p3": "Jedes Projekt entsteht zwischen Idee, Prototyp und sorgfältiger Umsetzung. Einige Arbeiten sind abgeschlossen, andere bewusst im Fluss.",
+    "p4": "Du planst ein Projekt oder möchtest dich austauschen? Schreib mir einfach über einen der Kontaktwege.",
+    "strong": "Danke für dein Interesse – bis zum nächsten Besuch.",
     "nav_aria": "Navigationsoptionen",
     "btn_top": "Nach oben",
     "aria_top": "Zur Hero-Sektion",
     "btn_about": "Über mich",
-    "aria_about": "Zu About gehen"
+    "aria_about": "Profil öffnen"
+  },
+  "robot": {
+    "bubble_greeting": "Hallo!",
+    "bubble_close": "Sprechblase schließen",
+    "chat_open": "Chat öffnen"
   },
   "enhancements": {
+    "section_navigation": "Seitennavigation",
     "theme_toggle": "Design wechseln",
     "theme_light": "Helles Design",
     "theme_dark": "Dunkles Design",
     "scroll_progress": "Scroll-Fortschritt",
-    "skill_radar": "Tech Skills",
+    "skill_radar": "Technologie-Kompetenzen",
     "skill_frontend": "Frontend",
     "skill_backend": "Backend",
     "voice_start": "Spracheingabe starten",

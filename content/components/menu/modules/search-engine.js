@@ -22,11 +22,11 @@ import {
 } from "../../../core/state/ui-store.js";
 import { prepareOverlayFocusChange, OVERLAY_MODES } from "../../../core/overlay-manager.js";
 import { resourceHints } from "../../../core/seo/index.js";
-import { withViewTransition } from "../../../core/view-transitions.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
   VIEW_TRANSITION_TIMINGS_MS,
+  withViewTransition,
 } from "../../../core/view-transitions/index.js";
 import { isConnectedHTMLElement, resolveMenuHost } from "./menu-engine.js";
 
@@ -52,7 +52,7 @@ const tokenizeSearchHighlightQuery = query =>
 // 1. SEARCH API INTERFACE (formerly search-api.js)
 // ============================================================================
 
-export class MenuSearchApi {
+class MenuSearchApi {
   constructor(config = {}) {
     this.config = config;
   }
@@ -286,7 +286,7 @@ export class MenuSearchApi {
         url: String(item.url || "/"),
         description: i18n.tOrFallback(
           "menu.search_local_desc",
-          "Aus lokal verfuegbaren Navigationseintraegen"
+          "Aus lokal verfügbaren Navigationseinträgen"
         ),
         highlightedDescription: `<mark>${i18n.tOrFallback("menu.search_local_match", "Lokaler Treffer")}</mark>`,
         category: i18n.tOrFallback("menu.search_local_category", "Lokal"),
@@ -319,7 +319,7 @@ export class MenuSearchApi {
 // 2. CLIENT-SIDE SEARCH STORE (formerly MenuSearchStore.js)
 // ============================================================================
 
-export class MenuSearchStore {
+class MenuSearchStore {
   constructor(config = {}, searchApi = new MenuSearchApi(config)) {
     this.config = config;
     this.searchApi = searchApi;
@@ -521,7 +521,7 @@ export class MenuSearchStore {
         this.aiChatSuggestionsSignal.value = Object.freeze([]);
         this.messageSignal.value = didTimeoutAbort
           ? i18n.tOrFallback("menu.search_timeout", "Suche dauert zu lange")
-          : i18n.tOrFallback("menu.search_unavailable", "Suche derzeit nicht verfuegbar");
+          : i18n.tOrFallback("menu.search_unavailable", "Suche derzeit nicht verfügbar");
       });
     } finally {
       if (timeoutId) {
@@ -639,7 +639,7 @@ export class MenuSearchStore {
 // 3. SEARCH KEYBOARD CONTROLLER (formerly search-keyboard-controller.js)
 // ============================================================================
 
-export class MenuSearchKeyboardController {
+class MenuSearchKeyboardController {
   constructor() {
     this.items = [];
     this.selectedIndex = -1;
@@ -695,7 +695,7 @@ export class MenuSearchKeyboardController {
 
 const SEARCH_PRELOAD_URLS = Object.freeze(["/content/components/menu/search-deps.js"]);
 
-export class MenuSearchPreloadController {
+class MenuSearchPreloadController {
   constructor(options = {}) {
     this.container = options.container || null;
     this.timers = options.timers || null;
@@ -794,7 +794,7 @@ export class MenuSearchPreloadController {
 // 5. SEARCH TREELISTS RENDERING (formerly search-renderer.js)
 // ============================================================================
 
-export class MenuSearchRenderer {
+class MenuSearchRenderer {
   constructor(options = {}) {
     this.translate = options.translate;
     this.getCategoryLabel = options.getCategoryLabel;
@@ -1151,7 +1151,7 @@ const SEARCH_VIEW_TRANSITION_OPTIONS = Object.freeze({
   preserveLiveBackdropOnMobile: true,
 });
 
-export class MenuSearchViewController {
+class MenuSearchViewController {
   constructor(container, host = null) {
     this.container = container;
     this.host = resolveMenuHost(container, host);

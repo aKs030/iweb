@@ -1,5 +1,6 @@
 import { CONFIG } from "./config.js";
 import { createLogger } from "../../../core/logger.js";
+import { isLocalDevRuntime } from "../../../core/runtime-env.js";
 
 const log = createLogger("EarthAssets");
 
@@ -29,7 +30,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
     ]);
   } catch (err) {
     // Silently handle texture loading errors in production
-    if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+    if (isLocalDevRuntime()) {
       log.error("Texture loading failed:", err);
     }
     // Return null to indicate failure without throwing

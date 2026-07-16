@@ -60,10 +60,10 @@ export const ROUTES = Object.freeze({
     image: OG_VIDEOS_IMAGE,
   }),
   "/gallery/": defineRoute({
-    title: "3D Gallery | Abdulkerim Sesli",
+    title: "Fotografische Perspektiven | Abdulkerim Sesli",
     description:
       "Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung.",
-    title_en: "3D Gallery | Abdulkerim Sesli",
+    title_en: "Photographic Perspectives | Abdulkerim Sesli",
     description_en:
       "Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.",
     type: "ImageGallery",
@@ -153,10 +153,10 @@ export const ROUTES = Object.freeze({
     image: OG_HOME_IMAGE,
   }),
   "/ai-info/": defineRoute({
-    title: "Abdulkerim Sesli - AI & Profile Hub",
-    title_en: "Abdulkerim Sesli - AI & Profile Hub",
+    title: "AI-Profil & Discovery | Abdulkerim Sesli",
+    title_en: "AI Profile & Discovery | Abdulkerim Sesli",
     description:
-      "AI & Profile Hub von Abdulkerim Sesli: Profil, Projekte, Technologien und AI-Indexing-Ressourcen für ein persönliches Portfolio.",
+      "AI-Profil von Abdulkerim Sesli mit Projekten, Technologien und strukturierten Discovery-Ressourcen für Such- und AI-Systeme.",
     description_en:
       "AI and profile hub for Abdulkerim Sesli with projects, technologies, and discovery resources for AI systems.",
     type: "ProfilePage",

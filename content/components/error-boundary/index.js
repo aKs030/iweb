@@ -53,7 +53,7 @@ export function createErrorBoundary(ReactInstance) {
           ReactInstance.createElement(
             "p",
             null,
-            "Die Anwendung konnte nicht geladen werden. Bitte versuchen Sie, die Seite neu zu laden."
+            "Die Anwendung konnte nicht geladen werden. Bitte lade die Seite neu."
           ),
           ReactInstance.createElement(
             "button",

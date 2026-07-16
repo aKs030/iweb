@@ -17,6 +17,7 @@
   "description": "Full-Stack Web Developer aus Deutschland mit Fokus auf moderne JavaScript-Entwicklung, 3D-Grafik mit Three.js, AI-Integration und Performance-Optimierung.",
   "knowsAbout": [
     "JavaScript ES2023+",
+    "React",
     "Three.js",
     "WebGL",
     "AI Integration",
@@ -90,10 +91,5 @@
       "keywords": ["Search", "Content Indexing", "Cloudflare Pages Functions"],
       "programmingLanguage": "JavaScript"
     }
-  ],
-  "award": [
-    "100/100 Code Quality Score",
-    "95+ Lighthouse Performance Score",
-    "Zero-Build Architecture Pioneer"
   ]
 }

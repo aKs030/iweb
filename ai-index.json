@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "1.1.0",
-  "lastUpdated": "2026-03-25",
+  "lastUpdated": "2026-07-13",
   "site": {
     "name": "Abdulkerim Sesli Portfolio",
     "url": "https://www.abdulkerimsesli.de",
@@ -37,7 +37,6 @@
     ],
     "discovery": {
       "llms": "https://www.abdulkerimsesli.de/llms.txt",
-      "llmsFull": "https://www.abdulkerimsesli.de/llms-full.txt",
       "aiIndex": "https://www.abdulkerimsesli.de/ai-index.json",
       "personJsonLd": "https://www.abdulkerimsesli.de/person.jsonld",
       "sitemap": "https://www.abdulkerimsesli.de/sitemap.xml"
@@ -486,13 +485,14 @@
   "technologies": {
     "frontend": [
       "JavaScript ES2023+",
+      "React",
       "Three.js 0.183.2",
       "Web Components",
       "CSS3 (Container Queries, Nesting)"
     ],
     "backend": ["Cloudflare Pages Functions", "Cloudflare Workers AI", "Resend API"],
     "infrastructure": ["Cloudflare Pages", "R2 Storage", "KV Storage", "Edge Computing"],
-    "tools": ["npm", "Wrangler", "Chrome DevTools", "GitHub Actions"]
+    "tools": ["npm", "Wrangler", "ESLint", "Prettier", "Chrome DevTools"]
   },
   "features": {
     "ai": {
@@ -515,9 +515,8 @@
       "features": ["interactive-globe", "day-night-textures", "normal-maps"]
     },
     "performance": {
-      "bundleSize": "~240 kB gzipped",
-      "lighthouseScore": "95+",
-      "coreWebVitals": "optimized"
+      "strategy": ["lazy-loading", "code-splitting", "edge-caching"],
+      "coreWebVitals": "optimization focus"
     }
   },
   "sitemaps": [
@@ -543,7 +542,6 @@
   ],
   "documentation": {
     "llms": "https://www.abdulkerimsesli.de/llms.txt",
-    "llmsFull": "https://www.abdulkerimsesli.de/llms-full.txt",
     "bio": "https://www.abdulkerimsesli.de/bio.md",
     "person": "https://www.abdulkerimsesli.de/person.jsonld",
     "aiIndex": "https://www.abdulkerimsesli.de/ai-index.json",

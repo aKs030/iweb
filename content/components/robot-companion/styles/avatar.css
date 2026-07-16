@@ -414,7 +414,7 @@
   padding: var(--size-8) var(--size-12);
   border-radius: var(--size-16);
   border-bottom-right-radius: var(--size-4);
-  font-size: var(--size-r-0-85);
+  font-size: var(--type-sm);
   font-weight: 500;
   min-width: var(--size-60);
   max-width: var(--size-180);
@@ -433,7 +433,7 @@
   position: absolute; /* avoid affecting document flow */
   right: 0;
   bottom: calc(100% + var(--size-12));
-  line-height: 1.4;
+  line-height: var(--leading-snug);
   z-index: var(--z-loader-content);
 }
 
@@ -505,7 +505,7 @@
   width: var(--size-22);
   height: var(--size-22);
   border-radius: 50%;
-  font-size: var(--size-14);
+  font-size: var(--type-sm);
   display: flex;
   align-items: center;
   justify-content: center;

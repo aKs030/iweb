@@ -5,7 +5,7 @@
  */
 
 import { createLogger } from "#core/logger.js";
-import { fetchJSON } from "#core/fetch.js";
+import { fetchJSON } from "#core/utils/index.js";
 
 const log = createLogger("YouTubeAPI");
 

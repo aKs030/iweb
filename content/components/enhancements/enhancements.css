@@ -29,8 +29,6 @@
     visibility 0.24s ease;
 }
 
-html.robot-chat-open .section-dots,
-body.robot-chat-open .section-dots,
 html:has(#robot-chat-window.open) .section-dots,
 body:has(#robot-chat-window.open) .section-dots,
 body:has(#robot-companion-container.robot-chat--open) .section-dots,
@@ -76,7 +74,7 @@ body[data-active-overlay="robot-chat"] .section-dots {
   top: 50%;
   translate: 0 -50%;
   white-space: nowrap;
-  font-size: 0.72rem;
+  font-size: var(--type-xs);
   font-weight: 500;
   color: var(--text-primary);
   background: color-mix(in srgb, var(--bg-dark) 85%, transparent);
@@ -168,7 +166,7 @@ body[data-active-overlay="robot-chat"] .section-dots {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
+  font-size: var(--type-sm);
   color: var(--text-secondary);
 }
 
@@ -197,7 +195,7 @@ body[data-active-overlay="robot-chat"] .section-dots {
 }
 
 .search-filter-chip {
-  font-size: 0.72rem;
+  font-size: var(--type-xs);
   padding: 3px 10px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, currentColor 20%, transparent);

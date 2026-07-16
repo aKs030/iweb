@@ -6,7 +6,6 @@
   :root {
     --clr-black: #030303;
     --clr-white: #ffffff;
-    --clr-gray-100: #f5f5f5;
     --clr-gray-400: #a3a3a3;
     --clr-red-500: #ff6b6b;
     --clr-red-600: #cc0000;
@@ -27,9 +26,11 @@
     --clr-slate-500: #64748b;
     --clr-pink-400: #f472b6;
     --clr-purple-400: #a78bfa;
-    --primary-color: #098bff;
-    --primary-dark: #0066cc;
-    --primary-light: #34aadc;
+    /* One accessible brand blue for links and controls on dark surfaces. */
+    --primary-color: #1479cc;
+    --primary-dark: #075ea8;
+    --primary-light: #5fb0ff;
+    --text-on-primary: var(--clr-white);
     --accent: #00f3ff;
     --accent-secondary: #7000ff;
     --accent-primary: #00f3ff;
@@ -51,16 +52,34 @@
     --bg-dark: var(--bg-primary);
     --surface-solid-elevated: color-mix(in srgb, var(--bg-primary) 92%, var(--clr-white) 8%);
     --surface-solid-panel: color-mix(in srgb, var(--bg-primary) 96%, var(--clr-white) 4%);
-    --text-primary: var(--clr-gray-100);
-    --text-secondary: rgb(255 255 255 / 75%);
-    --text-muted: var(--clr-gray-400);
+    --text-primary: #f7f8fa;
+    --text-secondary: rgb(255 255 255 / 78%);
+    --text-muted: rgb(255 255 255 / 64%);
     --text-main: var(--text-primary);
     --gradient-text: linear-gradient(135deg, #ffffff 0%, #60a5fa 55%, #a78bfa 100%);
-    --font-system: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
-    --font-mono: "SF Mono", monaco, "Cascadia Code", "Roboto Mono", monospace;
-    --font-inter: var(--font-system);
-    --font-primary: var(--font-system);
-    --space-0: 0;
+    --font-system: -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
+    --font-sans: "Manrope", var(--font-system);
+    --font-display: "Space Grotesk", "Manrope", var(--font-system);
+    --font-mono: "SFMono-Regular", consolas, "Liberation Mono", monospace;
+    --font-primary: var(--font-sans);
+
+    /* Semantic type scale: shared by pages and components. */
+    --type-xs: 0.75rem;
+    --type-sm: 0.875rem;
+    --type-body: 1rem;
+    --type-lg: 1.125rem;
+    --type-xl: 1.25rem;
+    --type-2xl: clamp(1.5rem, 2.2vw, 2rem);
+    --type-3xl: clamp(1.875rem, 3.2vw, 2.75rem);
+    --type-4xl: clamp(2.25rem, 4.8vw, 4rem);
+    --type-display: clamp(2.75rem, 6.5vw, 5.5rem);
+    --leading-tight: 1.12;
+    --leading-snug: 1.35;
+    --leading-body: 1.6;
+    --leading-relaxed: 1.72;
+    --tracking-tight: -0.025em;
+    --tracking-wide: 0.08em;
+    --measure-text: 68ch;
     --space-1: 0.25rem;
     --space-2: 0.5rem;
     --space-3: 0.75rem;
@@ -184,8 +203,8 @@
     --component-blur-radius: 16px;
     --component-pill-radius: 26px;
     --component-separator: rgb(255 255 255 / 12%);
-    --component-accent-blue: #007aff;
-    --component-accent-blue-hover: #0056cc;
+    --component-accent-blue: var(--primary-color);
+    --component-accent-blue-hover: var(--primary-dark);
     --component-label-primary: rgb(255 255 255 / 95%);
     --component-label-secondary: rgb(255 255 255 / 70%);
     --component-fill-primary: rgb(255 255 255 / 10%);
@@ -240,14 +259,14 @@
     --btn-padding-x: 1.5rem;
     --btn-min-width: 160px;
     --btn-min-width-mobile: 120px;
-    --btn-font-size: 1rem;
+    --btn-font-size: var(--type-body);
     --btn-focus-outline: 2px solid #fff;
     --btn-focus-offset: 3px;
     --btn-focus-radius: 6px;
-    --btn-shadow-primary: 0 0 12px rgb(9 139 255 / 30%);
-    --btn-shadow-primary-hover: 0 0 18px rgb(9 139 255 / 55%);
+    --btn-shadow-primary: 0 0 12px color-mix(in srgb, var(--primary-color) 30%, transparent);
+    --btn-shadow-primary-hover: 0 0 18px color-mix(in srgb, var(--primary-color) 55%, transparent);
     --btn-shine-bg: rgb(255 255 255 / 20%);
-    --btn-focus-bg: rgb(0 119 255 / 12%);
+    --btn-focus-bg: color-mix(in srgb, var(--primary-color) 12%, transparent);
     --menu-header-side-gap: 32px;
     --menu-header-height: 52px;
     --menu-header-padding-inline: 16px;
@@ -298,13 +317,13 @@
     --surface-toast-muted: #999;
     --state-error-text: #ef4444;
     --state-error-bg: rgb(0 0 0 / 80%);
-    --state-error-cta: #4444ff;
+    --state-error-cta: #8b8bff;
     --light-bg-primary: #1e3a8a;
     --light-bg-secondary: #1e40af;
     --light-text-primary: #f8fafc;
     --light-text-secondary: #e2e8f0;
     --light-text-muted: #cbd5e1;
-    --light-primary: #60a5fa;
+    --light-primary: #93c5fd;
     --light-border: #3b82f6;
     --size-r-0-1: 0.1rem;
     --size-r-0-18: 0.18rem;
@@ -318,37 +337,17 @@
     --size-r-0-55: 0.55rem;
     --size-r-0-6: 0.6rem;
     --size-r-0-62: 0.62rem;
-    --size-r-0-64: 0.64rem;
     --size-r-0-65: 0.65rem;
-    --size-r-0-66: 0.66rem;
-    --size-r-0-68: 0.68rem;
     --size-r-0-7: 0.7rem;
     --size-r-0-72: 0.72rem;
-    --size-r-0-73: 0.73rem;
-    --size-r-0-74: 0.74rem;
     --size-r-0-75: 0.75rem;
-    --size-r-0-76: 0.76rem;
     --size-r-0-78: 0.78rem;
     --size-r-0-8: 0.8rem;
-    --size-r-0-82: 0.82rem;
-    --size-r-0-83: 0.83rem;
-    --size-r-0-84: 0.84rem;
     --size-r-0-85: 0.85rem;
-    --size-r-0-86: 0.86rem;
-    --size-r-0-88: 0.88rem;
     --size-r-0-9: 0.9rem;
-    --size-r-0-92: 0.92rem;
-    --size-r-0-94: 0.94rem;
     --size-r-0-95: 0.95rem;
-    --size-r-0-96: 0.96rem;
-    --size-r-0-98: 0.98rem;
     --size-r-1: 1rem;
-    --size-r-1-04: 1.04rem;
-    --size-r-1-05: 1.05rem;
-    --size-r-1-08: 1.08rem;
     --size-r-1-1: 1.1rem;
-    --size-r-1-125: 1.125rem;
-    --size-r-1-14: 1.14rem;
     --size-r-1-15: 1.15rem;
     --size-r-1-2: 1.2rem;
     --size-r-1-25: 1.25rem;
@@ -364,8 +363,6 @@
     --size-50: 50px;
     --size-280: 280px;
     --size-480: 480px;
-    --size-960: 960px;
-    --size-r-0-875: 0.875rem;
     --size-r-1-75: 1.75rem;
     --z-behind-deep: -5;
     --legal-link-color: #0a84ff;
@@ -379,7 +376,6 @@
     --legal-print-border: #ccc;
     --three-earth-error-bg: #3c1414;
     --three-earth-error-width: var(--size-300);
-    --size-17: 17px;
     --size-26: 26px;
     --size-34: 34px;
     --size-42: 42px;
@@ -396,7 +392,6 @@
     --size-560: 560px;
     --size-700: 700px;
     --size-900: 900px;
-    --size-r-0-8125: 0.8125rem;
     --menu-rgb-10-16-28: rgb(10 16 28);
     --menu-rgb-12-18-30: rgb(12 18 30);
     --menu-rgb-15-25-42: rgb(15 25 42);
@@ -497,28 +492,31 @@
     --text-secondary: var(--light-text-secondary);
     --text-muted: var(--light-text-muted);
     --primary-color: var(--light-primary);
+    --primary-dark: #60a5fa;
+    --primary-light: #dbeafe;
+    --text-on-primary: #0f172a;
     --border-color: var(--light-border);
     --shadow-md: 0 4px 12px rgb(0 0 0 / 25%);
     --shadow-lg: 0 8px 24px rgb(0 0 0 / 30%);
   }
 
   :root[data-theme="dark"] {
-    --primary-color: #098bff;
-    --primary-dark: #0066cc;
-    --primary-light: #34aadc;
+    --primary-color: #1479cc;
+    --primary-dark: #075ea8;
+    --primary-light: #5fb0ff;
+    --text-on-primary: var(--clr-white);
     --accent: #00f3ff;
     --accent-secondary: #7000ff;
     --bg-primary: #030303;
     --bg-secondary: #030303;
-    --text-primary: #f5f5f5;
-    --text-secondary: rgb(255 255 255 / 75%);
-    --text-muted: #a3a3a3;
+    --text-primary: #f7f8fa;
+    --text-secondary: rgb(255 255 255 / 78%);
+    --text-muted: rgb(255 255 255 / 64%);
     --border-color: rgb(255 255 255 / 10%);
     --component-header-bg: rgb(28 28 30 / 40%);
     --component-separator: rgb(255 255 255 / 12%);
     --component-fill-primary: rgb(255 255 255 / 10%);
     --component-fill-secondary: rgb(255 255 255 / 15%);
-    --shadow-sm: 0 2px 4px rgb(0 0 0 / 10%);
     --shadow-md: 0 4px 8px rgb(0 0 0 / 15%);
     --shadow-lg: 0 8px 16px rgb(0 0 0 / 20%);
   }
@@ -595,7 +593,6 @@
       .menu-search__panel,
       .section-dots,
       .skill-radar,
-      .contact-panel,
       .contact-form-card,
       .projects-discovery-card,
       .hud-panel.visible,
@@ -619,7 +616,6 @@
       .site-menu.open,
       .menu-search__panel,
       .section-dots,
-      .contact-panel,
       .contact-form-card,
       .projects-discovery-card,
       .hud-panel.visible,
@@ -659,7 +655,6 @@
       .menu-search__panel,
       .section-dots,
       .skill-radar,
-      .contact-panel,
       .contact-form-card,
       .projects-discovery-card,
       .hud-panel.visible,

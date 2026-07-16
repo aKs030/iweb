@@ -36,6 +36,7 @@ Abdulkerim Sesli builds modern web experiences that combine visual quality, real
 
 - Frontend:
   - JavaScript ES2023+
+  - React
   - Web Components
   - CSS3 (custom properties, modern layout, responsive design)
   - Three.js / WebGL
@@ -47,9 +48,9 @@ Abdulkerim Sesli builds modern web experiences that combine visual quality, real
   - LLM-backed assistant/chat capabilities
   - Structured machine-readable index artifacts
 - Quality tooling:
-  - npm-based workflow
-  - GitHub-based preview deployment
-  - Static asset and content indexing checks
+  - ESLint and Prettier for local validation
+  - Wrangler for the local Pages runtime and configuration validation
+  - No-build source deployment
 
 ## 4) Services Offered
 
@@ -81,8 +82,7 @@ Abdulkerim Sesli builds modern web experiences that combine visual quality, real
 ## 7) AI Discovery and Machine-Readable Resources
 
 - AI profile page: https://www.abdulkerimsesli.de/ai-info/
-- Compact LLM index: https://www.abdulkerimsesli.de/llms.txt
-- Full LLM index: https://www.abdulkerimsesli.de/llms-full.txt
+- LLM context: https://www.abdulkerimsesli.de/llms.txt
 - Structured index JSON: https://www.abdulkerimsesli.de/ai-index.json
 - Person schema JSON-LD: https://www.abdulkerimsesli.de/person.jsonld
 - Blog index JSON: https://www.abdulkerimsesli.de/pages/blog/posts/index.json
@@ -159,4 +159,4 @@ High relevance query examples:
 
 ## 14) Last Updated
 
-2026-03-26
+2026-07-13

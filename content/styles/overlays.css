@@ -48,13 +48,6 @@
     --overlay-backdrop-layer: var(--overlay-layer-backdrop);
   }
 
-  .overlay-backdrop--immersive {
-    --overlay-backdrop-background: var(--overlay-backdrop-background-immersive);
-    --overlay-backdrop-layer: var(--overlay-layer-top-backdrop);
-    --overlay-backdrop-transition-duration: 0.4s;
-    --overlay-backdrop-transition-ease: var(--ease-standard);
-  }
-
   html[data-active-overlay="search"],
   html[data-active-overlay="robot-chat"],
   body[data-active-overlay="search"],

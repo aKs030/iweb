@@ -156,7 +156,7 @@ All API keys and secrets are stored as environment variables and never exposed t
 We use the following tools and practices to maintain security:
 
 - **npm audit** - Dependency vulnerability scanning
-- **GitHub Actions** - Preview deployment and workflow enforcement
+- **ESLint and Prettier** - Static checks and consistent source formatting
 - **Cloudflare Pages / Workers** - Edge runtime and platform-level controls
 - **Manual review** - Targeted verification for security-sensitive changes
 

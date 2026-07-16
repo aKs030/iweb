@@ -9,9 +9,9 @@ import { createRoot } from "react-dom/client";
 
 import { createLogger } from "#core/logger.js";
 import { AppLoadManager } from "#core/load-manager.js";
-import { fetchJSON } from "#core/fetch.js";
+import { fetchJSON } from "#core/utils/index.js";
 import { createUseTranslation } from "#core/utils/index.js";
-import { injectSchema } from "#core/schema.js";
+import { injectSchema } from "#core/seo/index.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
 import { i18n } from "#core/i18n.js";
 
@@ -204,11 +204,18 @@ const GalleryApp = () => {
         className: "gallery-title-overlay",
       },
       h(
+        "p",
+        {
+          className: "gallery-eyebrow text-eyebrow",
+        },
+        t("gallery.eyebrow") || "Photographic archive"
+      ),
+      h(
         "h1",
         {
           className: "gallery-title",
         },
-        t("gallery.title") || "Gallery"
+        t("gallery.title") || "Photographic Perspectives"
       ),
 
       h(
@@ -216,7 +223,7 @@ const GalleryApp = () => {
         {
           className: "gallery-subtitle",
         },
-        t("gallery.subtitle") || "Explore visual moments"
+        t("gallery.subtitle") || "Light, atmosphere, and moments in a spatial gallery."
       )
     ),
 

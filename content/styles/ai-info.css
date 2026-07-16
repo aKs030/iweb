@@ -6,7 +6,7 @@ body.ai-info-page {
   --text-soft: #3d4b61;
   --muted: #5b6f8e;
   --line: #d6dfed;
-  --brand: #0f6fff;
+  --brand: #1479cc;
   --shadow: 0 16px 40px rgb(15 28 56 / 8%);
   --shell-bg:
     radial-gradient(circle at 10% 10%, rgb(15 111 255 / 10%), transparent 42%),
@@ -16,8 +16,8 @@ body.ai-info-page {
   --shell-pad-right: 1rem;
   --shell-pad-bottom: 1.25rem;
   --shell-pad-left: 1rem;
-  font-family: "Manrope", "Segoe UI", sans-serif;
-  line-height: 1.65;
+  font-family: var(--font-sans);
+  line-height: var(--leading-body);
 }
 
 .ai-info-page *,
@@ -42,30 +42,32 @@ body.ai-info-page {
   border-radius: 999px;
   color: var(--brand);
   display: inline-flex;
-  font-size: 0.82rem;
+  font-size: var(--type-xs);
   font-weight: 700;
   gap: 0.5rem;
-  letter-spacing: 0;
+  letter-spacing: var(--tracking-wide);
   padding: 0.35rem 0.9rem;
+  text-transform: uppercase;
 }
 
 .ai-info-page h1,
 .ai-info-page h2,
 .ai-info-page h3 {
-  font-family: "Space Grotesk", "Segoe UI", sans-serif;
-  letter-spacing: 0;
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
   margin: 0;
 }
 
 .ai-info-page h1 {
-  font-size: clamp(2rem, 6vw, 3.3rem);
+  font-size: var(--type-4xl);
   margin-top: 1rem;
   max-width: 16ch;
 }
 
 .ai-info-page .hero p {
   color: var(--text-soft);
-  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  font-size: var(--type-lg);
   margin: 1rem 0 0;
   max-width: 70ch;
 }
@@ -82,7 +84,7 @@ body.ai-info-page {
   border: 1px solid transparent;
   border-radius: 999px;
   display: inline-flex;
-  font-size: 0.93rem;
+  font-size: var(--type-body);
   font-weight: 700;
   justify-content: center;
   padding: 0.65rem 1.15rem;
@@ -111,12 +113,13 @@ body.ai-info-page {
 }
 
 .ai-info-page h2 {
-  font-size: clamp(1.3rem, 3.6vw, 1.85rem);
+  font-size: var(--type-2xl);
   margin-bottom: 0.8rem;
 }
 
 .ai-info-page .lead {
   color: var(--text-soft);
+  max-width: 72ch;
   margin-top: 0;
 }
 
@@ -135,7 +138,7 @@ body.ai-info-page {
 }
 
 .ai-info-page .card h3 {
-  font-size: 1.05rem;
+  font-size: var(--type-lg);
   margin-bottom: 0.5rem;
 }
 
@@ -156,7 +159,7 @@ body.ai-info-page {
   border: 1px solid rgb(15 111 255 / 20%);
   border-radius: 999px;
   color: #1f3657;
-  font-size: 0.83rem;
+  font-size: var(--type-sm);
   font-weight: 600;
   padding: 0.3rem 0.7rem;
 }
@@ -199,7 +202,7 @@ body.ai-info-page {
 
 .ai-info-page .resource-desc {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: var(--type-sm);
 }
 
 .ai-info-page .faq-item + .faq-item {
@@ -209,7 +212,7 @@ body.ai-info-page {
 }
 
 .ai-info-page .faq-item h3 {
-  font-size: 1rem;
+  font-size: var(--type-lg);
 }
 
 .ai-info-page .faq-item p {
@@ -219,7 +222,7 @@ body.ai-info-page {
 
 .ai-info-page .footer-note {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: var(--type-sm);
   padding: 1.1rem 0 2.2rem;
   text-align: center;
 }

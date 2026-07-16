@@ -10,9 +10,11 @@
     <link rel="stylesheet" href="/content/styles/pages/videos.css" />
   </head>
   <body>
-    <a href="#main-content" class="skip-link sr-only">Zum Hauptinhalt springen</a>
+    <a href="#main-content" class="skip-link sr-only" data-i18n="menu.skip_main"
+      >Zum Inhalt springen</a
+    >
 
-    <main class="videos-main">
+    <main id="main-content" class="videos-main" tabindex="-1">
       <div class="container">
         <figure class="visually-hidden" aria-hidden="true" data-collision-ignore>
           <img
@@ -25,9 +27,10 @@
           />
         </figure>
         <div id="videos-status" class="visually-hidden" aria-live="polite"></div>
-        <h1>Videos — Abdulkerim Sesli</h1>
+        <p class="videos-eyebrow text-eyebrow">Videoarchiv</p>
+        <h1>Bewegte Perspektiven</h1>
         <p class="lead">
-          Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.
+          Projekte, kurze Einblicke und Making-ofs – direkt aus meinem digitalen Arbeitsfeld.
         </p>
         <div class="videos-header-actions u-stack">
           <div class="action-buttons u-row">
@@ -43,7 +46,7 @@
                   fill="#fff"
                 />
               </svg>
-              YouTube Abonnieren
+              YouTube abonnieren
             </a>
             <button type="button" class="btn-share" data-share="youtube-channel">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -52,7 +55,7 @@
                   fill="#fff"
                 />
               </svg>
-              Kanal Teilen
+              Kanal teilen
             </button>
           </div>
         </div>
@@ -67,11 +70,10 @@
         </section>
 
         <aside class="gmb-note">
-          <h3>Tipp zum Teilen</h3>
+          <h3>Weitergeben & entdecken</h3>
           <p>
-            Teile diese Videos gerne in deinen sozialen Netzwerken oder füge sie zu deinem Google My
-            Business hinzu, um mehr Menschen zu erreichen. Lokaler Video-Content wird von
-            Suchmaschinen bevorzugt.
+            Wenn ein Video hilfreich oder inspirierend ist, kannst du es direkt teilen. So finden
+            Projekte, Experimente und Einblicke leichter ihr passendes Publikum.
           </p>
         </aside>
       </div>

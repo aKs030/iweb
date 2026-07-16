@@ -1,5 +1,6 @@
 import { whenFooterReady } from "./state.js";
 import { cancelIdleTask, scheduleIdleTask } from "../../core/utils/index.js";
+import { i18n } from "../../core/i18n.js";
 import { createLogger } from "../../core/logger.js";
 import { resourceHints } from "../../core/seo/index.js";
 
@@ -41,6 +42,7 @@ const svgEl = (tagName, attributes = {}, ...children) =>
 
 const translatedSpan = (key, text, className = "") =>
   el("span", { className, "data-i18n": key }, text);
+const translatedAttribute = (key, fallback) => i18n.tOrFallback(key, fallback);
 
 const createFooterSymbol = (id, viewBox, ...children) =>
   svgEl("symbol", { id, viewBox }, ...children);
@@ -103,7 +105,8 @@ const createCookieBanner = () =>
       id: "cookie-banner",
       className: "cookie-inline hidden",
       role: "dialog",
-      "aria-label": "Cookie-Einstellungen",
+      "aria-label": translatedAttribute("footer.cookie_banner.dialog_aria", "Cookie-Einstellungen"),
+      "data-i18n-attrs": "aria-label:footer.cookie_banner.dialog_aria",
     },
     el("span", { className: "cookie-emoji", "aria-hidden": "true" }, "🍪"),
     el(
@@ -118,7 +121,11 @@ const createCookieBanner = () =>
         id: "accept-cookies",
         className: "btn-accept",
         type: "button",
-        "aria-label": "Cookies akzeptieren",
+        "aria-label": translatedAttribute(
+          "footer.cookie_banner.accept_aria",
+          "Cookies akzeptieren"
+        ),
+        "data-i18n-attrs": "aria-label:footer.cookie_banner.accept_aria",
       },
       translatedSpan("footer.cookie_banner.accept", "Akzeptieren", "full"),
       translatedSpan("footer.cookie_banner.accept_short", "✓", "short")
@@ -129,7 +136,8 @@ const createCookieBanner = () =>
         id: "reject-cookies",
         className: "btn-reject",
         type: "button",
-        "aria-label": "Cookies ablehnen",
+        "aria-label": translatedAttribute("footer.cookie_banner.decline_aria", "Cookies ablehnen"),
+        "data-i18n-attrs": "aria-label:footer.cookie_banner.decline_aria",
       },
       translatedSpan("footer.cookie_banner.decline", "Ablehnen", "full"),
       translatedSpan("footer.cookie_banner.decline_short", "✗", "short")
@@ -145,7 +153,12 @@ const createFooterShell = () => {
     " ",
     el(
       "a",
-      { href: "/", className: "brand-link", "aria-label": "Zur Startseite" },
+      {
+        href: "/",
+        className: "brand-link",
+        "aria-label": translatedAttribute("footer.home_aria", "Zur Startseite"),
+        "data-i18n-attrs": "aria-label:footer.home_aria",
+      },
       el("span", { className: "full-name" }, "Abdulkerim Sesli"),
       el("span", { className: "short-name" }, "aKs")
     )
@@ -153,7 +166,11 @@ const createFooterShell = () => {
 
   const nav = el(
     "nav",
-    { className: "footer-nav", "aria-label": "Footer Navigation" },
+    {
+      className: "footer-nav",
+      "aria-label": translatedAttribute("footer.navigation_aria", "Footer-Navigation"),
+      "data-i18n-attrs": "aria-label:footer.navigation_aria",
+    },
     el(
       "button",
       {
@@ -161,14 +178,23 @@ const createFooterShell = () => {
         className: "nav-btn",
         type: "button",
         "data-cookie-trigger": true,
-        "aria-label": "Cookie-Einstellungen öffnen",
+        "aria-label": translatedAttribute(
+          "footer.cookie_settings.open_aria",
+          "Cookie-Einstellungen öffnen"
+        ),
+        "data-i18n-attrs": "aria-label:footer.cookie_settings.open_aria",
       },
       createFooterNavIcon("footer-icon-cookie"),
       translatedSpan("footer.legal.cookies", "Cookies")
     ),
     el(
       "a",
-      { href: "/impressum/", className: "nav-btn", "aria-label": "Impressum" },
+      {
+        href: "/impressum/",
+        className: "nav-btn",
+        "aria-label": translatedAttribute("footer.legal.impressum", "Impressum"),
+        "data-i18n-attrs": "aria-label:footer.legal.impressum",
+      },
       createFooterNavIcon("footer-icon-doc-check"),
       translatedSpan("footer.legal.impressum", "Legal")
     ),
@@ -177,7 +203,8 @@ const createFooterShell = () => {
       {
         href: "/datenschutz/",
         className: "nav-btn",
-        "aria-label": "Datenschutz",
+        "aria-label": translatedAttribute("footer.legal.privacy", "Datenschutz"),
+        "data-i18n-attrs": "aria-label:footer.legal.privacy",
       },
       createFooterNavIcon("footer-icon-shield"),
       translatedSpan("footer.legal.privacy", "Privacy")

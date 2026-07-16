@@ -23,15 +23,15 @@ export function executeOpenImageUpload() {
   const input = getRobotImageUploadInput();
   if (input) {
     input.click();
-    return buildToolResult("openImageUpload", {}, true, "Bild-Upload geoeffnet.", {
-      summary: "Der Dateidialog fuer Bilder wurde geoeffnet.",
+    return buildToolResult("openImageUpload", {}, true, "Bild-Upload geöffnet.", {
+      summary: "Der Dateidialog für Bilder wurde geöffnet.",
     });
   }
 
   const avatar = getRobotAvatarButton();
   if (!avatar) {
     return buildToolResult("openImageUpload", {}, false, "Bild-Upload nicht gefunden.", {
-      summary: "Das Upload-Feld ist auf dieser Seite nicht verfuegbar.",
+      summary: "Das Upload-Feld ist auf dieser Seite nicht verfügbar.",
       accent: "error",
       cta: false,
     });
@@ -41,14 +41,14 @@ export function executeOpenImageUpload() {
   scheduleImageUploadTrigger();
 
   return buildToolResult("openImageUpload", {}, true, "Bild-Upload wird vorbereitet.", {
-    summary: "Der Chat wird geoeffnet, danach startet der Bilddialog automatisch.",
+    summary: "Der Chat wird geöffnet, danach startet der Bilddialog automatisch.",
   });
 }
 
 export function executeClearChatHistory() {
   fire(ROBOT_EVENTS.CHAT_HISTORY_CLEARED, {}, document);
-  return buildToolResult("clearChatHistory", {}, true, "Chatverlauf geloescht.", {
-    summary: "Die aktuelle Unterhaltung wurde zurueckgesetzt.",
+  return buildToolResult("clearChatHistory", {}, true, "Chatverlauf gelöscht.", {
+    summary: "Die aktuelle Unterhaltung wurde zurückgesetzt.",
     cta: false,
   });
 }
