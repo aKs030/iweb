@@ -35,6 +35,7 @@ npm run check:budgets        # JS- und CSS-Groessenbudgets pruefen
 npm run types                # Cloudflare-Binding-Typen aktualisieren
 npm run types:check          # Generierte Binding-Typen verifizieren
 npm run db:migrate:local     # D1-Migrationen lokal anwenden
+npm run db:migrate:remote    # D1-Migrationen in Produktion anwenden
 ```
 
 ## Projektstruktur
@@ -68,8 +69,8 @@ npm run db:migrate:local     # D1-Migrationen lokal anwenden
 - `wrangler.jsonc` enthält das gemeinsame Setup für lokale Entwicklung und Produktions-Bindings
 - Secrets gehören nicht ins Repo; lokal werden nur `.dev.vars`, `.env.local` oder `.env` verwendet
 - Vor einem Deployment werden D1-Migrationen mit `npm run db:migrate:remote` angewendet
-- Kommentar-Turnstile wird mit `TURNSTILE_SITE_KEY` und dem Secret
-  `TURNSTILE_SECRET_KEY` aktiviert
+- Kommentar-Turnstile wird mit `TURNSTILE_SITE_KEY`, `TURNSTILE_ALLOWED_HOSTNAMES` und dem Secret
+  `TURNSTILE_SECRET_KEY` aktiviert; für lokale Test-Keys muss `localhost` als Hostname erlaubt sein
 
 ## Dokumentation
 

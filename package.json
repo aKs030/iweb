@@ -16,10 +16,10 @@
     "@types/node": "^26.1.1",
     "eslint": "^10.7.0",
     "globals": "^17.7.0",
-    "lint-staged": "^17.0.8",
-    "prettier": "^3.9.5",
+    "lint-staged": "^17.2.0",
+    "prettier": "^3.9.6",
     "simple-git-hooks": "^2.13.1",
-    "wrangler": "^4.110.0"
+    "wrangler": "^4.114.0"
   },
   "scripts": {
     "dev": "wrangler pages dev . --port 8787 --show-interactive-dev-session=false",

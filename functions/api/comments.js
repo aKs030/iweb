@@ -1,4 +1,5 @@
 import { createLogger } from "../../content/core/logger.js";
+import { TURNSTILE_COMMENT_ACTION } from "../../content/core/turnstile-config.js";
 
 const log = createLogger("comments");
 /**
@@ -17,6 +18,13 @@ const commentRateLimiter = createWindowRateLimiter({
   keyNamespace: "comment_write:v1",
   maxEntries: 2000,
 });
+
+function getTurnstileHostnames(env) {
+  return String(env?.TURNSTILE_ALLOWED_HOSTNAMES || "")
+    .split(",")
+    .map(hostname => hostname.trim())
+    .filter(Boolean);
+}
 
 function getBlockedTerms(env) {
   return String(env?.COMMENT_BLOCKLIST || "")
@@ -137,8 +145,14 @@ export async function onRequestPost(context) {
       token: turnstileToken,
       secret: env.TURNSTILE_SECRET_KEY,
       remoteIp: clientIp,
+      expectedAction: TURNSTILE_COMMENT_ACTION,
+      expectedHostnames: getTurnstileHostnames(env),
     });
     if (!turnstile.success) {
+      log.warn("Turnstile validation failed", {
+        postId,
+        errorCodes: turnstile.errorCodes,
+      });
       return errorJsonResponse("Bot-Prüfung fehlgeschlagen. Bitte versuche es erneut.", {
         status: 400,
       });
