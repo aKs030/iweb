@@ -1,6 +1,4 @@
-import { scheduleIdleTask } from "../../../core/utils/index.js";
-import { applyCspNonce } from "../../../core/utils/index.js";
-import { upsertHeadLink } from "../../../core/utils/index.js";
+import { applyCspNonce, scheduleIdleTask, upsertHeadLink } from "../../../core/utils/index.js";
 import { createLogger } from "../../../core/logger.js";
 import { resourceHints } from "../../../core/seo/index.js";
 import { EARTH_PRIMARY_TEXTURE_URL } from "#components/particles/index.js";

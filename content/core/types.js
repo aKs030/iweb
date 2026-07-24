@@ -91,19 +91,19 @@
  */
 
 /**
- * @typedef {'none'|'menu'|'search'|'robot-chat'} OverlayMode
+ * @typedef {'none'|'menu'|'search'|'robot-chat'|'footer'} OverlayMode
  */
 
 /**
- * @typedef {Object} OverlayCloseOptions
+ * @typedef {Object} OverlayActionOptions
  * @property {OverlayMode} [mode] - Overlay mode requesting the close action
- * @property {string} [reason] - Close trigger such as `escape` or `programmatic`
+ * @property {string} [reason] - Trigger such as `escape`, `toggle`, or `programmatic`
  * @property {boolean} [restoreFocus] - Whether focus should be restored after close
  */
 
 /**
- * @callback OverlayCloseHandler
- * @param {OverlayCloseOptions} [options]
+ * @callback OverlayActionHandler
+ * @param {OverlayActionOptions} [options]
  * @returns {void|Promise<void>}
  */
 
@@ -127,7 +127,9 @@
 
 /**
  * @typedef {Object} OverlayController
- * @property {OverlayCloseHandler} [close] - Close handler for the active overlay
+ * @property {OverlayActionHandler} [prepareOpen] - Loads resources required before activation
+ * @property {OverlayActionHandler} [open] - Applies the component's open presentation
+ * @property {OverlayActionHandler} [close] - Applies the component's closed presentation
  * @property {OverlayElementListResolver} [getInteractiveRoots] - Elements that remain interactive while the overlay is active
  * @property {OverlayElementListResolver} [getFocusTrapRoots] - Elements that participate in focus trapping
  * @property {OverlayElementResolver} [getPrimaryFocusTarget] - Preferred initial focus target

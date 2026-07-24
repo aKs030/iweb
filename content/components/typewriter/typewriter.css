@@ -64,9 +64,10 @@
   min-height: var(--tw-min-height);
 }
 
-body.footer-expanded .typewriter-title--fixed {
-  opacity: 0;
-  transform: translateY(var(--size-8));
+body[data-active-overlay="footer"] .typewriter-title--fixed {
+  z-index: calc(var(--z-fixed) - 2);
+  opacity: 0.92;
+  transform: translateY(0);
   pointer-events: none;
 }
 

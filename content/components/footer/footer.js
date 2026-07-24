@@ -9,11 +9,18 @@
 import { createLogger } from "../../core/logger.js";
 import { a11y } from "../../core/accessibility-manager.js";
 import { i18n } from "../../core/i18n.js";
+import {
+  closeOverlay,
+  initOverlayManager,
+  openOverlay,
+  OVERLAY_MODES,
+  registerOverlayController,
+  toggleOverlay,
+} from "../../core/overlay-manager.js";
 import { CookieManager } from "./modules/cookie-manager.js";
 import { AnalyticsManager } from "./footer-analytics.js";
-import { resetFooterState, setFooterExpanded, setFooterLoaded } from "./state.js";
-import { TimerManager } from "../../core/utils/index.js";
-import { fetchText } from "../../core/utils/index.js";
+import { resetFooterState, setFooterLoaded } from "./state.js";
+import { fetchText, TimerManager } from "../../core/utils/index.js";
 
 const log = createLogger("SiteFooter");
 const FOOTER_TEMPLATE_URL = new URL("./footer", import.meta.url);
@@ -27,7 +34,6 @@ let footerTemplatePromise = null;
  * @typedef {Object} FooterElements
  * @property {HTMLElement|null} footer
  * @property {HTMLElement|null} footerMin
- * @property {HTMLElement|null} footerMinMain
  * @property {HTMLElement|null} footerMax
  * @property {HTMLElement|null} cookieBanner
  * @property {HTMLElement|null} cookieSettings
@@ -74,20 +80,13 @@ export class SiteFooter extends HTMLElement {
   #analytics = new AnalyticsManager();
   #timers = new TimerManager("SiteFooter");
   #listeners = new Map();
-
-  #state = {
-    expanded: false,
-    initialized: false,
-    touchStartY: 0,
-    touchStartTime: 0,
-    touchStartedOnInteractive: false,
-  };
+  #unsubscribeLanguage = null;
+  #overlayCleanup = null;
 
   /** @type {FooterElements} */
   #elements = {
     footer: null,
     footerMin: null,
-    footerMinMain: null,
     footerMax: null,
     cookieBanner: null,
     cookieSettings: null,
@@ -117,15 +116,15 @@ export class SiteFooter extends HTMLElement {
 
       this.#init();
 
+      initOverlayManager();
+      this.#registerOverlayController();
+
       this.#setupLanguageUpdates();
 
       this.#setupGlobalEventListeners();
 
-      this.#state.initialized = true;
-
       log.info("Footer initialized");
       setFooterLoaded(true);
-      setFooterExpanded(this.#state.expanded);
     } catch (error) {
       log.error("Footer load failed", error);
     }
@@ -139,44 +138,22 @@ export class SiteFooter extends HTMLElement {
    * Complete cleanup of all event listeners and resources
    */
   #cleanup() {
-    const unsubscribe = this.#listeners.get("i18n:unsubscribe");
-
-    // Remove all stored event listeners
-
-    this.#listeners.forEach((listener, key) => {
-      if (key === "i18n:unsubscribe") return;
-
-      const [element, event] = key.split(":");
-
-      const el =
-        element === "document"
-          ? document
-          : element === "window"
-            ? window
-            : element === "this"
-              ? this
-              : this.#elements[/** @type {keyof FooterElements} */ (element)];
-
-      if (el) {
-        el.removeEventListener(event, listener);
-      }
+    this.#listeners.forEach(({ element, event, handler, options }) => {
+      element.removeEventListener(event, handler, options);
     });
-
     this.#listeners.clear();
-
-    // Clear all timers
-
     this.#timers.clearAll();
 
-    // Unsubscribe from i18n
+    void closeOverlay(OVERLAY_MODES.FOOTER, {
+      reason: "component-disconnect",
+      restoreFocus: false,
+    });
+    this.#overlayCleanup?.();
+    this.#overlayCleanup = null;
 
-    if (typeof unsubscribe === "function") {
-      unsubscribe();
-    }
+    this.#unsubscribeLanguage?.();
+    this.#unsubscribeLanguage = null;
 
-    // Reset state
-
-    this.#state.initialized = false;
     resetFooterState();
 
     log.info("Footer cleanup complete");
@@ -204,7 +181,7 @@ export class SiteFooter extends HTMLElement {
 
     element.addEventListener(event, handler, options);
 
-    this.#listeners.set(key, handler);
+    this.#listeners.set(key, { element, event, handler, options });
   }
 
   #init() {
@@ -224,7 +201,6 @@ export class SiteFooter extends HTMLElement {
       // the `<footer>` element inside the custom element;
       footer: this.querySelector("footer.site-footer"),
       footerMin: this.querySelector(".footer-min"),
-      footerMinMain: this.querySelector(".footer-min-main"),
       footerMax: this.querySelector(".footer-max"),
       cookieBanner: this.querySelector("#cookie-banner"),
       cookieSettings: this.querySelector("#cookie-settings"),
@@ -348,14 +324,10 @@ export class SiteFooter extends HTMLElement {
   }
 
   #setupGlobalEventListeners() {
-    const isInteractiveTarget = target =>
-      target instanceof Element &&
-      Boolean(target.closest("a, button, input, label, .cookie-inline"));
-
     /** @type {EventListener} */
 
     const handleOutsideClick = e => {
-      if (!this.#state.expanded) return;
+      if (!this.#elements.footer?.classList.contains("expanded")) return;
 
       if (!(e.target instanceof Element)) return;
       const target = e.target;
@@ -364,96 +336,48 @@ export class SiteFooter extends HTMLElement {
       }
 
       if (!target.closest("site-footer")) {
-        this.#toggleFooter(false);
+        e.preventDefault();
+        e.stopPropagation();
+        void closeOverlay(OVERLAY_MODES.FOOTER, {
+          reason: "outside-click",
+          restoreFocus: false,
+        });
       }
     };
 
-    /** @type {EventListener} */
+    this.#addListener("document:click", document, "click", handleOutsideClick);
+  }
 
-    const handleKeyDown = e => {
-      const keyEvent = /** @type {KeyboardEvent} */ (e);
+  #registerOverlayController() {
+    this.#overlayCleanup?.();
+    this.#overlayCleanup = registerOverlayController(OVERLAY_MODES.FOOTER, {
+      open: () => this.#applyExpandedState(true),
+      close: () => this.#applyExpandedState(false),
+      getInteractiveRoots: () => [this],
+      getFocusTrapRoots: () =>
+        this.#elements.footerMax instanceof HTMLElement ? [this.#elements.footerMax] : [],
+      getPrimaryFocusTarget: () => {
+        const { cookieSettings, footerContent } = this.#elements;
+        const visibleContent = cookieSettings?.classList.contains("hidden")
+          ? footerContent
+          : cookieSettings;
 
-      if (!this.#state.expanded || keyEvent.key !== "Escape") return;
-
-      keyEvent.preventDefault();
-
-      this.#toggleFooter(false);
-
-      const trigger = /** @type {HTMLElement|null} */ (
-        document.querySelector("[data-footer-trigger]")
-      );
-
-      trigger?.focus();
-    };
-
-    /** @type {EventListener} */
-    const handleTouchStart = e => {
-      const touchEvent = /** @type {TouchEvent} */ (e);
-      this.#state.touchStartY = touchEvent.touches[0].clientY;
-      this.#state.touchStartTime = Date.now();
-      this.#state.touchStartedOnInteractive = isInteractiveTarget(touchEvent.target);
-    };
-
-    /** @type {EventListener} */
-    const handleTouchEnd = e => {
-      const touchEvent = /** @type {TouchEvent} */ (e);
-      if (this.#state.touchStartedOnInteractive || isInteractiveTarget(touchEvent.target)) {
-        this.#state.touchStartedOnInteractive = false;
-        return;
-      }
-
-      const touchEndY = touchEvent.changedTouches[0].clientY;
-      const touchDuration = Date.now() - this.#state.touchStartTime;
-      const touchDistance = Math.abs(touchEndY - this.#state.touchStartY);
-
-      if (touchDuration < 300 && (touchDistance < 10 || this.#state.touchStartY - touchEndY > 30)) {
-        touchEvent.preventDefault();
-        this.#toggleFooter(true);
-      }
-
-      this.#state.touchStartedOnInteractive = false;
-    };
-
-    this.#addListener("document:click", document, "click", handleOutsideClick, {
-      passive: false,
+        return (
+          visibleContent?.querySelector('button, a, input, [tabindex]:not([tabindex="-1"])') || null
+        );
+      },
     });
-
-    this.#addListener("document:keydown", document, "keydown", handleKeyDown, {
-      passive: false,
-    });
-
-    if (this.#elements.footerMin) {
-      this.#addListener(
-        "footerMin:touchstart",
-        this.#elements.footerMin,
-        "touchstart",
-        handleTouchStart,
-        { passive: true }
-      );
-
-      this.#addListener(
-        "footerMin:touchend",
-        this.#elements.footerMin,
-        "touchend",
-        handleTouchEnd,
-        { passive: false }
-      );
-    }
   }
 
   /**
    * @param {boolean} [forceState]
    */
-  #toggleFooter(forceState) {
+  #applyExpandedState(newState) {
     const { footer, footerMin, footerMax } = this.#elements;
 
     if (!footer) return;
 
-    const newState = forceState !== undefined ? forceState : !this.#state.expanded;
-
-    if (newState === this.#state.expanded) return;
-
-    this.#state.expanded = newState;
+    if (newState === footer.classList.contains("expanded")) return;
 
     if (!newState) {
       this.#restoreExpandedContent();
@@ -462,7 +386,6 @@ export class SiteFooter extends HTMLElement {
     const footerTriggers = document.querySelectorAll("[data-footer-trigger]");
 
     footer.classList.toggle("expanded", newState);
-    document.body.classList.toggle("footer-expanded", newState);
 
     footerMin?.classList.toggle("hidden", newState);
     footerMax?.classList.toggle("hidden", !newState);
@@ -470,39 +393,10 @@ export class SiteFooter extends HTMLElement {
     const ariaState = String(newState);
     footerTriggers.forEach(t => t.setAttribute("aria-expanded", ariaState));
 
-    const actionKey = newState ? "expanded" : "minimized";
+    const actionKey = newState ? "expanded" : "minimize";
     a11y?.announce(i18n.t(`footer.actions.${actionKey}`), {
       priority: "polite",
     });
-    setFooterExpanded(newState);
-
-    if (newState) {
-      const firstFocusable = /** @type {HTMLElement|null} */ (
-        footerMax?.querySelector('button, a, input, [tabindex]:not([tabindex="-1"])')
-      );
-
-      if (firstFocusable) {
-        this.#timers.setTimeout(() => firstFocusable.focus(), 100);
-      }
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // Public API
-  // -------------------------------------------------------------------------
-
-  /**
-   * Programmatically open the footer.
-   */
-  open() {
-    this.#toggleFooter(true);
-  }
-
-  /**
-   * Programmatically close the footer.
-   */
-  close() {
-    this.#toggleFooter(false);
   }
 
   #openSettings() {
@@ -520,7 +414,9 @@ export class SiteFooter extends HTMLElement {
       /** @type {HTMLInputElement} */ (adsToggle).checked = ads;
     }
 
-    if (!this.#state.expanded) this.#toggleFooter(true);
+    if (!this.#elements.footer?.classList.contains("expanded")) {
+      void openOverlay(OVERLAY_MODES.FOOTER, { reason: "cookie-settings" });
+    }
 
     cookieSettings.classList.remove("hidden");
 
@@ -542,7 +438,13 @@ export class SiteFooter extends HTMLElement {
   }
 
   #bindEvents() {
-    const { closeBtn, footerMin } = this.#elements;
+    const { closeBtn, footerMin, footerMax } = this.#elements;
+    const isInteractiveTarget = target =>
+      Boolean(
+        target.closest(
+          "a, button, input, label, select, textarea, [contenteditable], .cookie-settings"
+        )
+      );
 
     const createTriggerHandler = (selector, action) => e => {
       if (!(e.target instanceof Element)) return;
@@ -559,7 +461,9 @@ export class SiteFooter extends HTMLElement {
       "document:footerTrigger",
       document,
       "click",
-      createTriggerHandler("[data-footer-trigger]", () => this.#toggleFooter(true))
+      createTriggerHandler("[data-footer-trigger]", () => {
+        void openOverlay(OVERLAY_MODES.FOOTER, { reason: "footer-trigger" });
+      })
     );
 
     this.#addListener(
@@ -574,14 +478,27 @@ export class SiteFooter extends HTMLElement {
     }
 
     if (footerMin) {
-      const isInteractive = (/** @type {Element} */ target) =>
-        target.closest("a, button, input, label, .cookie-inline");
-
       this.#addListener("footerMin:click", footerMin, "click", e => {
         if (!(e.target instanceof Element)) return;
-        if (isInteractive(e.target)) return;
+        if (isInteractiveTarget(e.target)) return;
 
-        this.#toggleFooter();
+        e.preventDefault();
+        e.stopPropagation();
+        void toggleOverlay(OVERLAY_MODES.FOOTER, { reason: "footer-surface" });
+      });
+    }
+
+    if (footerMax) {
+      this.#addListener("footerMax:click", footerMax, "click", e => {
+        if (!(e.target instanceof Element)) return;
+        if (isInteractiveTarget(e.target)) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        void toggleOverlay(OVERLAY_MODES.FOOTER, {
+          reason: "footer-surface",
+          restoreFocus: false,
+        });
       });
     }
 
@@ -679,29 +596,13 @@ export class SiteFooter extends HTMLElement {
   }
 
   #setupLanguageUpdates() {
-    const unsubscribe = i18n.subscribe(() => {
+    this.#unsubscribeLanguage?.();
+    this.#unsubscribeLanguage = i18n.subscribe(() => {
       i18n.translateElement(this);
     });
-
-    this.#listeners.set("i18n:unsubscribe", unsubscribe);
   }
 }
 
 // Register Custom Element
 
 customElements.define("site-footer", SiteFooter);
-
-// Convenience functions for other modules that don't want to query the
-// DOM or depend directly on the element class.
-export function openFooter() {
-  const el = /** @type {any} */ (document.querySelector("site-footer"));
-  if (el && typeof el.open === "function") {
-    el.open();
-  }
-}
-export function closeFooter() {
-  const el = /** @type {any} */ (document.querySelector("site-footer"));
-  if (el && typeof el.close === "function") {
-    el.close();
-  }
-}

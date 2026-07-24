@@ -9,14 +9,13 @@ import { createRoot } from "react-dom/client";
 
 import { createLogger } from "#core/logger.js";
 import { AppLoadManager } from "#core/load-manager.js";
-import { fetchJSON } from "#core/utils/index.js";
-import { createUseTranslation } from "#core/utils/index.js";
+import { createUseTranslation, fetchJSON } from "#core/utils/index.js";
 import { injectSchema } from "#core/seo/index.js";
 import { createErrorBoundary } from "#components/error-boundary/index.js";
 import { i18n } from "#core/i18n.js";
 
 import { ThreeGalleryScene } from "./components/ThreeGalleryScene.js";
-// Removed static GALLERY_ITEMS import to use dynamic loading
+// Static items remain available as the API/offline fallback.
 import { GALLERY_ITEMS as STATIC_GALLERY_ITEMS } from "./config.js";
 
 const log = createLogger("gallery-app");

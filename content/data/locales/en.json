@@ -106,7 +106,6 @@
       "closed": "Cookie settings closed"
     },
     "actions": {
-      "expand": "Expand footer",
       "minimize": "Footer minimized",
       "expanded": "Footer expanded"
     }

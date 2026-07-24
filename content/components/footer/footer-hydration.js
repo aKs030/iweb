@@ -1,13 +1,16 @@
-import { whenFooterReady } from "./state.js";
+import { footerSignals, whenFooterReady } from "./state.js";
 import { cancelIdleTask, scheduleIdleTask } from "../../core/utils/index.js";
 import { i18n } from "../../core/i18n.js";
 import { createLogger } from "../../core/logger.js";
 import { resourceHints } from "../../core/seo/index.js";
+import { openOverlay, OVERLAY_MODES } from "../../core/overlay-manager.js";
 
 const log = createLogger("head-footer");
 
 const FOOTER_MODULE_HREF = "/content/components/footer/footer.js";
 const FOOTER_TRIGGER_SELECTOR = '[data-footer-trigger], a[href="#footer"]';
+const FOOTER_SURFACE_SELECTOR = "site-footer .footer-min";
+const FOOTER_INTERACTIVE_SELECTOR = "a, button, input, label, select, textarea, [contenteditable]";
 const FOOTER_COOKIE_TRIGGER_SELECTOR = "[data-cookie-trigger]";
 const FOOTER_CONSENT_ACTION_SELECTOR = "#accept-cookies, #reject-cookies";
 const FOOTER_IDLE_HYDRATION_TIMEOUT_MS = 4000;
@@ -212,13 +215,17 @@ const createFooterShell = () => {
   );
 
   return el(
-    "footer",
-    { className: "site-footer", role: "contentinfo" },
-    createFooterIconSprite(),
+    "site-footer",
+    { "data-shell": "true" },
     el(
-      "div",
-      { className: "footer-min" },
-      el("div", { className: "footer-min-main" }, copyright, createCookieBanner(), nav)
+      "footer",
+      { className: "site-footer", role: "contentinfo" },
+      createFooterIconSprite(),
+      el(
+        "div",
+        { className: "footer-min" },
+        el("div", { className: "footer-min-main" }, copyright, createCookieBanner(), nav)
+      )
     )
   );
 };
@@ -228,7 +235,12 @@ let footerHydrationAttached = false;
 
 const getFooterTrigger = target => {
   if (!(target instanceof Element)) return null;
-  return target.closest(FOOTER_TRIGGER_SELECTOR);
+  const explicitTrigger = target.closest(FOOTER_TRIGGER_SELECTOR);
+  if (explicitTrigger) return explicitTrigger;
+
+  const footerSurface = target.closest(FOOTER_SURFACE_SELECTOR);
+  if (!footerSurface || target.closest(FOOTER_INTERACTIVE_SELECTOR)) return null;
+  return footerSurface;
 };
 
 const getCookieTrigger = target => {
@@ -258,29 +270,6 @@ const loadFooterModule = async () => {
 
   return footerModulePromise;
 };
-
-const isFooterReady = () => {
-  const footer = document.querySelector("site-footer");
-  return Boolean(
-    footer &&
-    typeof (/** @type {any} */ (footer).open) === "function" &&
-    footer.querySelector("footer.site-footer")
-  );
-};
-
-const waitForFooterReady = () =>
-  new Promise(resolve => {
-    if (isFooterReady()) {
-      resolve(document.querySelector("site-footer"));
-      return;
-    }
-
-    whenFooterReady({ timeout: 1500 })
-      .catch(() => null)
-      .finally(() => {
-        resolve(document.querySelector("site-footer"));
-      });
-  });
 
 const setupFooterModuleHydration = siteFooter => {
   if (footerHydrationAttached || !siteFooter || customElements.get("site-footer")) {
@@ -326,7 +315,7 @@ const setupFooterModuleHydration = siteFooter => {
   };
 
   const handleTriggerClick = async event => {
-    if (customElements.get("site-footer") && isFooterReady()) return;
+    if (customElements.get("site-footer") && footerSignals.loaded.value) return;
     const footerTrigger = getFooterTrigger(event.target);
     const cookieTrigger = getCookieTrigger(event.target);
     const consentActionTrigger = getConsentActionTrigger(event.target);
@@ -334,8 +323,9 @@ const setupFooterModuleHydration = siteFooter => {
 
     event.preventDefault();
 
-    const footerModule = await loadFooterModule();
-    const footer = await waitForFooterReady();
+    await loadFooterModule();
+    await whenFooterReady({ timeout: 1500 }).catch(() => null);
+    const footer = document.querySelector("site-footer");
 
     try {
       if (consentActionTrigger instanceof HTMLElement && consentActionTrigger.id) {
@@ -357,8 +347,11 @@ const setupFooterModuleHydration = siteFooter => {
         }
       }
 
-      await footerModule?.openFooter?.();
-      /** @type {any} */ (footer)?.open?.();
+      if (footerTrigger) {
+        await openOverlay(OVERLAY_MODES.FOOTER, {
+          reason: "lazy-footer-trigger",
+        });
+      }
     } catch (error) {
       log.warn("failed to open lazily hydrated footer", error);
     }

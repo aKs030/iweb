@@ -11,7 +11,11 @@
     contain: strict;
     isolation: isolate;
     cursor: grab;
-    transition: opacity var(--transition-slow);
+    visibility: visible;
+    will-change: opacity;
+    transition:
+      opacity 560ms cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s linear 0s;
   }
 
   .three-earth-container canvas {
@@ -90,10 +94,16 @@
   }
 
   .three-earth-container[data-section="site-footer"] {
-    opacity: 0;
-    visibility: hidden;
+    opacity: 0.28;
+    visibility: visible;
     pointer-events: none;
-    transition-duration: 0ms;
+  }
+
+  body[data-active-overlay="footer"] .three-earth-container {
+    opacity: 0.72;
+    visibility: visible;
+    pointer-events: none;
+    transition-delay: 0s;
   }
 
   /* Reduced Motion */

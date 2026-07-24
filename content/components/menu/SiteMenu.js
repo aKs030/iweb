@@ -15,13 +15,17 @@ import {
 } from "./modules/menu-engine.js";
 import { MenuSearch } from "./modules/search-engine.js";
 import {
+  closeOverlay,
   OVERLAY_MODES,
   initOverlayManager,
   registerOverlayController,
 } from "../../core/overlay-manager.js";
-import { applyCspNonce } from "../../core/utils/index.js";
-import { loadHeadStylesheet, upsertHeadLink } from "../../core/utils/index.js";
-import { fetchText } from "../../core/utils/index.js";
+import {
+  applyCspNonce,
+  fetchText,
+  loadHeadStylesheet,
+  upsertHeadLink,
+} from "../../core/utils/index.js";
 import { createLogger } from "../../core/logger.js";
 
 /**
@@ -109,6 +113,14 @@ class SiteMenu extends HTMLElement {
   }
 
   disconnectedCallback() {
+    void closeOverlay(OVERLAY_MODES.MENU, {
+      reason: "component-disconnect",
+      restoreFocus: false,
+    });
+    void closeOverlay(OVERLAY_MODES.SEARCH, {
+      reason: "component-disconnect",
+      restoreFocus: false,
+    });
     this._overlayControllerCleanupFns.forEach(cleanup => cleanup());
     this._overlayControllerCleanupFns = [];
     this.events?.destroy();
@@ -118,14 +130,6 @@ class SiteMenu extends HTMLElement {
     this.performance?.destroy();
     this.state.reset();
     this.initialized = false;
-  }
-
-  open() {
-    this.events?.setMenuOpenWithTransition(true);
-  }
-
-  close(options = {}) {
-    this.events?.closeMenu(options);
   }
 
   getOverlayRoot() {
@@ -139,8 +143,9 @@ class SiteMenu extends HTMLElement {
 
     /** @type {import('../../core/types.js').OverlayController} */
     const menuOverlayController = {
+      open: () => this.events?.applyMenuOpenState(true),
       close: ({ restoreFocus = true } = {}) => {
-        this.events?.closeMenu({ restoreFocus });
+        return this.events?.applyMenuOpenState(false, { restoreFocus });
       },
       getInteractiveRoots: () => [this.getOverlayRoot()],
       getFocusTrapRoots: () => this.events?.getFocusTrapRoots() || [],
@@ -156,9 +161,9 @@ class SiteMenu extends HTMLElement {
 
     /** @type {import('../../core/types.js').OverlayController} */
     const searchOverlayController = {
-      close: ({ restoreFocus = true } = {}) => {
-        this.search?.closeSearchMode({ restoreFocus });
-      },
+      prepareOpen: () => this.search?.prepareOpenSearchMode(),
+      open: () => {},
+      close: () => {},
       getInteractiveRoots: () => [this.getOverlayRoot()],
       getFocusTrapRoots: () => this.search?.getFocusTrapRoots() || [],
       getPrimaryFocusTarget: () => {

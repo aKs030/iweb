@@ -1,19 +1,17 @@
 import { fire } from "../../../../core/events.js";
+import { activeOverlay } from "../../../../core/state/overlay-state.js";
 import {
+  closeOverlay,
+  openOverlay,
   OVERLAY_MODES,
-  activeOverlay,
-  clearActiveOverlayMode,
-  menuOpen,
-  setActiveOverlayMode,
-} from "../../../../core/state/ui-store.js";
+  toggleOverlay,
+} from "../../../../core/overlay-manager.js";
 import {
-  VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
-  VIEW_TRANSITION_TIMINGS_MS,
   withViewTransition,
 } from "../../../../core/view-transitions/index.js";
 import { buildToolResult, createDetail } from "../tool-result.js";
-import { getMenuToggleButton, getSiteMenuHost, queryFirst } from "../tool-dom-utils.js";
+import { queryFirst } from "../tool-dom-utils.js";
 
 const PAGE_ROUTES = new Map([
   ["home", "/"],
@@ -36,85 +34,6 @@ const SECTION_SELECTORS = new Map([
   ["skills", '.skills-section, [data-section="skills"], .skill-grid'],
   ["top", "html, body"],
 ]);
-
-function isMenuOpenInDom() {
-  const siteMenu = getSiteMenuHost();
-  if (typeof siteMenu?.state?.isOpen === "boolean") {
-    return siteMenu.state.isOpen;
-  }
-
-  const toggle = getMenuToggleButton();
-  const menu = queryFirst(".site-menu");
-
-  if (menu?.classList.contains("open")) return true;
-  if (toggle?.classList.contains("active")) return true;
-
-  const expanded = toggle?.getAttribute("aria-expanded");
-  if (expanded === "true") return true;
-  if (expanded === "false") return false;
-
-  return menuOpen.value;
-}
-
-function setMenuOpenViaComponent(isOpen) {
-  const siteMenu = getSiteMenuHost();
-  const menuEvents = siteMenu?.events;
-
-  if (!menuEvents) return false;
-
-  if (!isOpen && typeof menuEvents.closeMenu === "function") {
-    menuEvents.closeMenu();
-    return true;
-  }
-
-  if (typeof menuEvents.setMenuOpenWithTransition === "function") {
-    menuEvents.setMenuOpenWithTransition(isOpen);
-    return true;
-  }
-
-  return false;
-}
-
-function openSearchViaComponent() {
-  const siteMenu = getSiteMenuHost();
-  if (typeof siteMenu?.search?.openSearchMode === "function") {
-    siteMenu.search.openSearchMode();
-    return true;
-  }
-  return false;
-}
-
-function closeSearchViaComponent() {
-  const siteMenu = getSiteMenuHost();
-  if (typeof siteMenu?.search?.closeSearchModeSilently === "function") {
-    siteMenu.search.closeSearchModeSilently();
-    return true;
-  }
-  if (typeof siteMenu?.search?.closeSearchMode === "function") {
-    siteMenu.search.closeSearchMode({ restoreFocus: false });
-    return true;
-  }
-  return false;
-}
-
-function syncMenuStateFallback(isOpen) {
-  void withViewTransition(
-    () => {
-      if (isOpen) {
-        setActiveOverlayMode(OVERLAY_MODES.MENU);
-      } else {
-        clearActiveOverlayMode(OVERLAY_MODES.MENU);
-      }
-      fire("menu:toggle", { open: isOpen });
-    },
-    {
-      types: [isOpen ? VIEW_TRANSITION_TYPES.MENU_OPEN : VIEW_TRANSITION_TYPES.MENU_CLOSE],
-      rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.MENU],
-      preserveLiveBackdropOnMobile: true,
-      timeoutMs: VIEW_TRANSITION_TIMINGS_MS.MENU_TIMEOUT,
-    }
-  );
-}
 
 function focusSearchInput(query = "") {
   const attemptFocus = (attemptsLeft = 12) => {
@@ -212,7 +131,7 @@ export function executeSearch(args) {
 
 export function executeToggleMenu(args) {
   const state = String(args?.state || "toggle").toLowerCase();
-  const currentState = isMenuOpenInDom();
+  const currentState = activeOverlay.value === OVERLAY_MODES.MENU;
 
   let newState;
   if (state === "toggle") {
@@ -221,40 +140,15 @@ export function executeToggleMenu(args) {
     newState = state === "open";
   }
 
-  const performToggle = () => {
-    const effectiveState = isMenuOpenInDom();
-    if (effectiveState === newState) return;
-
-    if (setMenuOpenViaComponent(newState)) {
-      requestAnimationFrame(() => {
-        if (isMenuOpenInDom() !== newState) {
-          syncMenuStateFallback(newState);
-        }
-      });
-      return;
-    }
-
-    const menuBtn = getMenuToggleButton();
-    if (menuBtn) {
-      /** @type {HTMLElement} */ (menuBtn).click();
-      requestAnimationFrame(() => {
-        if (isMenuOpenInDom() !== newState) {
-          syncMenuStateFallback(newState);
-        }
-      });
-      return;
-    }
-
-    syncMenuStateFallback(newState);
-  };
-
-  if (activeOverlay.value === OVERLAY_MODES.SEARCH) {
-    if (!closeSearchViaComponent()) {
-      clearActiveOverlayMode(OVERLAY_MODES.SEARCH);
-    }
-    requestAnimationFrame(() => performToggle());
+  if (state === "toggle") {
+    void toggleOverlay(OVERLAY_MODES.MENU, { reason: "robot-tool" });
+  } else if (newState) {
+    void openOverlay(OVERLAY_MODES.MENU, { reason: "robot-tool" });
   } else {
-    performToggle();
+    void closeOverlay(OVERLAY_MODES.MENU, {
+      reason: "robot-tool",
+      restoreFocus: false,
+    });
   }
 
   return buildToolResult(
@@ -325,24 +219,7 @@ export function executeRecommend(args) {
 }
 
 export function executeOpenSearch() {
-  if (!openSearchViaComponent()) {
-    const searchTrigger = queryFirst(".search-trigger");
-    if (searchTrigger && activeOverlay.value !== OVERLAY_MODES.SEARCH) {
-      /** @type {HTMLElement} */ (searchTrigger).click();
-    } else {
-      setActiveOverlayMode(OVERLAY_MODES.SEARCH);
-    }
-  } else if (isMenuOpenInDom()) {
-    requestAnimationFrame(() => {
-      if (isMenuOpenInDom()) {
-        clearActiveOverlayMode(OVERLAY_MODES.MENU);
-      }
-    });
-  }
-
-  if (activeOverlay.value !== OVERLAY_MODES.SEARCH) {
-    setActiveOverlayMode(OVERLAY_MODES.SEARCH);
-  }
+  void openOverlay(OVERLAY_MODES.SEARCH, { reason: "robot-tool" });
 
   return buildToolResult("openSearch", {}, true, "Suche geöffnet.", {
     summary: "Die Suchoberfläche wurde geöffnet.",
@@ -350,9 +227,10 @@ export function executeOpenSearch() {
 }
 
 export function executeCloseSearch() {
-  if (!closeSearchViaComponent()) {
-    clearActiveOverlayMode(OVERLAY_MODES.SEARCH);
-  }
+  void closeOverlay(OVERLAY_MODES.SEARCH, {
+    reason: "robot-tool",
+    restoreFocus: false,
+  });
   return buildToolResult("closeSearch", {}, true, "Suche geschlossen.", {
     summary: "Die Suchoberfläche wurde geschlossen.",
   });

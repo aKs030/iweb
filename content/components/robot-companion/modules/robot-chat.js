@@ -1,14 +1,17 @@
 import { createLogger } from "../../../core/logger.js";
 import { MarkdownRenderer } from "./markdown-renderer.js";
-import { setSanitizedHTML } from "../../../core/utils/index.js";
+import { fetchJSON, setSanitizedHTML } from "../../../core/utils/index.js";
 import { ROBOT_ACTIONS } from "../constants/events.js";
-import { clearActiveOverlayMode, setActiveOverlayMode } from "../../../core/state/ui-store.js";
-import { OVERLAY_MODES, prepareOverlayFocusChange } from "../../../core/overlay-manager.js";
+import {
+  closeOverlay,
+  openOverlay,
+  OVERLAY_MODES,
+  toggleOverlay,
+} from "../../../core/overlay-manager.js";
 import { withViewTransition } from "../../../core/view-transitions/index.js";
 import { ChatHistoryStore } from "./chat-history-store.js";
 import { getRobotUserName, normalizeRobotUserName } from "./name-identity.js";
 import { getRobotMemoryManagerFields } from "../memory/robot-memory-schema.js";
-import { fetchJSON } from "../../../core/utils/index.js";
 
 const log = createLogger("RobotChat");
 const DEFAULT_INPUT_PLACEHOLDER = "Frag mich etwas...";
@@ -813,9 +816,25 @@ export class RobotChat {
   }
 
   toggleChat(forceState, options = {}) {
-    const { restoreFocus = true } = options;
-    const newState = forceState ?? !this.robot.stateManager.getState().isChatOpen;
+    if (forceState === true) {
+      return openOverlay(OVERLAY_MODES.ROBOT_CHAT, {
+        reason: "chat-toggle",
+        ...options,
+      });
+    }
+    if (forceState === false) {
+      return closeOverlay(OVERLAY_MODES.ROBOT_CHAT, {
+        reason: "chat-toggle",
+        ...options,
+      });
+    }
+    return toggleOverlay(OVERLAY_MODES.ROBOT_CHAT, {
+      reason: "chat-toggle",
+      ...options,
+    });
+  }
 
+  applyOverlayState(newState) {
     // DOM-Erstellung & Event-Binding AUSSERHALB der View Transition
     // (VT darf nur DOM-Mutationen wrappen, nicht DOM-Erstellung)
     if (newState) {
@@ -830,7 +849,7 @@ export class RobotChat {
     const vtSupported = typeof document.startViewTransition === "function";
     if (vtSupported && win) win.classList.add("vt-animating");
 
-    withViewTransition(() => this._applyVisualChatState(newState, { restoreFocus }), {
+    return withViewTransition(() => this._applyVisualChatState(newState), {
       types: [newState ? "chat-open" : "chat-close"],
     }).finally(() => {
       if (win) win.classList.remove("vt-animating");
@@ -841,19 +860,15 @@ export class RobotChat {
    * Apply the visual chat state (class toggles, state updates, focus management).
    * Separated so it can be wrapped in a View Transition.
    * @param {boolean} newState
-   * @param {{ restoreFocus?: boolean }} [options]
    */
-  _applyVisualChatState(newState, options = {}) {
-    const { restoreFocus = true } = options;
-
+  _applyVisualChatState(newState) {
     if (newState) {
       this.robot.dom.window.classList.add("open");
       this.robot.dom.container.classList.add("robot-chat--open");
       this.isOpen = true;
 
-      // Update state manager (single source of truth)
+      // Component-local presentation state derived from the overlay controller.
       this.robot.stateManager.setState({ isChatOpen: true });
-      setActiveOverlayMode(OVERLAY_MODES.ROBOT_CHAT);
 
       this.clearBubbleSequence();
       this.hideBubble();
@@ -890,10 +905,8 @@ export class RobotChat {
       this.robot.dom.container.classList.remove("robot-chat--open");
       this.isOpen = false;
 
-      // Update state manager (single source of truth)
+      // Component-local presentation state derived from the overlay controller.
       this.robot.stateManager.setState({ isChatOpen: false });
-      prepareOverlayFocusChange(OVERLAY_MODES.ROBOT_CHAT, { restoreFocus });
-      clearActiveOverlayMode(OVERLAY_MODES.ROBOT_CHAT);
 
       this.robot.animationModule.startIdleEyeMovement();
       this.robot.animationModule.startBlinkLoop();

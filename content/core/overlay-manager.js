@@ -2,9 +2,9 @@ import { effect } from "./signals.js";
 import {
   OVERLAY_MODES,
   activeOverlay,
-  clearActiveOverlayMode,
+  commitActiveOverlay,
   normalizeOverlayMode,
-} from "./state/ui-store.js";
+} from "./state/overlay-state.js";
 import {
   deleteOverlayController,
   ensureBackdropElement,
@@ -21,17 +21,25 @@ import {
 } from "./overlay/index.js";
 /** @typedef {import('./types.js').OverlayController} OverlayController */
 
-export { OVERLAY_MODES } from "./state/ui-store.js";
+export { OVERLAY_MODES } from "./state/overlay-state.js";
 
 /** @type {Map<string, string[]>} */
 const DEFAULT_INTERACTIVE_ROOT_SELECTORS = new Map([
   [OVERLAY_MODES.MENU, ["header.site-header", "site-menu"]],
   [OVERLAY_MODES.SEARCH, ["header.site-header", "site-menu"]],
   [OVERLAY_MODES.ROBOT_CHAT, ["#robot-chat-window", "#robot-companion-container"]],
+  [OVERLAY_MODES.FOOTER, ["site-footer"]],
 ]);
 
 /** @type {(() => void)|null} */
 let overlaySyncCleanup = null;
+let overlayOperationQueue = Promise.resolve();
+
+function enqueueOverlayOperation(operation) {
+  const queuedOperation = overlayOperationQueue.then(operation, operation);
+  overlayOperationQueue = queuedOperation.catch(() => {});
+  return queuedOperation;
+}
 
 /**
  * @param {Element|null} element
@@ -78,8 +86,6 @@ function syncOverlayEnvironment(mode) {
   });
 }
 
-export { prepareOverlayFocusChange };
-
 /**
  * @param {string} mode
  * @param {OverlayController} [controller]
@@ -104,11 +110,23 @@ export function registerOverlayController(mode, controller = {}) {
   };
 }
 
-export async function closeActiveOverlay(options = {}) {
-  const normalizedMode = normalizeOverlayMode(activeOverlay.value);
-  if (normalizedMode === OVERLAY_MODES.NONE) {
+/**
+ * @param {string} mode
+ * @param {{ reason?: string, restoreFocus?: boolean }} [options]
+ * @returns {Promise<boolean>}
+ */
+async function performCloseOverlay(mode, options = {}) {
+  const normalizedMode = normalizeOverlayMode(mode);
+  if (
+    normalizedMode === OVERLAY_MODES.NONE ||
+    normalizeOverlayMode(activeOverlay.value) !== normalizedMode
+  ) {
     return false;
   }
+
+  prepareOverlayFocusChange(normalizedMode, {
+    restoreFocus: options.restoreFocus !== false,
+  });
 
   const controller = getOverlayController(normalizedMode);
   if (typeof controller?.close === "function") {
@@ -119,11 +137,97 @@ export async function closeActiveOverlay(options = {}) {
         restoreFocus: options.restoreFocus !== false,
       })
     );
-  } else {
-    clearActiveOverlayMode(normalizedMode);
+  }
+
+  if (normalizeOverlayMode(activeOverlay.value) === normalizedMode) {
+    commitActiveOverlay(OVERLAY_MODES.NONE);
   }
 
   return true;
+}
+
+/**
+ * Opens one registered overlay and closes any previously active overlay first.
+ * This is the only public entry point that activates an overlay mode.
+ *
+ * @param {string} mode
+ * @param {{ reason?: string, restoreFocus?: boolean }} [options]
+ * @returns {Promise<boolean>}
+ */
+async function performOpenOverlay(mode, options = {}) {
+  const normalizedMode = normalizeOverlayMode(mode);
+  if (normalizedMode === OVERLAY_MODES.NONE) return false;
+  if (normalizeOverlayMode(activeOverlay.value) === normalizedMode) return true;
+
+  const controller = getOverlayController(normalizedMode);
+  if (typeof controller?.open !== "function") return false;
+
+  const previousMode = normalizeOverlayMode(activeOverlay.value);
+  if (previousMode !== OVERLAY_MODES.NONE) {
+    await performCloseOverlay(previousMode, {
+      reason: "overlay-replaced",
+      restoreFocus: false,
+    });
+  }
+
+  const actionOptions = {
+    mode: normalizedMode,
+    reason: String(options.reason || "programmatic"),
+    restoreFocus: options.restoreFocus !== false,
+  };
+
+  if (typeof controller.prepareOpen === "function") {
+    await Promise.resolve(controller.prepareOpen(actionOptions));
+  }
+
+  const openResult = controller.open(actionOptions);
+  commitActiveOverlay(normalizedMode);
+  await Promise.resolve(openResult);
+  return true;
+}
+
+export function openOverlay(mode, options = {}) {
+  return enqueueOverlayOperation(() => performOpenOverlay(mode, options));
+}
+
+/**
+ * Closes the requested overlay, or the currently active overlay when omitted.
+ *
+ * @param {string|null} [mode]
+ * @param {{ reason?: string, restoreFocus?: boolean }} [options]
+ * @returns {Promise<boolean>}
+ */
+export function closeOverlay(mode = null, options = {}) {
+  return enqueueOverlayOperation(() => {
+    const normalizedMode = normalizeOverlayMode(mode ?? activeOverlay.value);
+    return performCloseOverlay(normalizedMode, options);
+  });
+}
+
+/**
+ * Toggles one overlay using the centralized active mode as the source of truth.
+ *
+ * @param {string} mode
+ * @param {{ reason?: string, restoreFocus?: boolean }} [options]
+ * @returns {Promise<boolean>}
+ */
+export function toggleOverlay(mode, options = {}) {
+  const normalizedMode = normalizeOverlayMode(mode);
+  if (normalizedMode === OVERLAY_MODES.NONE) return Promise.resolve(false);
+
+  return enqueueOverlayOperation(() => {
+    if (normalizeOverlayMode(activeOverlay.value) === normalizedMode) {
+      return performCloseOverlay(normalizedMode, {
+        ...options,
+        reason: String(options.reason || "toggle"),
+      });
+    }
+
+    return performOpenOverlay(normalizedMode, {
+      ...options,
+      reason: String(options.reason || "toggle"),
+    });
+  });
 }
 
 export function initOverlayManager() {

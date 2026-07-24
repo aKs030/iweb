@@ -13,12 +13,6 @@ import {
   TimerManager,
   addManagedEventListener,
 } from "../../../core/utils/index.js";
-import {
-  OVERLAY_MODES,
-  clearActiveOverlayMode,
-  setActiveOverlayMode,
-  uiStore,
-} from "../../../core/state/ui-store.js";
 import { resolvedTheme, setTheme } from "../../../core/state/theme-state.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
@@ -26,7 +20,7 @@ import {
   VIEW_TRANSITION_TIMINGS_MS,
   withViewTransition,
 } from "../../../core/view-transitions/index.js";
-import { prepareOverlayFocusChange } from "../../../core/overlay-manager.js";
+import { closeOverlay, openOverlay, OVERLAY_MODES } from "../../../core/overlay-manager.js";
 
 const log = createLogger("MenuEngine");
 
@@ -181,8 +175,6 @@ export const MenuConfig = {
     { href: "/blog/", icon: "blog", fallback: "📝", label: "menu.blog" },
     { href: "/about/", icon: "user", fallback: "🧑", label: "menu.about" },
   ],
-
-  ICON_CHECK_DELAY: 100,
 };
 
 // ============================================================================
@@ -205,13 +197,6 @@ export class MenuState {
       activeLink: computed(() => this._activeLinkSignal.value),
       title: computed(() => this._titleSignal.value),
     });
-
-    this._subscriptions = new Map();
-    this._overlayCleanup = uiStore.subscribeKey("activeOverlay", mode => {
-      const isMenuOverlayOpen = mode === OVERLAY_MODES.MENU;
-      if (this._openSignal.value === isMenuOverlayOpen) return;
-      this._openSignal.value = isMenuOverlayOpen;
-    });
   }
 
   get isOpen() {
@@ -233,11 +218,6 @@ export class MenuState {
   setOpen(value) {
     if (this.isOpen === value) return;
     this._openSignal.value = value;
-    if (value) {
-      setActiveOverlayMode(OVERLAY_MODES.MENU);
-      return;
-    }
-    clearActiveOverlayMode(OVERLAY_MODES.MENU);
   }
 
   setActiveLink(link) {
@@ -250,49 +230,6 @@ export class MenuState {
     this._titleSignal.value = Object.freeze({ title, subtitle });
   }
 
-  on(event, callback) {
-    if (typeof callback !== "function") return () => {};
-
-    const source = this._resolveSignal(event);
-    if (!source) return () => {};
-
-    this.off(event, callback);
-
-    let hasRun = false;
-    const unsubscribe = source.subscribe(value => {
-      if (!hasRun) {
-        hasRun = true;
-        return;
-      }
-
-      try {
-        callback(value);
-      } catch (err) {
-        log.error(`Error in menu listener for ${event}:`, err);
-      }
-    });
-
-    if (!this._subscriptions.has(event)) {
-      this._subscriptions.set(event, new Map());
-    }
-    this._subscriptions.get(event).set(callback, unsubscribe);
-
-    return unsubscribe;
-  }
-
-  off(event, callback) {
-    const subscriptions = this._subscriptions.get(event);
-    const unsubscribe = subscriptions?.get(callback);
-    if (!unsubscribe) return;
-
-    unsubscribe();
-    subscriptions.delete(callback);
-
-    if (subscriptions.size === 0) {
-      this._subscriptions.delete(event);
-    }
-  }
-
   reset() {
     this._openSignal.value = false;
     this._activeLinkSignal.value = null;
@@ -300,24 +237,6 @@ export class MenuState {
       title: "menu.home",
       subtitle: "",
     });
-    clearActiveOverlayMode(OVERLAY_MODES.MENU);
-    this._subscriptions.forEach(subscriptions => {
-      subscriptions.forEach(unsubscribe => unsubscribe());
-    });
-    this._subscriptions.clear();
-  }
-
-  _resolveSignal(event) {
-    switch (event) {
-      case "openChange":
-        return this.signals.open;
-      case "activeLinkChange":
-        return this.signals.activeLink;
-      case "titleChange":
-        return this.signals.title;
-      default:
-        return null;
-    }
   }
 }
 
@@ -675,7 +594,6 @@ export class MenuRenderer {
     this.config = config;
     this.template = new MenuTemplate(config);
     this.container = null;
-    this.iconTimeout = null;
     this._i18nUnsub = null;
     this._stateCleanupFns = [];
   }
@@ -694,32 +612,6 @@ export class MenuRenderer {
   parseTemplate(html) {
     const parsed = new DOMParser().parseFromString(html, "text/html");
     return Array.from(parsed.body.childNodes);
-  }
-
-  initializeIcons() {
-    const delay = this.config.ICON_CHECK_DELAY || 100;
-    this.iconTimeout = setTimeout(() => {
-      this.iconTimeout = null;
-      if (!this.container) return;
-
-      const icons = this.container.querySelectorAll(".nav-icon use");
-      icons.forEach(use => {
-        const href = use.getAttribute("href");
-        if (!href) return;
-
-        const targetId = href.substring(1);
-        const target = this.container.querySelector(`#${targetId}`);
-        const svg = use.closest("svg");
-        const fallback = svg?.closest("a, button")?.querySelector(".icon-fallback");
-
-        if (!target && fallback) {
-          if (svg instanceof SVGElement) {
-            svg.setAttribute("hidden", "");
-          }
-          fallback.classList.remove("icon-fallback--hidden");
-        }
-      });
-    }, delay);
   }
 
   setupStateSubscriptions() {
@@ -856,10 +748,6 @@ export class MenuRenderer {
   }
 
   destroy() {
-    if (this.iconTimeout) {
-      clearTimeout(this.iconTimeout);
-      this.iconTimeout = null;
-    }
     this._stateCleanupFns.forEach(cleanup => cleanup());
     this._stateCleanupFns = [];
     if (typeof this._i18nUnsub === "function") {
@@ -979,16 +867,7 @@ export class MenuEvents {
       }
 
       const isOpen = !this.state.isOpen;
-      if (isOpen) {
-        import("#footer/index.js").then(({ closeFooter }) => {
-          try {
-            closeFooter();
-          } catch {
-            // ignore
-          }
-        });
-      }
-      this.setMenuOpenWithTransition(isOpen);
+      this.setMenuOpen(isOpen);
     };
 
     this.cleanupFns.push(
@@ -1051,8 +930,7 @@ export class MenuEvents {
         this.menuSearch.closeSearchModeSilently();
 
         if (href === "#footer") {
-          this.closeMenu();
-          import("#footer/index.js").then(({ openFooter }) => openFooter()).catch(() => {});
+          void openOverlay(OVERLAY_MODES.FOOTER, { reason: "menu-footer-link" });
           return;
         }
 
@@ -1259,16 +1137,25 @@ export class MenuEvents {
 
   closeMenu(options = {}) {
     const { restoreFocus = false } = options;
-    prepareOverlayFocusChange(this.state.isOpen ? OVERLAY_MODES.MENU : null, {
+    return closeOverlay(OVERLAY_MODES.MENU, {
+      reason: "menu-close",
       restoreFocus,
     });
-    this.setMenuOpenWithTransition(false);
   }
 
-  setMenuOpenWithTransition(isOpen) {
-    if (this.state.isOpen === isOpen) return;
+  setMenuOpen(isOpen) {
+    return isOpen
+      ? openOverlay(OVERLAY_MODES.MENU, { reason: "menu-toggle" })
+      : closeOverlay(OVERLAY_MODES.MENU, {
+          reason: "menu-toggle",
+          restoreFocus: false,
+        });
+  }
 
-    void withViewTransition(
+  applyMenuOpenState(isOpen) {
+    if (this.state.isOpen === isOpen) return Promise.resolve();
+
+    return withViewTransition(
       () => {
         this.state.setOpen(isOpen);
       },

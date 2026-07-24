@@ -1,5 +1,5 @@
 /* Accessibility Manager */
-import { closeActiveOverlay } from "./overlay-manager.js";
+import { closeOverlay } from "./overlay-manager.js";
 
 class AccessibilityManager {
   constructor() {
@@ -62,7 +62,7 @@ class AccessibilityManager {
   }
 
   async handleEscape() {
-    const closedOverlay = await closeActiveOverlay({
+    const closedOverlay = await closeOverlay(null, {
       reason: "escape",
       restoreFocus: true,
     });
@@ -74,14 +74,6 @@ class AccessibilityManager {
       const closeBtn = /** @type {HTMLElement} */ (cookieModal.querySelector("#close-settings"));
       if (closeBtn) closeBtn.click();
       return;
-    }
-
-    // prefer calling the footer API directly instead of firing events
-    try {
-      const { closeFooter } = await import("#footer/index.js");
-      closeFooter();
-    } catch {
-      // footer module could not be imported
     }
   }
 

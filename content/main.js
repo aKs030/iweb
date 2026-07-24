@@ -87,8 +87,12 @@ const _initApp = () => {
   initThemeState();
   initOverlayManager();
 
-  // Initialize View Transitions API (progressive enhancement)
-  initViewTransitions();
+  // Keep full-page navigation native. Cross-document transitions can emit
+  // uncaught "Transition was skipped" aborts during WebKit page teardown.
+  initViewTransitions({
+    captureInternalLinks: false,
+    enableCrossDocument: false,
+  });
 
   // Initialize Resource Hints & Speculative Prerendering
   resourceHints.init();

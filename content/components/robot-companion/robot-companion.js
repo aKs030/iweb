@@ -23,11 +23,10 @@
 import { RobotAnimation } from "./modules/robot-animation.js";
 import { RobotChat } from "./modules/robot-chat.js";
 import { createLogger } from "../../core/logger.js";
-import { createObserver } from "../../core/utils/index.js";
-import { loadHeadStylesheet } from "../../core/utils/index.js";
-import { TimerManager } from "../../core/utils/index.js";
-import { uiStore } from "../../core/state/ui-store.js";
+import { createObserver, loadHeadStylesheet, TimerManager } from "../../core/utils/index.js";
+import { activeOverlay } from "../../core/state/overlay-state.js";
 import {
+  closeOverlay,
   OVERLAY_MODES,
   initOverlayManager,
   registerOverlayController,
@@ -130,7 +129,7 @@ export class RobotCompanion {
     /** @type {boolean} */
     this.isHydrated = false;
     /** @type {(() => void)|null} */
-    this._uiUnsubscribe = null;
+    this._overlayStateCleanup = null;
     /** @type {(() => void)|null} */
     this._overlayControllerCleanup = null;
     /** @type {EventListener|null} */
@@ -653,7 +652,7 @@ export class RobotCompanion {
     this.loadCSS();
     this.createDOM();
     this.registerOverlayController();
-    this.setupSharedUIStateSync();
+    this.setupOverlayStateSync();
     this.setupProgressiveHydration();
   }
 
@@ -662,9 +661,10 @@ export class RobotCompanion {
 
     /** @type {OverlayController} */
     const robotOverlayController = {
+      open: () => this.chatModule.applyOverlayState(true),
       close: ({ restoreFocus = true } = {}) => {
         if (!this.chatModule.isOpen) return;
-        this.chatModule.toggleChat(false, { restoreFocus });
+        return this.chatModule.applyOverlayState(false, { restoreFocus });
       },
       getInteractiveRoots: () => {
         return [this.dom.window, this.dom.container].filter(
@@ -692,25 +692,24 @@ export class RobotCompanion {
     );
   }
 
-  setupSharedUIStateSync() {
-    if (this._uiUnsubscribe) return;
+  setupOverlayStateSync() {
+    if (this._overlayStateCleanup) return;
 
-    const syncFromUIState = state => {
+    const syncOverlayState = mode => {
       if (!this.dom.container) return;
-      const menuOpen = Boolean(state?.menuOpen);
-      const activeOverlay = String(state?.activeOverlay || OVERLAY_MODES.NONE);
+      const menuOpen = mode === OVERLAY_MODES.MENU;
 
       this.dom.container.classList.toggle("robot-companion--menu-open", menuOpen);
       if (menuOpen) {
         this.chatModule.hideBubble();
       }
 
-      if (this.chatModule.isOpen && (menuOpen || activeOverlay !== OVERLAY_MODES.ROBOT_CHAT)) {
-        this.chatModule.toggleChat(false, { restoreFocus: false });
+      if (this.chatModule.isOpen && mode !== OVERLAY_MODES.ROBOT_CHAT) {
+        void this.chatModule.applyOverlayState(false, { restoreFocus: false });
       }
     };
 
-    this._uiUnsubscribe = uiStore.subscribe(syncFromUIState);
+    this._overlayStateCleanup = activeOverlay.subscribe(syncOverlayState);
   }
 
   setupProgressiveHydration() {
@@ -804,8 +803,6 @@ export class RobotCompanion {
       target: document,
       handler: this._onHeroTypingEnd,
     };
-
-    uiStore.setState({ robotHydrated: true });
   }
 
   setupSectionChangeDetection() {
@@ -952,6 +949,11 @@ export class RobotCompanion {
   }
 
   destroy() {
+    void closeOverlay(OVERLAY_MODES.ROBOT_CHAT, {
+      reason: "component-disconnect",
+      restoreFocus: false,
+    });
+
     // Module Cleanup
     this.chatModule?.destroy();
     this.animationModule?.destroy();
@@ -965,9 +967,9 @@ export class RobotCompanion {
     this._interactiveModulesPromise = null;
     this._agentIdentitySyncedFor = "";
 
-    if (this._uiUnsubscribe) {
-      this._uiUnsubscribe();
-      this._uiUnsubscribe = null;
+    if (this._overlayStateCleanup) {
+      this._overlayStateCleanup();
+      this._overlayStateCleanup = null;
     }
     if (this._overlayControllerCleanup) {
       this._overlayControllerCleanup();
@@ -998,8 +1000,6 @@ export class RobotCompanion {
     if (this.stateManager) {
       this.stateManager.destroy();
     }
-    uiStore.setState({ robotHydrated: false, robotChatOpen: false });
-
     // Zentrale Event-Listener Cleanup
     if (this._eventListeners) {
       // Scroll Listeners

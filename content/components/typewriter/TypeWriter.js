@@ -4,12 +4,10 @@
  * Animated text typing effect with multi-line support
  * @version 2.0.0
  */
-import { subscribeFooterState } from "#footer/index.js";
+import { activeOverlay } from "../../core/state/overlay-state.js";
 import { i18n } from "../../core/i18n.js";
 import { createLogger } from "../../core/logger.js";
-import { getElementById } from "../../core/utils/index.js";
-import { TimerManager } from "../../core/utils/index.js";
-import { fetchJSON } from "../../core/utils/index.js";
+import { fetchJSON, getElementById, TimerManager } from "../../core/utils/index.js";
 
 const log = createLogger("TypeWriter");
 
@@ -572,7 +570,7 @@ export async function initHeroSubtitle(options = {}) {
       const pollInterval = tw.timerManager.setInterval(pollOverlap, 100);
       tw.timerManager.setTimeout(() => tw.timerManager.clearInterval(pollInterval), 2000);
 
-      const unsubscribeFooterState = subscribeFooterState(() => {
+      const unsubscribeOverlayState = activeOverlay.subscribe(() => {
         pollOverlap();
       });
       // And on resize
@@ -586,7 +584,7 @@ export async function initHeroSubtitle(options = {}) {
       const instance = /** @type {any} */ (typeWriterInstance);
       instance.__teardown = () => {
         document.removeEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
-        unsubscribeFooterState();
+        unsubscribeOverlayState();
         window.removeEventListener("resize", onResize);
         tw.timerManager?.clearAll?.();
         measurer.destroy();

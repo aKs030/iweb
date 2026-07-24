@@ -5,11 +5,11 @@
  */
 
 import * as THREE from "three";
-import { debounce } from "../../core/utils/index.js";
-import { createObserver, getElementById } from "../../core/utils/index.js";
+import { createObserver, debounce, getElementById, TimerManager } from "../../core/utils/index.js";
 import { createLogger } from "../../core/logger.js";
 import { AppLoadManager } from "../../core/load-manager.js";
-import { TimerManager } from "../../core/utils/index.js";
+import { activeOverlay } from "../../core/state/overlay-state.js";
+import { shouldModeShowBackdrop } from "../../core/overlay/index.js";
 import {
   getSharedState,
   registerParticleSystem,
@@ -38,6 +38,15 @@ import {
 
 const log = createLogger("ThreeEarthSystem");
 const WEBGL_RENDER_SECTIONS = new Set(["hero", "features", "section3"]);
+const EARTH_TRANSFORM_DAMPING = Object.freeze({
+  position: 5,
+  scale: 6.5,
+  rotation: 4.5,
+  light: 5,
+});
+const WEBGL_CANVAS_CLEAR_DELAY_MS = 800;
+
+const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1 / 15));
 
 /**
  * @typedef {import('../../core/types.js').TimerID} TimerID
@@ -180,6 +189,7 @@ class ThreeEarthSystem {
     /** @type {THREE.Scene|null} */ this.scene = null;
     /** @type {THREE.PerspectiveCamera|null} */ this.camera = null;
     /** @type {THREE.WebGLRenderer|null} */ this.renderer = null;
+    /** @type {HTMLElement|null} */ this.container = null;
 
     // Objects
     /** @type {EarthMesh|null} */ this.earthMesh = null;
@@ -195,6 +205,7 @@ class ThreeEarthSystem {
     /** @type {THREE.AmbientLight|null} */ this.ambientLight = null;
     /** @type {THREE.DirectionalLight|null} */ this.fillLight = null;
     /** @type {THREE.PointLight|null} */ this.rimLight = null;
+    this._lightTargets = null;
     this.earthAmbientRotation = 0;
 
     // Managers
@@ -219,6 +230,10 @@ class ThreeEarthSystem {
     // Animation
     this.animationFrameId = 0;
     this.animate = null;
+    this.isOverlayPaused = false;
+    this._resetAnimationTimer = false;
+    this._overlayStateCleanup = null;
+    this._canvasPauseTimeout = null;
 
     // Loading
     this.assetsReady = false;
@@ -255,6 +270,7 @@ class ThreeEarthSystem {
     }
 
     this._clearFallbacks(container);
+    this.container = container;
     this.active = true;
 
     try {
@@ -264,8 +280,7 @@ class ThreeEarthSystem {
 
       this._registerAndBlock();
 
-      this.THREE = await this._loadThreeWithWatchdog(container);
-      if (!this.active) return () => this.cleanup();
+      this.THREE = THREE;
 
       showLoadingState(container);
 
@@ -330,6 +345,12 @@ class ThreeEarthSystem {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = 0;
     }
+    this._overlayStateCleanup?.();
+    this._overlayStateCleanup = null;
+    if (this._canvasPauseTimeout) {
+      clearTimeout(this._canvasPauseTimeout);
+      this._canvasPauseTimeout = null;
+    }
 
     document.removeEventListener("visibilitychange", this.handleVisibilityChange);
     document.removeEventListener("three-earth:showcase", this.onShowcaseTrigger);
@@ -356,6 +377,11 @@ class ThreeEarthSystem {
     this.assetsReady = false;
     this.firstFrameRendered = false;
     this._currentSectionEl = null;
+    if (this.container) {
+      delete this.container.dataset.webglPaused;
+      delete this.container.dataset.webglLoop;
+    }
+    this.container = null;
 
     if (this.cardManager) this.cardManager.cleanup();
     this.cardManager = null;
@@ -366,6 +392,11 @@ class ThreeEarthSystem {
 
     // Clear Singleton
     if (singleton === this) singleton = null;
+    const debugWindow = /** @type {any} */ (window);
+    if (debugWindow.__threeEarthSystem === this) {
+      delete debugWindow.__threeEarthSystem;
+      delete debugWindow.__threeEarthCardManager;
+    }
 
     log.info("Cleanup complete");
   }
@@ -388,32 +419,6 @@ class ThreeEarthSystem {
 
   _detectDevice() {
     this.isMobileDevice = window.innerWidth <= 768;
-  }
-
-  /**
-   * @param {HTMLElement} container
-   */
-  async _loadThreeWithWatchdog(container) {
-    const THREE_LOAD_WATCH = 8000;
-    let loaded = false;
-
-    const timer = this.timers.setTimeout(() => {
-      if (!loaded) {
-        log.warn("Three.js load timeout");
-        try {
-          AppLoadManager.unblock("three-earth");
-        } catch {
-          /* ignore */
-        }
-        this._handleInitError(container, new Error("Three.js load timeout"));
-      }
-    }, THREE_LOAD_WATCH);
-
-    // Three.js is already imported at the top, just use it directly
-    this.THREE = THREE;
-    loaded = true;
-    this.timers.clearTimeout(timer);
-    return THREE;
   }
 
   /**
@@ -563,6 +568,7 @@ class ThreeEarthSystem {
     this.currentSection = this._resolveCurrentSection();
     container.dataset.section = this.currentSection;
     document.body.dataset.homeSection = this.currentSection;
+    this._updateEarthForSection(this.currentSection);
     this._syncWebGLVisibility(this.currentSection);
 
     this._setupSectionDetection();
@@ -629,6 +635,7 @@ class ThreeEarthSystem {
    * @param {HTMLElement} container
    */
   _finalizeInitialization(container) {
+    this._setupOverlayPause();
     this._startAnimationLoop();
     this._setupResizeHandler(container);
     this._setupInteraction();
@@ -648,8 +655,9 @@ class ThreeEarthSystem {
         const debugFlag = location.search.includes("debugThree");
         if (isLocal || debugFlag) {
           try {
-            globalThis.__threeEarthSystem = this;
-            globalThis.__threeEarthCardManager = this.cardManager || null;
+            const debugWindow = /** @type {any} */ (window);
+            debugWindow.__threeEarthSystem = this;
+            debugWindow.__threeEarthCardManager = this.cardManager || null;
           } catch {
             /* ignore */
           }
@@ -677,6 +685,18 @@ class ThreeEarthSystem {
    */
   onClick(event) {
     if (!this.active || !this.cardManager) return;
+    if (event.defaultPrevented) return;
+
+    const target = event.target;
+    if (
+      target instanceof Element &&
+      target.closest(
+        'a, button, input, label, select, textarea, [contenteditable], [role="button"], [role="link"], [role="dialog"], .site-header, site-footer, .overlay-backdrop, .robot-companion'
+      )
+    ) {
+      return;
+    }
+
     const mouse = new this.THREE.Vector2();
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -745,18 +765,62 @@ class ThreeEarthSystem {
 
   // --- Animation Loop ---
 
+  _canRunAnimationLoop() {
+    return (
+      this.active &&
+      !document.hidden &&
+      !this.isOverlayPaused &&
+      this.isVisible &&
+      this._isWebGLSectionVisible()
+    );
+  }
+
+  _pauseAnimationLoop(reason) {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = 0;
+    }
+    if (this.container) this.container.dataset.webglLoop = "paused";
+    this._resetAnimationTimer = true;
+    log.debug(`Pausing render loop (${reason})`);
+  }
+
+  _resumeAnimationLoop(reason) {
+    if (this.animationFrameId || !this.animate || !this._canRunAnimationLoop()) return;
+    log.debug(`Resuming render loop (${reason})`);
+    this.animate();
+  }
+
+  _setupOverlayPause() {
+    this._overlayStateCleanup?.();
+    this._overlayStateCleanup = activeOverlay.subscribe(mode => {
+      const shouldPause = shouldModeShowBackdrop(mode);
+      if (this.container) {
+        this.container.dataset.webglPaused = String(shouldPause);
+      }
+      if (this.isOverlayPaused === shouldPause) return;
+
+      this.isOverlayPaused = shouldPause;
+      if (shouldPause) {
+        this._pauseAnimationLoop(`overlay: ${mode}`);
+      } else {
+        this._resumeAnimationLoop("overlay closed");
+      }
+    });
+  }
+
   _startAnimationLoop() {
     const timer = new this.THREE.Timer();
     let lastFrameTime = performance.now();
 
     this.animate = () => {
-      if (!this.active) return;
-      if (document.hidden || !this.isVisible || !this._isWebGLSectionVisible()) {
+      if (!this._canRunAnimationLoop()) {
         this.animationFrameId = 0;
-        this._clearWebGLCanvas();
+        if (this.container) this.container.dataset.webglLoop = "paused";
         return;
       }
 
+      if (this.container) this.container.dataset.webglLoop = "running";
       this.animationFrameId = requestAnimationFrame(this.animate);
 
       const cap = /** @type {EarthDeviceCapabilities} */ (
@@ -765,6 +829,11 @@ class ThreeEarthSystem {
       const targetFrameTime = cap.isLowEnd ? 33.33 : 16.67;
 
       const now = performance.now();
+      if (this._resetAnimationTimer) {
+        timer.reset?.();
+        lastFrameTime = now;
+        this._resetAnimationTimer = false;
+      }
       const elapsed = now - lastFrameTime;
 
       if (cap.isLowEnd && elapsed < targetFrameTime) return;
@@ -784,20 +853,9 @@ class ThreeEarthSystem {
 
   handleVisibilityChange() {
     if (document.hidden) {
-      if (this.animationFrameId) {
-        cancelAnimationFrame(this.animationFrameId);
-        this.animationFrameId = 0;
-      }
+      this._pauseAnimationLoop("document hidden");
     } else {
-      if (
-        !this.animationFrameId &&
-        this.animate &&
-        this.isVisible &&
-        this.active &&
-        this._isWebGLSectionVisible()
-      ) {
-        this.animate();
-      }
+      this._resumeAnimationLoop("document visible");
     }
   }
 
@@ -857,19 +915,20 @@ class ThreeEarthSystem {
   _updateTransforms(delta = 0.016) {
     if (!this.earthMesh) return;
     const em = this.earthMesh;
-    const timeScale = delta * 60;
-    const posLerp = 1 - Math.pow(1 - 0.04, timeScale);
-    const scaleLerp = 1 - Math.pow(1 - 0.06, timeScale);
+    const posLerp = getDampingFactor(EARTH_TRANSFORM_DAMPING.position, delta);
+    const scaleLerp = getDampingFactor(EARTH_TRANSFORM_DAMPING.scale, delta);
+    const rotationLerp = getDampingFactor(EARTH_TRANSFORM_DAMPING.rotation, delta);
+    const lightLerp = getDampingFactor(EARTH_TRANSFORM_DAMPING.light, delta);
 
     if (em.userData.targetPosition) em.position.lerp(em.userData.targetPosition, posLerp);
-    if (em.userData.targetScale) {
+    if (Number.isFinite(em.userData.targetScale)) {
       em.scale.x += (em.userData.targetScale - em.scale.x) * scaleLerp;
       em.scale.y = em.scale.z = em.scale.x;
     }
     if (em.userData.targetRotation !== undefined) {
       const targetRotation = em.userData.targetRotation + this.earthAmbientRotation;
       const diff = targetRotation - em.rotation.y;
-      if (Math.abs(diff) > 0.001) em.rotation.y += diff * scaleLerp;
+      if (Math.abs(diff) > 0.001) em.rotation.y += diff * rotationLerp;
     }
 
     if (this.cloudMesh) {
@@ -880,10 +939,35 @@ class ThreeEarthSystem {
     if (this.moonMesh) {
       const mm = this.moonMesh;
       if (mm.userData.targetPosition) mm.position.lerp(mm.userData.targetPosition, posLerp);
-      if (mm.userData.targetScale) {
+      if (Number.isFinite(mm.userData.targetScale)) {
         mm.scale.x += (mm.userData.targetScale - mm.scale.x) * scaleLerp;
         mm.scale.y = mm.scale.z = mm.scale.x;
       }
+    }
+
+    this._updateLightTransition(lightLerp);
+  }
+
+  _updateLightTransition(factor) {
+    const targets = this._lightTargets;
+    if (!targets) return;
+
+    if (this.directionalLight) {
+      this.directionalLight.intensity +=
+        (targets.directionalIntensity - this.directionalLight.intensity) * factor;
+    }
+    if (this.ambientLight) {
+      this.ambientLight.intensity +=
+        (targets.ambientIntensity - this.ambientLight.intensity) * factor;
+      this.ambientLight.color.lerp(targets.ambientColor, factor);
+    }
+    if (this.fillLight) {
+      this.fillLight.intensity += (targets.fillIntensity - this.fillLight.intensity) * factor;
+      this.fillLight.color.lerp(targets.fillColor, factor);
+    }
+    if (this.rimLight) {
+      this.rimLight.intensity += (targets.rimIntensity - this.rimLight.intensity) * factor;
+      this.rimLight.color.lerp(targets.rimColor, factor);
     }
   }
 
@@ -1127,24 +1211,12 @@ class ThreeEarthSystem {
     const shouldRender = this._isWebGLSectionVisible(sectionName);
 
     if (!shouldRender) {
-      if (this.animationFrameId) {
-        cancelAnimationFrame(this.animationFrameId);
-        this.animationFrameId = 0;
-      }
+      this._pauseAnimationLoop("WebGL section hidden");
       this.cardManager?.setProgress(0);
-      this._clearWebGLCanvas();
       return;
     }
 
-    if (
-      !this.animationFrameId &&
-      this.animate &&
-      this.active &&
-      this.isVisible &&
-      !document.hidden
-    ) {
-      this.animate();
-    }
+    this._resumeAnimationLoop("WebGL section visible");
   }
 
   /**
@@ -1165,28 +1237,25 @@ class ThreeEarthSystem {
       this.cameraManager?.setTargetOrbitAngle(newMode === "day" ? 0 : Math.PI);
     }
 
-    if (this.directionalLight && this.ambientLight) {
-      const mode = this.earthMesh.userData.currentMode;
-      const lightCfg = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
-      const sectionLight = config.lighting || {};
-      this.directionalLight.intensity = sectionLight.sunIntensity ?? lightCfg.SUN_INTENSITY;
-      this.ambientLight.intensity = sectionLight.ambientIntensity ?? lightCfg.AMBIENT_INTENSITY;
-      this.ambientLight.color.setHex(sectionLight.ambientColor ?? lightCfg.AMBIENT_COLOR);
-    }
-    if (this.fillLight) {
-      const mode = this.earthMesh.userData.currentMode;
-      const lightCfg = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
-      const sectionLight = config.lighting || {};
-      this.fillLight.intensity = sectionLight.fillIntensity ?? lightCfg.FILL_INTENSITY;
-      this.fillLight.color.setHex(sectionLight.fillColor ?? 0x6ea8ff);
-    }
-    if (this.rimLight) {
-      const mode = this.earthMesh.userData.currentMode;
-      const lightCfg = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
-      const sectionLight = config.lighting || {};
-      this.rimLight.intensity = sectionLight.rimIntensity ?? lightCfg.RIM_INTENSITY;
-      this.rimLight.color.setHex(sectionLight.rimColor ?? 0xffc76a);
-    }
+    this._setLightTargets(config);
+  }
+
+  _setLightTargets(config) {
+    if (!this.THREE || !this.earthMesh) return;
+
+    const mode = this.earthMesh.userData.currentMode;
+    const lightCfg = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
+    const sectionLight = config.lighting || {};
+
+    this._lightTargets = {
+      directionalIntensity: sectionLight.sunIntensity ?? lightCfg.SUN_INTENSITY,
+      ambientIntensity: sectionLight.ambientIntensity ?? lightCfg.AMBIENT_INTENSITY,
+      ambientColor: new this.THREE.Color(sectionLight.ambientColor ?? lightCfg.AMBIENT_COLOR),
+      fillIntensity: sectionLight.fillIntensity ?? lightCfg.FILL_INTENSITY,
+      fillColor: new this.THREE.Color(sectionLight.fillColor ?? 0x6ea8ff),
+      rimIntensity: sectionLight.rimIntensity ?? lightCfg.RIM_INTENSITY,
+      rimColor: new this.THREE.Color(sectionLight.rimColor ?? 0xffc76a),
+    };
   }
 
   /**
@@ -1242,21 +1311,16 @@ class ThreeEarthSystem {
             clearTimeout(this._canvasPauseTimeout);
             this._canvasPauseTimeout = null;
           }
-          if (!this.animationFrameId && this.animate && this.active) {
-            log.debug("Resuming render loop (WebGL area in view)");
-            this.animate();
-          }
+          this._resumeAnimationLoop("WebGL area in view");
         } else {
           // Add grace period to allow card fade-out animations to finish
           if (this._canvasPauseTimeout) clearTimeout(this._canvasPauseTimeout);
           this._canvasPauseTimeout = setTimeout(() => {
-            if (!this.isVisible && this.animationFrameId) {
-              log.debug("Pausing render loop (WebGL area out of view)");
-              cancelAnimationFrame(this.animationFrameId);
-              this.animationFrameId = 0;
+            if (!this.isVisible) {
+              this._pauseAnimationLoop("WebGL area out of view");
               this._clearWebGLCanvas();
             }
-          }, 800);
+          }, WEBGL_CANVAS_CLEAR_DELAY_MS);
         }
       },
       { threshold: 0, rootMargin: "100px" }
@@ -1403,6 +1467,9 @@ class ThreeEarthSystem {
     this.nightMaterial = null;
     this.directionalLight = null;
     this.ambientLight = null;
+    this.fillLight = null;
+    this.rimLight = null;
+    this._lightTargets = null;
     this.cameraManager = null;
     this.starManager = null;
     this.shootingStarManager = null;
@@ -1411,7 +1478,8 @@ class ThreeEarthSystem {
 
   _detectAndEnsureWebGL() {
     try {
-      this._applyDeviceConfigSafely();
+      this.deviceCapabilities = detectDeviceCapabilities();
+      Object.assign(CONFIG, getOptimizedConfig(this.deviceCapabilities));
     } catch (err) {
       log.debug("Device detection failed", err);
     }
@@ -1430,15 +1498,9 @@ class ThreeEarthSystem {
     }
     return true;
   }
-
-  _applyDeviceConfigSafely() {
-    this.deviceCapabilities = detectDeviceCapabilities();
-    const optimized = getOptimizedConfig(this.deviceCapabilities);
-    Object.assign(CONFIG, optimized);
-  }
 }
 
-// --- Legacy Export Adapters ---
+// --- Singleton export ---
 
 /** @type {ThreeEarthSystem|null} */
 let singleton = null;

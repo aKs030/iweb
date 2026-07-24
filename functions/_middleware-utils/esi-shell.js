@@ -187,17 +187,6 @@ const FOOTER_SHELL_MARKUP = `
 				</a>
 			</nav>
 		</div>
-		<button
-			class="footer-expand-toggle"
-			type="button"
-			data-footer-trigger
-			aria-expanded="false"
-			aria-controls="footer-content"
-			aria-label="Footer erweitern"
-		>
-			<span aria-hidden="true">+</span>
-			<span class="visually-hidden">Footer erweitern</span>
-		</button>
 	</div>
 </footer>
 `;

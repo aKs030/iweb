@@ -13,6 +13,15 @@
     --home-type-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
     --home-type-copy: clamp(var(--type-body), 0.95rem + 0.18vw, var(--type-lg));
     --home-type-action: var(--type-body);
+    --home-motion-enter: 560ms;
+    --home-motion-exit: 420ms;
+    --home-motion-fade: 400ms;
+    --home-motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+    --home-motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  html.home-page.snap-page {
+    overscroll-behavior-y: none;
   }
 
   /* ── Global Background Effects (Aurora, Stars, Scanline) ── */
@@ -867,43 +876,36 @@
   @media (prefers-reduced-motion: no-preference) {
     .section3__eyebrow {
       --section3-enter-delay: 0.04s;
-      --section3-exit-delay: 0.18s;
+      --section3-exit-delay: 0.12s;
     }
 
     .section3__title {
-      --section3-enter-delay: 0.12s;
-      --section3-exit-delay: 0.14s;
+      --section3-enter-delay: 0.1s;
+      --section3-exit-delay: 0.09s;
     }
 
     .section3__subtitle {
-      --section3-enter-delay: 0.21s;
-      --section3-exit-delay: 0.1s;
-    }
-
-    .section3__closing-text {
-      --section3-enter-delay: 0.31s;
+      --section3-enter-delay: 0.17s;
       --section3-exit-delay: 0.06s;
     }
 
+    .section3__closing-text {
+      --section3-enter-delay: 0.24s;
+      --section3-exit-delay: 0.03s;
+    }
+
     .section3__cta {
-      --section3-enter-delay: 0.4s;
+      --section3-enter-delay: 0.31s;
       --section3-exit-delay: 0s;
     }
 
-    .section3__eyebrow,
-    .section3__title,
-    .section3__subtitle,
-    .section3__closing-text,
-    .section3__cta {
+    .section3__reveal {
       opacity: 0;
-      clip-path: inset(0 0 100% 0);
-      transform: translate3d(0, 1.25rem, 0) scale(0.985);
-      filter: blur(7px);
+      transform: translate3d(0, 1rem, 0) scale(0.99);
+      backface-visibility: hidden;
       transition:
-        opacity 0.3s ease-out,
-        clip-path 0.46s cubic-bezier(0.4, 0, 1, 1),
-        transform 0.46s cubic-bezier(0.4, 0, 1, 1),
-        filter 0.34s ease-out;
+        opacity var(--home-motion-fade) ease-out,
+        transform var(--home-motion-enter) var(--home-motion-ease-enter);
       transition-delay: var(--section3-exit-delay);
     }
 
@@ -911,18 +913,9 @@
       pointer-events: none;
     }
 
-    .section.section3.is-visible .section3__eyebrow,
-    .section.section3.is-visible .section3__title,
-    .section.section3.is-visible .section3__subtitle,
-    .section.section3.is-visible .section3__closing-text,
-    .section.section3.is-visible .section3__cta {
+    .section.section3.is-visible .section3__reveal {
       opacity: 1;
-      clip-path: inset(0);
       transform: translate3d(0, 0, 0) scale(1);
-      filter: blur(0);
-      transition-duration: 0.56s, 0.68s, 0.68s, 0.5s;
-      transition-timing-function:
-        ease-out, cubic-bezier(0.16, 1, 0.3, 1), cubic-bezier(0.16, 1, 0.3, 1), ease-out;
       transition-delay: var(--section3-enter-delay);
     }
 
@@ -934,29 +927,19 @@
   @keyframes homeTextExitBeforeScroll {
     from {
       opacity: 1;
-      clip-path: inset(0);
       transform: translate3d(0, 0, 0) scale(1);
-      filter: blur(0);
     }
 
     to {
       opacity: 0;
-      clip-path: inset(100% 0 0 0);
-      transform: translate3d(0, -2.25rem, 0) scale(0.975);
-      filter: blur(7px);
+      transform: translate3d(0, -1.5rem, 0) scale(0.985);
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .section.section3.is-leaving-before-scroll .section3__eyebrow,
-    .section.section3.is-leaving-before-scroll .section3__title,
-    .section.section3.is-leaving-before-scroll .section3__subtitle,
-    .section.section3.is-leaving-before-scroll .section3__closing-text,
-    .section.section3.is-leaving-before-scroll .section3__cta {
-      animation: homeTextExitBeforeScroll 0.46s cubic-bezier(0.4, 0, 1, 1) both;
+    .section.section3.is-leaving-before-scroll .section3__reveal {
+      animation: homeTextExitBeforeScroll var(--home-motion-exit) var(--home-motion-ease-exit) both;
       animation-delay: var(--section3-exit-delay);
-      animation-timeline: auto;
-      animation-range: normal;
       transition: none;
     }
   }
@@ -979,25 +962,18 @@
       --home-exit-delay: 0s;
     }
 
-    .hero__header-group,
-    .hero__title,
-    .hero__lede,
-    .home-btn-group--hero {
+    .hero__reveal {
       opacity: 0;
-      clip-path: inset(0 0 100% 0);
+      transform: translate3d(0, 0.8rem, 0);
+      backface-visibility: hidden;
       transition:
-        opacity 0.26s ease-out,
-        clip-path 0.34s cubic-bezier(0.4, 0, 1, 1);
+        opacity var(--home-motion-fade) ease-out,
+        transform var(--home-motion-enter) var(--home-motion-ease-enter);
       transition-delay: 0s;
     }
-    .hero.is-visible .hero__header-group,
-    .hero.is-visible .hero__title,
-    .hero.is-visible .hero__lede,
-    .hero.is-visible .home-btn-group--hero {
+    .hero.is-visible .hero__reveal {
       opacity: 1;
-      clip-path: inset(0);
-      transition-duration: 0.5s, 0.7s;
-      transition-timing-function: ease-out, cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translate3d(0, 0, 0);
     }
     .hero.is-visible .hero__header-group {
       transition-delay: 0.02s;
@@ -1012,15 +988,14 @@
       transition-delay: 0.26s;
     }
 
-    .section.hero.is-leaving-before-scroll .hero__header-group,
-    .section.hero.is-leaving-before-scroll .hero__title,
-    .section.hero.is-leaving-before-scroll .hero__lede,
-    .section.hero.is-leaving-before-scroll .home-btn-group--hero {
-      animation: homeTextExitBeforeScroll 0.46s cubic-bezier(0.4, 0, 1, 1) both;
+    .section.hero.is-leaving-before-scroll .hero__reveal {
+      animation: homeTextExitBeforeScroll var(--home-motion-exit) var(--home-motion-ease-exit) both;
       animation-delay: var(--home-exit-delay);
-      animation-timeline: auto;
-      animation-range: normal;
       transition: none;
+    }
+
+    body.is-home-section-transitioning :is(.hero__reveal, .section3__reveal, .features__fallback) {
+      will-change: opacity, transform;
     }
   }
 
@@ -1209,9 +1184,7 @@
 
   @media (prefers-reduced-motion: no-preference) {
     .section.features.is-leaving-before-scroll .features__fallback {
-      animation: homeTextExitBeforeScroll 0.46s cubic-bezier(0.4, 0, 1, 1) both;
-      animation-timeline: auto;
-      animation-range: normal;
+      animation: homeTextExitBeforeScroll var(--home-motion-exit) var(--home-motion-ease-exit) both;
     }
   }
 

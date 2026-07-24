@@ -1,31 +1,18 @@
-import { signal, subscribe as signalSubscribe } from "../../core/signals.js";
+import { signal } from "../../core/signals.js";
 import { waitForReadyState } from "../../core/utils/index.js";
 
 const loadedSignal = signal(false);
-const expandedSignal = signal(false);
 
 export const footerSignals = Object.freeze({
   loaded: loadedSignal,
-  expanded: expandedSignal,
 });
-
-function getFooterSnapshot() {
-  return Object.freeze({
-    loaded: footerSignals.loaded.value,
-    expanded: footerSignals.expanded.value,
-  });
-}
-
-export function subscribeFooterState(listener, options = {}) {
-  return signalSubscribe(getFooterSnapshot, listener, options);
-}
 
 export function whenFooterReady(options = {}) {
   const { timeout = 0, abortSignal = null } = options;
   return waitForReadyState({
-    getSnapshot: getFooterSnapshot,
-    isReady: snapshot => snapshot.loaded === true,
-    subscribe: listener => subscribeFooterState(listener),
+    getSnapshot: () => loadedSignal.value,
+    isReady: Boolean,
+    subscribe: listener => loadedSignal.subscribe(listener),
     timeout,
     abortSignal,
     abortMessage: "Footer readiness wait aborted",
@@ -37,11 +24,6 @@ export function setFooterLoaded(isLoaded) {
   loadedSignal.value = Boolean(isLoaded);
 }
 
-export function setFooterExpanded(isExpanded) {
-  expandedSignal.value = Boolean(isExpanded);
-}
-
 export function resetFooterState() {
   loadedSignal.value = false;
-  expandedSignal.value = false;
 }

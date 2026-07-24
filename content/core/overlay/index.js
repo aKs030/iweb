@@ -5,7 +5,7 @@
  * @version 7.0.0
  */
 
-import { OVERLAY_MODES, activeOverlay, normalizeOverlayMode } from "../state/ui-store.js";
+import { OVERLAY_MODES, activeOverlay, normalizeOverlayMode } from "../state/overlay-state.js";
 
 // ============================================================================
 // 1. BACKDROP & BODY SCROLL LOCK (formerly core.js)
@@ -13,15 +13,101 @@ import { OVERLAY_MODES, activeOverlay, normalizeOverlayMode } from "../state/ui-
 
 const GLOBAL_BACKDROP_ID = "menu-global-backdrop";
 const GLOBAL_BACKDROP_CLASS = "menu-global-backdrop overlay-backdrop overlay-backdrop--global";
+const BACKDROP_CLOSE_GUARD_MS = 200;
 
 const BACKDROP_VISIBLE_MODES = new Set([
   OVERLAY_MODES.MENU,
   OVERLAY_MODES.SEARCH,
   OVERLAY_MODES.ROBOT_CHAT,
+  OVERLAY_MODES.FOOTER,
+]);
+
+const BODY_SCROLL_LOCKED_MODES = new Set([
+  OVERLAY_MODES.SEARCH,
+  OVERLAY_MODES.ROBOT_CHAT,
+  OVERLAY_MODES.FOOTER,
 ]);
 
 let backdropElement = null;
+let backdropGuardElement = null;
+let backdropCloseTimer = null;
 let bodyScrollLockState = null;
+
+const OVERLAY_SCROLL_KEYS = new Set([
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "End",
+  "Home",
+  "PageDown",
+  "PageUp",
+  " ",
+]);
+
+const EVENT_SCROLL_LOCK_ROOTS = new Map([
+  [OVERLAY_MODES.FOOTER, "site-footer"],
+  [OVERLAY_MODES.ROBOT_CHAT, "#robot-chat-window, #robot-companion-container"],
+]);
+
+function lockOverlayBackgroundScroll(mode, scrollY) {
+  const abortController = new AbortController();
+  const options = { capture: true, passive: false, signal: abortController.signal };
+  const rootSelector = EVENT_SCROLL_LOCK_ROOTS.get(mode);
+  const root = document.documentElement;
+  const previousScrollBehavior = root.style.scrollBehavior;
+  const previousScrollSnapType = root.style.scrollSnapType;
+  const isInsideOverlay = target =>
+    target instanceof Element && Boolean(rootSelector && target.closest(rootSelector));
+
+  const blockPointerScroll = event => {
+    if (isInsideOverlay(event.target)) return;
+    event.preventDefault();
+  };
+
+  const blockKeyboardScroll = event => {
+    if (!OVERLAY_SCROLL_KEYS.has(event.key) || isInsideOverlay(event.target)) return;
+    event.preventDefault();
+  };
+
+  const restoreScrollPosition = () => {
+    if (Math.abs(window.scrollY - scrollY) < 1) return;
+    window.scrollTo(0, scrollY);
+  };
+
+  root.style.scrollBehavior = "auto";
+  root.style.scrollSnapType = "none";
+  restoreScrollPosition();
+
+  window.addEventListener("wheel", blockPointerScroll, options);
+  window.addEventListener("touchmove", blockPointerScroll, options);
+  document.addEventListener("keydown", blockKeyboardScroll, options);
+  window.addEventListener("scroll", restoreScrollPosition, {
+    passive: true,
+    signal: abortController.signal,
+  });
+
+  return () => {
+    abortController.abort();
+    root.style.scrollBehavior = previousScrollBehavior;
+    root.style.scrollSnapType = previousScrollSnapType;
+  };
+}
+
+function blockClosingBackdropClick(event) {
+  if (!backdropElement?.classList.contains("is-closing")) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+}
+
+function ensureBackdropClickGuard(element) {
+  if (backdropGuardElement === element) return;
+
+  backdropGuardElement?.removeEventListener("click", blockClosingBackdropClick, true);
+  element.addEventListener("click", blockClosingBackdropClick, true);
+  backdropGuardElement = element;
+}
 
 export function shouldModeShowBackdrop(mode) {
   return BACKDROP_VISIBLE_MODES.has(normalizeOverlayMode(mode));
@@ -34,6 +120,7 @@ export function ensureBackdropElement() {
   const existing = document.getElementById(GLOBAL_BACKDROP_ID);
   if (existing instanceof HTMLElement) {
     backdropElement = existing;
+    ensureBackdropClickGuard(existing);
     return backdropElement;
   }
 
@@ -43,14 +130,14 @@ export function ensureBackdropElement() {
   element.setAttribute("aria-hidden", "true");
   document.body.appendChild(element);
   backdropElement = element;
+  ensureBackdropClickGuard(element);
   return backdropElement;
 }
 
 function shouldLockBodyScroll(mode) {
   const normalizedMode = normalizeOverlayMode(mode);
-  if (normalizedMode === OVERLAY_MODES.SEARCH || normalizedMode === OVERLAY_MODES.ROBOT_CHAT) {
-    return true;
-  }
+  if (BODY_SCROLL_LOCKED_MODES.has(normalizedMode)) return true;
+
   if (normalizedMode === OVERLAY_MODES.MENU) {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(max-width: 900px)").matches;
@@ -58,13 +145,24 @@ function shouldLockBodyScroll(mode) {
   return false;
 }
 
-function lockBodyScroll() {
+function lockBodyScroll(mode) {
   if (typeof document === "undefined" || !document.body || bodyScrollLockState) return;
 
   const body = document.body;
   const scrollY = typeof window !== "undefined" ? window.scrollY || window.pageYOffset || 0 : 0;
 
+  const normalizedMode = normalizeOverlayMode(mode);
+  if (EVENT_SCROLL_LOCK_ROOTS.has(normalizedMode)) {
+    bodyScrollLockState = {
+      mode: normalizedMode,
+      cleanup: lockOverlayBackgroundScroll(normalizedMode, scrollY),
+    };
+    body.dataset.overlayScrollLocked = "true";
+    return;
+  }
+
   bodyScrollLockState = {
+    mode: normalizeOverlayMode(mode),
     scrollY,
     style: {
       position: body.style.position || "",
@@ -89,7 +187,14 @@ function unlockBodyScroll() {
   if (typeof document === "undefined" || !document.body || !bodyScrollLockState) return;
 
   const body = document.body;
-  const { scrollY, style } = bodyScrollLockState;
+  const { mode, scrollY, style, cleanup } = bodyScrollLockState;
+
+  if (EVENT_SCROLL_LOCK_ROOTS.has(mode)) {
+    cleanup?.();
+    delete body.dataset.overlayScrollLocked;
+    bodyScrollLockState = null;
+    return;
+  }
 
   body.style.position = style.position;
   body.style.top = style.top;
@@ -101,13 +206,24 @@ function unlockBodyScroll() {
   bodyScrollLockState = null;
 
   if (typeof window !== "undefined") {
+    const root = document.documentElement;
+    const previousScrollBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
     window.scrollTo(0, Math.max(0, Number(scrollY) || 0));
+    root.style.scrollBehavior = previousScrollBehavior;
   }
 }
 
 export function syncBodyOverlayState(mode) {
   if (typeof document === "undefined" || !document.body) return;
   const normalizedMode = normalizeOverlayMode(mode);
+  const shouldLock = shouldLockBodyScroll(normalizedMode);
+  const lockModeChanged = bodyScrollLockState && bodyScrollLockState.mode !== normalizedMode;
+
+  // Restore the saved position while the previous overlay styles still
+  // suppress scroll snapping. This avoids a visible jump on close.
+  if (!shouldLock || lockModeChanged) unlockBodyScroll();
+
   document.body.dataset.activeOverlay = normalizedMode;
 
   const root = document.documentElement;
@@ -115,11 +231,7 @@ export function syncBodyOverlayState(mode) {
     root.dataset.activeOverlay = normalizedMode;
   }
 
-  if (shouldLockBodyScroll(normalizedMode)) {
-    lockBodyScroll();
-  } else {
-    unlockBodyScroll();
-  }
+  if (shouldLock) lockBodyScroll(normalizedMode);
 }
 
 export function syncBackdropState(mode) {
@@ -133,8 +245,28 @@ export function syncBackdropState(mode) {
   if (!backdrop) return;
 
   const isOpen = shouldModeShowBackdrop(normalizedMode);
-  backdrop.classList.toggle("is-open", isOpen);
-  backdrop.dataset.mode = normalizedMode;
+  if (isOpen) {
+    if (backdropCloseTimer) clearTimeout(backdropCloseTimer);
+    backdropCloseTimer = null;
+    backdrop.classList.remove("is-closing");
+    backdrop.classList.add("is-open");
+    backdrop.dataset.mode = normalizedMode;
+    return;
+  }
+
+  if (!backdrop.classList.contains("is-open")) {
+    if (!backdrop.classList.contains("is-closing")) backdrop.dataset.mode = normalizedMode;
+    return;
+  }
+
+  backdrop.classList.remove("is-open");
+  backdrop.classList.add("is-closing");
+  if (backdropCloseTimer) clearTimeout(backdropCloseTimer);
+  backdropCloseTimer = setTimeout(() => {
+    backdrop.classList.remove("is-closing");
+    backdrop.dataset.mode = normalizedMode;
+    backdropCloseTimer = null;
+  }, BACKDROP_CLOSE_GUARD_MS);
 }
 
 // ============================================================================

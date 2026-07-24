@@ -3,11 +3,15 @@
  * @version 1.2.0
  */
 
-import { cancelIdleTask, scheduleIdleTask } from "../../../core/utils/index.js";
-import { getElementById, upsertHeadLink } from "../../../core/utils/index.js";
+import {
+  cancelIdleTask,
+  getElementById,
+  scheduleIdleTask,
+  TimerManager,
+  upsertHeadLink,
+} from "../../../core/utils/index.js";
 import { createLogger } from "../../../core/logger.js";
 import { AppLoadManager } from "../../../core/load-manager.js";
-import { TimerManager } from "../../../core/utils/index.js";
 import { EARTH_PRIMARY_TEXTURE_URL, EARTH_SECONDARY_TEXTURE_URLS } from "../earth/texture-paths.js";
 
 const log = createLogger("ThreeEarthManager");

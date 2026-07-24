@@ -5,15 +5,13 @@
 
 import { createLogger } from "../../core/logger.js";
 import { upsertMeta } from "../../core/utils/index.js";
-import { applyCanonicalLinks } from "../../core/seo/index.js";
-import { extractMainHeadingTerms } from "../../core/seo/index.js";
 import {
+  applyCanonicalLinks,
   buildSeoAbstractText,
   buildSeoKeywordList,
-  getSeoPageTopics,
-} from "../../core/seo/index.js";
-import {
+  extractMainHeadingTerms,
   generateSchemaGraph,
+  getSeoPageTopics,
   injectSchema,
   scheduleSchemaInjection,
 } from "../../core/seo/index.js";

@@ -1,6 +1,5 @@
-import { getElementById, observeOnce } from "#core/utils/index.js";
+import { getElementById, observeOnce, TimerManager } from "#core/utils/index.js";
 import { createLogger } from "#core/logger.js";
-import { TimerManager } from "#core/utils/index.js";
 import { i18n } from "#core/i18n.js";
 import { ROBOT_EVENTS } from "#components/robot-companion/index.js";
 
@@ -22,12 +21,12 @@ const HERO_REVEAL = Object.freeze({
   thresholds: Object.freeze([0, 0.38, 0.68]),
 });
 const SECTION3_REVEAL = Object.freeze({
-  enterRatio: 0.32,
-  exitRatio: 0.88,
-  thresholds: Object.freeze([0, 0.32, 0.88, 1]),
+  enterRatio: 0.52,
+  exitRatio: 0.28,
+  thresholds: Object.freeze([0, 0.28, 0.52, 1]),
 });
-const SECTION_EXIT_BEFORE_SCROLL_MS = 660;
-const SECTION_EXIT_SCROLL_MS = 900;
+const SECTION_EXIT_BEFORE_SCROLL_MS = 560;
+const SECTION_EXIT_SCROLL_MS = 760;
 const SECTION_SNAP_TOLERANCE_PX = 64;
 const SECTION_TOUCH_INTENT_PX = 8;
 
@@ -416,18 +415,18 @@ const HeroManager = (() => {
     section.classList.toggle("is-leaving-before-scroll", active);
   }
 
+  function finishSectionExitTransition(section) {
+    setSectionExitState(section, false);
+    document.body.classList.remove("is-home-section-transitioning");
+    sectionExitLocked = false;
+  }
+
   function findSectionExitContext(direction) {
     for (const section of sectionExitElements) {
       const destination = getAdjacentSection(section, direction);
       if (!isSectionAtExitBoundary(section, direction)) continue;
 
-      if (destination) return { section, destination, openFooter: false };
-
-      const shouldOpenFooter =
-        direction > 0 &&
-        section.id === "section3" &&
-        !document.body.classList.contains("footer-expanded");
-      if (shouldOpenFooter) return { section, destination: null, openFooter: true };
+      if (destination) return { section, destination };
     }
 
     return null;
@@ -446,20 +445,8 @@ const HeroManager = (() => {
     );
   }
 
-  async function moveToSectionExitDestination(context, reduceMotion) {
-    if (context.destination) {
-      scrollToSection(context.destination, reduceMotion);
-      return;
-    }
-
-    if (!context.openFooter) return;
-
-    try {
-      const { openFooter } = await import("#footer/index.js");
-      await openFooter();
-    } catch (err) {
-      log.warn("Section exit footer transition failed", err);
-    }
+  function moveToSectionExitDestination(context, reduceMotion) {
+    scrollToSection(context.destination, reduceMotion);
   }
 
   function startSectionExitBeforeScroll(context) {
@@ -469,26 +456,28 @@ const HeroManager = (() => {
     const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     sectionExitLocked = true;
 
+    document.body.classList.add("is-home-section-transitioning");
+
     if (reduceMotion) {
-      void moveToSectionExitDestination(context, true).finally(() => {
-        sectionExitLocked = false;
-      });
+      moveToSectionExitDestination(context, true);
+      finishSectionExitTransition(section);
       return;
     }
 
     setSectionExitState(section, true);
 
     heroTimers.setTimeout(() => {
-      void moveToSectionExitDestination(context, false).finally(() => {
-        heroTimers.setTimeout(() => {
-          setSectionExitState(section, false);
-          sectionExitLocked = false;
-        }, SECTION_EXIT_SCROLL_MS);
-      });
+      moveToSectionExitDestination(context, false);
+      heroTimers.setTimeout(() => {
+        finishSectionExitTransition(section);
+      }, SECTION_EXIT_SCROLL_MS);
     }, SECTION_EXIT_BEFORE_SCROLL_MS);
   }
 
   function handleSectionExitIntent(direction, event) {
+    const overlayMode = document.body.dataset.activeOverlay;
+    if (overlayMode && overlayMode !== "none") return;
+
     if (sectionExitLocked) {
       event.preventDefault();
       return;
@@ -529,6 +518,7 @@ const HeroManager = (() => {
     sectionExitTouchEndHandler = null;
     sectionExitTouchStartY = null;
     sectionExitLocked = false;
+    document.body.classList.remove("is-home-section-transitioning");
   }
 
   function setupSectionExitBeforeScroll() {
@@ -583,10 +573,9 @@ const HeroManager = (() => {
   }
 
   function toggleCosmosPointerListener() {
-    if (auroraMotionQuery?.matches) {
-      window.removeEventListener("pointermove", cosmosPointerHandler);
-    } else {
-      window.removeEventListener("pointermove", cosmosPointerHandler);
+    window.removeEventListener("pointermove", cosmosPointerHandler);
+
+    if (!auroraMotionQuery?.matches) {
       window.addEventListener("pointermove", cosmosPointerHandler, { passive: true });
     }
   }
@@ -596,9 +585,7 @@ const HeroManager = (() => {
 
     auroraMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
     auroraScrollHandler = requestAuroraPerspectiveUpdate;
-    auroraResizeHandler = () => {
-      requestAuroraPerspectiveUpdate();
-    };
+    auroraResizeHandler = requestAuroraPerspectiveUpdate;
     auroraMotionChangeHandler = () => {
       requestAuroraPerspectiveUpdate();
       resetStarParallax();

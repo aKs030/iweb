@@ -15,12 +15,8 @@ import {
   formatCompactUrlPath,
   setSanitizedHTML,
 } from "../../../core/utils/index.js";
-import {
-  activeOverlay,
-  clearActiveOverlayMode,
-  setActiveOverlayMode,
-} from "../../../core/state/ui-store.js";
-import { prepareOverlayFocusChange, OVERLAY_MODES } from "../../../core/overlay-manager.js";
+import { activeOverlay } from "../../../core/state/overlay-state.js";
+import { closeOverlay, openOverlay, OVERLAY_MODES } from "../../../core/overlay-manager.js";
 import { resourceHints } from "../../../core/seo/index.js";
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
@@ -1583,21 +1579,19 @@ export class MenuSearch {
 
   async openSearchMode() {
     if (this.isSearchOpen()) return;
+    await openOverlay(OVERLAY_MODES.SEARCH, { reason: "search-open" });
+  }
 
+  async prepareOpenSearchMode() {
     await this.ensureSearchStyles();
-
-    if (this.state.isOpen) {
-      prepareOverlayFocusChange(OVERLAY_MODES.MENU, { restoreFocus: false });
-    }
-    this.state.setOpen(false);
-    setActiveOverlayMode(OVERLAY_MODES.SEARCH);
   }
 
   closeSearchMode(options = {}) {
     const { restoreFocus = true } = options;
-    if (!this.isSearchOpen()) return;
-    prepareOverlayFocusChange(OVERLAY_MODES.SEARCH, { restoreFocus });
-    clearActiveOverlayMode(OVERLAY_MODES.SEARCH);
+    return closeOverlay(OVERLAY_MODES.SEARCH, {
+      reason: "search-close",
+      restoreFocus,
+    });
   }
 
   clearSearchDebounce() {
@@ -1692,7 +1686,10 @@ export class MenuSearch {
   }
 
   destroy() {
-    clearActiveOverlayMode(OVERLAY_MODES.SEARCH);
+    void closeOverlay(OVERLAY_MODES.SEARCH, {
+      reason: "component-disconnect",
+      restoreFocus: false,
+    });
     this.clearSearchDebounce();
     this.abortSearchRequest();
     this.searchStore.destroy();
