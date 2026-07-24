@@ -3,13 +3,11 @@
  * @version 6.3.0
  */
 
-import { initHeroFeatureBundle } from "#pages/home/hero-manager.js";
 import { createLogger } from "./core/logger.js";
 import { a11y, createAnnouncer } from "./core/accessibility-manager.js";
 import { SectionManager } from "./core/section-manager.js";
 import { AppLoadManager, loadSignals } from "./core/load-manager.js";
 import { signal, effect, computed } from "./core/signals.js";
-import { ThreeEarthManager } from "#components/particles/index.js";
 import { TimerManager } from "./core/utils/index.js";
 import { initViewTransitions } from "./core/view-transitions/index.js";
 import { i18n } from "./core/i18n.js";
@@ -52,7 +50,7 @@ const sectionManager = new SectionManager();
 
 // ===== Initialize Managers =====
 // Declared before onDOMReady so _initApp can reference it without temporal issues
-const ThreeEarthLoader = new ThreeEarthManager(ENV);
+const isHomeRoute = (globalThis.location.pathname || "/").replace(/\/+$/g, "") === "";
 const loaderHidden = signal(false);
 const modulesReady = signal(false);
 const windowLoaded = signal(document.readyState === "complete");
@@ -71,11 +69,6 @@ const _initApp = () => {
   _appInitialized = true;
 
   sectionManager.init();
-
-  // Start earth loading in next frame to avoid blocking DOM ready
-  requestAnimationFrame(() => {
-    ThreeEarthLoader.init();
-  });
 
   try {
     a11y?.updateAnimations?.();
@@ -99,6 +92,21 @@ const _initApp = () => {
 
   // Initialize Enhancements (Section Dots, Reveal, Skill Radar, Voice, Easter Eggs)
   initEnhancements();
+};
+
+const initRouteFeatures = async () => {
+  if (!isHomeRoute) return;
+
+  const [{ initHeroFeatureBundle }, { ThreeEarthManager }] = await Promise.all([
+    import("#pages/home/hero-manager.js"),
+    import("#components/particles/index.js"),
+  ]);
+
+  const threeEarthLoader = new ThreeEarthManager(ENV);
+  requestAnimationFrame(() => {
+    threeEarthLoader.init();
+  });
+  initHeroFeatureBundle(sectionManager);
 };
 
 // ===== Application Bootstrap =====
@@ -146,7 +154,7 @@ document.addEventListener(
     );
 
     updateLoader(0.3, i18n.t("loader.hero_init"));
-    initHeroFeatureBundle(sectionManager);
+    await initRouteFeatures();
 
     modulesReady.value = true;
     perfMarks.modulesReady = performance.now();

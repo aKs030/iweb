@@ -3,7 +3,6 @@
  */
 import { createLogger } from "../../content/core/logger.js";
 import { errorJsonResponse, jsonResponse } from "./_response.js";
-import { ensureAppD1Schema } from "./_d1-schema.js";
 import { getRequestClientIp } from "./_request-utils.js";
 
 const log = createLogger("likes");
@@ -26,8 +25,6 @@ export async function onRequestGet(context) {
   try {
     const { db, error } = requireDb(env);
     if (error) return error;
-
-    await ensureAppD1Schema(db);
 
     const result = await db
       .prepare("SELECT likes FROM project_likes WHERE project_id = ?")
@@ -62,8 +59,6 @@ export async function onRequestPost(context) {
   try {
     const { db, error } = requireDb(env);
     if (error) return error;
-
-    await ensureAppD1Schema(db);
 
     const sourceIp = getRequestClientIp(request);
     const userAgent = String(request.headers.get("User-Agent") || "").trim();

@@ -177,10 +177,70 @@ body[data-home-section="section3"] #robot-companion-container:not(.robot-chat--o
 
 /* Wrapper für synchrones Schweben von Avatar und Bubble */
 .robot-float-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   will-change: transform;
+}
+
+.robot-visibility-toggle {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.35rem;
+  z-index: 3;
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--robot-cyan) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--robot-rgb-15-23-42) 92%, transparent);
+  color: var(--robot-slate-100);
+  font: 700 var(--type-xs) / 1 var(--font-sans);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+#robot-companion-container.robot-companion--hidden {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+#robot-companion-container.robot-companion--hidden :is(.robot-avatar, .robot-bubble) {
+  display: none;
+}
+
+#robot-companion-container.robot-companion--hidden .robot-visibility-toggle {
+  position: static;
+  width: 2.75rem;
+  height: 2.75rem;
+  box-shadow: 0 0 var(--size-15) color-mix(in srgb, var(--robot-cyan) 30%, transparent);
+}
+
+@media (width <= 640px) {
+  #robot-companion-container,
+  #robot-companion-container[data-page-context] {
+    top: auto;
+    right: max(0.75rem, var(--safe-right));
+    bottom: max(calc(var(--content-bottom-offset) + 0.5rem), var(--safe-bottom));
+    left: auto;
+    width: 3.5rem;
+    height: 3.5rem;
+    align-items: flex-end;
+    transition: none;
+  }
+
+  #robot-companion-container .robot-avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  #robot-companion-container.robot-companion--content-collision {
+    right: auto;
+    left: max(0.75rem, var(--safe-left));
+  }
 }
 
 /* Der Roboter selbst */

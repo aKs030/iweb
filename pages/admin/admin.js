@@ -315,7 +315,14 @@ const ACTION_HANDLERS = {
   },
   "load-comments": target => {
     const offset = actionNumber(target, "offset");
-    if (offset !== null) return loadComments(offset, currentCommentsPostId);
+    if (offset !== null) {
+      return loadComments(offset, currentCommentsPostId, currentCommentsStatus);
+    }
+  },
+  "moderate-comment": target => {
+    const id = actionNumber(target, "id");
+    const status = target.dataset.status || "";
+    if (id !== null && status) return moderateComment(id, status);
   },
   "select-user": target => withUserId(target, selectUser),
   "refresh-user": target => withUserId(target, selectUser),
@@ -367,7 +374,15 @@ document.addEventListener("keydown", event => {
       : null;
   if (!filterInput || event.key !== "Enter") return;
   event.preventDefault();
-  void loadComments(0, filterInput.value || null);
+  void loadComments(0, filterInput.value || null, currentCommentsStatus);
+});
+
+document.addEventListener("change", event => {
+  const select =
+    event.target instanceof HTMLSelectElement && event.target.id === "comment-status-filter"
+      ? event.target
+      : null;
+  if (select) void loadComments(0, currentCommentsPostId, select.value);
 });
 
 function switchView(view) {
@@ -407,6 +422,7 @@ function renderDashboard(data) {
   const items = [
     { icon: "✉️", value: s.contactMessages, label: "Kontakt-Nachrichten" },
     { icon: "💬", value: s.blogComments, label: "Blog-Kommentare" },
+    { icon: "⏳", value: s.pendingComments, label: "Warten auf Freigabe" },
     { icon: "❤️", value: s.projectLikes, label: "Projekte mit Likes" },
     { icon: "👆", value: s.likeEvents, label: "Like-Events" },
     { icon: "🧠", value: s.userMemories, label: "User-Profile" },
@@ -499,12 +515,18 @@ async function deleteContact(id) {
    ================================================================= */
 let commentsOffset = 0;
 let currentCommentsPostId = null;
+let currentCommentsStatus = "pending";
 
-async function loadComments(offset = 0, postId = currentCommentsPostId) {
+async function loadComments(
+  offset = 0,
+  postId = currentCommentsPostId,
+  status = currentCommentsStatus
+) {
   commentsOffset = offset;
   currentCommentsPostId =
     typeof postId === "string" && postId.trim() ? postId.trim() : postId || null;
-  const params = { limit: PAGE_LIMIT, offset };
+  currentCommentsStatus = ["pending", "approved", "rejected"].includes(status) ? status : "all";
+  const params = { limit: PAGE_LIMIT, offset, status: currentCommentsStatus };
   if (currentCommentsPostId) params.postId = currentCommentsPostId;
   const data = await apiCall("blog-comments", params);
   renderComments(data);
@@ -514,11 +536,6 @@ function renderComments(data) {
   const comments = data.comments || [];
   const total = data.total || 0;
 
-  if (comments.length === 0) {
-    setHtml("comments-content", emptyState("Keine Kommentare vorhanden.", "💬"));
-    return;
-  }
-
   const rows = comments
     .map(
       c => `<tr>
@@ -526,8 +543,19 @@ function renderComments(data) {
       <td title="${esc(c.post_id)}">${esc(truncate(c.post_id, 25))}</td>
       <td>${esc(c.author_name)}</td>
       <td title="${esc(c.content)}">${esc(truncate(c.content, 60))}</td>
+      <td><span class="status-badge status-badge--${esc(c.status || "pending")}">${esc(c.status || "pending")}</span></td>
       <td>${formatDate(c.created_at)}</td>
-      <td>
+      <td class="comment-actions">
+        ${
+          c.status !== "approved"
+            ? `<button class="btn btn--sm" type="button" data-action="moderate-comment" data-id="${c.id}" data-status="approved">✓</button>`
+            : ""
+        }
+        ${
+          c.status !== "rejected"
+            ? `<button class="btn btn--sm" type="button" data-action="moderate-comment" data-id="${c.id}" data-status="rejected">⛔</button>`
+            : ""
+        }
         <button class="btn btn--danger btn--sm" type="button" data-action="delete-comment" data-id="${c.id}">
           🗑️
         </button>
@@ -540,9 +568,16 @@ function renderComments(data) {
     "comments-content",
     tableHtml({
       title: `Kommentare (${total})`,
-      headers: ["ID", "Post", "Autor", "Inhalt", "Datum", ""],
-      rows,
-      actions: `<input class="search-input" id="comment-filter" placeholder="Nach Post-ID filtern…" value="${esc(currentCommentsPostId || "")}" />`,
+      headers: ["ID", "Post", "Autor", "Inhalt", "Status", "Datum", ""],
+      rows: rows || undefined,
+      emptyText: "Keine Kommentare für diesen Filter vorhanden.",
+      actions: `<select class="search-input" id="comment-status-filter" aria-label="Kommentarstatus filtern">
+        <option value="pending"${currentCommentsStatus === "pending" ? " selected" : ""}>Ausstehend</option>
+        <option value="approved"${currentCommentsStatus === "approved" ? " selected" : ""}>Freigegeben</option>
+        <option value="rejected"${currentCommentsStatus === "rejected" ? " selected" : ""}>Abgelehnt</option>
+        <option value="all"${currentCommentsStatus === "all" ? " selected" : ""}>Alle</option>
+      </select>
+      <input class="search-input" id="comment-filter" placeholder="Nach Post-ID filtern…" value="${esc(currentCommentsPostId || "")}" />`,
       footer: paginationFooter({
         action: "load-comments",
         limit: PAGE_LIMIT,
@@ -558,9 +593,20 @@ async function deleteComment(id) {
   try {
     await apiCall("delete-comment", { id });
     showToast(`Kommentar #${id} gelöscht.`);
-    await loadComments(commentsOffset, currentCommentsPostId);
+    await loadComments(commentsOffset, currentCommentsPostId, currentCommentsStatus);
   } catch (e) {
     showError(e);
+  }
+}
+
+async function moderateComment(id, status) {
+  try {
+    await apiCall("update-comment-status", { id, status });
+    showToast(`Kommentar #${id}: ${status}`);
+    await loadComments(commentsOffset, currentCommentsPostId, currentCommentsStatus);
+    viewDataLoaded.dashboard = false;
+  } catch (e) {
+    showError(e, "Moderation fehlgeschlagen");
   }
 }
 

@@ -29,6 +29,8 @@ const rateLimiter = createWindowRateLimiter({
 export async function onRequest(context) {
   const { request, env, next } = context;
   const url = new URL(request.url);
+  const startedAt = Date.now();
+  const requestId = request.headers.get("CF-Ray") || crypto.randomUUID();
   const isLocalhostRequest =
     url.hostname === "localhost" ||
     url.hostname === "127.0.0.1" ||
@@ -81,6 +83,19 @@ export async function onRequest(context) {
   }
 
   const response = await next();
+
+  // eslint-disable-next-line no-console -- structured event consumed by Workers Logs
+  console.log(
+    JSON.stringify({
+      event: "api_request",
+      requestId,
+      method: request.method,
+      path: url.pathname,
+      status: response.status,
+      durationMs: Date.now() - startedAt,
+      colo: request.cf?.colo || "",
+    })
+  );
 
   const newHeaders = new Headers(response.headers);
   for (const [key, value] of Object.entries(headers)) {

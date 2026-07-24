@@ -456,6 +456,32 @@
     gap: 0.5rem;
   }
 
+  .status-badge {
+    display: inline-flex;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: var(--type-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .status-badge--pending {
+    color: #fbbf24;
+  }
+
+  .status-badge--approved {
+    color: #4ade80;
+  }
+
+  .status-badge--rejected {
+    color: #fb7185;
+  }
+
+  .comment-actions {
+    white-space: nowrap;
+  }
+
   .search-input {
     padding: 0.5rem 0.85rem;
     background: var(--admin-bg-input);

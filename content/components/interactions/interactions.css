@@ -255,6 +255,15 @@
   margin-bottom: var(--size-r-1);
 }
 
+.comment-success {
+  margin: 0;
+  color: var(--state-success-text, #86efac);
+}
+
+.comment-turnstile {
+  min-height: 65px;
+}
+
 .comment-item {
   background: color-mix(in srgb, var(--clr-white) 3%, transparent);
   padding: var(--size-r-1-25);

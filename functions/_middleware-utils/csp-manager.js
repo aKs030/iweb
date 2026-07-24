@@ -51,6 +51,7 @@ export function buildCspHeader(nonce) {
       "https://unpkg.com",
       "https://www.googletagmanager.com",
       "https://static.cloudflareinsights.com",
+      "https://challenges.cloudflare.com",
     ].join(" "),
     "script-src-attr 'none'",
     [
@@ -91,6 +92,7 @@ export function buildCspHeader(nonce) {
       "https://adservice.google.com",
       "https://cct.google",
       "https://static.cloudflareinsights.com",
+      "https://challenges.cloudflare.com",
     ].join(" "),
     [
       "frame-src",
@@ -98,6 +100,7 @@ export function buildCspHeader(nonce) {
       "https://www.youtube-nocookie.com",
       "https://www.youtube.com",
       "https://www.googletagmanager.com",
+      "https://challenges.cloudflare.com",
     ].join(" "),
     "media-src 'self' https://www.youtube.com https://*.googlevideo.com",
     "worker-src 'self' blob:",

@@ -386,20 +386,20 @@
 @media (width <= 480px) {
   #robot-companion-container,
   .robot-avatar {
-    width: var(--size-64);
-    height: var(--size-64);
+    width: 3.5rem;
+    height: 3.5rem;
   }
 
   #robot-companion-container {
-    bottom: max(var(--size-6), var(--safe-bottom));
-    right: max(var(--size-6), var(--safe-right));
+    bottom: max(calc(var(--content-bottom-offset) + 0.5rem), var(--safe-bottom));
+    right: max(0.75rem, var(--safe-right));
   }
 
   /* On mobile, disable per-page vertical offsets – always bottom-right */
   #robot-companion-container[data-page-context] {
-    bottom: max(var(--size-6), var(--safe-bottom));
+    bottom: max(calc(var(--content-bottom-offset) + 0.5rem), var(--safe-bottom));
     top: auto;
-    right: max(var(--size-6), var(--safe-right));
+    right: max(0.75rem, var(--safe-right));
     left: auto;
     align-items: flex-end;
     transition: none;

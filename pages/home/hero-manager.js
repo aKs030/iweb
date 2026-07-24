@@ -112,6 +112,12 @@ const HeroManager = (() => {
   function setupScrollObserver(heroEl) {
     if (scrollObserver) return;
 
+    const initialRect = heroEl.getBoundingClientRect();
+    if (initialRect.top < innerHeight && initialRect.bottom > 0) {
+      heroEl.classList.add("is-visible");
+    }
+    document.documentElement.classList.add("hero-motion-ready");
+
     scrollObserver = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {

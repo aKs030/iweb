@@ -281,10 +281,26 @@ export class RobotDOMBuilder {
 
     const bubble = this.createBubble();
     const avatar = this.createAvatar();
+    const visibilityToggle = this.createVisibilityToggle();
 
-    wrapper.append(bubble, avatar);
+    wrapper.append(bubble, avatar, visibilityToggle);
 
     return wrapper;
+  }
+
+  /**
+   * Keep the assistant dismissible without making the preference irreversible.
+   * The same control restores the compact assistant after it was hidden.
+   * @returns {HTMLButtonElement}
+   */
+  createVisibilityToggle() {
+    const button = document.createElement("button");
+    button.className = "robot-visibility-toggle";
+    button.type = "button";
+    button.textContent = "×";
+    button.setAttribute("aria-label", "Roboter ausblenden");
+    button.title = "Roboter ausblenden";
+    return button;
   }
 
   /**

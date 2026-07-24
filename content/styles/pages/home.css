@@ -962,7 +962,7 @@
       --home-exit-delay: 0s;
     }
 
-    .hero__reveal {
+    html.hero-motion-ready .hero__reveal {
       opacity: 0;
       transform: translate3d(0, 0.8rem, 0);
       backface-visibility: hidden;
@@ -971,7 +971,7 @@
         transform var(--home-motion-enter) var(--home-motion-ease-enter);
       transition-delay: 0s;
     }
-    .hero.is-visible .hero__reveal {
+    html.hero-motion-ready .hero.is-visible .hero__reveal {
       opacity: 1;
       transform: translate3d(0, 0, 0);
     }

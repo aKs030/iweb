@@ -51,6 +51,7 @@ const ROBOT_BASE_CSS_URLS = [
 ];
 const ROBOT_CHAT_CSS_URL = "/content/components/robot-companion/styles/chat.css";
 const ROBOT_MOTION_CSS_URL = "/content/components/robot-companion/styles/animations.css";
+const ROBOT_HIDDEN_STORAGE_KEY = "robot-companion-hidden";
 
 /**
  * Robot Companion Class
@@ -138,6 +139,8 @@ export class RobotCompanion {
     this._onHeroTypingEnd = null;
     /** @type {EventListener|null} */
     this._scrollListener = null;
+    /** @type {EventListener|null} */
+    this._contentCollisionHandler = null;
 
     /** @type {EventListenerRegistry} */
     this._eventListeners = {
@@ -553,6 +556,55 @@ export class RobotCompanion {
     requestTick();
   }
 
+  setupContentCollisionAvoidance() {
+    if (!this.dom.container || typeof globalThis === "undefined") return;
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const container = this.dom.container;
+      if (!container || globalThis.innerWidth > 640 || this.chatModule.isOpen) {
+        container?.classList.remove("robot-companion--content-collision");
+        return;
+      }
+
+      const robotRect = container.getBoundingClientRect();
+      const protectedElements = document.querySelectorAll(
+        "main h1, main h2, main form, main [role='search'], main input, main textarea"
+      );
+      let overlaps = false;
+
+      for (const element of protectedElements) {
+        const rect = element.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > globalThis.innerHeight) continue;
+        const padding = 12;
+        if (
+          robotRect.left < rect.right + padding &&
+          robotRect.right > rect.left - padding &&
+          robotRect.top < rect.bottom + padding &&
+          robotRect.bottom > rect.top - padding
+        ) {
+          overlaps = true;
+          break;
+        }
+      }
+
+      container.classList.toggle("robot-companion--content-collision", overlaps);
+    };
+
+    const requestUpdate = () => {
+      if (frame) return;
+      frame = this._requestAnimationFrame(update);
+    };
+
+    this._contentCollisionHandler = requestUpdate;
+    globalThis.addEventListener("scroll", requestUpdate, { passive: true });
+    globalThis.addEventListener("resize", requestUpdate, { passive: true });
+    this._eventListeners.scroll.push({ target: globalThis, handler: requestUpdate });
+    this._eventListeners.resize.push({ target: globalThis, handler: requestUpdate });
+    requestUpdate();
+  }
+
   setupMobileViewportHandler() {
     if (typeof globalThis === "undefined" || !globalThis.visualViewport) return;
 
@@ -767,6 +819,7 @@ export class RobotCompanion {
     if (this.collisionModule) {
       this.setupFooterOverlapCheck();
     }
+    this.setupContentCollisionAvoidance();
     this.setupMobileViewportHandler();
 
     this._setTimeout(() => {
@@ -1189,6 +1242,7 @@ export class RobotCompanion {
     this.dom.bubbleText = document.getElementById("robot-bubble-text");
     this.dom.bubbleClose = container.querySelector(".robot-bubble-close");
     this.dom.avatar = container.querySelector(".robot-avatar");
+    this.dom.visibilityToggle = container.querySelector(".robot-visibility-toggle");
     this.dom.svg = container.querySelector(".robot-svg");
     this.dom.eyes = container.querySelector(".robot-eyes");
     this.dom.lids = container.querySelectorAll(".robot-lid");
@@ -1209,6 +1263,9 @@ export class RobotCompanion {
     // flame colours may need adjustment after DOM creation
     anim.ensureFlameColors();
     this._requestAnimationFrame(() => anim.startIdleEyeMovement());
+    this.setRobotHidden(localStorage.getItem(ROBOT_HIDDEN_STORAGE_KEY) === "true", {
+      persist: false,
+    });
   }
 
   ensureChatWindowCreated() {
@@ -1282,6 +1339,19 @@ export class RobotCompanion {
       handler: _onAvatarClick,
     });
 
+    if (this.dom.visibilityToggle) {
+      const _onVisibilityToggle = event => {
+        event.stopPropagation();
+        this.setRobotHidden(!this.dom.container.classList.contains("robot-companion--hidden"));
+      };
+      this.dom.visibilityToggle.addEventListener("click", _onVisibilityToggle);
+      this._eventListeners.dom.push({
+        target: this.dom.visibilityToggle,
+        event: "click",
+        handler: _onVisibilityToggle,
+      });
+    }
+
     const _onBubbleClose = e => {
       e.stopPropagation();
       const ctx = this.getPageContext();
@@ -1317,6 +1387,27 @@ export class RobotCompanion {
       event: "search:closed",
       handler: _onSearchClosed,
     });
+  }
+
+  setRobotHidden(hidden, { persist = true } = {}) {
+    if (!this.dom.container) return;
+    const isHidden = Boolean(hidden);
+    this.dom.container.classList.toggle("robot-companion--hidden", isHidden);
+
+    if (this.dom.visibilityToggle) {
+      this.dom.visibilityToggle.textContent = isHidden ? "KI" : "×";
+      this.dom.visibilityToggle.setAttribute(
+        "aria-label",
+        isHidden ? "Roboter wieder einblenden" : "Roboter ausblenden"
+      );
+      this.dom.visibilityToggle.title = isHidden
+        ? "Roboter wieder einblenden"
+        : "Roboter ausblenden";
+    }
+
+    if (persist) {
+      localStorage.setItem(ROBOT_HIDDEN_STORAGE_KEY, String(isHidden));
+    }
   }
 
   attachChatEvents() {

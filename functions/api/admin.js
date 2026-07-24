@@ -10,7 +10,6 @@ const log = createLogger("admin");
  */
 
 import { getCorsHeaders, handleOptions } from "./_cors.js";
-import { ensureAppD1Schema } from "./_d1-schema.js";
 import { jsonResponse, errorJsonResponse } from "./_response.js";
 import { createWindowRateLimiter } from "./_rate-limit.js";
 import { getRequestClientIp } from "./_request-utils.js";
@@ -140,6 +139,10 @@ CREATE TABLE IF NOT EXISTS blog_comments (
   post_id TEXT NOT NULL,
   author_name TEXT NOT NULL,
   content TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  moderated_at DATETIME,
+  moderated_by TEXT,
+  spam_reason TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -200,8 +203,6 @@ function buildInsertSql(table, columns, rows, chunkSize = 100) {
 }
 
 async function buildSnapshotSqlFromDb(db) {
-  await ensureAppD1Schema(db);
-
   const [projectLikes, blogComments, contactMessages, likeEvents] = await Promise.all([
     db
       .prepare("SELECT project_id, likes FROM project_likes ORDER BY project_id ASC")
@@ -209,7 +210,7 @@ async function buildSnapshotSqlFromDb(db) {
       .then(result => result?.results || []),
     db
       .prepare(
-        "SELECT id, post_id, author_name, content, created_at FROM blog_comments ORDER BY id ASC"
+        "SELECT id, post_id, author_name, content, status, moderated_at, moderated_by, spam_reason, created_at FROM blog_comments ORDER BY id ASC"
       )
       .all()
       .then(result => result?.results || []),
@@ -237,7 +238,17 @@ async function buildSnapshotSqlFromDb(db) {
     ...buildInsertSql("project_likes", ["project_id", "likes"], projectLikes, 100),
     ...buildInsertSql(
       "blog_comments",
-      ["id", "post_id", "author_name", "content", "created_at"],
+      [
+        "id",
+        "post_id",
+        "author_name",
+        "content",
+        "status",
+        "moderated_at",
+        "moderated_by",
+        "spam_reason",
+        "created_at",
+      ],
       blogComments,
       50
     ),
@@ -270,6 +281,7 @@ async function handleDashboard(env, corsHeaders) {
   const stats = {
     contactMessages: 0,
     blogComments: 0,
+    pendingComments: 0,
     projectLikes: 0,
     likeEvents: 0,
     userMemories: 0,
@@ -278,14 +290,17 @@ async function handleDashboard(env, corsHeaders) {
 
   if (db) {
     try {
-      await ensureAppD1Schema(db);
-      const [contacts, comments, likes, events] = await Promise.all([
+      const [contacts, comments, pendingComments, likes, events] = await Promise.all([
         db
           .prepare("SELECT COUNT(*) as count FROM contact_messages")
           .first()
           .catch(() => null),
         db
           .prepare("SELECT COUNT(*) as count FROM blog_comments")
+          .first()
+          .catch(() => null),
+        db
+          .prepare("SELECT COUNT(*) as count FROM blog_comments WHERE status = 'pending'")
           .first()
           .catch(() => null),
         db
@@ -299,6 +314,7 @@ async function handleDashboard(env, corsHeaders) {
       ]);
       stats.contactMessages = contacts?.count || 0;
       stats.blogComments = comments?.count || 0;
+      stats.pendingComments = pendingComments?.count || 0;
       stats.projectLikes = likes?.count || 0;
       stats.likeEvents = events?.count || 0;
     } catch {
@@ -330,8 +346,6 @@ async function handleDashboard(env, corsHeaders) {
 async function handleContactMessages(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
-  await ensureAppD1Schema(db);
-
   const { limit, offset } = paginationFromBody(body);
 
   const { results } = await db
@@ -353,8 +367,6 @@ async function handleContactMessages(env, corsHeaders, body) {
 async function handleDeleteContact(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
-  await ensureAppD1Schema(db);
-
   const id = Number(body?.id);
   if (!id) return adminError(corsHeaders, "ID fehlt", 400);
 
@@ -368,18 +380,23 @@ async function handleDeleteContact(env, corsHeaders, body) {
 async function handleBlogComments(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
-  await ensureAppD1Schema(db);
-
   const { limit, offset } = paginationFromBody(body);
   const postId = body?.postId || null;
+  const status = ["pending", "approved", "rejected"].includes(body?.status) ? body.status : null;
 
   let query = "SELECT * FROM blog_comments";
+  const conditions = [];
   const params = [];
 
   if (postId) {
-    query += " WHERE post_id = ?";
+    conditions.push("post_id = ?");
     params.push(postId);
   }
+  if (status) {
+    conditions.push("status = ?");
+    params.push(status);
+  }
+  if (conditions.length) query += ` WHERE ${conditions.join(" AND ")}`;
 
   query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
   params.push(limit, offset);
@@ -391,10 +408,16 @@ async function handleBlogComments(env, corsHeaders, body) {
 
   let countQuery = "SELECT COUNT(*) as count FROM blog_comments";
   const countParams = [];
+  const countConditions = [];
   if (postId) {
-    countQuery += " WHERE post_id = ?";
+    countConditions.push("post_id = ?");
     countParams.push(postId);
   }
+  if (status) {
+    countConditions.push("status = ?");
+    countParams.push(status);
+  }
+  if (countConditions.length) countQuery += ` WHERE ${countConditions.join(" AND ")}`;
 
   const total = await db
     .prepare(countQuery)
@@ -407,13 +430,37 @@ async function handleBlogComments(env, corsHeaders, body) {
     total: total?.count || 0,
     limit,
     offset,
+    status: status || "all",
+  });
+}
+
+async function handleUpdateCommentStatus(env, corsHeaders, body) {
+  const db = env.DB_LIKES;
+  if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
+
+  const id = Number(body?.id);
+  const status = String(body?.status || "");
+  if (!id || !["approved", "rejected", "pending"].includes(status)) {
+    return adminError(corsHeaders, "Ungültige Kommentar-ID oder Status", 400);
+  }
+
+  const result = await db
+    .prepare(
+      "UPDATE blog_comments SET status = ?, moderated_at = CURRENT_TIMESTAMP, moderated_by = 'admin' WHERE id = ?"
+    )
+    .bind(status, id)
+    .run();
+
+  if (!result?.meta?.changes) return adminError(corsHeaders, "Kommentar nicht gefunden", 404);
+  return adminResponse(corsHeaders, {
+    success: true,
+    text: `Kommentar #${id} ist jetzt ${status}.`,
   });
 }
 
 async function handleDeleteComment(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
-  await ensureAppD1Schema(db);
 
   const id = Number(body?.id);
   if (!id) return adminError(corsHeaders, "ID fehlt", 400);
@@ -428,7 +475,6 @@ async function handleDeleteComment(env, corsHeaders, body) {
 async function handleProjectLikes(env, corsHeaders) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
-  await ensureAppD1Schema(db);
 
   const { results } = await db.prepare("SELECT * FROM project_likes ORDER BY likes DESC").all();
 
@@ -438,7 +484,6 @@ async function handleProjectLikes(env, corsHeaders) {
 async function handleLikeEvents(env, corsHeaders, body) {
   const db = env.DB_LIKES;
   if (!db) return adminError(corsHeaders, "D1 nicht verfügbar", 503);
-  await ensureAppD1Schema(db);
 
   const { limit, offset } = paginationFromBody(body, 50, 200);
   const projectId = body?.projectId || null;
@@ -696,6 +741,7 @@ const ADMIN_ACTIONS = {
   "contact-messages": handleContactMessages,
   "delete-contact": handleDeleteContact,
   "blog-comments": handleBlogComments,
+  "update-comment-status": handleUpdateCommentStatus,
   "delete-comment": handleDeleteComment,
   "project-likes": handleProjectLikes,
   "like-events": handleLikeEvents,

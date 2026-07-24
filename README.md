@@ -31,6 +31,10 @@ npm run lint                 # JS-Checks ohne Dateiaenderungen
 npm run lint:fix             # JS-Fixes anwenden
 npm run check:format         # Formatierung pruefen
 npm run format               # Formatierung anwenden
+npm run check:budgets        # JS- und CSS-Groessenbudgets pruefen
+npm run types                # Cloudflare-Binding-Typen aktualisieren
+npm run types:check          # Generierte Binding-Typen verifizieren
+npm run db:migrate:local     # D1-Migrationen lokal anwenden
 ```
 
 ## Projektstruktur
@@ -38,6 +42,8 @@ npm run format               # Formatierung anwenden
 - `content/` - Frontend-Code (Komponenten, Core, Styles, Media)
 - `pages/` - Seiten-spezifische Entry-Points
 - `functions/` - Cloudflare Pages Functions + API-Endpunkte
+- `migrations/` - versionierte D1-Schema-Migrationen
+- `scripts/` - lokale und CI-Qualitaetspruefungen
 
 ## Root-Dateien
 
@@ -61,6 +67,9 @@ npm run format               # Formatierung anwenden
 
 - `wrangler.jsonc` enthält das gemeinsame Setup für lokale Entwicklung und Produktions-Bindings
 - Secrets gehören nicht ins Repo; lokal werden nur `.dev.vars`, `.env.local` oder `.env` verwendet
+- Vor einem Deployment werden D1-Migrationen mit `npm run db:migrate:remote` angewendet
+- Kommentar-Turnstile wird mit `TURNSTILE_SITE_KEY` und dem Secret
+  `TURNSTILE_SECRET_KEY` aktiviert
 
 ## Dokumentation
 

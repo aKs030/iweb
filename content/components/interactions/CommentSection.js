@@ -5,6 +5,35 @@ import { createLogger } from "../../core/logger.js";
 
 const html = htm.bind(React.createElement);
 const log = createLogger("CommentSection");
+const TURNSTILE_SCRIPT_URL =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+let turnstileScriptPromise = null;
+
+function loadTurnstileScript() {
+  if (globalThis.turnstile) return Promise.resolve(globalThis.turnstile);
+  if (turnstileScriptPromise) return turnstileScriptPromise;
+
+  turnstileScriptPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${TURNSTILE_SCRIPT_URL}"]`);
+    const script = existing || document.createElement("script");
+    script.addEventListener("load", () => resolve(globalThis.turnstile), { once: true });
+    script.addEventListener(
+      "error",
+      () => reject(new Error("Turnstile konnte nicht geladen werden")),
+      {
+        once: true,
+      }
+    );
+    if (!existing) {
+      script.src = TURNSTILE_SCRIPT_URL;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  });
+
+  return turnstileScriptPromise;
+}
 
 /**
  * Premium Comment Section Component
@@ -16,6 +45,11 @@ export const CommentSection = ({ postId }) => {
   const [author, setAuthor] = React.useState("");
   const [content, setContent] = React.useState("");
   const [error, setError] = React.useState("");
+  const [success, setSuccess] = React.useState("");
+  const [turnstileSiteKey, setTurnstileSiteKey] = React.useState("");
+  const [turnstileToken, setTurnstileToken] = React.useState("");
+  const turnstileContainerRef = React.useRef(null);
+  const turnstileWidgetRef = React.useRef(null);
 
   React.useEffect(() => {
     if (!postId) return;
@@ -35,12 +69,51 @@ export const CommentSection = ({ postId }) => {
     })();
   }, [postId]);
 
+  React.useEffect(() => {
+    fetchJSON("/api/comments?config=turnstile", { retries: 1 })
+      .then(data => setTurnstileSiteKey(String(data?.turnstileSiteKey || "")))
+      .catch(error => log.warn("Turnstile config unavailable", error));
+  }, []);
+
+  React.useEffect(() => {
+    if (!turnstileSiteKey || !turnstileContainerRef.current) return undefined;
+    let cancelled = false;
+
+    loadTurnstileScript()
+      .then(turnstile => {
+        if (cancelled || !turnstile?.render || !turnstileContainerRef.current) return;
+        turnstileWidgetRef.current = turnstile.render(turnstileContainerRef.current, {
+          sitekey: turnstileSiteKey,
+          theme: "auto",
+          callback: token => setTurnstileToken(String(token || "")),
+          "expired-callback": () => setTurnstileToken(""),
+          "error-callback": () => setTurnstileToken(""),
+        });
+      })
+      .catch(error => setError(error.message));
+
+    return () => {
+      cancelled = true;
+      if (globalThis.turnstile?.remove && turnstileWidgetRef.current !== null) {
+        globalThis.turnstile.remove(turnstileWidgetRef.current);
+      }
+      turnstileWidgetRef.current = null;
+    };
+  }, [turnstileSiteKey]);
+
   const handleSubmit = async e => {
     e.preventDefault();
     if (!author.trim() || !content.trim()) return;
 
     setSubmitting(true);
     setError("");
+    setSuccess("");
+
+    if (turnstileSiteKey && !turnstileToken) {
+      setError("Bitte bestätige zuerst die Bot-Prüfung.");
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const data = await fetchJSON("/api/comments", {
@@ -51,15 +124,20 @@ export const CommentSection = ({ postId }) => {
             post_id: postId,
             author_name: author,
             content,
+            turnstile_token: turnstileToken,
           }),
         },
         retries: 1,
         throwOnHTTPError: false,
       });
       if (data.success) {
-        setComments([data.comment, ...comments]);
         setAuthor("");
         setContent("");
+        setTurnstileToken("");
+        setSuccess(data.message || "Dein Kommentar wartet auf Freigabe.");
+        if (globalThis.turnstile?.reset && turnstileWidgetRef.current !== null) {
+          globalThis.turnstile.reset(turnstileWidgetRef.current);
+        }
       } else {
         setError(data.error || "Fehler beim Senden");
       }
@@ -95,6 +173,11 @@ export const CommentSection = ({ postId }) => {
           ></textarea>
         </div>
         ${error && html`<p className="comment-error">${error}</p>`}
+        ${success && html`<p className="comment-success" role="status">${success}</p>`}
+        ${
+          turnstileSiteKey &&
+          html`<div className="comment-turnstile" ref=${turnstileContainerRef}></div>`
+        }
         <button type="submit" className="btn btn-primary" disabled=${submitting}>
           ${submitting ? "Abgeschickt..." : "Beitrag posten"}
         </button>

@@ -23,6 +23,11 @@
   },
   "scripts": {
     "dev": "wrangler pages dev . --port 8787 --show-interactive-dev-session=false",
+    "db:migrate:local": "wrangler d1 migrations apply DB_LIKES --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB_LIKES --remote",
+    "types": "wrangler types worker-configuration.d.ts --include-runtime false --strict-vars true",
+    "types:check": "wrangler types worker-configuration.d.ts --include-runtime false --strict-vars true --check",
+    "check:budgets": "node scripts/check-performance-budgets.mjs",
     "prepare": "simple-git-hooks",
     "lint:staged": "lint-staged",
     "lint:fix": "eslint . --fix",

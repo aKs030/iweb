@@ -11,7 +11,6 @@ const log = createLogger("contact");
 import { escapeHtml } from "../../content/core/utils/index.js";
 import { getCorsHeaders, handleOptions } from "./_cors.js";
 import { createWindowRateLimiter } from "./_rate-limit.js";
-import { ensureAppD1Schema } from "./_d1-schema.js";
 import { getRequestClientIp } from "./_request-utils.js";
 import { corsJsonResponse, corsErrorResponse } from "./_response.js";
 
@@ -131,7 +130,6 @@ export async function onRequestPost({ request, env }) {
 
     if (env.DB_LIKES) {
       try {
-        await ensureAppD1Schema(env.DB_LIKES);
         await env.DB_LIKES.prepare(
           "INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)"
         )
