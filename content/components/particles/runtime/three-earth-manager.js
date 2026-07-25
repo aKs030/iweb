@@ -12,7 +12,7 @@ import {
 } from "../../../core/utils/index.js";
 import { createLogger } from "../../../core/logger.js";
 import { AppLoadManager } from "../../../core/load-manager.js";
-import { getEarthTextureSet } from "../earth/texture-paths.js";
+import { getEarthTextureSetForDisplay } from "../earth/texture-paths.js";
 
 const log = createLogger("ThreeEarthManager");
 
@@ -101,35 +101,48 @@ export class ThreeEarthManager {
 
   preloadTextures() {
     const width = globalThis.innerWidth;
-    const textureSet = getEarthTextureSet({
+    const textureSet = getEarthTextureSetForDisplay({
       isMobile: width < 768,
-      compact:
-        width < 1440 ||
-        (globalThis.devicePixelRatio || 1) < 1.25 ||
-        globalThis.matchMedia?.("(prefers-reduced-data: reduce)")?.matches,
+      width,
+      pixelRatio: globalThis.devicePixelRatio || 1,
+      saveData:
+        Boolean(globalThis.navigator?.connection?.saveData) ||
+        Boolean(globalThis.matchMedia?.("(prefers-reduced-data: reduce)")?.matches),
     });
 
+    const supportsCompressedTextures = typeof WebAssembly !== "undefined";
+    const useCompressedPrimary = width < 768 && supportsCompressedTextures;
+    const primaryTexture = (useCompressedPrimary && textureSet.DAY_KTX2) || textureSet.DAY;
+
     // Avoid late-preload console warnings: only preload before window load fires.
-    // Three.js image loading uses anonymous CORS, so match that on the hint.
     const canPreloadNow = document.readyState !== "complete";
     if (canPreloadNow) {
       upsertHeadLink({
         rel: "preload",
-        href: textureSet.DAY,
-        as: "image",
+        href: primaryTexture,
+        as: useCompressedPrimary ? "fetch" : "image",
         crossOrigin: "anonymous",
         dataset: { injectedBy: "three-earth" },
-        attrs: { fetchpriority: "high" },
+        attrs: {
+          fetchpriority: "high",
+          ...(useCompressedPrimary ? { type: "image/ktx2" } : {}),
+        },
       });
     }
 
     // Secondary textures are queued as low-priority prefetches.
-    [textureSet.NIGHT, textureSet.NORMAL, textureSet.BUMP].forEach(href => {
+    [
+      (supportsCompressedTextures && textureSet.NIGHT_KTX2) || textureSet.NIGHT,
+      textureSet.NORMAL,
+      textureSet.BUMP,
+    ].forEach(href => {
+      const isCompressed = href.endsWith(".ktx2") || href.includes(".ktx2?");
       upsertHeadLink({
         rel: "prefetch",
         href,
-        as: "image",
+        as: isCompressed ? "fetch" : "image",
         dataset: { injectedBy: "three-earth" },
+        attrs: isCompressed ? { type: "image/ktx2" } : {},
       });
     });
   }

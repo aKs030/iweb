@@ -32,16 +32,33 @@
     overflow: hidden;
     pointer-events: none;
     background:
+      radial-gradient(circle, rgb(220 232 255 / 14%) 0 0.7px, transparent 1.2px),
+      radial-gradient(circle, rgb(132 178 255 / 10%) 0 0.6px, transparent 1.1px),
+      radial-gradient(circle, rgb(255 222 181 / 8%) 0 0.5px, transparent 1px),
       radial-gradient(circle at 72% 76%, rgb(21 53 92 / 32%), transparent 34%),
       radial-gradient(circle at 18% 16%, rgb(45 38 86 / 22%), transparent 31%),
       linear-gradient(145deg, #02040a 0%, #050816 46%, #02030a 100%);
+    background-size:
+      149px 137px,
+      211px 193px,
+      173px 227px,
+      auto,
+      auto,
+      auto;
+    background-position:
+      17px 31px,
+      83px 11px,
+      41px 97px,
+      center,
+      center,
+      center;
   }
 
   .home-cosmos-bg::before {
     content: "";
     position: absolute;
     inset: -25%;
-    opacity: 0.2;
+    opacity: 0.26;
     background:
       radial-gradient(ellipse at 50% 50%, rgb(120 155 220 / 14%) 0%, transparent 58%),
       linear-gradient(
@@ -52,7 +69,7 @@
         rgb(93 112 158 / 5%) 57%,
         transparent 72%
       );
-    filter: blur(24px);
+    filter: blur(20px);
     transform: rotate(-8deg);
   }
 

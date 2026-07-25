@@ -27,7 +27,7 @@ export function setupScene(THREE, container) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.12;
+  renderer.toneMappingExposure = 1.08;
 
   container.appendChild(renderer.domElement);
 
@@ -51,7 +51,7 @@ export function setupScene(THREE, container) {
 }
 
 export function setupLighting(THREE, scene) {
-  const directionalLight = new THREE.DirectionalLight(0xffffff, CONFIG.SUN.INTENSITY);
+  const directionalLight = new THREE.DirectionalLight(0xfff4e5, CONFIG.SUN.INTENSITY);
   // Light the camera-facing hemisphere so Europe remains legible in the hero.
   directionalLight.position.set(-10, 6, 12);
   scene.add(directionalLight);

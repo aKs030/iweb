@@ -1,18 +1,23 @@
 import { CONFIG } from "./config.js";
 import { createLogger } from "../../../core/logger.js";
-import { throttle } from "../../../core/utils/index.js";
 import { AppLoadManager } from "../../../core/load-manager.js";
 import { i18n } from "../../../core/i18n.js";
 
 // ===== Helper Functions (Pure) =====
 
-function calculateQualityLevel(fps) {
-  if (fps < CONFIG.QUALITY_LEVELS.MEDIUM.minFPS) {
-    return "LOW";
-  } else if (fps < CONFIG.QUALITY_LEVELS.HIGH.minFPS) {
-    return "MEDIUM";
+function calculateQualityLevel(fps, currentQualityLevel) {
+  const highThreshold = CONFIG.QUALITY_LEVELS.HIGH.minFPS;
+  const mediumThreshold = CONFIG.QUALITY_LEVELS.MEDIUM.minFPS;
+
+  if (currentQualityLevel === "HIGH") {
+    if (fps < mediumThreshold) return "LOW";
+    return fps < highThreshold - 5 ? "MEDIUM" : "HIGH";
   }
-  return "HIGH";
+  if (currentQualityLevel === "MEDIUM") {
+    if (fps >= highThreshold + 5) return "HIGH";
+    return fps < mediumThreshold - 3 ? "LOW" : "MEDIUM";
+  }
+  return fps >= mediumThreshold + 5 ? "MEDIUM" : "LOW";
 }
 
 const log = createLogger("EarthUI");
@@ -88,14 +93,14 @@ export function showErrorState(container, error, retryCallback) {
 }
 
 export class PerformanceMonitor {
-  constructor(onQualityChange) {
+  constructor(onQualityChange, initialQualityLevel = "HIGH") {
     this.onQualityChange = onQualityChange;
     this.frame = 0;
     this.lastTime = performance.now();
     this.fps = 60;
-    this.currentQualityLevel = "HIGH";
-
-    this.throttledAdjustQuality = throttle(() => this.adjustQuality(), 2000);
+    this.currentQualityLevel = initialQualityLevel;
+    this.pendingQualityLevel = initialQualityLevel;
+    this.pendingSamples = 0;
   }
 
   update() {
@@ -106,15 +111,32 @@ export class PerformanceMonitor {
       this.fps = (this.frame * 1000) / (time - this.lastTime);
       this.lastTime = time;
       this.frame = 0;
-      this.throttledAdjustQuality();
+      this.adjustQuality();
     }
   }
 
   adjustQuality() {
-    const newQualityLevel = calculateQualityLevel(this.fps);
-    if (newQualityLevel !== this.currentQualityLevel) {
-      this.currentQualityLevel = newQualityLevel;
-      if (this.onQualityChange) this.onQualityChange(this.currentQualityLevel);
+    const newQualityLevel = calculateQualityLevel(this.fps, this.currentQualityLevel);
+    if (newQualityLevel === this.currentQualityLevel) {
+      this.pendingQualityLevel = newQualityLevel;
+      this.pendingSamples = 0;
+      return;
     }
+
+    if (newQualityLevel !== this.pendingQualityLevel) {
+      this.pendingQualityLevel = newQualityLevel;
+      this.pendingSamples = 1;
+      return;
+    }
+
+    this.pendingSamples++;
+    const qualityOrder = { LOW: 0, MEDIUM: 1, HIGH: 2 };
+    const isUpgrade = qualityOrder[newQualityLevel] > qualityOrder[this.currentQualityLevel];
+    const requiredSamples = isUpgrade ? 3 : 2;
+    if (this.pendingSamples < requiredSamples) return;
+
+    this.currentQualityLevel = newQualityLevel;
+    this.pendingSamples = 0;
+    if (this.onQualityChange) this.onQualityChange(this.currentQualityLevel);
   }
 }

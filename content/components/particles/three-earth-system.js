@@ -63,13 +63,22 @@ const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1
  *   moon?: SectionObjectConfig,
  *   mode?: 'day'|'night',
  *   cloudLayer?: boolean,
+ *   cloudOpacity?: number,
+ *   cloudShadowOpacity?: number,
  *   cameraOrbit?: number,
+ *   terrainRelief?: number,
+ *   terrainDetailStrength?: number,
+ *   surfaceClearcoat?: number,
+ *   surfaceSpecularIntensity?: number,
+ *   surfaceNormalScale?: number,
+ *   surfaceBumpScale?: number,
  *   axialTilt?: number,
  *   latitudeTilt?: number,
  *   lighting?: {
  *     ambientColor?: number,
  *     ambientIntensity?: number,
  *     sunIntensity?: number,
+ *     sunPosition?: { x: number, y: number, z: number },
  *     fillIntensity?: number,
  *     fillColor?: number,
  *     rimIntensity?: number,
@@ -83,7 +92,12 @@ const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1
  *   },
  * }} SectionConfig
  * @typedef {DeviceCapabilities & { recommendedQuality?: string }} EarthDeviceCapabilities
- * @typedef {{ cloudLayer?: boolean, meteorShowers?: boolean }} QualityConfig
+ * @typedef {{
+ *   cloudLayer?: boolean,
+ *   meteorShowers?: boolean,
+ *   desktopPixelRatio?: number,
+ *   mobilePixelRatio?: number,
+ * }} QualityConfig
  *
  * @typedef {Object} ObserverWrapper
  * @property {(el: Element) => void} observe
@@ -113,16 +127,25 @@ const SECTION_CONFIGS = {
     mobileEarth: { pos: { x: 0, y: -21.65, z: -1.1 }, scale: 4.42, rotation: -1.9 },
     moon: { pos: { x: -6, y: 1, z: -12 }, scale: 0.36 },
     lighting: {
-      ambientColor: 0x9ca9b9,
+      ambientColor: 0x778394,
       ambientIntensity: 1.22,
       sunIntensity: 1.22,
+      sunPosition: { x: 0, y: 4.1, z: 12 },
       fillColor: 0x8bcfff,
       fillIntensity: 0.44,
       rimColor: 0xbdeeff,
       rimIntensity: 0.58,
     },
     mode: "day",
+    terrainRelief: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
+    terrainDetailStrength: 1,
+    surfaceClearcoat: 0.045,
+    surfaceSpecularIntensity: 1,
+    surfaceNormalScale: 1.28,
+    surfaceBumpScale: 0.023,
     cloudLayer: true,
+    cloudOpacity: 0.16,
+    cloudShadowOpacity: 0.04,
     cameraOrbit: 0,
     axialTilt: -7,
     latitudeTilt: -32,
@@ -140,10 +163,19 @@ const SECTION_CONFIGS = {
       ambientColor: 0x5f6678,
       ambientIntensity: 1.55,
       sunIntensity: 1.45,
+      sunPosition: { x: 1.25, y: 4.55, z: 10.8 },
       fillIntensity: 0.3,
-      rimIntensity: 0.32,
+      rimIntensity: 0,
     },
     mode: "day",
+    terrainRelief: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
+    terrainDetailStrength: 0.12,
+    surfaceClearcoat: 0,
+    surfaceSpecularIntensity: 0,
+    surfaceNormalScale: 0.65,
+    surfaceBumpScale: 0.008,
+    cloudOpacity: CONFIG.CLOUDS.OPACITY,
+    cloudShadowOpacity: CONFIG.CLOUDS.SHADOW_OPACITY,
     scroll: {
       pos: { x: 0.12, y: -0.08, z: 0.12 },
       scale: 0.04,
@@ -158,12 +190,19 @@ const SECTION_CONFIGS = {
       ambientColor: 0x3b4d70,
       ambientIntensity: 0.78,
       sunIntensity: 0.72,
+      sunPosition: { x: -2.4, y: 3.2, z: 10.2 },
       fillColor: 0x6ea8ff,
       fillIntensity: 0.5,
       rimColor: 0xffc76a,
       rimIntensity: 0.82,
     },
     mode: "night",
+    terrainRelief: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
+    terrainDetailStrength: 0,
+    surfaceClearcoat: 0.025,
+    surfaceSpecularIntensity: 1,
+    surfaceNormalScale: 0.72,
+    surfaceBumpScale: CONFIG.EARTH.BUMP_SCALE,
     cloudLayer: false,
     scroll: {
       pos: { x: -0.48, y: 0.24, z: 0.16 },
@@ -417,7 +456,9 @@ class ThreeEarthSystem {
    */
   _clearFallbacks(container) {
     try {
-      container.classList.remove("three-earth-unavailable");
+      container.classList.remove("error", "three-earth-unavailable");
+      delete container.dataset.threeError;
+      container.querySelector(".three-earth-error")?.classList.add("hidden");
       container
         .querySelectorAll(".three-earth-fallback")
         .forEach(el => /** @type {HTMLElement} */ (el).remove());
@@ -427,7 +468,7 @@ class ThreeEarthSystem {
   }
 
   _detectDevice() {
-    this.isMobileDevice = window.innerWidth <= 768;
+    this.isMobileDevice = Boolean(this.deviceCapabilities?.isMobile) || window.innerWidth <= 768;
   }
 
   /**
@@ -607,19 +648,38 @@ class ThreeEarthSystem {
 
     document.body.classList.add("three-earth-active");
 
-    this.performanceMonitor = new PerformanceMonitor((/** @type {string} */ level) => {
-      this.currentQualityLevel = level;
-      this._syncCloudVisibility();
-      const cfg = /** @type {Record<string, QualityConfig>} */ (CONFIG.QUALITY_LEVELS)[level] || {};
-      if (this.shootingStarManager) this.shootingStarManager.disabled = !cfg.meteorShowers;
-    });
-
     this.shootingStarManager = new ShootingStarManager(this.scene, this.THREE);
+    this.currentQualityLevel = this.deviceCapabilities?.recommendedQuality || "HIGH";
+    this.performanceMonitor = new PerformanceMonitor(
+      (/** @type {string} */ level) => this._applyQualityLevel(level),
+      this.currentQualityLevel
+    );
+    this._applyQualityLevel(this.currentQualityLevel);
 
     this.cardManager = new CardManager(this.THREE, this.scene, this.camera, this.renderer);
 
     this.cardManager.initFromData(this._getCardData());
     this._syncFeatureCardsForSection();
+  }
+
+  _applyQualityLevel(level) {
+    this.currentQualityLevel = level;
+    const cfg = /** @type {Record<string, QualityConfig>} */ (CONFIG.QUALITY_LEVELS)[level] || {};
+
+    this._syncCloudVisibility();
+    if (this.shootingStarManager) {
+      this.shootingStarManager.disabled = !cfg.meteorShowers;
+    }
+
+    if (!this.renderer || !this.container) return;
+    const maxPixelRatio = this.isMobileDevice
+      ? (cfg.mobilePixelRatio ?? 1.5)
+      : (cfg.desktopPixelRatio ?? 1.75);
+    const targetPixelRatio = Math.min(window.devicePixelRatio || 1, maxPixelRatio);
+    if (Math.abs(this.renderer.getPixelRatio() - targetPixelRatio) < 0.01) return;
+
+    this.renderer.setPixelRatio(targetPixelRatio);
+    this.renderer.setSize(this.container.clientWidth, this.container.clientHeight, false);
   }
 
   _getCardData() {
@@ -739,7 +799,7 @@ class ThreeEarthSystem {
         if (!this.camera || !this.renderer) return;
         const width = container.clientWidth;
         const height = container.clientHeight;
-        this.isMobileDevice = width <= 768;
+        this.isMobileDevice = Boolean(this.deviceCapabilities?.isMobile) || width <= 768;
 
         this.camera.aspect = width / height;
         this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
@@ -766,7 +826,7 @@ class ThreeEarthSystem {
             const heightChangedSignificantly = Math.abs(height - lastHeight) > 80;
 
             if (isFirstRun || widthChanged || heightChangedSignificantly) {
-              this.isMobileDevice = width <= 768;
+              this.isMobileDevice = Boolean(this.deviceCapabilities?.isMobile) || width <= 768;
 
               this.camera.aspect = width / height;
               this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
@@ -981,6 +1041,7 @@ class ThreeEarthSystem {
     if (this.directionalLight) {
       this.directionalLight.intensity +=
         (targets.directionalIntensity - this.directionalLight.intensity) * factor;
+      this.directionalLight.position.lerp(targets.directionalPosition, factor);
     }
     if (this.ambientLight) {
       this.ambientLight.intensity +=
@@ -1259,6 +1320,30 @@ class ThreeEarthSystem {
       const newMode = config.mode;
       const nextMaterial = newMode === "day" ? this.dayMaterial : this.nightMaterial;
       if (!nextMaterial) return;
+      const terrainRelief = config.terrainRelief ?? CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE;
+      if ("displacementScale" in nextMaterial) {
+        nextMaterial.displacementScale = terrainRelief;
+      }
+      if ("clearcoat" in nextMaterial) {
+        nextMaterial.clearcoat = config.surfaceClearcoat ?? 0;
+      }
+      if ("specularIntensity" in nextMaterial) {
+        nextMaterial.specularIntensity = config.surfaceSpecularIntensity ?? 1;
+      }
+      if ("normalScale" in nextMaterial && config.surfaceNormalScale !== undefined) {
+        nextMaterial.normalScale.setScalar(config.surfaceNormalScale);
+      }
+      if ("bumpScale" in nextMaterial && config.surfaceBumpScale !== undefined) {
+        nextMaterial.bumpScale = config.surfaceBumpScale;
+      }
+      if (this.dayMaterial) {
+        const terrainDetailStrength = config.terrainDetailStrength ?? 0;
+        this.dayMaterial.userData.terrainDetailStrength = terrainDetailStrength;
+        const reliefShader = /** @type {any} */ (this.dayMaterial.userData.reliefShader);
+        if (reliefShader?.uniforms?.terrainDetailStrength) {
+          reliefShader.uniforms.terrainDetailStrength.value = terrainDetailStrength;
+        }
+      }
 
       // Re-apply the section material even when currentMode already matches.
       // This prevents a precompile, quality transition or interrupted section
@@ -1283,6 +1368,16 @@ class ThreeEarthSystem {
         this.currentQualityLevel
       ] || {};
     this.cloudMesh.visible = config.cloudLayer !== false && quality.cloudLayer !== false;
+    const cloudSurface = /** @type {any} */ (
+      this.cloudMesh.getObjectByName?.("earth-cloud-surface")
+    );
+    const cloudShadow = /** @type {any} */ (this.cloudMesh.getObjectByName?.("earth-cloud-shadow"));
+    if (cloudSurface?.material && config.cloudOpacity !== undefined) {
+      cloudSurface.material.opacity = config.cloudOpacity;
+    }
+    if (cloudShadow?.material && config.cloudShadowOpacity !== undefined) {
+      cloudShadow.material.opacity = config.cloudShadowOpacity;
+    }
   }
 
   _setLightTargets(config) {
@@ -1294,6 +1389,11 @@ class ThreeEarthSystem {
 
     this._lightTargets = {
       directionalIntensity: sectionLight.sunIntensity ?? lightCfg.SUN_INTENSITY,
+      directionalPosition: new this.THREE.Vector3(
+        sectionLight.sunPosition?.x ?? -10,
+        sectionLight.sunPosition?.y ?? 6,
+        sectionLight.sunPosition?.z ?? 12
+      ),
       ambientIntensity: sectionLight.ambientIntensity ?? lightCfg.AMBIENT_INTENSITY,
       ambientColor: new this.THREE.Color(sectionLight.ambientColor ?? lightCfg.AMBIENT_COLOR),
       fillIntensity: sectionLight.fillIntensity ?? lightCfg.FILL_INTENSITY,
@@ -1462,6 +1562,10 @@ class ThreeEarthSystem {
    * @param {unknown} error
    */
   _handleInitError(container, error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log.error("Earth initialization failed:", error);
+    container.dataset.threeError = errorMessage;
+
     if (this.renderer) {
       try {
         this.renderer.dispose();
@@ -1565,7 +1669,15 @@ export const initThreeEarth = () => {
  */
 function disposeMaterial(material) {
   if (!material) return;
-  const textureProps = ["map", "normalMap", "bumpMap", "envMap", "emissiveMap", "alphaMap"];
+  const textureProps = [
+    "map",
+    "normalMap",
+    "bumpMap",
+    "displacementMap",
+    "envMap",
+    "emissiveMap",
+    "alphaMap",
+  ];
   textureProps.forEach(prop => {
     const texture = material[prop];
     if (
@@ -1616,23 +1728,30 @@ function detectDeviceCapabilities() {
   try {
     const ua = (navigator.userAgent || "").toLowerCase();
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
-
-    // Flag only ancient devices as low-end (e.g. Android 4/5 or very old iOS).
-    // Modern devices with few cores (e.g. newer iPhones) should NOT be flagged as low-end.
-    // We removed the hardwareConcurrency check as it falsely flags powerful mobile devices.
-    const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(
-      ua
-    );
+    const deviceNavigator =
+      /** @type {Navigator & { deviceMemory?: number, connection?: { saveData?: boolean } }} */ (
+        navigator
+      );
+    const cores = deviceNavigator.hardwareConcurrency || 0;
+    const memory = Number(deviceNavigator.deviceMemory || 0);
+    const saveData = Boolean(deviceNavigator.connection?.saveData);
+    const isLegacyMobile =
+      /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(ua);
+    const isLowEnd =
+      isLegacyMobile || saveData || (cores > 0 && cores <= 2 && (memory === 0 || memory <= 2));
 
     let recommendedQuality;
     if (isLowEnd) recommendedQuality = "LOW";
-    else if (isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 8))
+    else if (isMobile || (cores > 0 && cores <= 4) || (memory > 0 && memory <= 4))
       recommendedQuality = "MEDIUM";
     else recommendedQuality = "HIGH";
 
     log.debug("Device capabilities:", {
       isMobile,
       isLowEnd,
+      cores,
+      memory,
+      saveData,
       recommendedQuality,
     });
 
@@ -1652,23 +1771,20 @@ function getOptimizedConfig(capabilities) {
     return {
       EARTH: { ...CONFIG.EARTH, SEGMENTS: 72, SEGMENTS_MOBILE: 48 },
       STARS: { ...CONFIG.STARS, COUNT: 1000 },
-      // Even on low-end devices, keep decent resolution (1.5x minimum) to avoid extreme blur
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.25),
       },
       CLOUDS: { ...CONFIG.CLOUDS, OPACITY: 0 },
     };
   }
   if (capabilities.isMobile) {
     return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 64 },
-      STARS: { ...CONFIG.STARS, COUNT: 1500 },
+      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 96 },
+      STARS: { ...CONFIG.STARS, COUNT: 2400 },
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,
-        // Capping Pixel Ratio on mobile devices to 1.5 to prevent GPU overheating on high DPI devices
-        // (like iPhone 17 Pro Max) which causes battery drain and thermal throttling.
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.75),
       },
     };
   }

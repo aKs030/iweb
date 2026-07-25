@@ -21,6 +21,7 @@ export class StarManager {
     const sizes = new Float32Array(starCount);
     const phases = new Float32Array(starCount);
     const brightness = new Float32Array(starCount);
+    const flares = new Float32Array(starCount);
     const color = new this.THREE.Color();
 
     for (let i = 0; i < starCount; i++) {
@@ -61,6 +62,7 @@ export class StarManager {
       sizes[i] = rareBrightStar ? 3.2 + Math.random() * 2.2 : 1.1 + Math.random() * 1.9;
       phases[i] = Math.random() * Math.PI * 2;
       brightness[i] = rareBrightStar ? 0.9 + Math.random() * 0.1 : 0.38 + Math.random() * 0.48;
+      flares[i] = rareBrightStar ? 0.55 + Math.random() * 0.45 : 0;
     }
 
     const starGeometry = new this.THREE.BufferGeometry();
@@ -69,6 +71,7 @@ export class StarManager {
     starGeometry.setAttribute("size", new this.THREE.BufferAttribute(sizes, 1));
     starGeometry.setAttribute("phase", new this.THREE.BufferAttribute(phases, 1));
     starGeometry.setAttribute("brightness", new this.THREE.BufferAttribute(brightness, 1));
+    starGeometry.setAttribute("flare", new this.THREE.BufferAttribute(flares, 1));
 
     const starMaterial = new this.THREE.ShaderMaterial({
       uniforms: {
@@ -81,29 +84,37 @@ export class StarManager {
         attribute float size;
         attribute float phase;
         attribute float brightness;
+        attribute float flare;
         varying vec3 vColor;
         varying float vAlpha;
+        varying float vFlare;
 
         void main() {
           vColor = color;
+          vFlare = flare;
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          float shimmer = 0.88 + 0.12 * sin(time * twinkleSpeed + phase);
+          float shimmer = 0.91 + 0.09 * sin(time * twinkleSpeed + phase);
           vAlpha = brightness * shimmer;
-          gl_PointSize = clamp(size * (260.0 / -mvPosition.z), 0.85, 4.8);
+          gl_PointSize = clamp(size * (280.0 / -mvPosition.z), 0.8, 5.6);
           gl_Position = projectionMatrix * mvPosition;
         }
       `,
       fragmentShader: `
         varying vec3 vColor;
         varying float vAlpha;
+        varying float vFlare;
         void main() {
           vec2 centered = gl_PointCoord - vec2(0.5);
           float distanceToCenter = length(centered);
-          float core = 1.0 - smoothstep(0.0, 0.48, distanceToCenter);
-          float halo = 1.0 - smoothstep(0.12, 0.5, distanceToCenter);
-          float alpha = (core * 0.82 + halo * 0.18) * vAlpha;
+          float core = 1.0 - smoothstep(0.0, 0.3, distanceToCenter);
+          float halo = 1.0 - smoothstep(0.08, 0.5, distanceToCenter);
+          float diffraction = (
+            exp(-abs(centered.x) * 28.0) +
+            exp(-abs(centered.y) * 28.0)
+          ) * (1.0 - smoothstep(0.1, 0.5, distanceToCenter)) * vFlare;
+          float alpha = (core * 0.76 + halo * 0.18 + diffraction * 0.16) * vAlpha;
           if (alpha < 0.01) discard;
-          gl_FragColor = vec4(vColor, alpha);
+          gl_FragColor = vec4(mix(vColor, vec3(1.0), core * 0.2), alpha);
         }
       `,
       blending: this.THREE.AdditiveBlending,

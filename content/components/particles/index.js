@@ -1,2 +1,2 @@
 export { ThreeEarthManager } from "./runtime/three-earth-manager.js";
-export { getEarthTextureSet } from "./earth/texture-paths.js";
+export { getEarthTextureSet, getEarthTextureSetForDisplay } from "./earth/texture-paths.js";

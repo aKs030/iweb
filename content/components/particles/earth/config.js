@@ -1,9 +1,11 @@
 export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 128,
-    SEGMENTS_MOBILE: 64,
+    SEGMENTS: 384,
+    SEGMENTS_MOBILE: 128,
     BUMP_SCALE: 0.011,
+    HERO_DISPLACEMENT_SCALE: 0.03,
+    DEFAULT_DISPLACEMENT_SCALE: 0,
     AMBIENT_ROTATION_SPEED: 0.012,
     EMISSIVE_INTENSITY: 0.2,
     EMISSIVE_PULSE_SPEED: 0.3,
@@ -13,9 +15,9 @@ export const CONFIG = {
   CLOUDS: {
     ALTITUDE: 0.045,
     SHADOW_ALTITUDE: 0.012,
-    SHADOW_OPACITY: 0.045,
+    SHADOW_OPACITY: 0.075,
     ROTATION_SPEED: 0.00072,
-    OPACITY: 0.18,
+    OPACITY: 0.27,
   },
   SUN: {
     INTENSITY: 1.8,
@@ -37,15 +39,16 @@ export const CONFIG = {
     },
   },
   STARS: {
-    COUNT: 3600,
-    TWINKLE_SPEED: 0.42,
+    COUNT: 4800,
+    TWINKLE_SPEED: 0.34,
   },
   MOON: {
     RADIUS: 0.95,
     DISTANCE: 25,
     ORBIT_SPEED: 0.00025,
-    SEGMENTS: 48,
+    SEGMENTS: 96,
     BUMP_SCALE: 0.028,
+    DISPLACEMENT_SCALE: 0.016,
   },
   CAMERA: {
     FOV: 45,
@@ -84,23 +87,29 @@ export const CONFIG = {
     MAX_SIMULTANEOUS: 3,
   },
   PERFORMANCE: {
-    PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.75),
+    PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2),
   },
   QUALITY_LEVELS: {
     HIGH: {
+      minFPS: 50,
+      cloudLayer: true,
+      meteorShowers: true,
+      desktopPixelRatio: 2,
+      mobilePixelRatio: 1.75,
+    },
+    MEDIUM: {
       minFPS: 28,
       cloudLayer: true,
       meteorShowers: true,
-    },
-    MEDIUM: {
-      minFPS: 18,
-      cloudLayer: true,
-      meteorShowers: true,
+      desktopPixelRatio: 1.5,
+      mobilePixelRatio: 1.4,
     },
     LOW: {
       minFPS: 0,
       cloudLayer: false,
       meteorShowers: false,
+      desktopPixelRatio: 1,
+      mobilePixelRatio: 1,
     },
   },
 };

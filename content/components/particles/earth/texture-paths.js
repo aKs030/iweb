@@ -1,4 +1,4 @@
-const EARTH_TEXTURE_VERSION = "earth-20260725-r3";
+const EARTH_TEXTURE_VERSION = "earth-20260725-r4";
 const EARTH_TEXTURE_CDN_URL = "https://img.abdulkerimsesli.de/earth/textures";
 
 function withTexturePath(filename) {
@@ -47,4 +47,15 @@ const EARTH_TEXTURES_MOBILE = Object.freeze({
 export function getEarthTextureSet({ isMobile = false, compact = false } = {}) {
   if (isMobile) return EARTH_TEXTURES_MOBILE;
   return compact ? EARTH_TEXTURES_STANDARD : EARTH_TEXTURES;
+}
+
+export function getEarthTextureSetForDisplay({
+  isMobile = false,
+  maxTextureSize = 8192,
+  deviceMemory = Number(globalThis.navigator?.deviceMemory || 0),
+  saveData = Boolean(globalThis.navigator?.connection?.saveData),
+} = {}) {
+  const compact = saveData || (deviceMemory > 0 && deviceMemory <= 4) || maxTextureSize < 8192;
+
+  return getEarthTextureSet({ isMobile, compact });
 }
