@@ -31,6 +31,39 @@
     z-index: calc(var(--z-behind-deep) - 1);
     overflow: hidden;
     pointer-events: none;
+    background:
+      radial-gradient(circle at 72% 76%, rgb(21 53 92 / 32%), transparent 34%),
+      radial-gradient(circle at 18% 16%, rgb(45 38 86 / 22%), transparent 31%),
+      linear-gradient(145deg, #02040a 0%, #050816 46%, #02030a 100%);
+  }
+
+  .home-cosmos-bg::before {
+    content: "";
+    position: absolute;
+    inset: -25%;
+    opacity: 0.2;
+    background:
+      radial-gradient(ellipse at 50% 50%, rgb(120 155 220 / 14%) 0%, transparent 58%),
+      linear-gradient(
+        118deg,
+        transparent 28%,
+        rgb(102 124 174 / 7%) 44%,
+        rgb(192 207 238 / 8%) 50%,
+        rgb(93 112 158 / 5%) 57%,
+        transparent 72%
+      );
+    filter: blur(24px);
+    transform: rotate(-8deg);
+  }
+
+  .home-cosmos-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background:
+      radial-gradient(circle at center, transparent 38%, rgb(0 0 0 / 46%) 100%),
+      linear-gradient(to bottom, rgb(2 3 10 / 12%), rgb(1 2 7 / 34%));
   }
 
   /* Aurora (Hero & General Background) */
@@ -43,11 +76,11 @@
     --home-aurora-shift-y: 0px;
     --home-aurora-tilt-x: 0deg;
     --home-aurora-tilt-y: 0deg;
-    --home-aurora-violet: #8a2be2;
-    --home-aurora-cyan: #00f6ff;
-    --home-aurora-magenta: #ff0090;
-    --home-aurora-amber: #ffaa00;
-    --home-aurora-teal: #00ffaa;
+    --home-aurora-violet: #405a9f;
+    --home-aurora-cyan: #2f83a7;
+    --home-aurora-magenta: #714971;
+    --home-aurora-amber: #9a7344;
+    --home-aurora-teal: #326f72;
     --home-aurora-suncore: #ffffff;
     --home-aurora-blur-a: 64px;
     --home-aurora-blur-b: 60px;
@@ -82,19 +115,19 @@
 
   @media (prefers-reduced-motion: no-preference) {
     .home-aurora__plane--a {
-      opacity: 0.35;
+      opacity: 0.14;
     }
     .home-aurora__plane--b {
-      opacity: 0.38;
+      opacity: 0.13;
     }
     .home-aurora__plane--c {
-      opacity: 0.32;
+      opacity: 0.1;
     }
     .home-aurora__plane--d {
-      opacity: 0.72;
+      opacity: 0.12;
     }
     .home-aurora__plane--e {
-      opacity: 0.28;
+      opacity: 0.1;
     }
   }
 
@@ -228,7 +261,7 @@
 
     position: absolute;
     inset: 0;
-    z-index: 1;
+    z-index: 2;
     transform: translate3d(var(--home-stars-shift-x), var(--home-stars-shift-y), 0);
     transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: transform;
@@ -348,7 +381,7 @@
     );
     opacity: 0;
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -404,7 +437,12 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at center, transparent 0%, var(--home-vignette) 100%);
+    background: radial-gradient(
+      ellipse 105% 92% at 45% 46%,
+      transparent 0%,
+      transparent 58%,
+      color-mix(in srgb, var(--home-vignette) 58%, transparent) 100%
+    );
     pointer-events: none;
     z-index: 1;
     -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
@@ -412,6 +450,13 @@
     opacity: var(--home-hero-vignette-opacity);
     will-change: opacity;
     transition: opacity 0.1s ease-out;
+  }
+
+  /* Keep the daylight Earth and its ocean colors unobscured. The hero
+     vignette sits above the WebGL canvas and previously turned the lower,
+     ocean-heavy portion of the globe almost black. */
+  body.three-earth-active .hero::after {
+    opacity: 0;
   }
 
   .hero__fx {
@@ -1036,7 +1081,23 @@
       --home-aurora-blur-e: 44px;
     }
     .hero__poster {
+      position: relative;
+      isolation: isolate;
       max-width: none;
+    }
+    body.three-earth-active .hero__poster::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: -1.25rem -0.8rem -1.8rem;
+      background: radial-gradient(
+        ellipse 72% 64% at 50% 48%,
+        rgb(3 8 18 / 52%) 0%,
+        rgb(3 8 18 / 24%) 48%,
+        transparent 78%
+      );
+      filter: blur(10px);
+      pointer-events: none;
     }
   }
 

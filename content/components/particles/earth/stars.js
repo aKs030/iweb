@@ -19,13 +19,20 @@ export class StarManager {
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
     const sizes = new Float32Array(starCount);
+    const phases = new Float32Array(starCount);
+    const brightness = new Float32Array(starCount);
     const color = new this.THREE.Color();
 
     for (let i = 0; i < starCount; i++) {
       const i3 = i * 3;
-      const radius = 100 + Math.random() * 200;
+      const radius = 90 + Math.random() * 230;
       const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
+      // A restrained concentration around one plane suggests the Milky Way,
+      // while most points remain distributed across the full celestial sphere.
+      const isGalacticBand = Math.random() < 0.28;
+      const phi = isGalacticBand
+        ? Math.PI * 0.5 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.24
+        : Math.acos(2 * Math.random() - 1);
 
       const sinPhi = Math.sin(phi);
       const cosPhi = Math.cos(phi);
@@ -37,18 +44,31 @@ export class StarManager {
       positions[i3 + 1] = y;
       positions[i3 + 2] = z;
 
-      color.setHSL(Math.random() * 0.1 + 0.5, 0.8, 0.8 + Math.random() * 0.2);
+      const temperature = Math.random();
+      if (temperature < 0.12) {
+        color.setRGB(1, 0.72 + Math.random() * 0.13, 0.58 + Math.random() * 0.12);
+      } else if (temperature > 0.82) {
+        color.setRGB(0.62 + Math.random() * 0.12, 0.78 + Math.random() * 0.12, 1);
+      } else {
+        const neutral = 0.88 + Math.random() * 0.12;
+        color.setRGB(neutral, neutral * 0.97, neutral);
+      }
       colors[i3] = color.r;
       colors[i3 + 1] = color.g;
       colors[i3 + 2] = color.b;
 
-      sizes[i] = Math.random() * 1.5 + 0.5;
+      const rareBrightStar = Math.random() > 0.965;
+      sizes[i] = rareBrightStar ? 3.2 + Math.random() * 2.2 : 1.1 + Math.random() * 1.9;
+      phases[i] = Math.random() * Math.PI * 2;
+      brightness[i] = rareBrightStar ? 0.9 + Math.random() * 0.1 : 0.38 + Math.random() * 0.48;
     }
 
     const starGeometry = new this.THREE.BufferGeometry();
     starGeometry.setAttribute("position", new this.THREE.BufferAttribute(positions, 3));
     starGeometry.setAttribute("color", new this.THREE.BufferAttribute(colors, 3));
     starGeometry.setAttribute("size", new this.THREE.BufferAttribute(sizes, 1));
+    starGeometry.setAttribute("phase", new this.THREE.BufferAttribute(phases, 1));
+    starGeometry.setAttribute("brightness", new this.THREE.BufferAttribute(brightness, 1));
 
     const starMaterial = new this.THREE.ShaderMaterial({
       uniforms: {
@@ -56,23 +76,34 @@ export class StarManager {
         twinkleSpeed: { value: CONFIG.STARS.TWINKLE_SPEED },
       },
       vertexShader: `
+        uniform float time;
+        uniform float twinkleSpeed;
         attribute float size;
+        attribute float phase;
+        attribute float brightness;
         varying vec3 vColor;
+        varying float vAlpha;
 
         void main() {
           vColor = color;
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          gl_PointSize = size * (300.0 / -mvPosition.z);
+          float shimmer = 0.88 + 0.12 * sin(time * twinkleSpeed + phase);
+          vAlpha = brightness * shimmer;
+          gl_PointSize = clamp(size * (260.0 / -mvPosition.z), 0.85, 4.8);
           gl_Position = projectionMatrix * mvPosition;
         }
       `,
       fragmentShader: `
-        uniform float time;
-        uniform float twinkleSpeed;
         varying vec3 vColor;
+        varying float vAlpha;
         void main() {
-          float strength = (sin(time * twinkleSpeed + gl_FragCoord.x * 0.5) + 1.0) / 2.0 * 0.5 + 0.5;
-          gl_FragColor = vec4(vColor, strength);
+          vec2 centered = gl_PointCoord - vec2(0.5);
+          float distanceToCenter = length(centered);
+          float core = 1.0 - smoothstep(0.0, 0.48, distanceToCenter);
+          float halo = 1.0 - smoothstep(0.12, 0.5, distanceToCenter);
+          float alpha = (core * 0.82 + halo * 0.18) * vAlpha;
+          if (alpha < 0.01) discard;
+          gl_FragColor = vec4(vColor, alpha);
         }
       `,
       blending: this.THREE.AdditiveBlending,

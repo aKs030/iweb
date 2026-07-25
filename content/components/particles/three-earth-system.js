@@ -19,13 +19,13 @@ import {
 } from "./shared-particle-system.js";
 
 import { CONFIG } from "./earth/config.js";
+import { setupScene, setupLighting } from "./earth/scene.js";
 import {
-  setupScene,
-  setupLighting,
-  createAtmosphere,
-  createEarthDepthOverlay,
-} from "./earth/scene.js";
-import { createEarthSystem, createMoonSystem, createCloudLayer } from "./earth/assets.js";
+  createEarthKTX2Loader,
+  createEarthSystem,
+  createMoonSystem,
+  createCloudLayer,
+} from "./earth/assets.js";
 import { CameraManager } from "./earth/camera.js";
 import { StarManager, ShootingStarManager } from "./earth/stars.js";
 import { CardManager } from "./earth/cards.js";
@@ -59,8 +59,13 @@ const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1
  * }} SectionObjectConfig
  * @typedef {{
  *   earth: SectionObjectConfig,
+ *   mobileEarth?: SectionObjectConfig,
  *   moon?: SectionObjectConfig,
  *   mode?: 'day'|'night',
+ *   cloudLayer?: boolean,
+ *   cameraOrbit?: number,
+ *   axialTilt?: number,
+ *   latitudeTilt?: number,
  *   lighting?: {
  *     ambientColor?: number,
  *     ambientIntensity?: number,
@@ -103,19 +108,34 @@ const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1
 /** @type {Record<string, SectionConfig>} */
 const SECTION_CONFIGS = {
   hero: {
-    earth: { pos: { x: 1, y: -2.5, z: -1 }, scale: 1.3, rotation: 0 },
-    moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+    // Low-orbit horizon centered on Europe for the straight-on hero camera.
+    earth: { pos: { x: 0, y: -20.5, z: -1 }, scale: 4.8, rotation: -1.9 },
+    mobileEarth: { pos: { x: 0, y: -21.65, z: -1.1 }, scale: 4.42, rotation: -1.9 },
+    moon: { pos: { x: -6, y: 1, z: -12 }, scale: 0.36 },
+    lighting: {
+      ambientColor: 0x9ca9b9,
+      ambientIntensity: 1.22,
+      sunIntensity: 1.22,
+      fillColor: 0x8bcfff,
+      fillIntensity: 0.44,
+      rimColor: 0xbdeeff,
+      rimIntensity: 0.58,
+    },
     mode: "day",
+    cloudLayer: true,
+    cameraOrbit: 0,
+    axialTilt: -7,
+    latitudeTilt: -32,
     scroll: {
-      pos: { x: -0.35, y: 0.18, z: -0.2 },
-      scale: -0.08,
-      rotation: 0.28,
-      orbit: 0.08,
+      pos: { x: 0.08, y: 0.08, z: -0.04 },
+      scale: -0.03,
+      rotation: 0.1,
+      orbit: 0.015,
     },
   },
   features: {
     earth: { pos: { x: 0, y: -0.06, z: -2.35 }, scale: 0.64, rotation: 0 },
-    moon: { pos: { x: 5.8, y: 3.4, z: -9.6 }, scale: 0.72 },
+    moon: { pos: { x: 4.8, y: 2.35, z: -9.6 }, scale: 0.62 },
     lighting: {
       ambientColor: 0x5f6678,
       ambientIntensity: 1.55,
@@ -133,32 +153,24 @@ const SECTION_CONFIGS = {
   },
   section3: {
     earth: { pos: { x: 1.9, y: -2.05, z: -2.65 }, scale: 0.76, rotation: Math.PI * 1.12 },
-    moon: { pos: { x: 5.2, y: 2.8, z: -9.4 }, scale: 0.48 },
+    moon: { pos: { x: 4.6, y: 2.2, z: -9.4 }, scale: 0.46 },
     lighting: {
-      ambientColor: 0x2d375d,
-      ambientIntensity: 0.62,
-      sunIntensity: 0.68,
+      ambientColor: 0x3b4d70,
+      ambientIntensity: 0.78,
+      sunIntensity: 0.72,
       fillColor: 0x6ea8ff,
-      fillIntensity: 0.42,
+      fillIntensity: 0.5,
       rimColor: 0xffc76a,
       rimIntensity: 0.82,
     },
     mode: "night",
+    cloudLayer: false,
     scroll: {
       pos: { x: -0.48, y: 0.24, z: 0.16 },
       scale: 0.08,
       rotation: -0.32,
       orbit: -0.1,
     },
-  },
-  contact: {
-    earth: {
-      pos: { x: 0, y: -1.5, z: 0 },
-      scale: 1.1,
-      rotation: Math.PI / 2,
-    },
-    moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-    mode: "day",
   },
 };
 
@@ -195,6 +207,7 @@ class ThreeEarthSystem {
     /** @type {EarthMesh|null} */ this.earthMesh = null;
     /** @type {EarthObject|null} */ this.moonMesh = null;
     /** @type {EarthObject|null} */ this.cloudMesh = null;
+    /** @type {THREE.Object3D|null} */ this.cityGlowGroup = null;
 
     // Materials
     /** @type {(THREE.Material & DisposableMaterial)|null} */ this.dayMaterial = null;
@@ -291,10 +304,6 @@ class ThreeEarthSystem {
       this.camera = sceneObjects.camera;
       this.renderer = sceneObjects.renderer;
 
-      if (this.renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
-        this.renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
-      }
-
       const loadingManager = this._createLoadingManager(container);
       this._setupStarsAndLighting();
 
@@ -312,6 +321,7 @@ class ThreeEarthSystem {
       this.earthMesh = earthAssets.earthMesh;
       this.dayMaterial = earthAssets.dayMaterial;
       this.nightMaterial = earthAssets.nightMaterial;
+      this.cityGlowGroup = earthAssets.cityGlowGroup;
       this.moonMesh = moonLOD;
       this.cloudMesh = cloudObj;
 
@@ -355,7 +365,6 @@ class ThreeEarthSystem {
     document.removeEventListener("visibilitychange", this.handleVisibilityChange);
     document.removeEventListener("three-earth:showcase", this.onShowcaseTrigger);
 
-    this.performanceMonitor?.cleanup();
     this.shootingStarManager?.cleanup();
     this.cameraManager?.cleanup();
     this.starManager?.cleanup();
@@ -473,11 +482,36 @@ class ThreeEarthSystem {
    * @param {THREE.LoadingManager} loadingManager
    */
   async _loadAssets(loadingManager) {
-    return Promise.all([
-      createEarthSystem(this.THREE, this.scene, this.renderer, this.isMobileDevice, loadingManager),
-      createMoonSystem(this.THREE, this.scene, this.renderer, this.isMobileDevice, loadingManager),
-      createCloudLayer(this.THREE, this.renderer, loadingManager, this.isMobileDevice),
-    ]);
+    const ktx2Loader = createEarthKTX2Loader(this.renderer, loadingManager, this.isMobileDevice);
+
+    try {
+      return await Promise.all([
+        createEarthSystem(
+          this.THREE,
+          this.scene,
+          this.renderer,
+          this.isMobileDevice,
+          loadingManager,
+          ktx2Loader
+        ),
+        createMoonSystem(
+          this.THREE,
+          this.scene,
+          this.renderer,
+          this.isMobileDevice,
+          loadingManager
+        ),
+        createCloudLayer(
+          this.THREE,
+          this.renderer,
+          loadingManager,
+          this.isMobileDevice,
+          ktx2Loader
+        ),
+      ]);
+    } finally {
+      ktx2Loader?.dispose();
+    }
   }
 
   _setupStarsAndLighting() {
@@ -505,12 +539,9 @@ class ThreeEarthSystem {
     if (this.cloudMesh) {
       this.cloudMesh.position.copy(this.earthMesh.position);
       this.cloudMesh.scale.copy(this.earthMesh.scale);
+      this.cloudMesh.rotation.z = this.earthMesh.rotation.z;
       this.scene.add(this.cloudMesh);
     }
-    const atmosphere = createAtmosphere(this.THREE, this.isMobileDevice);
-    this.earthMesh.add(atmosphere);
-    const depthOverlay = createEarthDepthOverlay(this.THREE, this.isMobileDevice);
-    this.earthMesh.add(depthOverlay);
   }
 
   _precompileEarthMaterials() {
@@ -576,17 +607,12 @@ class ThreeEarthSystem {
 
     document.body.classList.add("three-earth-active");
 
-    this.performanceMonitor = new PerformanceMonitor(
-      container,
-      this.renderer,
-      (/** @type {string} */ level) => {
-        this.currentQualityLevel = level;
-        const cfg =
-          /** @type {Record<string, QualityConfig>} */ (CONFIG.QUALITY_LEVELS)[level] || {};
-        if (this.cloudMesh) this.cloudMesh.visible = cfg.cloudLayer;
-        if (this.shootingStarManager) this.shootingStarManager.disabled = !cfg.meteorShowers;
-      }
-    );
+    this.performanceMonitor = new PerformanceMonitor((/** @type {string} */ level) => {
+      this.currentQualityLevel = level;
+      this._syncCloudVisibility();
+      const cfg = /** @type {Record<string, QualityConfig>} */ (CONFIG.QUALITY_LEVELS)[level] || {};
+      if (this.shootingStarManager) this.shootingStarManager.disabled = !cfg.meteorShowers;
+    });
 
     this.shootingStarManager = new ShootingStarManager(this.scene, this.THREE);
 
@@ -1137,17 +1163,8 @@ class ThreeEarthSystem {
     this.renderer.clear(true, true, true);
   }
 
-  /**
-   * Maps section IDs to config keys (e.g. "site-footer" → "contact").
-   * @param {string} [sectionName]
-   * @returns {string}
-   */
-  _resolveSectionKey(sectionName = this.currentSection) {
-    return sectionName === "site-footer" ? "contact" : sectionName;
-  }
-
   _getCurrentSectionConfig() {
-    return SECTION_CONFIGS[this._resolveSectionKey()] || SECTION_CONFIGS.hero;
+    return SECTION_CONFIGS[this.currentSection] || SECTION_CONFIGS.hero;
   }
 
   _getCurrentSectionScrollProgress() {
@@ -1180,6 +1197,8 @@ class ThreeEarthSystem {
     const centeredProgress = progress - 0.5;
     const scroll = config.scroll || {};
     const pos = scroll.pos || {};
+    const earthConfig =
+      this.isMobileDevice && config.mobileEarth ? config.mobileEarth : config.earth;
     const em = this.earthMesh;
 
     if (!em.userData.targetPosition) {
@@ -1187,20 +1206,20 @@ class ThreeEarthSystem {
     }
 
     em.userData.targetPosition.set(
-      config.earth.pos.x + (pos.x || 0) * centeredProgress,
-      config.earth.pos.y + (pos.y || 0) * centeredProgress,
-      config.earth.pos.z + (pos.z || 0) * centeredProgress
+      earthConfig.pos.x + (pos.x || 0) * centeredProgress,
+      earthConfig.pos.y + (pos.y || 0) * centeredProgress,
+      earthConfig.pos.z + (pos.z || 0) * centeredProgress
     );
     em.userData.targetScale = Math.max(
       0.2,
-      config.earth.scale + (scroll.scale || 0) * centeredProgress
+      earthConfig.scale + (scroll.scale || 0) * centeredProgress
     );
     em.userData.targetRotation =
-      (config.earth.rotation || 0) + (scroll.rotation || 0) * centeredProgress;
+      (earthConfig.rotation || 0) + (scroll.rotation || 0) * centeredProgress;
 
     this._applyMoonTarget(config.moon);
 
-    const baseOrbit = em.userData.currentMode === "night" ? Math.PI : 0;
+    const baseOrbit = config.cameraOrbit ?? (em.userData.currentMode === "night" ? Math.PI : 0);
     this.cameraManager?.setTargetOrbitAngle(baseOrbit + (scroll.orbit || 0) * centeredProgress);
   }
 
@@ -1225,19 +1244,45 @@ class ThreeEarthSystem {
   _updateEarthForSection(sectionName) {
     if (!this.earthMesh || !this.active) return;
 
-    const config = SECTION_CONFIGS[this._resolveSectionKey(sectionName)] || SECTION_CONFIGS.hero;
+    const config = SECTION_CONFIGS[sectionName] || SECTION_CONFIGS.hero;
     this._applyConfigToMeshes(config);
 
-    if (config.mode && config.mode !== this.earthMesh.userData.currentMode) {
+    const axialTilt = this.THREE.MathUtils.degToRad(config.axialTilt ?? CONFIG.EARTH.AXIAL_TILT);
+    this.earthMesh.rotation.z = axialTilt;
+    this.earthMesh.rotation.x = this.THREE.MathUtils.degToRad(config.latitudeTilt ?? 0);
+    if (this.cloudMesh) this.cloudMesh.rotation.z = axialTilt;
+    if (this.cloudMesh) this.cloudMesh.rotation.x = this.earthMesh.rotation.x;
+
+    this._syncCloudVisibility(config);
+
+    if (config.mode) {
       const newMode = config.mode;
       const nextMaterial = newMode === "day" ? this.dayMaterial : this.nightMaterial;
       if (!nextMaterial) return;
+
+      // Re-apply the section material even when currentMode already matches.
+      // This prevents a precompile, quality transition or interrupted section
+      // change from leaving the night material attached in the hero.
       this.earthMesh.material = nextMaterial;
+      if (newMode !== this.earthMesh.userData.currentMode) {
+        this.cameraManager?.setTargetOrbitAngle(
+          config.cameraOrbit ?? (newMode === "day" ? 0 : Math.PI)
+        );
+      }
       this.earthMesh.userData.currentMode = newMode;
-      this.cameraManager?.setTargetOrbitAngle(newMode === "day" ? 0 : Math.PI);
+      if (this.cityGlowGroup) this.cityGlowGroup.visible = newMode === "night";
     }
 
     this._setLightTargets(config);
+  }
+
+  _syncCloudVisibility(config = SECTION_CONFIGS[this.currentSection] || SECTION_CONFIGS.hero) {
+    if (!this.cloudMesh) return;
+    const quality =
+      /** @type {Record<string, QualityConfig>} */ (CONFIG.QUALITY_LEVELS)[
+        this.currentQualityLevel
+      ] || {};
+    this.cloudMesh.visible = config.cloudLayer !== false && quality.cloudLayer !== false;
   }
 
   _setLightTargets(config) {
@@ -1269,9 +1314,11 @@ class ThreeEarthSystem {
     if (!em.userData.targetPosition) {
       em.userData.targetPosition = new this.THREE.Vector3();
     }
-    em.userData.targetPosition.set(config.earth.pos.x, config.earth.pos.y, config.earth.pos.z);
-    em.userData.targetScale = config.earth.scale;
-    em.userData.targetRotation = config.earth.rotation;
+    const earthConfig =
+      this.isMobileDevice && config.mobileEarth ? config.mobileEarth : config.earth;
+    em.userData.targetPosition.set(earthConfig.pos.x, earthConfig.pos.y, earthConfig.pos.z);
+    em.userData.targetScale = earthConfig.scale;
+    em.userData.targetRotation = earthConfig.rotation;
 
     this._applyMoonTarget(config.moon);
   }
@@ -1463,6 +1510,7 @@ class ThreeEarthSystem {
     this.earthMesh = null;
     this.moonMesh = null;
     this.cloudMesh = null;
+    this.cityGlowGroup = null;
     this.dayMaterial = null;
     this.nightMaterial = null;
     this.directionalLight = null;
@@ -1602,20 +1650,19 @@ function getOptimizedConfig(capabilities) {
   if (!capabilities) return {};
   if (capabilities.isLowEnd) {
     return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 32 },
+      EARTH: { ...CONFIG.EARTH, SEGMENTS: 72, SEGMENTS_MOBILE: 48 },
       STARS: { ...CONFIG.STARS, COUNT: 1000 },
       // Even on low-end devices, keep decent resolution (1.5x minimum) to avoid extreme blur
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,
         PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
-        TARGET_FPS: 30,
       },
       CLOUDS: { ...CONFIG.CLOUDS, OPACITY: 0 },
     };
   }
   if (capabilities.isMobile) {
     return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 32 },
+      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 64 },
       STARS: { ...CONFIG.STARS, COUNT: 1500 },
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,

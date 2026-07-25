@@ -1,40 +1,23 @@
-import { EARTH_TEXTURES } from "./texture-paths.js";
-
 export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 64,
-    SEGMENTS_MOBILE: 32, // Reduced geometry for mobile to save performance
+    SEGMENTS: 128,
+    SEGMENTS_MOBILE: 64,
     BUMP_SCALE: 0.011,
     AMBIENT_ROTATION_SPEED: 0.012,
     EMISSIVE_INTENSITY: 0.2,
     EMISSIVE_PULSE_SPEED: 0.3,
     EMISSIVE_PULSE_AMPLITUDE: 0.08,
+    AXIAL_TILT: -23.4,
   },
   CLOUDS: {
-    ALTITUDE: 0.03,
-    ROTATION_SPEED: 0.0008,
-    OPACITY: 0.3,
-  },
-  ATMOSPHERE: {
-    SCALE: 1.015,
-    FRESNEL_POWER: 4.5,
-    RAYLEIGH_SCALE: 1.028,
-    MIE_SCALE: 1.018,
-    RAYLEIGH_COLOR: 0x4488ff,
-    MIE_COLOR: 0xffbb66,
-    RAYLEIGH_INTENSITY: 0.1,
-    MIE_INTENSITY: 0.055,
-    SCATTERING_STRENGTH: 0.24,
-  },
-  OCEAN: {
-    SHININESS: 100.0,
-    SPECULAR_INTENSITY: 0.5,
-    SPECULAR_COLOR: 0xffffff,
+    ALTITUDE: 0.045,
+    SHADOW_ALTITUDE: 0.012,
+    SHADOW_OPACITY: 0.045,
+    ROTATION_SPEED: 0.00072,
+    OPACITY: 0.18,
   },
   SUN: {
-    RADIUS: 15,
-    HEIGHT: 3.0,
     INTENSITY: 1.8,
   },
   LIGHTING: {
@@ -54,15 +37,15 @@ export const CONFIG = {
     },
   },
   STARS: {
-    COUNT: 3000,
-    TWINKLE_SPEED: 0.2,
+    COUNT: 3600,
+    TWINKLE_SPEED: 0.42,
   },
   MOON: {
     RADIUS: 0.95,
     DISTANCE: 25,
     ORBIT_SPEED: 0.00025,
     SEGMENTS: 48,
-    BUMP_SCALE: 0.015,
+    BUMP_SCALE: 0.028,
   },
   CAMERA: {
     FOV: 45,
@@ -73,10 +56,10 @@ export const CONFIG = {
     LERP_FACTOR: 0.06,
     PRESETS: {
       hero: {
-        x: -6.5,
-        y: 4.8,
-        z: 10.5,
-        lookAt: { x: 0, y: -0.5, z: 0 },
+        x: 0,
+        y: 4.1,
+        z: 10.8,
+        lookAt: { x: 0, y: -1.5, z: 0 },
       },
       features: {
         x: 1.25,
@@ -84,23 +67,11 @@ export const CONFIG = {
         z: 10.8,
         lookAt: { x: 0, y: 0, z: -0.2 },
       },
-      about: {
-        x: -3.2,
-        y: 3.0,
-        z: 9.5,
-        lookAt: { x: 0, y: 0, z: 0 },
-      },
       section3: {
         x: -2.4,
         y: 3.2,
         z: 10.2,
         lookAt: { x: 0.55, y: -0.35, z: -0.4 },
-      },
-      contact: {
-        x: -0.5,
-        y: 3.0,
-        z: 9.5,
-        lookAt: { x: 0, y: 0, z: 0 },
       },
     },
     TRANSITION_DURATION: 1.8,
@@ -113,38 +84,23 @@ export const CONFIG = {
     MAX_SIMULTANEOUS: 3,
   },
   PERFORMANCE: {
-    PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2),
-    TARGET_FPS: 30,
-    DRS_DOWN_THRESHOLD: 25, // Drop quality if FPS < 25
-    DRS_UP_THRESHOLD: 45, // Raise quality if FPS > 45 (Wider hysteresis)
-    STABILITY_FRAMES: 2, // Require consecutive checks before changing
+    PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.75),
   },
   QUALITY_LEVELS: {
     HIGH: {
       minFPS: 28,
-      multiLayerAtmosphere: true,
-      oceanReflections: true,
       cloudLayer: true,
       meteorShowers: true,
     },
     MEDIUM: {
       minFPS: 18,
-      multiLayerAtmosphere: false,
-      oceanReflections: true,
       cloudLayer: true,
       meteorShowers: true,
     },
     LOW: {
       minFPS: 0,
-      multiLayerAtmosphere: false,
-      oceanReflections: false,
       cloudLayer: false,
       meteorShowers: false,
-    },
-  },
-  PATHS: {
-    TEXTURES: {
-      ...EARTH_TEXTURES,
     },
   },
 };

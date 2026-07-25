@@ -3,7 +3,6 @@ import { createLogger } from "../../../core/logger.js";
 import { throttle } from "../../../core/utils/index.js";
 import { AppLoadManager } from "../../../core/load-manager.js";
 import { i18n } from "../../../core/i18n.js";
-import { EARTH_FALLBACK_BACKGROUND_URL } from "./texture-paths.js";
 
 // ===== Helper Functions (Pure) =====
 
@@ -14,11 +13,6 @@ function calculateQualityLevel(fps) {
     return "MEDIUM";
   }
   return "HIGH";
-}
-
-// DRS Disabled for maximum quality
-function calculateDynamicResolution(_fps, _currentRatio, perfConfig) {
-  return perfConfig.PIXEL_RATIO;
 }
 
 const log = createLogger("EarthUI");
@@ -73,16 +67,6 @@ export function showErrorState(container, error, retryCallback) {
       errorText.textContent = "CSS-Modus";
     }
 
-    // Optional: Add static Earth image background to container
-    try {
-      container.style.backgroundImage = `url(${EARTH_FALLBACK_BACKGROUND_URL})`;
-      container.style.backgroundSize = "cover";
-      container.style.backgroundPosition = "center";
-      container.style.backgroundAttachment = "fixed";
-    } catch (err) {
-      log.warn("Unable to set fallback background image", err);
-    }
-
     // Add retry button if not present
     let retryBtn = errorElement.querySelector(".three-earth-retry");
     if (!retryBtn && retryCallback) {
@@ -104,17 +88,14 @@ export function showErrorState(container, error, retryCallback) {
 }
 
 export class PerformanceMonitor {
-  constructor(parentContainer, renderer, onQualityChange) {
-    this.renderer = renderer;
+  constructor(onQualityChange) {
     this.onQualityChange = onQualityChange;
     this.frame = 0;
     this.lastTime = performance.now();
     this.fps = 60;
-    this.currentPixelRatio = CONFIG.PERFORMANCE.PIXEL_RATIO;
     this.currentQualityLevel = "HIGH";
 
-    // Throttled adjustment to avoid rapid fluctuating changes
-    this.throttledAdjustResolution = throttle(() => this.adjustResolution(), 2000);
+    this.throttledAdjustQuality = throttle(() => this.adjustQuality(), 2000);
   }
 
   update() {
@@ -125,37 +106,15 @@ export class PerformanceMonitor {
       this.fps = (this.frame * 1000) / (time - this.lastTime);
       this.lastTime = time;
       this.frame = 0;
-      this.throttledAdjustResolution();
+      this.throttledAdjustQuality();
     }
   }
 
-  adjustResolution() {
-    // 1. Quality Level Logic
+  adjustQuality() {
     const newQualityLevel = calculateQualityLevel(this.fps);
     if (newQualityLevel !== this.currentQualityLevel) {
       this.currentQualityLevel = newQualityLevel;
       if (this.onQualityChange) this.onQualityChange(this.currentQualityLevel);
     }
-
-    // 2. Pixel Ratio Logic
-    const newPixelRatio = calculateDynamicResolution(
-      this.fps,
-      this.currentPixelRatio,
-      CONFIG.PERFORMANCE
-    );
-
-    if (newPixelRatio !== this.currentPixelRatio) {
-      log.info(`Adjusting pixel ratio: ${this.currentPixelRatio} -> ${newPixelRatio}`);
-      this.currentPixelRatio = newPixelRatio;
-      try {
-        this.renderer.setPixelRatio(this.currentPixelRatio);
-      } catch (e) {
-        log.warn("Failed to set pixel ratio on renderer:", e);
-      }
-    }
-  }
-
-  cleanup() {
-    // Nothing to clean up since overlay was removed
   }
 }

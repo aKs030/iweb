@@ -12,7 +12,7 @@ import {
 } from "../../../core/utils/index.js";
 import { createLogger } from "../../../core/logger.js";
 import { AppLoadManager } from "../../../core/load-manager.js";
-import { EARTH_PRIMARY_TEXTURE_URL, EARTH_SECONDARY_TEXTURE_URLS } from "../earth/texture-paths.js";
+import { getEarthTextureSet } from "../earth/texture-paths.js";
 
 const log = createLogger("ThreeEarthManager");
 
@@ -100,13 +100,22 @@ export class ThreeEarthManager {
   }
 
   preloadTextures() {
+    const width = globalThis.innerWidth;
+    const textureSet = getEarthTextureSet({
+      isMobile: width < 768,
+      compact:
+        width < 1440 ||
+        (globalThis.devicePixelRatio || 1) < 1.25 ||
+        globalThis.matchMedia?.("(prefers-reduced-data: reduce)")?.matches,
+    });
+
     // Avoid late-preload console warnings: only preload before window load fires.
     // Three.js image loading uses anonymous CORS, so match that on the hint.
     const canPreloadNow = document.readyState !== "complete";
     if (canPreloadNow) {
       upsertHeadLink({
         rel: "preload",
-        href: EARTH_PRIMARY_TEXTURE_URL,
+        href: textureSet.DAY,
         as: "image",
         crossOrigin: "anonymous",
         dataset: { injectedBy: "three-earth" },
@@ -115,7 +124,7 @@ export class ThreeEarthManager {
     }
 
     // Secondary textures are queued as low-priority prefetches.
-    EARTH_SECONDARY_TEXTURE_URLS.forEach(href => {
+    [textureSet.NIGHT, textureSet.NORMAL, textureSet.BUMP].forEach(href => {
       upsertHeadLink({
         rel: "prefetch",
         href,

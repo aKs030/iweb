@@ -1,0 +1,21 @@
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "https://abdulkerimsesli.de",
+          "https://www.abdulkerimsesli.de",
+          "https://1web.pages.dev",
+          "https://pub-76faed29dbee4b6893d5377b78a7fbbe.r2.dev",
+          "http://localhost:8080",
+          "https://localhost:8080",
+          "http://127.0.0.1:8080"
+        ],
+        "methods": ["GET", "HEAD"],
+        "headers": ["*"]
+      },
+      "exposeHeaders": ["ETag", "Content-Length", "Content-Type"],
+      "maxAgeSeconds": 3600
+    }
+  ]
+}

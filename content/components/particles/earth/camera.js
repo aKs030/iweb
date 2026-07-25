@@ -13,7 +13,6 @@ export class CameraManager {
     this.cameraOrbitAngle = 0;
     this.targetOrbitAngle = 0;
 
-    // Transition state (replacing setTimeout)
     this.transition = {
       active: false,
       startTime: 0,
@@ -26,7 +25,6 @@ export class CameraManager {
       presetZ: 0,
     };
 
-    // Reusable vectors for zero-allocation updates
     this._vLookAt = new this.THREE.Vector3();
     this._vCurrentLookAt = new this.THREE.Vector3();
   }
@@ -36,11 +34,9 @@ export class CameraManager {
   }
 
   updateCameraForSection(sectionName) {
-    // Map certain section ids to existing preset keys
-    const presetKey = sectionName === "site-footer" ? "contact" : sectionName;
-    const preset = CONFIG.CAMERA.PRESETS[presetKey];
+    const preset = CONFIG.CAMERA.PRESETS[sectionName];
     if (preset) {
-      this.flyToPreset(presetKey);
+      this.flyToPreset(sectionName);
     } else {
       log.warn(`No preset for '${sectionName}', using hero`);
       this.flyToPreset("hero");
@@ -56,9 +52,8 @@ export class CameraManager {
       this.targetOrbitAngle = 0;
     }
 
-    // Start transition
     this.transition.active = true;
-    this.transition.startTime = performance.now(); // We will use accumulated time or performance.now
+    this.transition.startTime = performance.now();
     this.transition.duration = CONFIG.CAMERA.TRANSITION_DURATION * 1000;
 
     this.transition.startPos = { ...this.cameraTarget };
@@ -67,7 +62,7 @@ export class CameraManager {
       ? this.camera.userData.currentLookAt.clone()
       : new this.THREE.Vector3(0, 0, 0);
 
-    this.transition.endPos = { x: preset.x, y: preset.y }; // z is zoom
+    this.transition.endPos = { x: preset.x, y: preset.y };
     this.transition.presetZ = preset.z;
     this.transition.endLookAt = new this.THREE.Vector3(
       preset.lookAt.x,
@@ -76,9 +71,7 @@ export class CameraManager {
     );
   }
 
-  // UPDATED: Now accepts delta time for frame-rate independence
   updateCameraPosition(delta = 0.016) {
-    // 1. Handle Active Transition
     if (this.transition.active) {
       const elapsed = performance.now() - this.transition.startTime;
       const progress = Math.min(elapsed / this.transition.duration, 1);
@@ -88,7 +81,6 @@ export class CameraManager {
           ? 8 * progress * progress * progress * progress
           : 1 - Math.pow(-2 * progress + 2, 4) / 2;
 
-      // Interpolate Targets
       this.cameraTarget.x =
         this.transition.startPos.x +
         (this.transition.endPos.x - this.transition.startPos.x) * eased;
@@ -109,26 +101,18 @@ export class CameraManager {
 
       if (progress >= 1) {
         this.transition.active = false;
-        // Snap to final values to avoid floating point errors
         if (this.camera && this.camera.userData.currentLookAt)
           this.camera.userData.currentLookAt.copy(this.transition.endLookAt);
       }
     }
 
-    // 2. Handle Orbit & Smoothing (Frame-Rate Independent)
-
-    // Normalize delta to 60fps (approx 16.6ms)
-    // If delta is 0.016, timeScale is 1. If delta is 0.033 (30fps), timeScale is 2.
     const timeScale = delta * 60;
 
     const angleDiff = this.targetOrbitAngle - this.cameraOrbitAngle;
     const orbitProgress = Math.min(Math.abs(angleDiff) / Math.PI, 1);
     const orbitEased = 1 - Math.pow(1 - orbitProgress, 4);
 
-    // Original base factor was 0.06 + eased * 0.12 (approx 0.06 to 0.18) per 60hz frame
     const baseFactor = 0.06 + orbitEased * 0.12;
-
-    // Frame-independent dampening: 1 - (1 - rate)^timeScale
     const adjustedFactor = 1 - Math.pow(1 - baseFactor, timeScale);
 
     this.cameraOrbitAngle += angleDiff * adjustedFactor;
@@ -138,8 +122,6 @@ export class CameraManager {
     const finalY = this.cameraTarget.y;
     const finalZ = Math.cos(this.cameraOrbitAngle) * radius;
 
-    // Apply similar dampening to position lerp
-    // Original: CONFIG.CAMERA.LERP_FACTOR (0.06)
     const posLerpFactor = 1 - Math.pow(1 - CONFIG.CAMERA.LERP_FACTOR, timeScale);
 
     this.cameraPosition.x += (finalX - this.cameraPosition.x) * posLerpFactor;

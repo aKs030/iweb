@@ -1,7 +1,7 @@
 import { applyCspNonce, scheduleIdleTask, upsertHeadLink } from "../../../core/utils/index.js";
 import { createLogger } from "../../../core/logger.js";
 import { resourceHints } from "../../../core/seo/index.js";
-import { EARTH_PRIMARY_TEXTURE_URL } from "#components/particles/index.js";
+import { getEarthTextureSet } from "#components/particles/index.js";
 
 const log = createLogger("head-assets");
 const DEPLOY_VERSION =
@@ -40,9 +40,14 @@ function upsertStyle(href) {
 function injectHomeLcpHints() {
   if (getNormalizedPathname() !== "/") return;
 
+  const width = globalThis.innerWidth;
+  const textureSet = getEarthTextureSet({
+    isMobile: width < 768,
+    compact: width < 1440 || (globalThis.devicePixelRatio || 1) < 1.25,
+  });
   upsertHeadLink({
     rel: "prefetch",
-    href: EARTH_PRIMARY_TEXTURE_URL,
+    href: textureSet.DAY,
     as: "image",
     dataset: { injectedBy: "head-inline", lcp: "hero-earth" },
   });
