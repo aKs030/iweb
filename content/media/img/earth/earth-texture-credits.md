@@ -18,7 +18,8 @@ The Solar System Scope maps are based on NASA elevation and imagery data.
 
 ## Regional close-up
 
-`closeup-terrain-v14.webp`, its derived height and normal maps, and
+`closeup-terrain-v14.webp`, its optimized 2K delivery variant, the derived
+height and normal maps, and
 `berlin-clouds-v2.webp` form the regional Europe/Berlin close-up. The terrain
 uses modified Copernicus Sentinel imagery from
 [EOX Cloudless](https://cloudless.eox.at/). The height, normal, and cloud masks

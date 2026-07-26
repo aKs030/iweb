@@ -97,6 +97,8 @@ const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1
  * @typedef {DeviceCapabilities & { recommendedQuality?: string }} EarthDeviceCapabilities
  * @typedef {{
  *   cloudLayer?: boolean,
+ *   highCloudLayer?: boolean,
+ *   terrainDetailScale?: number,
  *   meteorShowers?: boolean,
  *   desktopPixelRatio?: number,
  *   mobilePixelRatio?: number,
@@ -131,11 +133,11 @@ const SECTION_CONFIGS = {
     moon: { pos: { x: -6, y: 1, z: -12 }, scale: 0.36 },
     lighting: {
       ambientColor: 0x64717d,
-      ambientIntensity: 0.72,
-      sunIntensity: 2.35,
+      ambientIntensity: 0.64,
+      sunIntensity: 2.15,
       sunPosition: { x: 0, y: 7.8, z: 14 },
       fillColor: 0xbedcff,
-      fillIntensity: 0.22,
+      fillIntensity: 0.18,
       rimColor: 0xbdeeff,
       rimIntensity: 0.16,
     },
@@ -148,9 +150,9 @@ const SECTION_CONFIGS = {
     surfaceNormalScale: 1,
     surfaceBumpScale: 0.014,
     cloudLayer: true,
-    cloudOpacity: 0.16,
-    cloudShadowOpacity: 0.025,
-    cloudScaleFactor: 0.994,
+    cloudOpacity: 0.08,
+    cloudShadowOpacity: 0.008,
+    cloudScaleFactor: 1,
     proceduralTerrainMix: 1,
     cameraOrbit: 0,
     axialTilt: -7,
@@ -167,10 +169,10 @@ const SECTION_CONFIGS = {
     moon: { pos: { x: 4.8, y: 2.35, z: -9.6 }, scale: 0.62 },
     lighting: {
       ambientColor: 0x5f6678,
-      ambientIntensity: 1.55,
-      sunIntensity: 1.45,
+      ambientIntensity: 1,
+      sunIntensity: 1.75,
       sunPosition: { x: 1.25, y: 4.55, z: 10.8 },
-      fillIntensity: 0.3,
+      fillIntensity: 0.22,
       rimIntensity: 0,
     },
     mode: "day",
@@ -181,8 +183,8 @@ const SECTION_CONFIGS = {
     surfaceEmissiveIntensity: 0.04,
     surfaceNormalScale: 0.65,
     surfaceBumpScale: 0.008,
-    cloudOpacity: 0.23,
-    cloudShadowOpacity: 0.035,
+    cloudOpacity: 0.2,
+    cloudShadowOpacity: 0.028,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 0,
     scroll: {
@@ -197,13 +199,13 @@ const SECTION_CONFIGS = {
     moon: { pos: { x: 4.6, y: 2.2, z: -9.4 }, scale: 0.46 },
     lighting: {
       ambientColor: 0x3b4d70,
-      ambientIntensity: 0.78,
-      sunIntensity: 0.72,
+      ambientIntensity: 0.58,
+      sunIntensity: 0.62,
       sunPosition: { x: -2.4, y: 3.2, z: 10.2 },
       fillColor: 0x6ea8ff,
-      fillIntensity: 0.5,
+      fillIntensity: 0.38,
       rimColor: 0xffc76a,
-      rimIntensity: 0.82,
+      rimIntensity: 0.58,
     },
     mode: "night",
     terrainRelief: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
@@ -214,8 +216,8 @@ const SECTION_CONFIGS = {
     surfaceNormalScale: 0.72,
     surfaceBumpScale: CONFIG.EARTH.BUMP_SCALE,
     cloudLayer: true,
-    cloudOpacity: 0.12,
-    cloudShadowOpacity: 0.015,
+    cloudOpacity: 0.1,
+    cloudShadowOpacity: 0.012,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 0,
     scroll: {
@@ -556,6 +558,7 @@ class ThreeEarthSystem {
           this.scene,
           this.renderer,
           this.isMobileDevice,
+          this.deviceCapabilities?.recommendedQuality || "MEDIUM",
           loadingManager,
           ktx2Loader
         ),
@@ -691,8 +694,10 @@ class ThreeEarthSystem {
   _applyQualityLevel(level) {
     this.currentQualityLevel = level;
     const cfg = /** @type {Record<string, QualityConfig>} */ (CONFIG.QUALITY_LEVELS)[level] || {};
+    const sectionConfig = SECTION_CONFIGS[this.currentSection] || SECTION_CONFIGS.hero;
 
-    this._syncCloudVisibility();
+    this._syncCloudVisibility(sectionConfig);
+    this._applyTerrainQuality(cfg);
     if (this.shootingStarManager) {
       this.shootingStarManager.disabled = !cfg.meteorShowers;
     }
@@ -980,6 +985,7 @@ class ThreeEarthSystem {
     if (this.cloudMesh) {
       this.cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED * 30 * delta;
     }
+    this._updateCloudWind(totalTime);
     if (this.moonMesh) {
       this.moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED * 20 * delta;
     }
@@ -1021,6 +1027,21 @@ class ThreeEarthSystem {
         CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
         2;
       this.earthMesh.material.emissiveIntensity = base + pulse;
+    }
+  }
+
+  _updateCloudWind(time) {
+    const updateMaterials = materials => {
+      materials?.forEach(material => {
+        material.userData.windTime = time;
+        const shader = material.userData.cloudShader;
+        if (shader?.uniforms?.cloudTime) shader.uniforms.cloudTime.value = time;
+      });
+    };
+
+    updateMaterials(this.cloudMesh?.userData?.windMaterials);
+    if (this.proceduralTerrainGroup?.visible) {
+      updateMaterials(this.proceduralTerrainGroup.userData.windMaterials);
     }
   }
 
@@ -1080,14 +1101,6 @@ class ThreeEarthSystem {
       terrainData.fadeMaterials?.forEach(({ material, baseOpacity }) => {
         material.opacity = terrainData.opacity * baseOpacity;
       });
-      if (terrainData.regionalCloudTexture && terrainData.opacity > 0.004) {
-        terrainData.regionalCloudTime =
-          (Number.isFinite(terrainData.regionalCloudTime) ? terrainData.regionalCloudTime : 0) +
-          delta;
-        terrainData.regionalCloudTexture.offset.x = (terrainData.regionalCloudTime * 0.009) % 1;
-        terrainData.regionalCloudTexture.offset.y =
-          Math.sin(terrainData.regionalCloudTime * 0.075) * 0.006;
-      }
     }
 
     if (this.cloudMesh) {
@@ -1464,13 +1477,34 @@ class ThreeEarthSystem {
     const cloudSurface = /** @type {any} */ (
       this.cloudMesh.getObjectByName?.("earth-cloud-surface")
     );
+    const highCloudSurface = /** @type {any} */ (
+      this.cloudMesh.getObjectByName?.("earth-cloud-high")
+    );
     const cloudShadow = /** @type {any} */ (this.cloudMesh.getObjectByName?.("earth-cloud-shadow"));
     if (cloudSurface?.material && config.cloudOpacity !== undefined) {
       cloudSurface.material.opacity = config.cloudOpacity;
     }
+    if (highCloudSurface?.material && config.cloudOpacity !== undefined) {
+      highCloudSurface.material.opacity = config.cloudOpacity * CONFIG.CLOUDS.HIGH_OPACITY_FACTOR;
+      highCloudSurface.visible = quality.highCloudLayer !== false;
+    }
     if (cloudShadow?.material && config.cloudShadowOpacity !== undefined) {
       cloudShadow.material.opacity = config.cloudShadowOpacity;
     }
+    const regionalHighCloud = this.proceduralTerrainGroup?.getObjectByName?.(
+      "earth-regional-cloud-high"
+    );
+    if (regionalHighCloud) regionalHighCloud.visible = quality.highCloudLayer !== false;
+  }
+
+  _applyTerrainQuality(quality) {
+    const terrainMaterial = /** @type {any} */ (
+      this.proceduralTerrainGroup?.userData?.terrainMaterial
+    );
+    if (!terrainMaterial) return;
+    const detailScale = quality.terrainDetailScale ?? 1;
+    terrainMaterial.normalScale?.setScalar(0.3 * detailScale);
+    terrainMaterial.bumpScale = 0.0026 * detailScale;
   }
 
   _setLightTargets(config) {
@@ -1479,14 +1513,13 @@ class ThreeEarthSystem {
     const mode = this.earthMesh.userData.currentMode;
     const lightCfg = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
     const sectionLight = config.lighting || {};
+    const sunX = sectionLight.sunPosition?.x ?? -10;
+    const sunY = sectionLight.sunPosition?.y ?? 6;
+    const sunZ = sectionLight.sunPosition?.z ?? 12;
 
     this._lightTargets = {
       directionalIntensity: sectionLight.sunIntensity ?? lightCfg.SUN_INTENSITY,
-      directionalPosition: new this.THREE.Vector3(
-        sectionLight.sunPosition?.x ?? -10,
-        sectionLight.sunPosition?.y ?? 6,
-        sectionLight.sunPosition?.z ?? 12
-      ),
+      directionalPosition: new this.THREE.Vector3(sunX, sunY, sunZ),
       ambientIntensity: sectionLight.ambientIntensity ?? lightCfg.AMBIENT_INTENSITY,
       ambientColor: new this.THREE.Color(sectionLight.ambientColor ?? lightCfg.AMBIENT_COLOR),
       fillIntensity: sectionLight.fillIntensity ?? lightCfg.FILL_INTENSITY,
@@ -1494,6 +1527,14 @@ class ThreeEarthSystem {
       rimIntensity: sectionLight.rimIntensity ?? lightCfg.RIM_INTENSITY,
       rimColor: new this.THREE.Color(sectionLight.rimColor ?? 0xffc76a),
     };
+
+    const terrainSunDirection = /** @type {any} */ (
+      this.dayMaterial?.userData?.terrainSunDirection
+    );
+    if (terrainSunDirection?.set) {
+      terrainSunDirection.set(-sunX, sunY);
+      if (terrainSunDirection.lengthSq() > 0) terrainSunDirection.normalize();
+    }
   }
 
   /**

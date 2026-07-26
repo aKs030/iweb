@@ -1,5 +1,5 @@
 const EARTH_TEXTURE_VERSION = "earth-20260725-r4";
-const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-20260726-r1";
+const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-20260726-r2";
 const EARTH_TEXTURE_CDN_URL = "https://img.abdulkerimsesli.de/earth/textures";
 
 function withTexturePath(filename) {
@@ -51,6 +51,7 @@ const EARTH_TEXTURES_MOBILE = Object.freeze({
 
 export const EARTH_REGIONAL_TEXTURES = Object.freeze({
   TERRAIN: withRegionalTexturePath("closeup-terrain-v14.webp"),
+  TERRAIN_MOBILE: withRegionalTexturePath("closeup-terrain-v14-2k.webp"),
   HEIGHT: withRegionalTexturePath("closeup-height-v14.webp"),
   NORMAL: withRegionalTexturePath("closeup-normal-v14.webp"),
   CLOUDS: withRegionalTexturePath("berlin-clouds-v2.webp"),
