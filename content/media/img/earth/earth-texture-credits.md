@@ -16,6 +16,14 @@ downloaded through Wikimedia Commons, and licensed under
 
 The Solar System Scope maps are based on NASA elevation and imagery data.
 
+## Regional close-up
+
+`closeup-terrain-v14.webp`, its derived height and normal maps, and
+`berlin-clouds-v2.webp` form the regional Europe/Berlin close-up. The terrain
+uses modified Copernicus Sentinel imagery from
+[EOX Cloudless](https://cloudless.eox.at/). The height, normal, and cloud masks
+are derived display assets used by the 3D scene.
+
 ## KTX2 delivery variants
 
 The `earth_day_relief_*`, `earth_night*`, and `earth_clouds_4k` color maps also

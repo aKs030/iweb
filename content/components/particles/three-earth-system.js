@@ -65,13 +65,16 @@ const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1
  *   cloudLayer?: boolean,
  *   cloudOpacity?: number,
  *   cloudShadowOpacity?: number,
+ *   cloudScaleFactor?: number,
  *   cameraOrbit?: number,
  *   terrainRelief?: number,
  *   terrainDetailStrength?: number,
  *   surfaceClearcoat?: number,
  *   surfaceSpecularIntensity?: number,
+ *   surfaceEmissiveIntensity?: number,
  *   surfaceNormalScale?: number,
  *   surfaceBumpScale?: number,
+ *   proceduralTerrainMix?: number,
  *   axialTilt?: number,
  *   latitudeTilt?: number,
  *   lighting?: {
@@ -122,38 +125,41 @@ const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1
 /** @type {Record<string, SectionConfig>} */
 const SECTION_CONFIGS = {
   hero: {
-    // Low-orbit horizon centered on Europe for the straight-on hero camera.
-    earth: { pos: { x: 0, y: -20.5, z: -1 }, scale: 4.8, rotation: -1.9 },
-    mobileEarth: { pos: { x: 0, y: -21.65, z: -1.1 }, scale: 4.42, rotation: -1.9 },
+    // Fixed continental top-down view centered on Europe and Turkey.
+    earth: { pos: { x: 0, y: -23.9, z: -1.1 }, scale: 5.75, rotation: -1.9 },
+    mobileEarth: { pos: { x: 0, y: -23.5, z: -1.2 }, scale: 5.25, rotation: -1.9 },
     moon: { pos: { x: -6, y: 1, z: -12 }, scale: 0.36 },
     lighting: {
-      ambientColor: 0x778394,
-      ambientIntensity: 1.22,
-      sunIntensity: 1.22,
-      sunPosition: { x: 0, y: 4.1, z: 12 },
-      fillColor: 0x8bcfff,
-      fillIntensity: 0.44,
+      ambientColor: 0x64717d,
+      ambientIntensity: 0.72,
+      sunIntensity: 2.35,
+      sunPosition: { x: 0, y: 7.8, z: 14 },
+      fillColor: 0xbedcff,
+      fillIntensity: 0.22,
       rimColor: 0xbdeeff,
-      rimIntensity: 0.58,
+      rimIntensity: 0.16,
     },
     mode: "day",
     terrainRelief: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
-    terrainDetailStrength: 1,
+    terrainDetailStrength: 0.72,
     surfaceClearcoat: 0.045,
     surfaceSpecularIntensity: 1,
-    surfaceNormalScale: 1.28,
-    surfaceBumpScale: 0.023,
+    surfaceEmissiveIntensity: 0.025,
+    surfaceNormalScale: 1,
+    surfaceBumpScale: 0.014,
     cloudLayer: true,
     cloudOpacity: 0.16,
-    cloudShadowOpacity: 0.04,
+    cloudShadowOpacity: 0.025,
+    cloudScaleFactor: 0.994,
+    proceduralTerrainMix: 1,
     cameraOrbit: 0,
     axialTilt: -7,
-    latitudeTilt: -32,
+    latitudeTilt: -30,
     scroll: {
-      pos: { x: 0.08, y: 0.08, z: -0.04 },
-      scale: -0.03,
-      rotation: 0.1,
-      orbit: 0.015,
+      pos: { x: 0.04, y: 0.04, z: -0.02 },
+      scale: 0,
+      rotation: 0,
+      orbit: 0,
     },
   },
   features: {
@@ -172,14 +178,17 @@ const SECTION_CONFIGS = {
     terrainDetailStrength: 0.12,
     surfaceClearcoat: 0,
     surfaceSpecularIntensity: 0,
+    surfaceEmissiveIntensity: 0.04,
     surfaceNormalScale: 0.65,
     surfaceBumpScale: 0.008,
-    cloudOpacity: CONFIG.CLOUDS.OPACITY,
-    cloudShadowOpacity: CONFIG.CLOUDS.SHADOW_OPACITY,
+    cloudOpacity: 0.23,
+    cloudShadowOpacity: 0.035,
+    cloudScaleFactor: 1,
+    proceduralTerrainMix: 0,
     scroll: {
       pos: { x: 0.12, y: -0.08, z: 0.12 },
       scale: 0.04,
-      rotation: 0.18,
+      rotation: 0,
       orbit: 0.06,
     },
   },
@@ -201,13 +210,18 @@ const SECTION_CONFIGS = {
     terrainDetailStrength: 0,
     surfaceClearcoat: 0.025,
     surfaceSpecularIntensity: 1,
+    surfaceEmissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.4,
     surfaceNormalScale: 0.72,
     surfaceBumpScale: CONFIG.EARTH.BUMP_SCALE,
-    cloudLayer: false,
+    cloudLayer: true,
+    cloudOpacity: 0.12,
+    cloudShadowOpacity: 0.015,
+    cloudScaleFactor: 1,
+    proceduralTerrainMix: 0,
     scroll: {
       pos: { x: -0.48, y: 0.24, z: 0.16 },
       scale: 0.08,
-      rotation: -0.32,
+      rotation: 0,
       orbit: -0.1,
     },
   },
@@ -247,6 +261,10 @@ class ThreeEarthSystem {
     /** @type {EarthObject|null} */ this.moonMesh = null;
     /** @type {EarthObject|null} */ this.cloudMesh = null;
     /** @type {THREE.Object3D|null} */ this.cityGlowGroup = null;
+    /** @type {THREE.Object3D|null} */ this.proceduralTerrainGroup = null;
+    /** @type {THREE.Vector3|null} */ this._terrainCameraLocal = null;
+    /** @type {THREE.Vector3|null} */ this._terrainForwardAxis = null;
+    /** @type {THREE.Quaternion|null} */ this._terrainTilt = null;
 
     // Materials
     /** @type {(THREE.Material & DisposableMaterial)|null} */ this.dayMaterial = null;
@@ -361,6 +379,12 @@ class ThreeEarthSystem {
       this.dayMaterial = earthAssets.dayMaterial;
       this.nightMaterial = earthAssets.nightMaterial;
       this.cityGlowGroup = earthAssets.cityGlowGroup;
+      this.proceduralTerrainGroup = earthAssets.proceduralTerrainGroup;
+      this._terrainCameraLocal = new this.THREE.Vector3();
+      this._terrainForwardAxis = new this.THREE.Vector3(0, 0, 1);
+      this._terrainTilt = new this.THREE.Quaternion().setFromEuler(
+        new this.THREE.Euler(this.THREE.MathUtils.degToRad(-7), 0, 0)
+      );
       this.moonMesh = moonLOD;
       this.cloudMesh = cloudObj;
 
@@ -581,6 +605,8 @@ class ThreeEarthSystem {
       this.cloudMesh.position.copy(this.earthMesh.position);
       this.cloudMesh.scale.copy(this.earthMesh.scale);
       this.cloudMesh.rotation.z = this.earthMesh.rotation.z;
+      this.cloudMesh.userData.currentScaleFactor = 1;
+      this.cloudMesh.userData.targetScaleFactor = 1;
       this.scene.add(this.cloudMesh);
     }
   }
@@ -1017,9 +1043,65 @@ class ThreeEarthSystem {
       if (Math.abs(diff) > 0.001) em.rotation.y += diff * rotationLerp;
     }
 
+    if (
+      this.proceduralTerrainGroup &&
+      this.camera &&
+      this._terrainCameraLocal &&
+      this._terrainForwardAxis &&
+      this._terrainTilt
+    ) {
+      const terrainGroup = this.proceduralTerrainGroup;
+      const terrainData = /** @type {any} */ (terrainGroup.userData);
+      const targetOpacity = Number.isFinite(terrainData.targetOpacity)
+        ? terrainData.targetOpacity
+        : 0;
+      const positionSettled =
+        !em.userData.targetPosition || em.position.distanceTo(em.userData.targetPosition) < 0.3;
+      const scaleSettled =
+        !Number.isFinite(em.userData.targetScale) ||
+        Math.abs(em.scale.x - em.userData.targetScale) < 0.04;
+
+      if (!terrainData.anchorLocked && targetOpacity > 0) {
+        em.updateWorldMatrix(true, false);
+        this._terrainCameraLocal.copy(this.camera.position);
+        this._terrainCameraLocal.y += 11;
+        em.worldToLocal(this._terrainCameraLocal);
+        this._terrainCameraLocal.normalize();
+        terrainGroup.quaternion.setFromUnitVectors(
+          this._terrainForwardAxis,
+          this._terrainCameraLocal
+        );
+        terrainGroup.quaternion.multiply(this._terrainTilt);
+        terrainData.anchorLocked = positionSettled && scaleSettled;
+      }
+
+      terrainData.opacity += (targetOpacity - terrainData.opacity) * scaleLerp;
+      terrainGroup.visible = terrainData.opacity > 0.004;
+      terrainData.fadeMaterials?.forEach(({ material, baseOpacity }) => {
+        material.opacity = terrainData.opacity * baseOpacity;
+      });
+      if (terrainData.regionalCloudTexture && terrainData.opacity > 0.004) {
+        terrainData.regionalCloudTime =
+          (Number.isFinite(terrainData.regionalCloudTime) ? terrainData.regionalCloudTime : 0) +
+          delta;
+        terrainData.regionalCloudTexture.offset.x = (terrainData.regionalCloudTime * 0.009) % 1;
+        terrainData.regionalCloudTexture.offset.y =
+          Math.sin(terrainData.regionalCloudTime * 0.075) * 0.006;
+      }
+    }
+
     if (this.cloudMesh) {
       this.cloudMesh.position.copy(em.position);
-      this.cloudMesh.scale.copy(em.scale);
+      const cloudData = this.cloudMesh.userData;
+      const targetCloudScale = Number.isFinite(cloudData.targetScaleFactor)
+        ? cloudData.targetScaleFactor
+        : 1;
+      const currentCloudScale = Number.isFinite(cloudData.currentScaleFactor)
+        ? cloudData.currentScaleFactor
+        : 1;
+      cloudData.currentScaleFactor =
+        currentCloudScale + (targetCloudScale - currentCloudScale) * scaleLerp;
+      this.cloudMesh.scale.copy(em.scale).multiplyScalar(cloudData.currentScaleFactor);
     }
 
     if (this.moonMesh) {
@@ -1313,6 +1395,14 @@ class ThreeEarthSystem {
     this.earthMesh.rotation.x = this.THREE.MathUtils.degToRad(config.latitudeTilt ?? 0);
     if (this.cloudMesh) this.cloudMesh.rotation.z = axialTilt;
     if (this.cloudMesh) this.cloudMesh.rotation.x = this.earthMesh.rotation.x;
+    if (this.proceduralTerrainGroup) {
+      const nextTerrainOpacity = config.proceduralTerrainMix ?? 0;
+      const terrainData = this.proceduralTerrainGroup.userData;
+      if (nextTerrainOpacity > 0 && (terrainData.targetOpacity ?? 0) <= 0) {
+        terrainData.anchorLocked = false;
+      }
+      terrainData.targetOpacity = nextTerrainOpacity;
+    }
 
     this._syncCloudVisibility(config);
 
@@ -1330,6 +1420,9 @@ class ThreeEarthSystem {
       if ("specularIntensity" in nextMaterial) {
         nextMaterial.specularIntensity = config.surfaceSpecularIntensity ?? 1;
       }
+      if ("emissiveIntensity" in nextMaterial && config.surfaceEmissiveIntensity !== undefined) {
+        nextMaterial.emissiveIntensity = config.surfaceEmissiveIntensity;
+      }
       if ("normalScale" in nextMaterial && config.surfaceNormalScale !== undefined) {
         nextMaterial.normalScale.setScalar(config.surfaceNormalScale);
       }
@@ -1344,7 +1437,6 @@ class ThreeEarthSystem {
           reliefShader.uniforms.terrainDetailStrength.value = terrainDetailStrength;
         }
       }
-
       // Re-apply the section material even when currentMode already matches.
       // This prevents a precompile, quality transition or interrupted section
       // change from leaving the night material attached in the hero.
@@ -1363,6 +1455,7 @@ class ThreeEarthSystem {
 
   _syncCloudVisibility(config = SECTION_CONFIGS[this.currentSection] || SECTION_CONFIGS.hero) {
     if (!this.cloudMesh) return;
+    this.cloudMesh.userData.targetScaleFactor = config.cloudScaleFactor ?? 1;
     const quality =
       /** @type {Record<string, QualityConfig>} */ (CONFIG.QUALITY_LEVELS)[
         this.currentQualityLevel
@@ -1615,6 +1708,10 @@ class ThreeEarthSystem {
     this.moonMesh = null;
     this.cloudMesh = null;
     this.cityGlowGroup = null;
+    this.proceduralTerrainGroup = null;
+    this._terrainCameraLocal = null;
+    this._terrainForwardAxis = null;
+    this._terrainTilt = null;
     this.dayMaterial = null;
     this.nightMaterial = null;
     this.directionalLight = null;

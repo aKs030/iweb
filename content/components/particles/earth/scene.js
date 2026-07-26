@@ -53,15 +53,15 @@ export function setupScene(THREE, container) {
 export function setupLighting(THREE, scene) {
   const directionalLight = new THREE.DirectionalLight(0xfff4e5, CONFIG.SUN.INTENSITY);
   // Light the camera-facing hemisphere so Europe remains legible in the hero.
-  directionalLight.position.set(-10, 6, 12);
+  directionalLight.position.set(0, 7, 14);
   scene.add(directionalLight);
 
   const fillLight = new THREE.DirectionalLight(0x6ea8ff, CONFIG.LIGHTING.DAY.FILL_INTENSITY);
-  fillLight.position.set(-8, -1.5, 9);
+  fillLight.position.set(9, -1.5, 10);
   scene.add(fillLight);
 
   const rimLight = new THREE.PointLight(0xffc76a, CONFIG.LIGHTING.DAY.RIM_INTENSITY, 80, 1.8);
-  rimLight.position.set(-9, 6, 10);
+  rimLight.position.set(8, 6, 10);
   scene.add(rimLight);
 
   const ambientLight = new THREE.AmbientLight(

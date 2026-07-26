@@ -1,8 +1,13 @@
 const EARTH_TEXTURE_VERSION = "earth-20260725-r4";
+const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-20260726-r1";
 const EARTH_TEXTURE_CDN_URL = "https://img.abdulkerimsesli.de/earth/textures";
 
 function withTexturePath(filename) {
   return `${EARTH_TEXTURE_CDN_URL}/${filename}?v=${EARTH_TEXTURE_VERSION}`;
+}
+
+function withRegionalTexturePath(filename) {
+  return `${EARTH_TEXTURE_CDN_URL}/${filename}?v=${EARTH_REGIONAL_TEXTURE_VERSION}`;
 }
 
 const EARTH_TEXTURES = Object.freeze({
@@ -44,6 +49,13 @@ const EARTH_TEXTURES_MOBILE = Object.freeze({
   MOON_BUMP: EARTH_TEXTURES.MOON_BUMP,
 });
 
+export const EARTH_REGIONAL_TEXTURES = Object.freeze({
+  TERRAIN: withRegionalTexturePath("closeup-terrain-v14.webp"),
+  HEIGHT: withRegionalTexturePath("closeup-height-v14.webp"),
+  NORMAL: withRegionalTexturePath("closeup-normal-v14.webp"),
+  CLOUDS: withRegionalTexturePath("berlin-clouds-v2.webp"),
+});
+
 export function getEarthTextureSet({ isMobile = false, compact = false } = {}) {
   if (isMobile) return EARTH_TEXTURES_MOBILE;
   return compact ? EARTH_TEXTURES_STANDARD : EARTH_TEXTURES;
@@ -51,11 +63,18 @@ export function getEarthTextureSet({ isMobile = false, compact = false } = {}) {
 
 export function getEarthTextureSetForDisplay({
   isMobile = false,
+  width = globalThis.innerWidth || 0,
+  pixelRatio = globalThis.devicePixelRatio || 1,
   maxTextureSize = 8192,
   deviceMemory = Number(globalThis.navigator?.deviceMemory || 0),
   saveData = Boolean(globalThis.navigator?.connection?.saveData),
 } = {}) {
-  const compact = saveData || (deviceMemory > 0 && deviceMemory <= 4) || maxTextureSize < 8192;
+  const renderedWidth = width * pixelRatio;
+  const compact =
+    saveData ||
+    renderedWidth <= 4096 ||
+    (deviceMemory > 0 && deviceMemory <= 4) ||
+    maxTextureSize < 8192;
 
   return getEarthTextureSet({ isMobile, compact });
 }

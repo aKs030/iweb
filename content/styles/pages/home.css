@@ -448,6 +448,7 @@
     overflow: hidden;
     font-family: var(--font-sans);
     text-align: center;
+    isolation: isolate;
   }
 
   .hero::after {
@@ -461,7 +462,7 @@
       color-mix(in srgb, var(--home-vignette) 58%, transparent) 100%
     );
     pointer-events: none;
-    z-index: 1;
+    z-index: 2;
     -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
     mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
     opacity: var(--home-hero-vignette-opacity);
@@ -473,13 +474,30 @@
      vignette sits above the WebGL canvas and previously turned the lower,
      ocean-heavy portion of the globe almost black. */
   body.three-earth-active .hero::after {
-    opacity: 0;
+    opacity: calc(var(--home-hero-vignette-opacity) * 0.5);
+  }
+
+  .hero__earth-credit {
+    position: absolute;
+    right: clamp(1rem, 2vw, 2rem);
+    bottom: clamp(4.6rem, 10vh, 5.4rem);
+    z-index: 6;
+    color: rgb(255 255 255 / 52%);
+    font-size: 0.625rem;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: color 160ms ease;
+  }
+
+  .hero__earth-credit:hover,
+  .hero__earth-credit:focus-visible {
+    color: rgb(255 255 255 / 82%);
   }
 
   .hero__fx {
     position: absolute;
     inset: 0;
-    z-index: 0;
+    z-index: 1;
     pointer-events: none;
     overflow: hidden;
   }
@@ -540,7 +558,7 @@
 
   .hero__content {
     position: relative;
-    z-index: var(--z-elevated);
+    z-index: 3;
     width: min(100%, var(--size-1200));
     margin-inline: auto;
     padding-block: var(--home-hero-content-block);
