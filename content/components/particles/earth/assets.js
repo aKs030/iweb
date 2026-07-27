@@ -446,6 +446,40 @@ function createRegionalTerrainGeometry(
   return geometry;
 }
 
+
+function configureInstanceFade(material) {
+  material.onBeforeCompile = shader => {
+    shader.vertexShader = shader.vertexShader.replace(
+      "#include <common>",
+      `#include <common>
+      attribute vec2 instanceUv;
+      varying vec2 vInstanceUv;`
+    ).replace(
+      "#include <begin_vertex>",
+      `#include <begin_vertex>
+      vInstanceUv = instanceUv;`
+    );
+
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <common>",
+      `#include <common>
+      varying vec2 vInstanceUv;`
+    ).replace(
+      "#include <alphamap_fragment>",
+      `#include <alphamap_fragment>
+      float regionalFadeX =
+        smoothstep(0.0, 0.13, vInstanceUv.x)
+        * smoothstep(0.0, 0.13, 1.0 - vInstanceUv.x);
+      float regionalFadeY =
+        smoothstep(0.0, 0.15, vInstanceUv.y)
+        * smoothstep(0.0, 0.15, 1.0 - vInstanceUv.y);
+      float regionalEdgeFade = regionalFadeX * regionalFadeY;
+      diffuseColor.a *= regionalEdgeFade;`
+    );
+  };
+  material.customProgramCacheKey = () => "earth-regional-instance-fade-v2";
+}
+
 function configureRegionalTerrainEdgeFade(material) {
   material.onBeforeCompile = shader => {
     shader.fragmentShader = shader.fragmentShader
@@ -644,6 +678,158 @@ function createProceduralTerrainLayer(
   regionalHighClouds.name = "earth-regional-cloud-high";
   regionalHighClouds.renderOrder = 8;
   group.add(regionalHighClouds);
+  // Add 3D Details (Cities and Trees) using InstancedMesh
+  const numInstances = isMobileDevice ? 5000 : (qualityLevel === "LOW" ? 8000 : 25000);
+
+  // Create geometries
+  const buildingGeometry = new THREE.BoxGeometry(0.0015, 0.0015, 0.0015);
+  // Shift origin to bottom so they scale up from the ground
+  buildingGeometry.translate(0, 0, 0.00075);
+
+  const treeGeometry = new THREE.ConeGeometry(0.0008, 0.002, 5);
+  treeGeometry.translate(0, 0, 0.001);
+  treeGeometry.rotateX(Math.PI / 2); // align with z-axis (up from surface)
+
+  // Edge fade logic for instances is handled via a custom shader below
+  const buildingMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8899aa,
+    roughness: 0.7,
+    metalness: 0.2,
+    transparent: true,
+    opacity: 1, // Will be controlled by userData/fadeMaterials
+  });
+
+  const treeMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2e5c2e,
+    roughness: 0.9,
+    metalness: 0.0,
+    transparent: true,
+    opacity: 1,
+  });
+
+  // Share the terrain edge fade shader modification for the instances
+  configureInstanceFade(buildingMaterial);
+  configureInstanceFade(treeMaterial);
+
+  const cityMesh = new THREE.InstancedMesh(buildingGeometry, buildingMaterial, numInstances);
+  const forestMesh = new THREE.InstancedMesh(treeGeometry, treeMaterial, numInstances);
+  // Add an instanced buffer attribute for UVs so instances fade exactly like the terrain
+  const cityUvArray = new Float32Array(numInstances * 2);
+  const forestUvArray = new Float32Array(numInstances * 2);
+
+  cityMesh.geometry = cityMesh.geometry.clone();
+  forestMesh.geometry = forestMesh.geometry.clone();
+
+  const cityUvAttribute = new THREE.InstancedBufferAttribute(cityUvArray, 2);
+  const forestUvAttribute = new THREE.InstancedBufferAttribute(forestUvArray, 2);
+
+  cityMesh.geometry.setAttribute('instanceUv', cityUvAttribute);
+  forestMesh.geometry.setAttribute('instanceUv', forestUvAttribute);
+
+
+  cityMesh.name = "earth-regional-cities";
+  forestMesh.name = "earth-regional-forests";
+  cityMesh.renderOrder = 5;
+  forestMesh.renderOrder = 5;
+
+  const dummy = new THREE.Object3D();
+  const upVector = new THREE.Vector3(0, 0, 1);
+
+  let cityCount = 0;
+  let treeCount = 0;
+
+  // We use a seeded random for stable placement
+  let seed = 12345;
+  const random = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+
+  const reliefScaleNum = 3.8;
+
+  for (let i = 0; i < numInstances * 4; i++) {
+    if (cityCount >= numInstances && treeCount >= numInstances) break;
+
+    // Distribute randomly across the region
+    const r1 = random();
+    const r2 = random();
+    const radius = Math.sqrt(r1) * 0.95; // keep slightly away from absolute edge
+    const theta = r2 * Math.PI * 2;
+
+    const x = radius * Math.cos(theta);
+    const y = radius * Math.sin(theta);
+
+    // UV coordinates (0 to 1)
+    const u = (x + 1) / 2;
+    const v = (y + 1) / 2;
+
+    const sourceHeight = sampleHeight ? sampleHeight(u, v) : 0.2;
+
+    // Avoid oceans
+    if (sourceHeight < 0.02) continue;
+
+    const landHeight = THREE.MathUtils.smoothstep(sourceHeight, 0.12, 0.82);
+    const mountainHeight = Math.pow(landHeight, 1.35);
+    const edgeBlend = THREE.MathUtils.smoothstep(Math.abs(x), 0.55, 1);
+    const edgeRelief = THREE.MathUtils.lerp(1, 0.55, edgeBlend);
+    const elevation = 0.004 + mountainHeight * 0.03 * edgeRelief * reliefScaleNum;
+
+    const point = terrainSurfacePoint(THREE, x, y, elevation);
+
+    // Determine normal at this point to orient the object
+    const dir = point.clone().normalize();
+
+    dummy.position.copy(point);
+    // Align z-axis to surface normal
+    dummy.quaternion.setFromUnitVectors(upVector, dir);
+
+    // Random rotation around local z-axis
+    dummy.rotateZ(random() * Math.PI * 2);
+
+    // Use noise to group items together loosely
+    const noise = (Math.sin(x * 20) + Math.cos(y * 20)) * 0.5 + 0.5;
+
+    // Cities prefer lower flatter ground and specific noise regions
+    if (sourceHeight > 0.02 && sourceHeight < 0.15 && noise > 0.6 && cityCount < numInstances) {
+      // City (lowlands)
+      const heightScale = 0.5 + random() * 2.5; // Random building heights
+      dummy.scale.set(0.6 + random()*0.4, 0.6 + random()*0.4, heightScale);
+      dummy.updateMatrix();
+      cityMesh.setMatrixAt(cityCount, dummy.matrix);
+      cityUvArray[cityCount * 2] = u;
+      cityUvArray[cityCount * 2 + 1] = v;
+
+      // Color variation for buildings
+      const color = new THREE.Color().setHSL(0.6, 0.1, 0.3 + random() * 0.4);
+      cityMesh.setColorAt(cityCount, color);
+      cityCount++;
+
+    // Trees prefer mid elevations and different noise regions
+    } else if (sourceHeight >= 0.03 && sourceHeight < 0.5 && noise <= 0.6 && treeCount < numInstances) {
+      // Forest
+      const scale = 0.5 + random() * 0.8;
+      dummy.scale.set(scale, scale, scale);
+      dummy.updateMatrix();
+      forestMesh.setMatrixAt(treeCount, dummy.matrix);
+      forestUvArray[treeCount * 2] = u;
+      forestUvArray[treeCount * 2 + 1] = v;
+
+      // Color variation for trees
+      const color = new THREE.Color().setHSL(0.3 + random() * 0.05, 0.5 + random() * 0.4, 0.15 + random() * 0.2);
+      forestMesh.setColorAt(treeCount, color);
+      treeCount++;
+    }
+  }
+
+  cityMesh.count = cityCount;
+  forestMesh.count = treeCount;
+
+  if (cityMesh.instanceColor) cityMesh.instanceColor.needsUpdate = true;
+  if (forestMesh.instanceColor) forestMesh.instanceColor.needsUpdate = true;
+
+  group.add(cityMesh);
+  group.add(forestMesh);
+
 
   group.userData.opacity = 0;
   group.userData.targetOpacity = 1;
@@ -659,10 +845,13 @@ function createProceduralTerrainLayer(
     regionalHighCloudMaterial,
   ];
   group.userData.fadeMaterials = [
+
     { material: terrainMaterial, baseOpacity: 1, lod: "berlin" },
     { material: regionalCloudShadowMaterial, baseOpacity: 0.05, lod: "cloud" },
     { material: regionalCloudMaterial, baseOpacity: 0.4, lod: "cloud" },
     { material: regionalHighCloudMaterial, baseOpacity: 0.14, lod: "cloud" },
+    { material: buildingMaterial, baseOpacity: 1, lod: "berlin" },
+    { material: treeMaterial, baseOpacity: 1, lod: "berlin" }
   ];
   return group;
 }
