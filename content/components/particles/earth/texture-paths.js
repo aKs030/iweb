@@ -70,10 +70,22 @@ export function getEarthTextureSetForDisplay({
   deviceMemory = Number(globalThis.navigator?.deviceMemory || 0),
   saveData = Boolean(globalThis.navigator?.connection?.saveData),
 } = {}) {
-  const renderedWidth = width * pixelRatio;
+  // Use the physical screen resolution as the capability signal, not just the
+  // current browser window width. A narrow/un-maximized window on a high-res or
+  // retina display previously got downgraded to the 4K set even though the
+  // hardware (and bandwidth, in most cases) can easily handle 8K.
+  const screenWidth = globalThis.screen?.width || width;
+  const referenceWidth = Math.max(width, screenWidth);
+  const renderedWidth = referenceWidth * pixelRatio;
+
+  const effectiveType = globalThis.navigator?.connection?.effectiveType;
+  const isSlowConnection =
+    effectiveType === "2g" || effectiveType === "3g" || effectiveType === "slow-2g";
+
   const compact =
     saveData ||
-    renderedWidth <= 4096 ||
+    isSlowConnection ||
+    renderedWidth <= 2600 ||
     (deviceMemory > 0 && deviceMemory <= 4) ||
     maxTextureSize < 8192;
 

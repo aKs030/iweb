@@ -183,6 +183,9 @@ float oceanMicroRough = fract(sin(dot(floor(vMapUv * 460.0), vec2(127.1, 311.7))
 roughnessFactor = mix(roughnessFactor, 0.22 + oceanMicroRough * 0.08, earthOceanMask * 0.50);`;
 
 const EARTH_FRESNEL_FRAGMENT = `float viewNDot = clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);
+// Globaler Rayleigh-artiger Dunst am Erdrand (wirkt auch ueber Land)
+float globalHaze = pow(1.0 - viewNDot, 5.2);
+outgoingLight += vec3(0.035, 0.055, 0.095) * globalHaze;
 // Strong blue Fresnel rim – visible at the ocean horizon
 float earthFresnel = pow(1.0 - viewNDot, 4.2);
 outgoingLight += vec3(0.028, 0.036, 0.058) * earthFresnel * earthOceanMask;
@@ -445,9 +448,32 @@ function createRegionalTerrainGeometry(
 
 function configureRegionalTerrainEdgeFade(material) {
   material.onBeforeCompile = shader => {
-    shader.fragmentShader = shader.fragmentShader.replace(
-      "#include <alphamap_fragment>",
-      `#include <alphamap_fragment>
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <normal_fragment_maps>",
+        `#include <normal_fragment_maps>
+// 3D Tree Canopy effect (Procedural normal mapping for forests)
+vec3 texColor = texture2D(map, vMapUv).rgb;
+// Isolate green areas (where green is stronger than red and blue)
+float isGreen = smoothstep(0.01, 0.05, texColor.g - max(texColor.r, texColor.b));
+// High frequency pseudo-random noise for canopy micro-bumps
+vec2 treeUv = vMapUv * 7500.0;
+float treeNoise1 = fract(sin(dot(floor(treeUv), vec2(12.9898, 78.233))) * 43758.5453);
+float treeNoise2 = fract(sin(dot(floor(treeUv + vec2(0.5, 0.5)), vec2(12.9898, 78.233))) * 43758.5453);
+// Smooth interpolation for the noise
+vec2 f = fract(treeUv);
+f = f * f * (3.0 - 2.0 * f);
+float treeBump = mix(treeNoise1, treeNoise2, f.x * f.y);
+// Generate a fake normal from the bump
+vec3 treeNormal = normalize(vec3(treeBump - 0.5, treeBump - 0.5, 1.2));
+// Blend normal with the procedural tree normal
+normal = normalize(mix(normal, treeNormal, isGreen * 0.95));
+// Make trees rougher (less shiny than terrain)
+roughnessFactor = mix(roughnessFactor, 0.98, isGreen);`
+      )
+      .replace(
+        "#include <alphamap_fragment>",
+        `#include <alphamap_fragment>
 float regionalFadeX =
   smoothstep(0.0, 0.13, vMapUv.x)
   * smoothstep(0.0, 0.13, 1.0 - vMapUv.x);
@@ -456,7 +482,7 @@ float regionalFadeY =
   * smoothstep(0.0, 0.15, 1.0 - vMapUv.y);
 float regionalEdgeFade = regionalFadeX * regionalFadeY;
 diffuseColor.a *= regionalEdgeFade;`
-    );
+      );
   };
   material.customProgramCacheKey = () => "earth-regional-terrain-edge-fade-v4";
 }
@@ -484,14 +510,14 @@ function createProceduralTerrainLayer(
     widthSegments,
     heightSegments,
     sampleHeight,
-    1
+    3.8 // Massive 3D relief for mountains
   );
   const terrainMaterial = new THREE.MeshStandardMaterial({
     map: terrainTexture,
     normalMap: terrainNormalTexture,
-    normalScale: new THREE.Vector2(0.3, 0.3),
+    normalScale: new THREE.Vector2(1.2, 1.2), // Sharper details
     bumpMap: terrainHeightTexture,
-    bumpScale: 0.0026,
+    bumpScale: 0.012, // Taller bumps
     emissive: 0xffffff,
     emissiveMap: terrainTexture,
     emissiveIntensity: 0.065,
@@ -731,7 +757,7 @@ export async function createEarthSystem(
   const dayMaterial = new THREE.MeshPhysicalMaterial({
     map: dayTexture,
     normalMap: normalTexture,
-    normalScale: new THREE.Vector2(0.78, 0.78),
+    normalScale: new THREE.Vector2(0.94, 0.94),
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
     displacementMap: bumpTexture,
@@ -769,6 +795,29 @@ export async function createEarthSystem(
       )
       .replace("#include <map_fragment>", DAYLIGHT_MAP_FRAGMENT)
       .replace("#include <roughnessmap_fragment>", EARTH_ROUGHNESS_FRAGMENT)
+      .replace(
+        "#include <normal_fragment_maps>",
+        `#include <normal_fragment_maps>
+// Global 3D Tree Canopy effect
+// Exclude ocean areas using earthOceanMask
+if (earthOceanMask < 0.1) {
+  vec3 globalTexColor = texture2D(map, vMapUv).rgb;
+  // Isolate green areas (where green is stronger than red and blue)
+  float isGlobalGreen = smoothstep(0.01, 0.05, globalTexColor.g - max(globalTexColor.r, globalTexColor.b));
+  // High frequency noise for canopy micro-bumps (high scale for global earth)
+  vec2 globalTreeUv = vMapUv * 35000.0;
+  float gTreeNoise1 = fract(sin(dot(floor(globalTreeUv), vec2(12.9898, 78.233))) * 43758.5453);
+  float gTreeNoise2 = fract(sin(dot(floor(globalTreeUv + vec2(0.5, 0.5)), vec2(12.9898, 78.233))) * 43758.5453);
+  vec2 gf = fract(globalTreeUv);
+  gf = gf * gf * (3.0 - 2.0 * gf);
+  float gTreeBump = mix(gTreeNoise1, gTreeNoise2, gf.x * gf.y);
+  // Blend normal with the procedural tree normal
+  vec3 gTreeNormal = normalize(vec3(gTreeBump - 0.5, gTreeBump - 0.5, 1.2));
+  normal = normalize(mix(normal, gTreeNormal, isGlobalGreen * 0.95));
+  // Make trees rougher (less shiny than terrain)
+  roughnessFactor = mix(roughnessFactor, 0.98, isGlobalGreen);
+}`
+      )
       .replace("#include <opaque_fragment>", EARTH_FRESNEL_FRAGMENT);
   };
   dayMaterial.customProgramCacheKey = () => "earth-day-relief-water-v17";
@@ -780,7 +829,7 @@ export async function createEarthSystem(
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
     displacementMap: bumpTexture,
     displacementScale: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
-    normalScale: new THREE.Vector2(0.72, 0.72),
+    normalScale: new THREE.Vector2(0.85, 0.85),
     roughness: 0.76,
     metalness: 0,
     clearcoat: 0.025,
