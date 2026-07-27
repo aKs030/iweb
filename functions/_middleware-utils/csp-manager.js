@@ -83,6 +83,8 @@ export function buildCspHeader(nonce) {
       "https://www.googleapis.com",
       "https://api.github.com",
       "https://raw.githubusercontent.com",
+      "https://img.abdulkerimsesli.de",
+      "https://cdn.jsdelivr.net",
       "https://www.google-analytics.com",
       "https://region1.google-analytics.com",
       "https://www.googletagmanager.com",

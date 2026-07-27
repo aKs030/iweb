@@ -2,6 +2,11 @@ import { CONFIG } from "./config.js";
 import { createLogger } from "../../../core/logger.js";
 
 const log = createLogger("EarthCamera");
+const lerp = (start, end, amount) => start + (end - start) * amount;
+const smootherstep = value => {
+  const t = Math.max(0, Math.min(1, value));
+  return t * t * t * (t * (t * 6 - 15) + 10);
+};
 
 export class CameraManager {
   constructor(THREE, camera) {
@@ -12,6 +17,7 @@ export class CameraManager {
     this.mouseState = { zoom: 10 };
     this.cameraOrbitAngle = 0;
     this.targetOrbitAngle = 0;
+    this.scrollLinkedActive = false;
 
     this.transition = {
       active: false,
@@ -23,6 +29,8 @@ export class CameraManager {
       endPos: null,
       endLookAt: null,
       presetZ: 0,
+      startFov: CONFIG.CAMERA.FOV,
+      endFov: CONFIG.CAMERA.FOV,
     };
 
     this._vLookAt = new this.THREE.Vector3();
@@ -34,6 +42,9 @@ export class CameraManager {
   }
 
   updateCameraForSection(sectionName) {
+    if (sectionName !== "hero" && sectionName !== "features") {
+      this.scrollLinkedActive = false;
+    }
     const preset = CONFIG.CAMERA.PRESETS[sectionName];
     if (preset) {
       this.flyToPreset(sectionName);
@@ -64,6 +75,8 @@ export class CameraManager {
 
     this.transition.endPos = { x: preset.x, y: preset.y };
     this.transition.presetZ = preset.z;
+    this.transition.startFov = this.camera.fov;
+    this.transition.endFov = preset.fov ?? CONFIG.CAMERA.FOV;
     this.transition.endLookAt = new this.THREE.Vector3(
       preset.lookAt.x,
       preset.lookAt.y,
@@ -71,27 +84,49 @@ export class CameraManager {
     );
   }
 
+  setScrollLinkedPresetProgress(startName, endName, progress) {
+    const start = CONFIG.CAMERA.PRESETS[startName];
+    const end = CONFIG.CAMERA.PRESETS[endName];
+    if (!start || !end) return;
+
+    const p = Math.max(0, Math.min(1, progress));
+    const isHeroPerspectiveMove = startName === "hero" && endName === "features";
+    const perspectiveArc = isHeroPerspectiveMove ? Math.sin(Math.PI * p) : 0;
+    this.transition.active = false;
+    this.scrollLinkedActive = true;
+    this.cameraTarget.x = lerp(start.x, end.x, p) + perspectiveArc * 0.52;
+    this.cameraTarget.y = lerp(start.y, end.y, p) + perspectiveArc * 0.18;
+    this.mouseState.zoom = lerp(start.z, end.z, p);
+    this.camera.fov = lerp(start.fov ?? CONFIG.CAMERA.FOV, end.fov ?? CONFIG.CAMERA.FOV, p);
+    this.camera.updateProjectionMatrix();
+    this._vLookAt.set(
+      lerp(start.lookAt.x, end.lookAt.x, p) - perspectiveArc * 0.16,
+      lerp(start.lookAt.y, end.lookAt.y, p) - perspectiveArc * 0.08,
+      lerp(start.lookAt.z, end.lookAt.z, p)
+    );
+    if (!this.camera.userData.currentLookAt) {
+      this.camera.userData.currentLookAt = new this.THREE.Vector3();
+    }
+    this.camera.userData.currentLookAt.copy(this._vLookAt);
+  }
+
   updateCameraPosition(delta = 0.016) {
+    const transitionWasActive = this.transition.active;
     if (this.transition.active) {
       const elapsed = performance.now() - this.transition.startTime;
       const progress = Math.min(elapsed / this.transition.duration, 1);
-
-      const eased =
-        progress < 0.5
-          ? 8 * progress * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 4) / 2;
-
-      this.cameraTarget.x =
-        this.transition.startPos.x +
-        (this.transition.endPos.x - this.transition.startPos.x) * eased;
-      this.cameraTarget.y =
-        this.transition.startPos.y +
-        (this.transition.endPos.y - this.transition.startPos.y) * eased;
-      this.mouseState.zoom =
-        this.transition.startZoom + (this.transition.presetZ - this.transition.startZoom) * eased;
+      const eased = smootherstep(progress);
+      this.cameraTarget.x = lerp(this.transition.startPos.x, this.transition.endPos.x, eased);
+      this.cameraTarget.y = lerp(this.transition.startPos.y, this.transition.endPos.y, eased);
+      this.mouseState.zoom = lerp(this.transition.startZoom, this.transition.presetZ, eased);
+      this._vLookAt.lerpVectors(this.transition.startLookAt, this.transition.endLookAt, eased);
+      const nextFov = lerp(this.transition.startFov, this.transition.endFov, eased);
+      if (Math.abs(this.camera.fov - nextFov) > 0.01) {
+        this.camera.fov = nextFov;
+        this.camera.updateProjectionMatrix();
+      }
 
       if (this.camera) {
-        this._vLookAt.lerpVectors(this.transition.startLookAt, this.transition.endLookAt, eased);
         this.camera.lookAt(this._vLookAt);
         if (!this.camera.userData.currentLookAt) {
           this.camera.userData.currentLookAt = new this.THREE.Vector3();
@@ -101,6 +136,10 @@ export class CameraManager {
 
       if (progress >= 1) {
         this.transition.active = false;
+        if (Number.isFinite(this.transition.endFov)) {
+          this.camera.fov = this.transition.endFov;
+          this.camera.updateProjectionMatrix();
+        }
         if (this.camera && this.camera.userData.currentLookAt)
           this.camera.userData.currentLookAt.copy(this.transition.endLookAt);
       }
@@ -122,11 +161,16 @@ export class CameraManager {
     const finalY = this.cameraTarget.y;
     const finalZ = Math.cos(this.cameraOrbitAngle) * radius;
 
-    const posLerpFactor = 1 - Math.pow(1 - CONFIG.CAMERA.LERP_FACTOR, timeScale);
-
-    this.cameraPosition.x += (finalX - this.cameraPosition.x) * posLerpFactor;
-    this.cameraPosition.y += (finalY - this.cameraPosition.y) * posLerpFactor;
-    this.cameraPosition.z += (finalZ - this.cameraPosition.z) * posLerpFactor;
+    if (transitionWasActive || this.scrollLinkedActive) {
+      this.cameraPosition.x = finalX;
+      this.cameraPosition.y = finalY;
+      this.cameraPosition.z = finalZ;
+    } else {
+      const posLerpFactor = 1 - Math.pow(1 - CONFIG.CAMERA.LERP_FACTOR, timeScale);
+      this.cameraPosition.x += (finalX - this.cameraPosition.x) * posLerpFactor;
+      this.cameraPosition.y += (finalY - this.cameraPosition.y) * posLerpFactor;
+      this.cameraPosition.z += (finalZ - this.cameraPosition.z) * posLerpFactor;
+    }
 
     this.camera.position.set(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
 

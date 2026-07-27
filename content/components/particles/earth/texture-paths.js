@@ -54,7 +54,7 @@ export const EARTH_REGIONAL_TEXTURES = Object.freeze({
   TERRAIN_MOBILE: withRegionalTexturePath("closeup-terrain-v14-2k.webp"),
   HEIGHT: withRegionalTexturePath("closeup-height-v14.webp"),
   NORMAL: withRegionalTexturePath("closeup-normal-v14.webp"),
-  CLOUDS: withRegionalTexturePath("berlin-clouds-v2.webp"),
+  CLOUDS: withTexturePath("earth_clouds_4k.jpg"),
 });
 
 export function getEarthTextureSet({ isMobile = false, compact = false } = {}) {

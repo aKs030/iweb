@@ -1,6 +1,7 @@
 import { getElementById, observeOnce, TimerManager } from "#core/utils/index.js";
 import { createLogger } from "#core/logger.js";
 import { i18n } from "#core/i18n.js";
+import { scrollToSectionSlow } from "#core/slow-section-scroll.js";
 import { ROBOT_EVENTS } from "#components/robot-companion/index.js";
 
 let typeWriterModule = null;
@@ -26,7 +27,7 @@ const SECTION3_REVEAL = Object.freeze({
   thresholds: Object.freeze([0, 0.28, 0.52, 1]),
 });
 const SECTION_EXIT_BEFORE_SCROLL_MS = 560;
-const SECTION_EXIT_SCROLL_MS = 760;
+const SECTION_EXIT_SCROLL_MS = 2200;
 const SECTION_SNAP_TOLERANCE_PX = 64;
 const SECTION_TOUCH_INTENT_PX = 8;
 
@@ -405,16 +406,7 @@ const HeroManager = (() => {
   }
 
   function scrollToSection(section, reduceMotion) {
-    try {
-      section.scrollIntoView({
-        behavior: reduceMotion ? "auto" : "smooth",
-        block: "start",
-      });
-    } catch (err) {
-      log.warn("Section exit scrollIntoView failed, using fallback", err);
-      const top = section.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
-    }
+    scrollToSectionSlow(section, { reduceMotion });
   }
 
   function setSectionExitState(section, active) {
@@ -765,13 +757,7 @@ export const initHeroFeatureBundle = sectionManager => {
     if (!target) return;
 
     function doScroll() {
-      try {
-        target.scrollIntoView({ behavior: "smooth" });
-      } catch (err) {
-        log.warn("HeroManager: scrollIntoView failed, using fallback", err);
-        const top = target.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({ top, behavior: "smooth" });
-      }
+      scrollToSectionSlow(target);
     }
 
     if (sectionManager?.loadSection) {

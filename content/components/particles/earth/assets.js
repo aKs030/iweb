@@ -28,7 +28,14 @@ const WIND_CLOUD_ALPHA_FRAGMENT = `
   float primaryWave = sin(rotatedCloudUv.y * 15.0 + cloudTime * 0.17);
   float crossWave = sin(rotatedCloudUv.x * 19.0 - cloudTime * 0.11);
   windUv += vec2(primaryWave, crossWave * 0.48) * cloudDistortion;
-  float cloudCoverage = texture2D(alphaMap, windUv).g;
+  float primaryCloud = texture2D(alphaMap, windUv).g;
+  vec2 detailUv = fract(
+    windUv * 1.87
+    + vec2(0.173, -0.117)
+    + cloudWind * cloudTime * 0.34
+  );
+  float detailCloud = texture2D(alphaMap, detailUv).g;
+  float cloudCoverage = primaryCloud * mix(0.82, 1.14, detailCloud);
   cloudCoverage = smoothstep(cloudCoverageRange.x, cloudCoverageRange.y, cloudCoverage);
   float densityLight = mix(
     1.0 - cloudDensityShade,
@@ -141,12 +148,12 @@ const EARTH_FRESNEL_FRAGMENT = `float earthFresnel = pow(
   1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0),
   3.0
 );
-outgoingLight += vec3(0.018, 0.052, 0.085) * earthFresnel * earthOceanMask;
+outgoingLight += vec3(0.018, 0.019, 0.02) * earthFresnel * earthOceanMask;
 float broadWaterReflection = pow(
   1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0),
   1.65
 );
-outgoingLight += vec3(0.014, 0.042, 0.068)
+outgoingLight += vec3(0.014, 0.015, 0.016)
   * broadWaterReflection
   * earthOceanMask;
 #include <opaque_fragment>`;
@@ -365,6 +372,52 @@ function createTerrainHeightSampler(THREE, terrainHeightTexture) {
   }
 }
 
+function createRegionalTerrainGeometry(
+  THREE,
+  widthSegments,
+  heightSegments,
+  sampleHeight,
+  reliefScale = 1
+) {
+  const geometry = new THREE.PlaneGeometry(2, 2, widthSegments, heightSegments);
+  const positions = geometry.getAttribute("position");
+  const uvs = geometry.getAttribute("uv");
+
+  for (let index = 0; index < positions.count; index += 1) {
+    const x = positions.getX(index);
+    const y = positions.getY(index);
+    const sourceHeight = sampleHeight ? sampleHeight(uvs.getX(index), uvs.getY(index)) : 0.2;
+    const landHeight = THREE.MathUtils.smoothstep(sourceHeight, 0.12, 0.82);
+    const mountainHeight = Math.pow(landHeight, 1.35);
+    const edgeBlend = THREE.MathUtils.smoothstep(Math.abs(x), 0.55, 1);
+    const edgeRelief = THREE.MathUtils.lerp(1, 0.55, edgeBlend);
+    const elevation = 0.004 + mountainHeight * 0.03 * edgeRelief * reliefScale;
+    const point = terrainSurfacePoint(THREE, x, y, elevation);
+    positions.setXYZ(index, point.x, point.y, point.z);
+  }
+
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function configureRegionalTerrainEdgeFade(material) {
+  material.onBeforeCompile = shader => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <alphamap_fragment>",
+      `#include <alphamap_fragment>
+float regionalFadeX =
+  smoothstep(0.0, 0.13, vMapUv.x)
+  * smoothstep(0.0, 0.13, 1.0 - vMapUv.x);
+float regionalFadeY =
+  smoothstep(0.0, 0.15, vMapUv.y)
+  * smoothstep(0.0, 0.15, 1.0 - vMapUv.y);
+float regionalEdgeFade = regionalFadeX * regionalFadeY;
+diffuseColor.a *= regionalEdgeFade;`
+    );
+  };
+  material.customProgramCacheKey = () => "earth-regional-terrain-edge-fade-v4";
+}
+
 function createProceduralTerrainLayer(
   THREE,
   isMobileDevice,
@@ -382,25 +435,14 @@ function createProceduralTerrainLayer(
   const mediumQuality = qualityLevel === "MEDIUM";
   const widthSegments = lowQuality ? 160 : isMobileDevice ? 224 : mediumQuality ? 352 : 512;
   const heightSegments = lowQuality ? 120 : isMobileDevice ? 168 : mediumQuality ? 264 : 384;
-  const geometry = new THREE.PlaneGeometry(2, 2, widthSegments, heightSegments);
-  const positions = geometry.getAttribute("position");
-  const uvs = geometry.getAttribute("uv");
   const sampleHeight = createTerrainHeightSampler(THREE, terrainHeightTexture);
-
-  for (let index = 0; index < positions.count; index += 1) {
-    const x = positions.getX(index);
-    const y = positions.getY(index);
-    const sourceHeight = sampleHeight ? sampleHeight(uvs.getX(index), uvs.getY(index)) : 0.2;
-    const landHeight = THREE.MathUtils.smoothstep(sourceHeight, 0.12, 0.82);
-    const mountainHeight = Math.pow(landHeight, 1.35);
-    const edgeBlend = THREE.MathUtils.smoothstep(Math.abs(x), 0.55, 1);
-    const edgeRelief = THREE.MathUtils.lerp(1, 0.55, edgeBlend);
-    const elevation = 0.008 + mountainHeight * 0.03 * edgeRelief;
-    const point = terrainSurfacePoint(THREE, x, y, elevation);
-    positions.setXYZ(index, point.x, point.y, point.z);
-  }
-  geometry.computeVertexNormals();
-
+  const geometry = createRegionalTerrainGeometry(
+    THREE,
+    widthSegments,
+    heightSegments,
+    sampleHeight,
+    1
+  );
   const terrainMaterial = new THREE.MeshStandardMaterial({
     map: terrainTexture,
     normalMap: terrainNormalTexture,
@@ -419,6 +461,7 @@ function createProceduralTerrainLayer(
     side: THREE.FrontSide,
     dithering: true,
   });
+  configureRegionalTerrainEdgeFade(terrainMaterial);
   const terrain = new THREE.Mesh(geometry, terrainMaterial);
   terrain.name = "earth-regional-mountains";
   terrain.renderOrder = 5;
@@ -445,11 +488,11 @@ function createProceduralTerrainLayer(
     dithering: true,
   });
   configureWindCloudMaterial(THREE, regionalCloudShadowMaterial, {
-    wind: [0.0043, 0.00008],
-    distortion: 0.003,
+    wind: [0.00075, 0.000045],
+    distortion: 0.0022,
     rotation: -0.025,
-    coverage: [0.22, 0.76],
-    cacheKey: "earth-regional-cloud-shadow-wind-v3",
+    coverage: [0.07, 0.6],
+    cacheKey: "earth-regional-cloud-shadow-wind-v5",
   });
   const regionalCloudShadow = new THREE.Mesh(cloudShadowGeometry, regionalCloudShadowMaterial);
   regionalCloudShadow.name = "earth-regional-cloud-shadow";
@@ -467,13 +510,13 @@ function createProceduralTerrainLayer(
 
   const regionalCloudMaterial = new THREE.MeshStandardMaterial({
     alphaMap: regionalCloudTexture,
-    color: 0xf2f5f7,
-    emissive: 0x788493,
-    emissiveIntensity: 0.045,
+    color: 0xffffff,
+    emissive: 0x83909b,
+    emissiveIntensity: 0.1,
     roughness: 1,
     metalness: 0,
     transparent: true,
-    opacity: 0.27,
+    opacity: 0.4,
     depthTest: false,
     depthWrite: false,
     blending: THREE.NormalBlending,
@@ -481,12 +524,12 @@ function createProceduralTerrainLayer(
     dithering: true,
   });
   configureWindCloudMaterial(THREE, regionalCloudMaterial, {
-    wind: [0.0043, 0.00008],
-    distortion: 0.003,
+    wind: [0.00075, 0.000045],
+    distortion: 0.0022,
     rotation: -0.025,
     densityShade: 0.14,
-    coverage: [0.22, 0.76],
-    cacheKey: "earth-regional-cloud-low-wind-v3",
+    coverage: [0.07, 0.6],
+    cacheKey: "earth-regional-cloud-low-wind-v5",
   });
   const regionalClouds = new THREE.Mesh(cloudGeometry, regionalCloudMaterial);
   regionalClouds.name = "earth-regional-cloud-low";
@@ -505,12 +548,12 @@ function createProceduralTerrainLayer(
   const regionalHighCloudMaterial = new THREE.MeshStandardMaterial({
     alphaMap: regionalCloudTexture,
     color: 0xf8fbff,
-    emissive: 0x8190a0,
-    emissiveIntensity: 0.06,
+    emissive: 0x8996a2,
+    emissiveIntensity: 0.11,
     roughness: 1,
     metalness: 0,
     transparent: true,
-    opacity: 0.1,
+    opacity: 0.14,
     depthTest: false,
     depthWrite: false,
     blending: THREE.NormalBlending,
@@ -518,13 +561,13 @@ function createProceduralTerrainLayer(
     dithering: true,
   });
   configureWindCloudMaterial(THREE, regionalHighCloudMaterial, {
-    wind: [0.0065, -0.00006],
+    wind: [0.0011, -0.000035],
     phase: [0.31, 0.045],
-    distortion: 0.0048,
+    distortion: 0.0036,
     rotation: 0.065,
-    densityShade: 0.1,
-    coverage: [0.3, 0.82],
-    cacheKey: "earth-regional-cloud-high-wind-v3",
+    densityShade: 0.12,
+    coverage: [0.16, 0.74],
+    cacheKey: "earth-regional-cloud-high-wind-v5",
   });
   const regionalHighClouds = new THREE.Mesh(highCloudGeometry, regionalHighCloudMaterial);
   regionalHighClouds.name = "earth-regional-cloud-high";
@@ -535,6 +578,9 @@ function createProceduralTerrainLayer(
   group.userData.targetOpacity = 1;
   group.userData.anchorLocked = false;
   group.userData.terrainMaterial = terrainMaterial;
+  group.userData.berlinWeight = 1;
+  group.userData.europeWeight = 0;
+  group.userData.globeWeight = 0;
   group.userData.highCloudMesh = regionalHighClouds;
   group.userData.windMaterials = [
     regionalCloudShadowMaterial,
@@ -542,10 +588,10 @@ function createProceduralTerrainLayer(
     regionalHighCloudMaterial,
   ];
   group.userData.fadeMaterials = [
-    { material: terrainMaterial, baseOpacity: 1 },
-    { material: regionalCloudShadowMaterial, baseOpacity: 0.05 },
-    { material: regionalCloudMaterial, baseOpacity: 0.27 },
-    { material: regionalHighCloudMaterial, baseOpacity: 0.1 },
+    { material: terrainMaterial, baseOpacity: 1, lod: "berlin" },
+    { material: regionalCloudShadowMaterial, baseOpacity: 0.05, lod: "cloud" },
+    { material: regionalCloudMaterial, baseOpacity: 0.4, lod: "cloud" },
+    { material: regionalHighCloudMaterial, baseOpacity: 0.14, lod: "cloud" },
   ];
   return group;
 }
@@ -633,6 +679,9 @@ export async function createEarthSystem(
   configureTexture(THREE, regionalCloudTexture, anisotropy, THREE.NoColorSpace);
   regionalCloudTexture.wrapS = THREE.RepeatWrapping;
   regionalCloudTexture.wrapT = THREE.ClampToEdgeWrapping;
+  regionalCloudTexture.repeat.set(0.42, 0.38);
+  regionalCloudTexture.offset.set(0.02, 0.4);
+  regionalCloudTexture.needsUpdate = true;
 
   const dayMaterial = new THREE.MeshPhysicalMaterial({
     map: dayTexture,
@@ -712,6 +761,19 @@ export async function createEarthSystem(
   earthMesh.userData.targetPosition = new THREE.Vector3(0, -6, 0);
   earthMesh.userData.targetScale = 1.5;
   earthMesh.userData.targetRotation = 0;
+  earthMesh.userData.zoomGeometries = {
+    berlin: earthGeometry,
+    europe: new THREE.SphereGeometry(
+      CONFIG.EARTH.RADIUS,
+      isMobileDevice ? 128 : Math.min(segments, 256),
+      isMobileDevice ? 128 : Math.min(segments, 256)
+    ),
+    globe: new THREE.SphereGeometry(
+      CONFIG.EARTH.RADIUS,
+      isMobileDevice ? 96 : Math.min(segments, 144),
+      isMobileDevice ? 96 : Math.min(segments, 144)
+    ),
+  };
 
   const cityGlowGroup = createCityGlow(THREE, nightTexture, segments, isMobileDevice);
   const proceduralTerrainGroup = createProceduralTerrainLayer(
@@ -886,12 +948,12 @@ export async function createCloudLayer(
       dithering: true,
     });
     configureWindCloudMaterial(THREE, lowCloudMaterial, {
-      wind: [0.00065, 0.000025],
+      wind: [0.00035, 0.000018],
       distortion: 0.003,
       rotation: -0.012,
       densityShade: 0.1,
       coverage: [0.16, 0.72],
-      cacheKey: "earth-cloud-low-wind-v5",
+      cacheKey: "earth-cloud-low-wind-v7",
     });
 
     const segments = isMobileDevice ? 96 : Math.min(CONFIG.EARTH.SEGMENTS, 256);
@@ -923,13 +985,13 @@ export async function createCloudLayer(
       dithering: true,
     });
     configureWindCloudMaterial(THREE, highCloudMaterial, {
-      wind: [0.00105, -0.00002],
+      wind: [0.00055, -0.000015],
       phase: [0.23, 0.018],
       distortion: 0.005,
       rotation: 0.04,
       densityShade: 0.08,
       coverage: [0.24, 0.77],
-      cacheKey: "earth-cloud-high-wind-v2",
+      cacheKey: "earth-cloud-high-wind-v4",
     });
     const highCloudGeometry = new THREE.SphereGeometry(
       CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.HIGH_ALTITUDE,
@@ -956,11 +1018,11 @@ export async function createCloudLayer(
         side: THREE.FrontSide,
       });
       configureWindCloudMaterial(THREE, shadowMaterial, {
-        wind: [0.00065, 0.000025],
+        wind: [0.00035, 0.000018],
         distortion: 0.003,
         rotation: -0.012,
         coverage: [0.16, 0.72],
-        cacheKey: "earth-cloud-shadow-wind-v5",
+        cacheKey: "earth-cloud-shadow-wind-v7",
       });
       const shadowGeometry = new THREE.SphereGeometry(
         CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.SHADOW_ALTITUDE,

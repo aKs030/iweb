@@ -1,9 +1,4 @@
 // @ts-check
-/**
- * Three.js Earth System - Orchestrator
- * Modularized architecture for better maintainability.
- */
-
 import * as THREE from "three";
 import { createObserver, debounce, getElementById, TimerManager } from "../../core/utils/index.js";
 import { createLogger } from "../../core/logger.js";
@@ -27,6 +22,13 @@ import {
   createCloudLayer,
 } from "./earth/assets.js";
 import { CameraManager } from "./earth/camera.js";
+import {
+  applyScrollLinkedEarthTransform,
+  applyScrollLinkedSectionVisuals,
+  EarthZoomTransition,
+  getHeroToFeaturesScrollProgress as getScrollProgress,
+  getHeroToFeaturesZoomProgress as getZoomProgress,
+} from "./earth/zoom-transition.js";
 import { StarManager, ShootingStarManager } from "./earth/stars.js";
 import { CardManager } from "./earth/cards.js";
 import {
@@ -39,14 +41,25 @@ import {
 const log = createLogger("ThreeEarthSystem");
 const WEBGL_RENDER_SECTIONS = new Set(["hero", "features", "section3"]);
 const EARTH_TRANSFORM_DAMPING = Object.freeze({
-  position: 5,
-  scale: 6.5,
-  rotation: 4.5,
+  position: 3.2,
+  scale: 4.2,
+  rotation: 3,
   light: 5,
 });
+const EARTH_ZOOM_LOD = Object.freeze({
+  globeFadeEnd: 0.68,
+  europeFull: 1.2,
+  berlinStart: 2.2,
+  berlinFull: 4.2,
+});
+const HERO_FEATURE_VERTICAL_TURN = Math.PI * 0.325;
 const WEBGL_CANVAS_CLEAR_DELAY_MS = 800;
 
 const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1 / 15));
+const smoothstep = (min, max, value) => {
+  const t = Math.max(0, Math.min(1, (value - min) / Math.max(0.0001, max - min)));
+  return t * t * (3 - 2 * t);
+};
 
 /**
  * @typedef {import('../../core/types.js').TimerID} TimerID
@@ -127,7 +140,6 @@ const getDampingFactor = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1
 /** @type {Record<string, SectionConfig>} */
 const SECTION_CONFIGS = {
   hero: {
-    // Fixed continental top-down view centered on Europe and Turkey.
     earth: { pos: { x: 0, y: -23.9, z: -1.1 }, scale: 5.75, rotation: -1.9 },
     mobileEarth: { pos: { x: 0, y: -23.5, z: -1.2 }, scale: 5.25, rotation: -1.9 },
     moon: { pos: { x: -6, y: 1, z: -12 }, scale: 0.36 },
@@ -138,8 +150,7 @@ const SECTION_CONFIGS = {
       sunPosition: { x: 0, y: 7.8, z: 14 },
       fillColor: 0xbedcff,
       fillIntensity: 0.18,
-      rimColor: 0xbdeeff,
-      rimIntensity: 0.16,
+      rimIntensity: 0,
     },
     mode: "day",
     terrainRelief: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
@@ -150,8 +161,8 @@ const SECTION_CONFIGS = {
     surfaceNormalScale: 1,
     surfaceBumpScale: 0.014,
     cloudLayer: true,
-    cloudOpacity: 0.08,
-    cloudShadowOpacity: 0.008,
+    cloudOpacity: 0.14,
+    cloudShadowOpacity: 0.014,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 1,
     cameraOrbit: 0,
@@ -165,7 +176,8 @@ const SECTION_CONFIGS = {
     },
   },
   features: {
-    earth: { pos: { x: 0, y: -0.06, z: -2.35 }, scale: 0.64, rotation: 0 },
+    earth: { pos: { x: 0, y: -1.35, z: -2.35 }, scale: 1.12, rotation: -1.9 },
+    mobileEarth: { pos: { x: 0, y: -1.1, z: -2.4 }, scale: 1, rotation: -1.9 },
     moon: { pos: { x: 4.8, y: 2.35, z: -9.6 }, scale: 0.62 },
     lighting: {
       ambientColor: 0x5f6678,
@@ -176,17 +188,20 @@ const SECTION_CONFIGS = {
       rimIntensity: 0,
     },
     mode: "day",
-    terrainRelief: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
-    terrainDetailStrength: 0.12,
+    terrainRelief: 0.006,
+    terrainDetailStrength: 0.3,
     surfaceClearcoat: 0,
     surfaceSpecularIntensity: 0,
     surfaceEmissiveIntensity: 0.04,
-    surfaceNormalScale: 0.65,
-    surfaceBumpScale: 0.008,
-    cloudOpacity: 0.2,
-    cloudShadowOpacity: 0.028,
+    surfaceNormalScale: 0.8,
+    surfaceBumpScale: 0.01,
+    cloudOpacity: 0.16,
+    cloudShadowOpacity: 0.02,
     cloudScaleFactor: 1,
-    proceduralTerrainMix: 0,
+    proceduralTerrainMix: 1,
+    cameraOrbit: 0,
+    axialTilt: -7,
+    latitudeTilt: -30,
     scroll: {
       pos: { x: 0.12, y: -0.08, z: 0.12 },
       scale: 0.04,
@@ -195,7 +210,8 @@ const SECTION_CONFIGS = {
     },
   },
   section3: {
-    earth: { pos: { x: 1.9, y: -2.05, z: -2.65 }, scale: 0.76, rotation: Math.PI * 1.12 },
+    earth: { pos: { x: 1.35, y: -1.2, z: -2.75 }, scale: 0.56, rotation: 0.35 },
+    mobileEarth: { pos: { x: 0.85, y: -0.9, z: -2.8 }, scale: 0.52, rotation: 0.35 },
     moon: { pos: { x: 4.6, y: 2.2, z: -9.4 }, scale: 0.46 },
     lighting: {
       ambientColor: 0x3b4d70,
@@ -220,6 +236,7 @@ const SECTION_CONFIGS = {
     cloudShadowOpacity: 0.012,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 0,
+    cameraOrbit: 0,
     scroll: {
       pos: { x: -0.48, y: 0.24, z: 0.16 },
       scale: 0.08,
@@ -229,7 +246,6 @@ const SECTION_CONFIGS = {
   },
 };
 
-// Helper: onResize
 /**
  * @param {Function} callback
  * @param {number} delay
@@ -243,22 +259,17 @@ function onResize(callback, delay = 100) {
   };
 }
 
-/**
- * Main Three Earth System Class
- */
 class ThreeEarthSystem {
   constructor() {
     this.timers = new TimerManager("ThreeEarthSystem");
     this.active = false;
 
-    // Three.js Core
     /** @type {typeof THREE|null} */ this.THREE = null;
     /** @type {THREE.Scene|null} */ this.scene = null;
     /** @type {THREE.PerspectiveCamera|null} */ this.camera = null;
     /** @type {THREE.WebGLRenderer|null} */ this.renderer = null;
     /** @type {HTMLElement|null} */ this.container = null;
 
-    // Objects
     /** @type {EarthMesh|null} */ this.earthMesh = null;
     /** @type {EarthObject|null} */ this.moonMesh = null;
     /** @type {EarthObject|null} */ this.cloudMesh = null;
@@ -268,11 +279,9 @@ class ThreeEarthSystem {
     /** @type {THREE.Vector3|null} */ this._terrainForwardAxis = null;
     /** @type {THREE.Quaternion|null} */ this._terrainTilt = null;
 
-    // Materials
     /** @type {(THREE.Material & DisposableMaterial)|null} */ this.dayMaterial = null;
     /** @type {(THREE.Material & DisposableMaterial)|null} */ this.nightMaterial = null;
 
-    // Lights
     /** @type {THREE.DirectionalLight|null} */ this.directionalLight = null;
     /** @type {THREE.AmbientLight|null} */ this.ambientLight = null;
     /** @type {THREE.DirectionalLight|null} */ this.fillLight = null;
@@ -280,14 +289,12 @@ class ThreeEarthSystem {
     this._lightTargets = null;
     this.earthAmbientRotation = 0;
 
-    // Managers
     /** @type {CameraManager|null} */ this.cameraManager = null;
     /** @type {StarManager|null} */ this.starManager = null;
     /** @type {ShootingStarManager|null} */ this.shootingStarManager = null;
     /** @type {PerformanceMonitor|null} */ this.performanceMonitor = null;
     /** @type {CardManager|null} */ this.cardManager = null;
 
-    // State
     this.currentSection = "hero";
     /** @type {HTMLElement|null} */ this._currentSectionEl = null;
     this.currentQualityLevel = "HIGH";
@@ -296,10 +303,10 @@ class ThreeEarthSystem {
     /** @type {EarthDeviceCapabilities|null} */
     this.deviceCapabilities = null;
     this._featuresCameraNeedsSettleLayout = false;
-    this._featureCardLayoutTimer = 0;
+    this._scrollProgress = null;
     this._sectionEntries = new Map();
+    this._zoomTransition = new EarthZoomTransition();
 
-    // Animation
     this.animationFrameId = 0;
     this.animate = null;
     this.isOverlayPaused = false;
@@ -307,22 +314,18 @@ class ThreeEarthSystem {
     this._overlayStateCleanup = null;
     this._canvasPauseTimeout = null;
 
-    // Loading
     this.assetsReady = false;
     this.firstFrameRendered = false;
 
-    // Showcase
     this.showcaseActive = false;
     /** @type {TimerID|null} */
     this.showcaseTimeoutId = null;
     this.showcaseOriginals = {};
 
-    // Handlers (bound)
     this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     this.onClick = this.onClick.bind(this);
     this.onShowcaseTrigger = this.onShowcaseTrigger.bind(this);
 
-    // Observers
     /** @type {ObserverWrapper|null} */ this.sectionObserver = null;
     /** @type {ObserverWrapper|null} */ this.viewportObserver = null;
     /** @type {Set<string>} */ this._visibleWebGLSections = new Set(WEBGL_RENDER_SECTIONS);
@@ -422,6 +425,7 @@ class ThreeEarthSystem {
     }
     this._overlayStateCleanup?.();
     this._overlayStateCleanup = null;
+    this._zoomTransition.stop();
     if (this._canvasPauseTimeout) {
       clearTimeout(this._canvasPauseTimeout);
       this._canvasPauseTimeout = null;
@@ -464,7 +468,6 @@ class ThreeEarthSystem {
     document.body.classList.remove("three-earth-active");
     delete document.body.dataset.homeSection;
 
-    // Clear Singleton
     if (singleton === this) singleton = null;
     const debugWindow = /** @type {any} */ (window);
     if (debugWindow.__threeEarthSystem === this) {
@@ -474,8 +477,6 @@ class ThreeEarthSystem {
 
     log.info("Cleanup complete");
   }
-
-  // --- Internals ---
 
   /**
    * @param {HTMLElement} container
@@ -525,11 +526,7 @@ class ThreeEarthSystem {
       if (!this.active) return;
       this.assetsReady = true;
       showLoadingState(container, 1);
-      try {
-        container.dataset.threeReady = "1";
-      } catch {
-        /* ignore */
-      }
+      container.dataset.threeReady = "1";
     };
 
     manager.onError = (/** @type {string} */ url) => {
@@ -766,7 +763,6 @@ class ThreeEarthSystem {
           detail: { containerId: container.id },
         })
       );
-      // Expose debug handles in local/dev environments for quick inspection
       try {
         const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
         const debugFlag = location.search.includes("debugThree");
@@ -786,8 +782,6 @@ class ThreeEarthSystem {
       /* ignore */
     }
   }
-
-  // --- Interaction & Events ---
 
   _setupInteraction() {
     window.addEventListener("click", this.onClick);
@@ -825,7 +819,6 @@ class ThreeEarthSystem {
    */
   _setupResizeHandler(container) {
     if (!("ResizeObserver" in window)) {
-      // Fallback to window resize
       const handler = () => {
         if (!this.camera || !this.renderer) return;
         const width = container.clientWidth;
@@ -879,8 +872,6 @@ class ThreeEarthSystem {
       "ResizeObserver"
     );
   }
-
-  // --- Animation Loop ---
 
   _canRunAnimationLoop() {
     return (
@@ -964,7 +955,6 @@ class ThreeEarthSystem {
     };
 
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
-    // Start animation immediately, regardless of visibility state
     this.animate();
   }
 
@@ -989,18 +979,37 @@ class ThreeEarthSystem {
     if (this.moonMesh) {
       this.moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED * 20 * delta;
     }
-    this.earthAmbientRotation += CONFIG.EARTH.AMBIENT_ROTATION_SPEED * delta;
+    this._scrollProgress = getScrollProgress(this.currentSection);
+    if (!Number.isFinite(this._scrollProgress)) {
+      this.earthAmbientRotation += CONFIG.EARTH.AMBIENT_ROTATION_SPEED * delta;
+    }
     if (!capabilities.isLowEnd) this.starManager?.update(totalTime);
 
     this._updateNightPulse(totalTime, capabilities);
-    this._updateScrollLinkedEarthTarget();
+    this._updateScrollLinkedEarthTarget(this._scrollProgress);
 
+    if (Number.isFinite(this._scrollProgress)) {
+      applyScrollLinkedSectionVisuals(
+        this,
+        SECTION_CONFIGS.hero,
+        SECTION_CONFIGS.features,
+        this._scrollProgress,
+        CONFIG
+      );
+      this.cameraManager?.setScrollLinkedPresetProgress(
+        "hero",
+        "features",
+        getZoomProgress(this._scrollProgress)
+      );
+    }
     this.cameraManager?.updateCameraPosition(delta);
-    this._updateTransforms(delta);
+    this._updateTransforms(delta, this._scrollProgress);
+    this._updateFeatureCardExit();
 
     if (this.cardManager) {
       const featuresCameraTransitioning =
-        this.currentSection === "features" && Boolean(this.cameraManager?.transition?.active);
+        this.currentSection === "features" &&
+        (Boolean(this.cameraManager?.transition?.active) || this._zoomTransition.active);
 
       if (featuresCameraTransitioning) {
         this.cardManager.alignCardsToCameraImmediate?.();
@@ -1015,10 +1024,18 @@ class ThreeEarthSystem {
     this._render();
   }
 
-  /**
-   * @param {number} time
-   * @param {EarthDeviceCapabilities} capabilities
-   */
+  _updateFeatureCardExit() {
+    if (this.currentSection !== "features" || !this.cardManager) return;
+    const isLeaving = this._currentSectionEl?.classList.contains("is-leaving-before-scroll");
+    if (isLeaving) {
+      this.cardManager.hideImmediate();
+      if (this.container) this.container.dataset.featureCards = "hidden";
+    } else if (this.container?.dataset.featureCards === "hidden") {
+      this.cardManager.setProgress(1);
+      this.container.dataset.featureCards = "visible";
+    }
+  }
+
   _updateNightPulse(time, capabilities) {
     if (this.earthMesh?.userData.currentMode === "night" && !capabilities.isLowEnd) {
       const base = CONFIG.EARTH.EMISSIVE_INTENSITY * 4;
@@ -1045,9 +1062,19 @@ class ThreeEarthSystem {
     }
   }
 
-  _updateTransforms(delta = 0.016) {
+  _updateTransforms(delta = 0.016, heroFeatureProgress = null) {
     if (!this.earthMesh) return;
     const em = this.earthMesh;
+    if (this._zoomTransition.active) {
+      em.userData.targetScale = this._zoomTransition.getScale(this._zoomTransition.endScale);
+      em.userData.targetRotation = this._zoomTransition.getRotation(
+        this._zoomTransition.endRotation
+      );
+      const stagedPosition = this._zoomTransition.getPosition(this._zoomTransition.endPosition);
+      em.userData.targetPosition?.set(stagedPosition.x, stagedPosition.y, stagedPosition.z);
+      em.rotation.x = this._zoomTransition.getLatitude(this._zoomTransition.endLatitude);
+      if (this.cloudMesh) this.cloudMesh.rotation.x = em.rotation.x;
+    }
     const posLerp = getDampingFactor(EARTH_TRANSFORM_DAMPING.position, delta);
     const scaleLerp = getDampingFactor(EARTH_TRANSFORM_DAMPING.scale, delta);
     const rotationLerp = getDampingFactor(EARTH_TRANSFORM_DAMPING.rotation, delta);
@@ -1063,7 +1090,20 @@ class ThreeEarthSystem {
       const diff = targetRotation - em.rotation.y;
       if (Math.abs(diff) > 0.001) em.rotation.y += diff * rotationLerp;
     }
-
+    if (Number.isFinite(heroFeatureProgress)) {
+      this._zoomTransition.stop();
+      applyScrollLinkedEarthTransform({
+        earth: em,
+        clouds: this.cloudMesh,
+        heroConfig: SECTION_CONFIGS.hero,
+        featuresConfig: SECTION_CONFIGS.features,
+        isMobile: this.isMobileDevice,
+        progress: heroFeatureProgress,
+        startLatitude: this.THREE.MathUtils.degToRad(SECTION_CONFIGS.hero.latitudeTilt ?? -30),
+        verticalTurn: HERO_FEATURE_VERTICAL_TURN,
+        ambientRotation: this.earthAmbientRotation,
+      });
+    }
     if (
       this.proceduralTerrainGroup &&
       this.camera &&
@@ -1076,6 +1116,21 @@ class ThreeEarthSystem {
       const targetOpacity = Number.isFinite(terrainData.targetOpacity)
         ? terrainData.targetOpacity
         : 0;
+      const regionalVisibility = smoothstep(
+        EARTH_ZOOM_LOD.globeFadeEnd,
+        EARTH_ZOOM_LOD.europeFull,
+        em.scale.x
+      );
+      const berlinWeight = smoothstep(
+        EARTH_ZOOM_LOD.berlinStart,
+        EARTH_ZOOM_LOD.berlinFull,
+        em.scale.x
+      );
+      const europeWeight = regionalVisibility * (1 - berlinWeight);
+      const globeWeight = 1 - Math.max(berlinWeight, europeWeight);
+      const berlinVisualWeight = smoothstep(0.52, 0.9, berlinWeight);
+      const cloudWeight = berlinVisualWeight;
+      const visibleOpacityTarget = targetOpacity * berlinVisualWeight;
       const positionSettled =
         !em.userData.targetPosition || em.position.distanceTo(em.userData.targetPosition) < 0.3;
       const scaleSettled =
@@ -1096,11 +1151,70 @@ class ThreeEarthSystem {
         terrainData.anchorLocked = positionSettled && scaleSettled;
       }
 
-      terrainData.opacity += (targetOpacity - terrainData.opacity) * scaleLerp;
+      terrainData.berlinWeight = berlinWeight;
+      terrainData.europeWeight = europeWeight;
+      terrainData.globeWeight = globeWeight;
+      terrainData.opacity = Number.isFinite(heroFeatureProgress)
+        ? visibleOpacityTarget
+        : terrainData.opacity + (visibleOpacityTarget - terrainData.opacity) * scaleLerp;
       terrainGroup.visible = terrainData.opacity > 0.004;
-      terrainData.fadeMaterials?.forEach(({ material, baseOpacity }) => {
-        material.opacity = terrainData.opacity * baseOpacity;
+      terrainData.fadeMaterials?.forEach(({ material, baseOpacity, lod }) => {
+        const lodWeight =
+          lod === "berlin"
+            ? berlinVisualWeight
+            : lod === "europe"
+              ? europeWeight
+              : lod === "cloud"
+                ? cloudWeight
+                : 1;
+        material.opacity = terrainData.opacity * baseOpacity * lodWeight;
       });
+
+      const zoomLevel = em.scale.x > 1.75 ? "berlin" : em.scale.x > 0.78 ? "europe" : "globe";
+      if (em.userData.zoomLevel !== zoomLevel) {
+        em.userData.zoomLevel = zoomLevel;
+        const zoomGeometries = /** @type {Record<string, THREE.BufferGeometry>|undefined} */ (
+          em.userData.zoomGeometries
+        );
+        const nextGeometry = zoomGeometries?.[zoomLevel];
+        if (nextGeometry && "geometry" in em) em.geometry = nextGeometry;
+        if (this.container) this.container.dataset.earthZoomLevel = zoomLevel;
+      }
+
+      if (this.dayMaterial && em.userData.currentMode === "day") {
+        const transitionProgress = Number.isFinite(heroFeatureProgress)
+          ? getZoomProgress(heroFeatureProgress)
+          : null;
+        const reliefWeight = smoothstep(
+          EARTH_ZOOM_LOD.globeFadeEnd,
+          EARTH_ZOOM_LOD.berlinFull,
+          em.scale.x
+        );
+        const terrainRelief = Number.isFinite(transitionProgress)
+          ? this.THREE.MathUtils.lerp(
+              SECTION_CONFIGS.hero.terrainRelief ?? CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
+              SECTION_CONFIGS.features.terrainRelief ?? CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
+              transitionProgress
+            )
+          : this.THREE.MathUtils.lerp(
+              CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
+              CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
+              reliefWeight
+            );
+        const terrainDetailStrength = Number.isFinite(transitionProgress)
+          ? this.THREE.MathUtils.lerp(
+              SECTION_CONFIGS.hero.terrainDetailStrength ?? 0.72,
+              SECTION_CONFIGS.features.terrainDetailStrength ?? 0.3,
+              transitionProgress
+            )
+          : this.THREE.MathUtils.lerp(0.12, 0.72, reliefWeight);
+        this.dayMaterial.displacementScale = terrainRelief;
+        this.dayMaterial.userData.terrainDetailStrength = terrainDetailStrength;
+        const reliefShader = /** @type {any} */ (this.dayMaterial.userData.reliefShader);
+        if (reliefShader?.uniforms?.terrainDetailStrength) {
+          reliefShader.uniforms.terrainDetailStrength.value = terrainDetailStrength;
+        }
+      }
     }
 
     if (this.cloudMesh) {
@@ -1161,7 +1275,6 @@ class ThreeEarthSystem {
         this.firstFrameRendered = true;
         const container = getElementById("threeEarthContainer");
 
-        // Small delay to ensure the first frame is visible before hiding loader
         requestAnimationFrame(() => {
           hideLoadingState(container);
           AppLoadManager.unblock("three-earth");
@@ -1175,13 +1288,10 @@ class ThreeEarthSystem {
     }
   }
 
-  // --- Observers ---
-
   _setupSectionDetection() {
     const sections = Array.from(document.querySelectorAll("section[id]"));
     if (!sections.length || !("IntersectionObserver" in window)) return;
 
-    // Reduced thresholds from 21 to 11 (steps of 0.1) for better performance
     const thresholds = Array.from({ length: 11 }, (_, i) => i / 10);
     const sectionObserver = createObserver(
       (/** @type {IntersectionObserverEntry[]} */ entries) => {
@@ -1214,14 +1324,37 @@ class ThreeEarthSystem {
     const target = /** @type {HTMLElement} */ (entry.target);
     const newSection = target.id || "";
     if (!newSection || newSection === this.currentSection) return;
+    if (
+      newSection === "features" &&
+      this.currentSection === "hero" &&
+      (getScrollProgress("hero") ?? 0) < 0.78
+    ) {
+      return;
+    }
 
     this.currentSection = newSection;
     this._currentSectionEl = target;
     document.body.dataset.homeSection = newSection;
 
-    this.cameraManager?.updateCameraForSection(newSection);
+    const isHeroFeatureTransition = newSection === "hero" || newSection === "features";
+    if (isHeroFeatureTransition) {
+      this._zoomTransition.stop();
+      const scrollProgress = getScrollProgress(newSection);
+      if (Number.isFinite(scrollProgress)) {
+        this.cameraManager?.setScrollLinkedPresetProgress(
+          "hero",
+          "features",
+          getZoomProgress(scrollProgress)
+        );
+      }
+    } else {
+      this._startEarthZoomTransition(newSection);
+      this.cameraManager?.updateCameraForSection(newSection);
+    }
 
-    this._updateEarthForSection(newSection);
+    if (!isHeroFeatureTransition || this.earthMesh?.userData.currentMode !== "day") {
+      this._updateEarthForSection(newSection);
+    }
     this._syncFeatureCardsForSection();
 
     const container = document.querySelector(".three-earth-container");
@@ -1236,7 +1369,10 @@ class ThreeEarthSystem {
     if (!this.cardManager) return;
 
     if (this.currentSection === "features") {
-      // Temporarily snap camera to target so CardManager can calculate screen projections
+      this.cardManager.hideImmediate();
+      this._featuresCameraNeedsSettleLayout = true;
+      if (this.container) this.container.dataset.featureCards = "waiting";
+
       const preset = CONFIG.CAMERA.PRESETS["features"];
       const origPos = this.camera.position.clone();
       const origQuat = this.camera.quaternion.clone();
@@ -1247,30 +1383,22 @@ class ThreeEarthSystem {
         this.camera.updateMatrixWorld(true);
       }
 
-      this.cardManager.setProgress(1);
       this.cardManager.alignCardsToCameraImmediate?.();
       this.cardManager.refreshLayoutForCamera?.(true);
 
-      // Restore camera
       if (preset) {
         this.camera.position.copy(origPos);
         this.camera.quaternion.copy(origQuat);
         this.camera.updateMatrixWorld(true);
       }
 
-      this._featuresCameraNeedsSettleLayout = false; // Layout is already perfect, no need to recalculate later
-
-      if (this._featureCardLayoutTimer) {
-        this.timers.clearTimeout(this._featureCardLayoutTimer);
-        this._featureCardLayoutTimer = 0;
-      }
-    } else {
-      this.cardManager.setProgress(0);
+      this.cardManager.setProgress(1);
       this._featuresCameraNeedsSettleLayout = false;
-      if (this._featureCardLayoutTimer) {
-        this.timers.clearTimeout(this._featureCardLayoutTimer);
-        this._featureCardLayoutTimer = 0;
-      }
+      if (this.container) this.container.dataset.featureCards = "visible";
+    } else {
+      this.cardManager.hideImmediate();
+      this._featuresCameraNeedsSettleLayout = false;
+      if (this.container) this.container.dataset.featureCards = "hidden";
     }
   }
 
@@ -1345,8 +1473,35 @@ class ThreeEarthSystem {
     moon.userData.targetScale = moonConfig.scale;
   }
 
-  _updateScrollLinkedEarthTarget() {
+  _startEarthZoomTransition(sectionName) {
+    if (!this.earthMesh) return;
+    const config = SECTION_CONFIGS[sectionName] || SECTION_CONFIGS.hero;
+    const earthConfig =
+      this.isMobileDevice && config.mobileEarth ? config.mobileEarth : config.earth;
+    this._zoomTransition.start({
+      isMobile: this.isMobileDevice,
+      duration: CONFIG.CAMERA.TRANSITION_DURATION * 1000,
+      startScale: this.earthMesh.scale.x,
+      endScale: earthConfig.scale,
+      startRotation: this.earthMesh.rotation.y - this.earthAmbientRotation,
+      endRotation: earthConfig.rotation || 0,
+      startLatitude: this.earthMesh.rotation.x,
+      endLatitude: this.THREE.MathUtils.degToRad(config.latitudeTilt ?? 0),
+      startPosition: {
+        x: this.earthMesh.position.x,
+        y: this.earthMesh.position.y,
+        z: this.earthMesh.position.z,
+      },
+      endPosition: { ...earthConfig.pos },
+    });
+  }
+
+  _updateScrollLinkedEarthTarget(heroFeatureProgress = null) {
     if (!this.earthMesh || !this.active || !this._isWebGLSectionVisible()) return;
+    if (Number.isFinite(heroFeatureProgress)) {
+      this.cameraManager?.setTargetOrbitAngle(0);
+      return;
+    }
 
     const config = this._getCurrentSectionConfig();
     const progress = this._getCurrentSectionScrollProgress();
@@ -1361,17 +1516,17 @@ class ThreeEarthSystem {
       em.userData.targetPosition = new this.THREE.Vector3();
     }
 
-    em.userData.targetPosition.set(
-      earthConfig.pos.x + (pos.x || 0) * centeredProgress,
-      earthConfig.pos.y + (pos.y || 0) * centeredProgress,
-      earthConfig.pos.z + (pos.z || 0) * centeredProgress
-    );
-    em.userData.targetScale = Math.max(
-      0.2,
-      earthConfig.scale + (scroll.scale || 0) * centeredProgress
-    );
-    em.userData.targetRotation =
-      (earthConfig.rotation || 0) + (scroll.rotation || 0) * centeredProgress;
+    const sectionPosition = {
+      x: earthConfig.pos.x + (pos.x || 0) * centeredProgress,
+      y: earthConfig.pos.y + (pos.y || 0) * centeredProgress,
+      z: earthConfig.pos.z + (pos.z || 0) * centeredProgress,
+    };
+    const stagedPosition = this._zoomTransition.getPosition(sectionPosition);
+    em.userData.targetPosition.set(stagedPosition.x, stagedPosition.y, stagedPosition.z);
+    const sectionScale = Math.max(0.2, earthConfig.scale + (scroll.scale || 0) * centeredProgress);
+    em.userData.targetScale = this._zoomTransition.getScale(sectionScale);
+    const sectionRotation = (earthConfig.rotation || 0) + (scroll.rotation || 0) * centeredProgress;
+    em.userData.targetRotation = this._zoomTransition.getRotation(sectionRotation);
 
     this._applyMoonTarget(config.moon);
 
@@ -1450,9 +1605,6 @@ class ThreeEarthSystem {
           reliefShader.uniforms.terrainDetailStrength.value = terrainDetailStrength;
         }
       }
-      // Re-apply the section material even when currentMode already matches.
-      // This prevents a precompile, quality transition or interrupted section
-      // change from leaving the night material attached in the hero.
       this.earthMesh.material = nextMaterial;
       if (newMode !== this.earthMesh.userData.currentMode) {
         this.cameraManager?.setTargetOrbitAngle(
@@ -1550,9 +1702,14 @@ class ThreeEarthSystem {
     }
     const earthConfig =
       this.isMobileDevice && config.mobileEarth ? config.mobileEarth : config.earth;
-    em.userData.targetPosition.set(earthConfig.pos.x, earthConfig.pos.y, earthConfig.pos.z);
-    em.userData.targetScale = earthConfig.scale;
-    em.userData.targetRotation = earthConfig.rotation;
+    const stagedPosition = this._zoomTransition.getPosition(earthConfig.pos);
+    em.userData.targetPosition.set(stagedPosition.x, stagedPosition.y, stagedPosition.z);
+    em.userData.targetScale = this._zoomTransition.active
+      ? this._zoomTransition.getScale(earthConfig.scale)
+      : earthConfig.scale;
+    em.userData.targetRotation = this._zoomTransition.active
+      ? this._zoomTransition.getRotation(earthConfig.rotation || 0)
+      : earthConfig.rotation;
 
     this._applyMoonTarget(config.moon);
   }
@@ -1594,7 +1751,6 @@ class ThreeEarthSystem {
           }
           this._resumeAnimationLoop("WebGL area in view");
         } else {
-          // Add grace period to allow card fade-out animations to finish
           if (this._canvasPauseTimeout) clearTimeout(this._canvasPauseTimeout);
           this._canvasPauseTimeout = setTimeout(() => {
             if (!this.isVisible) {
@@ -1608,7 +1764,6 @@ class ThreeEarthSystem {
     );
     this.viewportObserver = /** @type {ObserverWrapper} */ (createdViewportObserver);
 
-    // Observe all sections that render 3D content.
     const targets = document.querySelectorAll("#hero, #features, #section3");
     const viewportObserver = /** @type {ObserverWrapper|null} */ (this.viewportObserver);
     if (!viewportObserver) return;
@@ -1618,8 +1773,6 @@ class ThreeEarthSystem {
       viewportObserver.observe(container);
     }
   }
-
-  // --- Showcase ---
 
   _setupShowcaseTriggers() {
     document.addEventListener("three-earth:showcase", this.onShowcaseTrigger);
@@ -1689,8 +1842,6 @@ class ThreeEarthSystem {
     }
   }
 
-  // --- Utilities ---
-
   /**
    * @param {HTMLElement} container
    * @param {unknown} error
@@ -1715,6 +1866,16 @@ class ThreeEarthSystem {
   }
 
   _disposeScene() {
+    const zoomGeometries = /** @type {Record<string, THREE.BufferGeometry>|undefined} */ (
+      this.earthMesh?.userData?.zoomGeometries
+    );
+    if (zoomGeometries && this.earthMesh) {
+      const activeGeometry = this.earthMesh.geometry;
+      new Set(Object.values(zoomGeometries)).forEach(geometry => {
+        if (geometry !== activeGeometry) geometry.dispose();
+      });
+    }
+
     if (this.scene) {
       this.scene.traverse((/** @type {DisposableSceneObject} */ obj) => {
         if (obj.geometry) obj.geometry.dispose();
@@ -1790,8 +1951,6 @@ class ThreeEarthSystem {
   }
 }
 
-// --- Singleton export ---
-
 /** @type {ThreeEarthSystem|null} */
 let singleton = null;
 
@@ -1799,8 +1958,6 @@ export const initThreeEarth = () => {
   if (!singleton) singleton = new ThreeEarthSystem();
   return singleton.init();
 };
-
-// --- Shared material and geometry helpers ---
 
 /**
  * @param {DisposableMaterial|null|undefined} material
@@ -1849,8 +2006,6 @@ function supportsWebGL() {
       return false;
     }
 
-    // Basic WebGL is enough - don't require specific extensions
-    // Most mobile devices support basic WebGL
     log.debug("WebGL is supported");
     return true;
   } catch (e) {

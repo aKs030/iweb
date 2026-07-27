@@ -11,6 +11,7 @@
 import { createLogger } from "../../core/logger.js";
 import { i18n } from "../../core/i18n.js";
 import { resolvedTheme } from "../../core/state/theme-state.js";
+import { scrollToSectionSlow } from "../../core/slow-section-scroll.js";
 
 const log = createLogger("Enhancements");
 
@@ -86,7 +87,7 @@ function initSectionDots() {
     if (labelKey) {
       dot.setAttribute("data-i18n-attrs", `aria-label:${labelKey},title:${labelKey}`);
     }
-    dot.addEventListener("click", () => section.scrollIntoView({ behavior: "smooth" }));
+    dot.addEventListener("click", () => scrollToSectionSlow(section));
 
     nav.append(dot);
     dots.push({ el: dot, sectionId: section.id });
