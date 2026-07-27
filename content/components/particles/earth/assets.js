@@ -519,9 +519,11 @@ function createProceduralTerrainLayer(
     cloudShadowPositions.setXYZ(index, cloudShadowPoint.x, cloudShadowPoint.y, cloudShadowPoint.z);
   }
 
-  const regionalCloudShadowMaterial = new THREE.MeshBasicMaterial({
+  const regionalCloudShadowMaterial = new THREE.MeshStandardMaterial({
     alphaMap: regionalCloudTexture,
     color: 0x101923,
+    roughness: 1,
+    metalness: 0,
     transparent: true,
     opacity: 0.05,
     depthTest: false,

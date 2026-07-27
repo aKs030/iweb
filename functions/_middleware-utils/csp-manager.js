@@ -40,6 +40,8 @@ export function buildCspHeader(nonce) {
       "script-src",
       "'self'",
       nonceSource,
+      "'unsafe-eval'",
+      "'wasm-unsafe-eval'",
       // Cloudflare may inject Google Tags first-party bootstrap snippets
       // before our nonced head scripts for browser UAs.
       cloudflareGoogleTagBootstrapHash,
