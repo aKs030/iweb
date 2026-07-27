@@ -588,14 +588,14 @@ function createProceduralTerrainLayer(
     widthSegments,
     heightSegments,
     sampleHeight,
-    3.8 // Massive 3D relief for mountains
+    9.5 // Massive 3D relief for mountains
   );
   const terrainMaterial = new THREE.MeshStandardMaterial({
     map: terrainTexture,
     normalMap: terrainNormalTexture,
-    normalScale: new THREE.Vector2(1.2, 1.2), // Sharper details
+    normalScale: new THREE.Vector2(3.6, 3.6), // Sharper details
     bumpMap: terrainHeightTexture,
-    bumpScale: 0.012, // Taller bumps
+    bumpScale: 0.036, // Taller bumps
     emissive: 0xffffff,
     emissiveMap: terrainTexture,
     emissiveIntensity: 0.065,
@@ -723,15 +723,15 @@ function createProceduralTerrainLayer(
   regionalHighClouds.renderOrder = 8;
   group.add(regionalHighClouds);
   // Add 3D Details (Cities and Trees) using InstancedMesh
-  const numInstances = isMobileDevice ? 5000 : qualityLevel === "LOW" ? 8000 : 25000;
+  const numInstances = isMobileDevice ? 15000 : qualityLevel === "LOW" ? 25000 : 75000;
 
   // Create geometries
-  const buildingGeometry = new THREE.BoxGeometry(0.0015, 0.0015, 0.0015);
+  const buildingGeometry = new THREE.BoxGeometry(0.0045, 0.0045, 0.0045);
   // Shift origin to bottom so they scale up from the ground
-  buildingGeometry.translate(0, 0, 0.00075);
+  buildingGeometry.translate(0, 0, 0.00225);
 
-  const treeGeometry = new THREE.ConeGeometry(0.0008, 0.002, 5);
-  treeGeometry.translate(0, 0, 0.001);
+  const treeGeometry = new THREE.ConeGeometry(0.0024, 0.006, 5);
+  treeGeometry.translate(0, 0, 0.003);
   treeGeometry.rotateX(Math.PI / 2); // align with z-axis (up from surface)
 
   // Edge fade logic for instances is handled via a custom shader below

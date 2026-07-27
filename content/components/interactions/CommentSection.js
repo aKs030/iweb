@@ -226,10 +226,8 @@ export const CommentSection = ({ postId }) => {
         </div>
         ${error && html`<p className="comment-error">${error}</p>`}
         ${success && html`<p className="comment-success" role="status">${success}</p>`}
-        ${
-          turnstileSiteKey &&
-          html`<div className="comment-turnstile" ref=${turnstileContainerRef}></div>`
-        }
+        ${turnstileSiteKey &&
+        html`<div className="comment-turnstile" ref=${turnstileContainerRef}></div>`}
         <button
           type="submit"
           className="btn btn-primary"
@@ -240,27 +238,25 @@ export const CommentSection = ({ postId }) => {
       </form>
 
       <div className="comment-list">
-        ${
-          loading
-            ? html`<p>Lade Interaktionen...</p>`
-            : comments.length === 0
-              ? html`<p className="no-comments">
-                  Bisher noch keine Gedanken geteilt. Sei der Erste!
-                </p>`
-              : comments.map(
-                  c => html`
-                    <div key=${c.id} className="comment-item">
-                      <div className="comment-header">
-                        <strong className="comment-author">${c.author_name}</strong>
-                        <time className="comment-date"
-                          >${new Date(c.created_at).toLocaleDateString()}</time
-                        >
-                      </div>
-                      <p className="comment-content">${c.content}</p>
+        ${loading
+          ? html`<p>Lade Interaktionen...</p>`
+          : comments.length === 0
+            ? html`<p className="no-comments">
+                Bisher noch keine Gedanken geteilt. Sei der Erste!
+              </p>`
+            : comments.map(
+                c => html`
+                  <div key=${c.id} className="comment-item">
+                    <div className="comment-header">
+                      <strong className="comment-author">${c.author_name}</strong>
+                      <time className="comment-date"
+                        >${new Date(c.created_at).toLocaleDateString()}</time
+                      >
                     </div>
-                  `
-                )
-        }
+                    <p className="comment-content">${c.content}</p>
+                  </div>
+                `
+              )}
       </div>
     </section>
   `;

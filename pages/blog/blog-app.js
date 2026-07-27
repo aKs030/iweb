@@ -213,18 +213,16 @@ const BlogApp = () => {
           ${t("blog.back_to_overview")}
         </button>
         <article className="blog-article">
-          ${
-            activePost.image &&
-            html`<header className="article-hero">
-              <${ProgressiveImage}
-                src=${activePost.image}
-                alt=${activePost.imageAlt || activePost.title}
-                className="article-hero-img"
-                loading="eager"
-                fetchpriority="high"
-              />
-            </header>`
-          }
+          ${activePost.image &&
+          html`<header className="article-hero">
+            <${ProgressiveImage}
+              src=${activePost.image}
+              alt=${activePost.imageAlt || activePost.title}
+              className="article-hero-img"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </header>`}
           <header>
             <h1>${activePost.title}</h1>
             <div className="meta">
@@ -235,9 +233,8 @@ const BlogApp = () => {
                 <${BlogLikes} id=${activePost.id} />
               </div>
             </div>
-            ${
-              activePost.excerpt && html`<p className="blog-post-excerpt">${activePost.excerpt}</p>`
-            }
+            ${activePost.excerpt &&
+            html`<p className="blog-post-excerpt">${activePost.excerpt}</p>`}
           </header>
           <div className="article-body">${renderPostContent(activePost)}</div>
           <footer className="article-footer">
@@ -260,14 +257,12 @@ const BlogApp = () => {
         ${posts.map(
           post => html`
             <article key=${post.id} className="blog-card" onClick=${() => openPost(post)}>
-              ${
-                post.image &&
-                html`<${ProgressiveImage}
-                  src=${post.image}
-                  alt=${post.imageAlt || post.title}
-                  className="blog-card-image"
-                />`
-              }
+              ${post.image &&
+              html`<${ProgressiveImage}
+                src=${post.image}
+                alt=${post.imageAlt || post.title}
+                className="blog-card-image"
+              />`}
               <div className="card-content-wrapper">
                 <div className="card-meta">
                   <span className="card-category">${post.category}</span>
