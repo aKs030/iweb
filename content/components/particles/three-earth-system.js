@@ -144,25 +144,26 @@ const SECTION_CONFIGS = {
     mobileEarth: { pos: { x: 0, y: -23.5, z: -1.2 }, scale: 5.25, rotation: -1.9 },
     moon: { pos: { x: -6, y: 1, z: -12 }, scale: 0.36 },
     lighting: {
-      ambientColor: 0x64717d,
-      ambientIntensity: 0.64,
-      sunIntensity: 2.15,
-      sunPosition: { x: 0, y: 7.8, z: 14 },
-      fillColor: 0xbedcff,
-      fillIntensity: 0.18,
-      rimIntensity: 0,
+      // High contrast lighting to avoid washed-out look
+      ambientColor: 0x202b3d, // much darker, richer ambient tone
+      ambientIntensity: 0.35, // just enough to see the dark side details
+      sunIntensity: 2.6, // lowered slightly to prevent white-blowout
+      sunPosition: { x: 3.5, y: 6.8, z: 12 }, // sharper side-angle for deep shadows
+      fillColor: 0x88bbff,
+      fillIntensity: 0.1,
+      rimIntensity: 0.0,
     },
     mode: "day",
     terrainRelief: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
-    terrainDetailStrength: 0.72,
-    surfaceClearcoat: 0.045,
-    surfaceSpecularIntensity: 1,
+    terrainDetailStrength: 1.0,
+    surfaceClearcoat: 0.06,
+    surfaceSpecularIntensity: 1.1,
     surfaceEmissiveIntensity: 0.025,
-    surfaceNormalScale: 1,
-    surfaceBumpScale: 0.014,
+    surfaceNormalScale: 1.25, // very sharp normal mapping
+    surfaceBumpScale: 0.024,
     cloudLayer: true,
-    cloudOpacity: 0.14,
-    cloudShadowOpacity: 0.014,
+    cloudOpacity: 0.28, // reduced to stop clouds from washing out terrain
+    cloudShadowOpacity: 0.04,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 1,
     cameraOrbit: 0,
@@ -181,22 +182,23 @@ const SECTION_CONFIGS = {
     moon: { pos: { x: 4.8, y: 2.35, z: -9.6 }, scale: 0.62 },
     lighting: {
       ambientColor: 0x5f6678,
-      ambientIntensity: 1,
-      sunIntensity: 1.75,
-      sunPosition: { x: 1.25, y: 4.55, z: 10.8 },
-      fillIntensity: 0.22,
-      rimIntensity: 0,
+      ambientIntensity: 0.45, // Softer ambient for more 3D volume
+      sunIntensity: 2.2, // Stronger sun to compensate
+      sunPosition: { x: 1.5, y: 4.2, z: 10.0 }, // Adjusted for better side-lighting
+      fillIntensity: 0.15,
+      rimIntensity: 0.3, // Gentle rim light for edge separation
+      rimColor: 0x88bbff,
     },
     mode: "day",
-    terrainRelief: 0.006,
-    terrainDetailStrength: 0.3,
-    surfaceClearcoat: 0,
-    surfaceSpecularIntensity: 0,
-    surfaceEmissiveIntensity: 0.04,
-    surfaceNormalScale: 0.8,
-    surfaceBumpScale: 0.01,
-    cloudOpacity: 0.16,
-    cloudShadowOpacity: 0.02,
+    terrainRelief: 0.012, // More visible 3D mountains
+    terrainDetailStrength: 0.6, // Sharper terrain textures
+    surfaceClearcoat: 0.02, // Very subtle ocean gloss
+    surfaceSpecularIntensity: 0.3, // Soft specularity (won't cause massive glint)
+    surfaceEmissiveIntensity: 0,
+    surfaceNormalScale: 1.0, // Good normal definition
+    surfaceBumpScale: 0.012,
+    cloudOpacity: 0.35, // More substantial clouds
+    cloudShadowOpacity: 0.035, // Soft cloud shadows
     cloudScaleFactor: 1,
     proceduralTerrainMix: 1,
     cameraOrbit: 0,
@@ -595,6 +597,19 @@ class ThreeEarthSystem {
       this.ambientLight = lights.ambientLight;
       this.fillLight = lights.fillLight;
       this.rimLight = lights.rimLight;
+
+      // Pre-allocate light-target objects once so _setLightTargets can use .set()
+      // instead of allocating new Vector3/Color instances on every section change.
+      this._lightTargets = {
+        directionalIntensity: 0,
+        directionalPosition: new this.THREE.Vector3(),
+        ambientIntensity: 0,
+        ambientColor: new this.THREE.Color(),
+        fillIntensity: 0,
+        fillColor: new this.THREE.Color(),
+        rimIntensity: 0,
+        rimColor: new this.THREE.Color(),
+      };
     } catch (err) {
       log.warn("Stars/Lighting init ignored", err);
     }
@@ -1043,7 +1058,11 @@ class ThreeEarthSystem {
         Math.sin(time * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
         CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
         2;
-      this.earthMesh.material.emissiveIntensity = base + pulse;
+      const next = base + pulse;
+      // Skip the GPU write when the value hasn't changed meaningfully.
+      if (Math.abs(this.earthMesh.material.emissiveIntensity - next) > 0.001) {
+        this.earthMesh.material.emissiveIntensity = next;
+      }
     }
   }
 
@@ -1626,22 +1645,25 @@ class ThreeEarthSystem {
         this.currentQualityLevel
       ] || {};
     this.cloudMesh.visible = config.cloudLayer !== false && quality.cloudLayer !== false;
-    const cloudSurface = /** @type {any} */ (
-      this.cloudMesh.getObjectByName?.("earth-cloud-surface")
-    );
-    const highCloudSurface = /** @type {any} */ (
-      this.cloudMesh.getObjectByName?.("earth-cloud-high")
-    );
-    const cloudShadow = /** @type {any} */ (this.cloudMesh.getObjectByName?.("earth-cloud-shadow"));
-    if (cloudSurface?.material && config.cloudOpacity !== undefined) {
-      cloudSurface.material.opacity = config.cloudOpacity;
+
+    // Cache getObjectByName results — the mesh hierarchy never changes after init.
+    const parts =
+      this.cloudMesh.userData.syncParts ||
+      (this.cloudMesh.userData.syncParts = {
+        surface: this.cloudMesh.getObjectByName?.("earth-cloud-surface"),
+        high: this.cloudMesh.getObjectByName?.("earth-cloud-high"),
+        shadow: this.cloudMesh.getObjectByName?.("earth-cloud-shadow"),
+      });
+
+    if (parts.surface?.material && config.cloudOpacity !== undefined) {
+      parts.surface.material.opacity = config.cloudOpacity;
     }
-    if (highCloudSurface?.material && config.cloudOpacity !== undefined) {
-      highCloudSurface.material.opacity = config.cloudOpacity * CONFIG.CLOUDS.HIGH_OPACITY_FACTOR;
-      highCloudSurface.visible = quality.highCloudLayer !== false;
+    if (parts.high?.material && config.cloudOpacity !== undefined) {
+      parts.high.material.opacity = config.cloudOpacity * CONFIG.CLOUDS.HIGH_OPACITY_FACTOR;
+      parts.high.visible = quality.highCloudLayer !== false;
     }
-    if (cloudShadow?.material && config.cloudShadowOpacity !== undefined) {
-      cloudShadow.material.opacity = config.cloudShadowOpacity;
+    if (parts.shadow?.material && config.cloudShadowOpacity !== undefined) {
+      parts.shadow.material.opacity = config.cloudShadowOpacity;
     }
     const regionalHighCloud = this.proceduralTerrainGroup?.getObjectByName?.(
       "earth-regional-cloud-high"
@@ -1660,7 +1682,7 @@ class ThreeEarthSystem {
   }
 
   _setLightTargets(config) {
-    if (!this.THREE || !this.earthMesh) return;
+    if (!this.THREE || !this.earthMesh || !this._lightTargets) return;
 
     const mode = this.earthMesh.userData.currentMode;
     const lightCfg = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
@@ -1669,16 +1691,17 @@ class ThreeEarthSystem {
     const sunY = sectionLight.sunPosition?.y ?? 6;
     const sunZ = sectionLight.sunPosition?.z ?? 12;
 
-    this._lightTargets = {
-      directionalIntensity: sectionLight.sunIntensity ?? lightCfg.SUN_INTENSITY,
-      directionalPosition: new this.THREE.Vector3(sunX, sunY, sunZ),
-      ambientIntensity: sectionLight.ambientIntensity ?? lightCfg.AMBIENT_INTENSITY,
-      ambientColor: new this.THREE.Color(sectionLight.ambientColor ?? lightCfg.AMBIENT_COLOR),
-      fillIntensity: sectionLight.fillIntensity ?? lightCfg.FILL_INTENSITY,
-      fillColor: new this.THREE.Color(sectionLight.fillColor ?? 0x6ea8ff),
-      rimIntensity: sectionLight.rimIntensity ?? lightCfg.RIM_INTENSITY,
-      rimColor: new this.THREE.Color(sectionLight.rimColor ?? 0xffc76a),
-    };
+    // Update pre-allocated objects with .set() to avoid GC pressure from
+    // allocating new THREE.Vector3 / THREE.Color on every section change.
+    const targets = this._lightTargets;
+    targets.directionalIntensity = sectionLight.sunIntensity ?? lightCfg.SUN_INTENSITY;
+    targets.directionalPosition.set(sunX, sunY, sunZ);
+    targets.ambientIntensity = sectionLight.ambientIntensity ?? lightCfg.AMBIENT_INTENSITY;
+    targets.ambientColor.set(sectionLight.ambientColor ?? lightCfg.AMBIENT_COLOR);
+    targets.fillIntensity = sectionLight.fillIntensity ?? lightCfg.FILL_INTENSITY;
+    targets.fillColor.set(sectionLight.fillColor ?? 0x6ea8ff);
+    targets.rimIntensity = sectionLight.rimIntensity ?? lightCfg.RIM_INTENSITY;
+    targets.rimColor.set(sectionLight.rimColor ?? 0xffc76a);
 
     const terrainSunDirection = /** @type {any} */ (
       this.dayMaterial?.userData?.terrainSunDirection

@@ -42,8 +42,24 @@ const WIND_CLOUD_ALPHA_FRAGMENT = `
     1.0 + cloudDensityShade * 0.22,
     cloudCoverage
   );
-  diffuseColor.rgb *= densityLight;
-  diffuseColor.a *= cloudCoverage;
+  // Forward-scatter tint: thin cloud edges warm up against sunlight;
+  // dense cloud tops stay bright cool-white (Mie scattering).
+  vec3 cloudScatterTint = mix(
+    vec3(1.05, 0.99, 0.91),  // warm golden-orange at thin edges
+    vec3(0.97, 0.98, 1.02),  // cool blue-white at dense tops
+    cloudCoverage
+  );
+  // Subtle self-shadow: very thick clouds (cumulonimbus) darken at the base
+  float cloudBaseShadow = 1.0 - smoothstep(0.58, 0.94, cloudCoverage) * 0.18;
+  
+  // Fresnel Edge Fade: fade out clouds exactly at the sphere limb to prevent them 
+  // from sticking out past the earth's edge (the "broken halo" effect)
+  // Note: 'normal' is not defined yet here, so we use the view-space 'vNormal.z'
+  float cloudFresnel = clamp(vNormal.z, 0.0, 1.0);
+  float edgeMask = smoothstep(0.05, 0.35, cloudFresnel);
+
+  diffuseColor.rgb *= cloudScatterTint * densityLight * cloudBaseShadow;
+  diffuseColor.a *= cloudCoverage * edgeMask;
 #endif`;
 const TERRAIN_DISPLACEMENT_VERTEX = `
 #ifdef USE_DISPLACEMENTMAP
@@ -79,12 +95,13 @@ float darkForestMask = smoothstep(0.012, 0.1, sourceAlbedo.g - sourceAlbedo.b)
   * (1.0 - smoothstep(0.28, 0.62, daylightLuma))
   * earthLandMask;
 vegetationMask = max(vegetationMask, darkForestMask * 0.78);
-vec3 forestGrade = daylightGrade * vec3(0.88, 1.42, 0.68);
-forestGrade += vec3(0.008, 0.04, 0.004);
+// Richer, more saturated vegetation green
+vec3 forestGrade = daylightGrade * vec3(0.84, 1.48, 0.63);
+forestGrade += vec3(0.006, 0.046, 0.002);
 daylightGrade = mix(
   daylightGrade,
   forestGrade,
-  vegetationMask * 0.36 * terrainDetailStrength
+  vegetationMask * 0.44 * terrainDetailStrength
 );
 #ifdef USE_BUMPMAP
   vec2 earthReliefTexel = vec2(0.000244140625, 0.00048828125);
@@ -116,7 +133,7 @@ daylightGrade = mix(
     reliefCoarseDown - reliefCoarseUp
   );
   vec2 reliefGradient = reliefFineGradient + reliefCoarseGradient * 0.46;
-  float reliefLight = clamp(dot(reliefGradient, terrainSunDirection) * 58.0, -0.32, 0.32);
+  float reliefLight = clamp(dot(reliefGradient, terrainSunDirection) * 70.0, -0.38, 0.38);
   float reliefLandMask = smoothstep(0.018, 0.11, reliefCenter) * earthLandMask;
   float mountainSlope = smoothstep(0.003, 0.032, length(reliefCoarseGradient));
   float mountainHeight = smoothstep(0.13, 0.58, reliefCenter);
@@ -132,38 +149,64 @@ daylightGrade = mix(
     mountainGrade,
     mountainMask * 0.45 * terrainDetailStrength
   );
+  // Glaciers and permanent snow caps at high elevation
+  float snowCapHeight = smoothstep(0.62, 0.80, reliefCenter) * reliefLandMask;
+  daylightGrade = mix(daylightGrade, vec3(0.91, 0.93, 0.97), snowCapHeight * 0.58 * terrainDetailStrength);
 #endif
+// Desert / arid zones: warm ochre toning (Sahara, Arabian Peninsula, outback)
+float desertLuma = smoothstep(0.50, 0.80, daylightLuma) * earthLandMask;
+float desertWarmth = smoothstep(0.02, 0.15, sourceAlbedo.r - sourceAlbedo.b);
+float desertMask = desertLuma * desertWarmth;
+daylightGrade = mix(daylightGrade, daylightGrade * vec3(1.07, 1.01, 0.83), desertMask * 0.46);
+// Polar ice caps: vMapUv.y = 0 (south) → 1 (north) on a standard sphere UV
+float polarNorth = smoothstep(0.72, 0.90, vMapUv.y);
+float polarSouth = smoothstep(0.28, 0.10, vMapUv.y);
+float polarLat   = max(polarNorth, polarSouth);
+float iceBrightness = smoothstep(0.40, 0.66, daylightLuma);
+float polarIceMask = polarLat * iceBrightness;
+vec3 iceWhite = vec3(0.91, 0.94, 0.98);
+daylightGrade = mix(daylightGrade, iceWhite, polarIceMask * earthLandMask * 0.82);
+// Enhanced ocean: deep indigo-blue far offshore, teal-green near coastlines
 float oceanLuma = dot(sourceAlbedo, vec3(0.2126, 0.7152, 0.0722));
-vec3 oceanGrade = mix(
-  sourceAlbedo,
-  oceanLuma * vec3(0.48, 0.76, 1.06),
-  0.58
-);
-diffuseColor.rgb = min(mix(daylightGrade, oceanGrade, earthOceanMask * 0.52), vec3(1.0));`;
+float oceanDepth = 1.0 - smoothstep(0.04, 0.22, oceanLuma);
+vec3 deepOcean    = oceanLuma * vec3(0.16, 0.38, 1.08);
+vec3 shallowOcean = oceanLuma * vec3(0.30, 0.72, 0.80);
+vec3 oceanGrade   = mix(sourceAlbedo, mix(shallowOcean, deepOcean, clamp(oceanDepth * 0.80 + 0.20, 0.0, 1.0)), 0.74);
+// Polar ocean: ice-white tint near the poles (Arctic / Antarctic pack ice)
+oceanGrade = mix(oceanGrade, iceWhite * 0.80, polarIceMask * 0.44);
+diffuseColor.rgb = min(mix(daylightGrade, oceanGrade, earthOceanMask * 0.60), vec3(1.0));`;
 
 const EARTH_ROUGHNESS_FRAGMENT = `#include <roughnessmap_fragment>
-roughnessFactor = mix(roughnessFactor, 0.26, earthOceanMask);`;
+roughnessFactor = mix(roughnessFactor, 0.26, earthOceanMask);
+// Micro-scale ocean roughness: hash noise simulates subtle wave-pattern variation
+float oceanMicroRough = fract(sin(dot(floor(vMapUv * 460.0), vec2(127.1, 311.7))) * 43758.5453);
+roughnessFactor = mix(roughnessFactor, 0.22 + oceanMicroRough * 0.08, earthOceanMask * 0.50);`;
 
-const EARTH_FRESNEL_FRAGMENT = `float earthFresnel = pow(
-  1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0),
-  3.0
-);
-outgoingLight += vec3(0.018, 0.019, 0.02) * earthFresnel * earthOceanMask;
-float broadWaterReflection = pow(
-  1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0),
-  1.65
-);
-outgoingLight += vec3(0.014, 0.015, 0.016)
-  * broadWaterReflection
-  * earthOceanMask;
+const EARTH_FRESNEL_FRAGMENT = `float viewNDot = clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);
+// Strong blue Fresnel rim – visible at the ocean horizon
+float earthFresnel = pow(1.0 - viewNDot, 4.2);
+outgoingLight += vec3(0.028, 0.036, 0.058) * earthFresnel * earthOceanMask;
+// Broad specular shimmer across the ocean face
+float broadWaterReflection = pow(1.0 - viewNDot, 1.45);
+outgoingLight += vec3(0.010, 0.013, 0.020) * broadWaterReflection * earthOceanMask;
+// Sun Glint: Intense solar specular reflection on ocean surface facing sun direction
+vec3 viewDir = normalize(vViewPosition);
+vec3 sunDir = normalize(vec3(terrainSunDirection.x, terrainSunDirection.y, 0.72));
+vec3 halfVector = normalize(sunDir + viewDir);
+float NdotH = clamp(dot(normal, halfVector), 0.0, 1.0);
+float oceanSunGlint = pow(NdotH, 140.0) * earthOceanMask;
+float oceanSoftGlint = pow(NdotH, 18.0) * earthOceanMask;
+vec3 glintColor = (vec3(1.0, 0.95, 0.86) * oceanSunGlint * 2.2 + vec3(0.95, 0.65, 0.35) * oceanSoftGlint * 0.35);
+outgoingLight += glintColor * terrainGlintIntensity;
 #include <opaque_fragment>`;
 
 const NIGHT_EARTHLIGHT_FRAGMENT = `float nightEarthFresnel = pow(
   1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0),
-  2.4
+  2.2
 );
-outgoingLight += diffuseColor.rgb * vec3(0.1, 0.14, 0.22);
-outgoingLight += vec3(0.012, 0.035, 0.075) * nightEarthFresnel;
+// Subtle blue-indigo earthshine tint on the night side
+outgoingLight += diffuseColor.rgb * vec3(0.09, 0.13, 0.22);
+outgoingLight += vec3(0.014, 0.040, 0.088) * nightEarthFresnel;
 #include <opaque_fragment>`;
 
 function createCityGlow(THREE, nightTexture, segments, isMobileDevice) {
@@ -701,12 +744,16 @@ export async function createEarthSystem(
   });
   dayMaterial.userData.terrainDetailStrength = 1;
   dayMaterial.userData.terrainSunDirection = new THREE.Vector2(-0.62, 0.78).normalize();
+  dayMaterial.userData.terrainGlintIntensity = 1.0;
   dayMaterial.onBeforeCompile = shader => {
     shader.uniforms.terrainDetailStrength = {
       value: dayMaterial.userData.terrainDetailStrength,
     };
     shader.uniforms.terrainSunDirection = {
       value: dayMaterial.userData.terrainSunDirection,
+    };
+    shader.uniforms.terrainGlintIntensity = {
+      value: dayMaterial.userData.terrainGlintIntensity,
     };
     dayMaterial.userData.reliefShader = shader;
     shader.vertexShader = shader.vertexShader.replace(
@@ -716,7 +763,7 @@ export async function createEarthSystem(
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "void main() {",
-        "uniform float terrainDetailStrength;\nuniform vec2 terrainSunDirection;\nfloat earthOceanMask = 0.0;\nvoid main() {"
+        "uniform float terrainDetailStrength;\nuniform vec2 terrainSunDirection;\nuniform float terrainGlintIntensity;\nfloat earthOceanMask = 0.0;\nvoid main() {"
       )
       .replace("#include <map_fragment>", DAYLIGHT_MAP_FRAGMENT)
       .replace("#include <roughnessmap_fragment>", EARTH_ROUGHNESS_FRAGMENT)
@@ -951,9 +998,9 @@ export async function createCloudLayer(
       wind: [0.00035, 0.000018],
       distortion: 0.003,
       rotation: -0.012,
-      densityShade: 0.1,
+      densityShade: 0.22, // increased for volumetric cloud depth
       coverage: [0.16, 0.72],
-      cacheKey: "earth-cloud-low-wind-v7",
+      cacheKey: "earth-cloud-low-wind-v8",
     });
 
     const segments = isMobileDevice ? 96 : Math.min(CONFIG.EARTH.SEGMENTS, 256);
@@ -989,9 +1036,9 @@ export async function createCloudLayer(
       phase: [0.23, 0.018],
       distortion: 0.005,
       rotation: 0.04,
-      densityShade: 0.08,
+      densityShade: 0.15, // increased for volumetric cloud depth
       coverage: [0.24, 0.77],
-      cacheKey: "earth-cloud-high-wind-v4",
+      cacheKey: "earth-cloud-high-wind-v5",
     });
     const highCloudGeometry = new THREE.SphereGeometry(
       CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.HIGH_ALTITUDE,

@@ -30,7 +30,7 @@ export class StarManager {
       const theta = Math.random() * Math.PI * 2;
       // A restrained concentration around one plane suggests the Milky Way,
       // while most points remain distributed across the full celestial sphere.
-      const isGalacticBand = Math.random() < 0.28;
+      const isGalacticBand = Math.random() < 0.33;
       const phi = isGalacticBand
         ? Math.PI * 0.5 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.24
         : Math.acos(2 * Math.random() - 1);
@@ -46,11 +46,17 @@ export class StarManager {
       positions[i3 + 2] = z;
 
       const temperature = Math.random();
-      if (temperature < 0.12) {
-        color.setRGB(1, 0.72 + Math.random() * 0.13, 0.58 + Math.random() * 0.12);
-      } else if (temperature > 0.82) {
-        color.setRGB(0.62 + Math.random() * 0.12, 0.78 + Math.random() * 0.12, 1);
+      if (temperature < 0.04) {
+        // M-type: rare red giants
+        color.setRGB(1, 0.36 + Math.random() * 0.18, 0.2 + Math.random() * 0.12);
+      } else if (temperature < 0.18) {
+        // K-type: orange stars
+        color.setRGB(1, 0.68 + Math.random() * 0.16, 0.52 + Math.random() * 0.14);
+      } else if (temperature > 0.78) {
+        // B/O-type: blue-white stars
+        color.setRGB(0.6 + Math.random() * 0.14, 0.78 + Math.random() * 0.14, 1);
       } else {
+        // F/G-type: near-white (majority)
         const neutral = 0.88 + Math.random() * 0.12;
         color.setRGB(neutral, neutral * 0.97, neutral);
       }
@@ -93,7 +99,7 @@ export class StarManager {
           vColor = color;
           vFlare = flare;
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          float shimmer = 0.91 + 0.09 * sin(time * twinkleSpeed + phase);
+          float shimmer = 0.88 + 0.12 * sin(time * twinkleSpeed + phase);
           vAlpha = brightness * shimmer;
           gl_PointSize = clamp(size * (280.0 / -mvPosition.z), 0.8, 5.6);
           gl_Position = projectionMatrix * mvPosition;
@@ -110,9 +116,11 @@ export class StarManager {
           float halo = 1.0 - smoothstep(0.08, 0.5, distanceToCenter);
           float diffraction = (
             exp(-abs(centered.x) * 28.0) +
-            exp(-abs(centered.y) * 28.0)
+            exp(-abs(centered.y) * 28.0) +
+            exp(-abs(centered.x + centered.y) * 42.0) * 0.38 +
+            exp(-abs(centered.x - centered.y) * 42.0) * 0.38
           ) * (1.0 - smoothstep(0.1, 0.5, distanceToCenter)) * vFlare;
-          float alpha = (core * 0.76 + halo * 0.18 + diffraction * 0.16) * vAlpha;
+          float alpha = (core * 0.78 + halo * 0.20 + diffraction * 0.22) * vAlpha;
           if (alpha < 0.01) discard;
           gl_FragColor = vec4(mix(vColor, vec3(1.0), core * 0.2), alpha);
         }
@@ -179,6 +187,9 @@ export class ShootingStarManager {
         star.material.opacity = 1.0;
         star.visible = true;
       } else {
+        // Each star needs its own material instance because opacity is animated
+        // independently (stars fade at different times). Without the clone, all
+        // active stars would share the same opacity and fade together.
         const material = this.sharedMaterial.clone();
         star = new this.THREE.Mesh(this.sharedGeometry, material);
         isNew = true;

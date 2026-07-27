@@ -13,10 +13,10 @@ function withRegionalTexturePath(filename) {
 const EARTH_TEXTURES = Object.freeze({
   DAY: withTexturePath("earth_day_relief_8k.jpg"),
   DAY_KTX2: withTexturePath("earth_day_relief_8k.ktx2"),
-  NIGHT: withTexturePath("earth_night_8k.jpg"),
-  NIGHT_KTX2: withTexturePath("earth_night_8k.ktx2"),
+  NIGHT: withTexturePath("earth_night_8k_nasa.jpg"),
+  NIGHT_KTX2: null,
   NORMAL: withTexturePath("earth_normal_4k.webp"),
-  BUMP: withTexturePath("earth_bump_4k.webp"),
+  BUMP: withTexturePath("earth_displacement_16b_8k.png"),
   CLOUDS: withTexturePath("earth_clouds_4k.jpg"),
   CLOUDS_KTX2: withTexturePath("earth_clouds_4k.ktx2"),
   MOON: withTexturePath("moon_texture.webp"),

@@ -20,6 +20,10 @@ export function setupScene(THREE, container) {
     alpha: true,
     powerPreference: "high-performance",
     preserveDrawingBuffer: false,
+    // Logarithmic depth buffer prevents Z-fighting across the wide near/far
+    // range (0.1 – 1000). Without it stars at z~300 can flicker against closer
+    // geometry on devices with low-precision depth buffers.
+    logarithmicDepthBuffer: true,
   });
 
   renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);

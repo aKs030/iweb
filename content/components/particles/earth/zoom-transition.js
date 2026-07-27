@@ -9,10 +9,11 @@ const lerpScale = (start, end, amount) => {
   return Math.exp(lerp(Math.log(start), Math.log(end), amount));
 };
 const channel = (color, shift) => (color >> shift) & 255;
+const clampByte = v => Math.max(0, Math.min(255, Math.round(v)));
 const lerpColor = (start, end, amount) =>
-  (Math.round(lerp(channel(start, 16), channel(end, 16), amount)) << 16) |
-  (Math.round(lerp(channel(start, 8), channel(end, 8), amount)) << 8) |
-  Math.round(lerp(channel(start, 0), channel(end, 0), amount));
+  (clampByte(lerp(channel(start, 16), channel(end, 16), amount)) << 16) |
+  (clampByte(lerp(channel(start, 8), channel(end, 8), amount)) << 8) |
+  clampByte(lerp(channel(start, 0), channel(end, 0), amount));
 let scrollRangeCache = null;
 
 export function getHeroToFeaturesScrollProgress(currentSection) {
@@ -22,15 +23,23 @@ export function getHeroToFeaturesScrollProgress(currentSection) {
   const features = document.getElementById("features");
   if (!hero || !features) return null;
 
-  const key = `${innerWidth}:${innerHeight}:${hero.offsetTop}:${features.offsetTop}`;
-  if (scrollRangeCache?.key !== key) {
+  // Compare numeric fields directly – avoids building a string on every frame.
+  if (
+    scrollRangeCache?.w !== innerWidth ||
+    scrollRangeCache?.h !== innerHeight ||
+    scrollRangeCache?.heroTop !== hero.offsetTop ||
+    scrollRangeCache?.featTop !== features.offsetTop
+  ) {
     const parsedPadding = Number.parseFloat(
       getComputedStyle(document.documentElement).scrollPaddingTop
     );
     const padding = Number.isFinite(parsedPadding) ? parsedPadding : 0;
     const start = Math.max(0, hero.offsetTop - padding);
     scrollRangeCache = {
-      key,
+      w: innerWidth,
+      h: innerHeight,
+      heroTop: hero.offsetTop,
+      featTop: features.offsetTop,
       start,
       end: Math.max(start + 1, features.offsetTop - padding),
     };
@@ -103,6 +112,15 @@ export function applyScrollLinkedSectionVisuals(system, hero, features, progress
       features.surfaceEmissiveIntensity ?? 0,
       p
     );
+    if (material.userData.reliefShader?.uniforms?.terrainGlintIntensity) {
+      if (progress >= 1) {
+        material.userData.reliefShader.uniforms.terrainGlintIntensity.value = 0;
+      } else {
+        const glintFade = Math.pow(Math.max(0, 1 - p * 3.33), 2);
+        material.userData.reliefShader.uniforms.terrainGlintIntensity.value =
+          (hero.surfaceSpecularIntensity ?? 1) * glintFade;
+      }
+    }
     material.normalScale?.setScalar(
       lerp(hero.surfaceNormalScale ?? 1, features.surfaceNormalScale ?? 1, p)
     );
@@ -209,6 +227,9 @@ export class EarthZoomTransition {
     this.endLatitude = 0;
     this.startPosition = { x: 0, y: 0, z: 0 };
     this.endPosition = { x: 0, y: 0, z: 0 };
+    // Cache last computed progress to avoid redundant performance.now() calls
+    // when multiple getters are called within the same animation frame.
+    this._progressCache = null;
   }
 
   start({
@@ -234,19 +255,30 @@ export class EarthZoomTransition {
     this.endLatitude = endLatitude;
     this.startPosition = startPosition;
     this.endPosition = endPosition;
+    this._progressCache = null;
   }
 
   stop() {
     this.active = false;
+    this._progressCache = null;
   }
 
   _progress() {
-    const progress = Math.max(0, Math.min(1, (performance.now() - this.startTime) / this.duration));
-    if (progress >= 1) {
+    const now = performance.now();
+    // Cache progress for 8 ms so multiple getters in the same animation frame
+    // share one calculation instead of each calling performance.now() + smootherstep.
+    if (this._progressCache !== null && now - this._progressCache.time < 8) {
+      return this._progressCache.value;
+    }
+    const raw = Math.max(0, Math.min(1, (now - this.startTime) / this.duration));
+    if (raw >= 1) {
       this.active = false;
+      this._progressCache = null;
       return null;
     }
-    return smootherstep(progress);
+    const value = smootherstep(raw);
+    this._progressCache = { time: now, value };
+    return value;
   }
 
   _sampleScalar(start, end, fallback) {
