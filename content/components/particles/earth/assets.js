@@ -342,6 +342,16 @@ function configureWindCloudMaterial(
     shader.fragmentShader = shader.fragmentShader
       .replace("void main() {", `${WIND_CLOUD_UNIFORMS}\nvoid main() {`)
       .replace("#include <alphamap_fragment>", WIND_CLOUD_ALPHA_FRAGMENT);
+
+    // MeshBasicMaterial doesn't compute vNormal by default, but the cloud alpha fragment uses it
+    if (material.type === "MeshBasicMaterial") {
+      shader.vertexShader = shader.vertexShader
+        .replace("#include <common>", "#include <common>\nvarying vec3 vNormal;")
+        .replace(
+          "#include <begin_vertex>",
+          "#include <begin_vertex>\n  vNormal = normalize(normalMatrix * normal);"
+        );
+    }
   };
   material.customProgramCacheKey = () => cacheKey;
 }
@@ -359,7 +369,7 @@ function createSolidTexture(THREE, color, colorSpace) {
   return texture;
 }
 
-function terrainDirection(THREE, x, y) {
+function terrainDirection(THREE, x, y, target = new THREE.Vector3()) {
   const longitudeExtent = THREE.MathUtils.degToRad(44);
   const latitudeExtent = THREE.MathUtils.degToRad(30);
   const latitude = Math.asin(THREE.MathUtils.clamp(y * Math.sin(latitudeExtent), -0.999, 0.999));
@@ -372,15 +382,15 @@ function terrainDirection(THREE, x, y) {
     )
   );
 
-  return new THREE.Vector3(
+  return target.set(
     Math.sin(longitude) * latitudeRadius,
     Math.sin(latitude),
     Math.cos(longitude) * latitudeRadius
   );
 }
 
-function terrainSurfacePoint(THREE, x, y, elevation = 0.018) {
-  return terrainDirection(THREE, x, y).multiplyScalar(CONFIG.EARTH.RADIUS + elevation);
+function terrainSurfacePoint(THREE, x, y, elevation = 0.018, target = new THREE.Vector3()) {
+  return terrainDirection(THREE, x, y, target).multiplyScalar(CONFIG.EARTH.RADIUS + elevation);
 }
 
 function createTerrainHeightSampler(THREE, terrainHeightTexture) {
@@ -418,6 +428,35 @@ function createTerrainHeightSampler(THREE, terrainHeightTexture) {
   }
 }
 
+function createTerrainColorSampler(THREE, terrainTexture) {
+  const image = terrainTexture.image;
+  const width = image?.naturalWidth || image?.videoWidth || image?.width || 0;
+  const height = image?.naturalHeight || image?.videoHeight || image?.height || 0;
+  if (!width || !height) return null;
+
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) return null;
+    context.drawImage(image, 0, 0, width, height);
+    const pixels = context.getImageData(0, 0, width, height).data;
+
+    return (u, v, targetRGB) => {
+      const pixelX = Math.round(THREE.MathUtils.clamp(u, 0, 1) * (width - 1));
+      const pixelY = Math.round((1 - THREE.MathUtils.clamp(v, 0, 1)) * (height - 1));
+      const index = (pixelY * width + pixelX) * 4;
+      targetRGB[0] = pixels[index];
+      targetRGB[1] = pixels[index + 1];
+      targetRGB[2] = pixels[index + 2];
+    };
+  } catch (error) {
+    if (isLocalDevRuntime()) log.warn("Terrain color sampling failed:", error);
+    return null;
+  }
+}
+
 function createRegionalTerrainGeometry(
   THREE,
   widthSegments,
@@ -429,6 +468,7 @@ function createRegionalTerrainGeometry(
   const positions = geometry.getAttribute("position");
   const uvs = geometry.getAttribute("uv");
 
+  const tempPoint = new THREE.Vector3();
   for (let index = 0; index < positions.count; index += 1) {
     const x = positions.getX(index);
     const y = positions.getY(index);
@@ -438,12 +478,49 @@ function createRegionalTerrainGeometry(
     const edgeBlend = THREE.MathUtils.smoothstep(Math.abs(x), 0.55, 1);
     const edgeRelief = THREE.MathUtils.lerp(1, 0.55, edgeBlend);
     const elevation = 0.004 + mountainHeight * 0.03 * edgeRelief * reliefScale;
-    const point = terrainSurfacePoint(THREE, x, y, elevation);
-    positions.setXYZ(index, point.x, point.y, point.z);
+    terrainSurfacePoint(THREE, x, y, elevation, tempPoint);
+    positions.setXYZ(index, tempPoint.x, tempPoint.y, tempPoint.z);
   }
 
   geometry.computeVertexNormals();
   return geometry;
+}
+
+function configureInstanceFade(material) {
+  material.onBeforeCompile = shader => {
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+      attribute vec2 instanceUv;
+      varying vec2 vInstanceUv;`
+      )
+      .replace(
+        "#include <begin_vertex>",
+        `#include <begin_vertex>
+      vInstanceUv = instanceUv;`
+      );
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+      varying vec2 vInstanceUv;`
+      )
+      .replace(
+        "#include <alphamap_fragment>",
+        `#include <alphamap_fragment>
+      float regionalFadeX =
+        smoothstep(0.0, 0.13, vInstanceUv.x)
+        * smoothstep(0.0, 0.13, 1.0 - vInstanceUv.x);
+      float regionalFadeY =
+        smoothstep(0.0, 0.15, vInstanceUv.y)
+        * smoothstep(0.0, 0.15, 1.0 - vInstanceUv.y);
+      float regionalEdgeFade = regionalFadeX * regionalFadeY;
+      diffuseColor.a *= regionalEdgeFade;`
+      );
+  };
+  material.customProgramCacheKey = () => "earth-regional-instance-fade-v2";
 }
 
 function configureRegionalTerrainEdgeFade(material) {
@@ -505,6 +582,7 @@ function createProceduralTerrainLayer(
   const widthSegments = lowQuality ? 160 : isMobileDevice ? 224 : mediumQuality ? 352 : 512;
   const heightSegments = lowQuality ? 120 : isMobileDevice ? 168 : mediumQuality ? 264 : 384;
   const sampleHeight = createTerrainHeightSampler(THREE, terrainHeightTexture);
+  const sampleColor = createTerrainColorSampler(THREE, terrainTexture);
   const geometry = createRegionalTerrainGeometry(
     THREE,
     widthSegments,
@@ -644,6 +722,196 @@ function createProceduralTerrainLayer(
   regionalHighClouds.name = "earth-regional-cloud-high";
   regionalHighClouds.renderOrder = 8;
   group.add(regionalHighClouds);
+  // Add 3D Details (Cities and Trees) using InstancedMesh
+  const numInstances = isMobileDevice ? 5000 : qualityLevel === "LOW" ? 8000 : 25000;
+
+  // Create geometries
+  const buildingGeometry = new THREE.BoxGeometry(0.0015, 0.0015, 0.0015);
+  // Shift origin to bottom so they scale up from the ground
+  buildingGeometry.translate(0, 0, 0.00075);
+
+  const treeGeometry = new THREE.ConeGeometry(0.0008, 0.002, 5);
+  treeGeometry.translate(0, 0, 0.001);
+  treeGeometry.rotateX(Math.PI / 2); // align with z-axis (up from surface)
+
+  // Edge fade logic for instances is handled via a custom shader below
+  const buildingMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8899aa,
+    roughness: 0.7,
+    metalness: 0.2,
+    transparent: true,
+    opacity: 1, // Will be controlled by userData/fadeMaterials
+  });
+
+  const treeMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2e5c2e,
+    roughness: 0.9,
+    metalness: 0.0,
+    transparent: true,
+    opacity: 1,
+  });
+
+  // Share the terrain edge fade shader modification for the instances
+  configureInstanceFade(buildingMaterial);
+  configureInstanceFade(treeMaterial);
+
+  const cityMesh = new THREE.InstancedMesh(buildingGeometry, buildingMaterial, numInstances);
+  const forestMesh = new THREE.InstancedMesh(treeGeometry, treeMaterial, numInstances);
+  // Add an instanced buffer attribute for UVs so instances fade exactly like the terrain
+  const cityUvArray = new Float32Array(numInstances * 2);
+  const forestUvArray = new Float32Array(numInstances * 2);
+
+  cityMesh.geometry = cityMesh.geometry.clone();
+  forestMesh.geometry = forestMesh.geometry.clone();
+
+  const cityUvAttribute = new THREE.InstancedBufferAttribute(cityUvArray, 2);
+  const forestUvAttribute = new THREE.InstancedBufferAttribute(forestUvArray, 2);
+
+  cityMesh.geometry.setAttribute("instanceUv", cityUvAttribute);
+  forestMesh.geometry.setAttribute("instanceUv", forestUvAttribute);
+
+  cityMesh.name = "earth-regional-cities";
+  forestMesh.name = "earth-regional-forests";
+  cityMesh.renderOrder = 5;
+  forestMesh.renderOrder = 5;
+
+  const dummy = new THREE.Object3D();
+  const upVector = new THREE.Vector3(0, 0, 1);
+
+  let cityCount = 0;
+  let treeCount = 0;
+
+  // We use a seeded random for stable placement
+  let seed = 12345;
+  const random = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+
+  const reliefScaleNum = 3.8;
+
+  const tempColor = new THREE.Color();
+  const dir = new THREE.Vector3();
+  const tempPoint = new THREE.Vector3();
+  const colorData = [0, 0, 0];
+
+  for (let i = 0; i < numInstances * 4; i++) {
+    if (cityCount >= numInstances && treeCount >= numInstances) break;
+
+    // Distribute randomly across the region
+    const r1 = random();
+    const r2 = random();
+    const radius = Math.sqrt(r1) * 0.95; // keep slightly away from absolute edge
+    const theta = r2 * Math.PI * 2;
+
+    const x = radius * Math.cos(theta);
+    const y = radius * Math.sin(theta);
+
+    // UV coordinates (0 to 1)
+    const u = (x + 1) / 2;
+    const v = (y + 1) / 2;
+
+    const sourceHeight = sampleHeight ? sampleHeight(u, v) : 0.2;
+
+    // Avoid oceans
+    if (sourceHeight < 0.02) continue;
+
+    const landHeight = THREE.MathUtils.smoothstep(sourceHeight, 0.12, 0.82);
+    const mountainHeight = Math.pow(landHeight, 1.35);
+    const edgeBlend = THREE.MathUtils.smoothstep(Math.abs(x), 0.55, 1);
+    const edgeRelief = THREE.MathUtils.lerp(1, 0.55, edgeBlend);
+    const elevation = 0.004 + mountainHeight * 0.03 * edgeRelief * reliefScaleNum;
+
+    terrainSurfacePoint(THREE, x, y, elevation, tempPoint);
+
+    // Determine normal at this point to orient the object
+    dir.copy(tempPoint).normalize();
+
+    dummy.position.copy(tempPoint);
+    // Align z-axis to surface normal
+    dummy.quaternion.setFromUnitVectors(upVector, dir);
+
+    // Random rotation around local z-axis
+    dummy.rotateZ(random() * Math.PI * 2);
+
+    let isCity = false;
+    let isForest = false;
+
+    if (sampleColor) {
+      sampleColor(u, v, colorData);
+      const r = colorData[0];
+      const g = colorData[1];
+      const b = colorData[2];
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+
+      // Forests are green dominant, cities are relatively grey and bright
+      if (g > r + 10 && g > b + 10 && max > 30 && max < 200) {
+        isForest = true;
+      } else if (max - min < 20 && max > 60 && max < 200) {
+        isCity = true;
+      }
+    } else {
+      const noise = (Math.sin(x * 20) + Math.cos(y * 20)) * 0.5 + 0.5;
+      if (noise > 0.6) isCity = true;
+      else if (noise <= 0.6) isForest = true;
+    }
+
+    const scatterNoise = (Math.sin(x * 50) + Math.cos(y * 50)) * 0.5 + 0.5;
+
+    // Cities prefer lower flatter ground and specific noise regions
+    if (
+      isCity &&
+      sourceHeight > 0.02 &&
+      sourceHeight < 0.15 &&
+      scatterNoise > 0.3 &&
+      cityCount < numInstances
+    ) {
+      // City (lowlands)
+      const heightScale = 0.5 + random() * 2.5; // Random building heights
+      dummy.scale.set(0.6 + random() * 0.4, 0.6 + random() * 0.4, heightScale);
+      dummy.updateMatrix();
+      cityMesh.setMatrixAt(cityCount, dummy.matrix);
+      cityUvArray[cityCount * 2] = u;
+      cityUvArray[cityCount * 2 + 1] = v;
+
+      // Color variation for buildings
+      tempColor.setHSL(0.6, 0.1, 0.3 + random() * 0.4);
+      cityMesh.setColorAt(cityCount, tempColor);
+      cityCount++;
+
+      // Trees prefer mid elevations and different noise regions
+    } else if (
+      isForest &&
+      sourceHeight >= 0.03 &&
+      sourceHeight < 0.5 &&
+      scatterNoise > 0.2 &&
+      treeCount < numInstances
+    ) {
+      // Forest
+      const scale = 0.5 + random() * 0.8;
+      dummy.scale.set(scale, scale, scale);
+      dummy.updateMatrix();
+      forestMesh.setMatrixAt(treeCount, dummy.matrix);
+      forestUvArray[treeCount * 2] = u;
+      forestUvArray[treeCount * 2 + 1] = v;
+
+      // Color variation for trees
+      tempColor.setHSL(0.3 + random() * 0.05, 0.5 + random() * 0.4, 0.15 + random() * 0.2);
+      forestMesh.setColorAt(treeCount, tempColor);
+      treeCount++;
+    }
+  }
+
+  cityMesh.count = cityCount;
+  forestMesh.count = treeCount;
+
+  if (cityMesh.instanceColor) cityMesh.instanceColor.needsUpdate = true;
+  if (forestMesh.instanceColor) forestMesh.instanceColor.needsUpdate = true;
+
+  group.add(cityMesh);
+  group.add(forestMesh);
 
   group.userData.opacity = 0;
   group.userData.targetOpacity = 1;
@@ -660,9 +928,11 @@ function createProceduralTerrainLayer(
   ];
   group.userData.fadeMaterials = [
     { material: terrainMaterial, baseOpacity: 1, lod: "berlin" },
-    { material: regionalCloudShadowMaterial, baseOpacity: 0.05, lod: "cloud" },
-    { material: regionalCloudMaterial, baseOpacity: 0.4, lod: "cloud" },
-    { material: regionalHighCloudMaterial, baseOpacity: 0.14, lod: "cloud" },
+    { material: regionalCloudShadowMaterial, baseOpacity: 0.05, lod: "berlin" },
+    { material: regionalCloudMaterial, baseOpacity: 0.4, lod: "berlin" },
+    { material: regionalHighCloudMaterial, baseOpacity: 0.14, lod: "berlin" },
+    { material: buildingMaterial, baseOpacity: 1, lod: "berlin" },
+    { material: treeMaterial, baseOpacity: 1, lod: "berlin" },
   ];
   return group;
 }
