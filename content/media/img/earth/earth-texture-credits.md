@@ -32,3 +32,11 @@ have KTX2 delivery variants. They were generated with Khronos KTX-Software
 4.4.2 using ETC1S, high quality (`qlevel 200–210`), a complete Lanczos mipmap
 pyramid, and OpenGL-compatible vertical orientation. JPEG and WebP originals
 remain available as automatic runtime fallbacks.
+
+## City-light points
+
+`content/media/data/earth-cities.bin` is an optimized derivative of Natural
+Earth's public-domain `ne_10m_populated_places` dataset. Population values are
+quantized to control the size and intensity of Section 3 city lights.
+
+- [Natural Earth 1:10m Populated Places](https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/)

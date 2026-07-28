@@ -331,7 +331,7 @@
     "btn_contact": "Contact"
   },
   "home": {
-    "earth_description": "An interactive 3D rendering of Earth with realistic textures and animation. Use the controls to zoom and switch between camera modes.",
+    "earth_description": "A high-resolution 3D rendering of the entire Earth with realistic textures, clouds, city lights, and adaptive detail levels.",
     "earth_fallback": "CSS mode",
     "hero_region_label": "Welcome to the portfolio — Home",
     "hero_title": "Glad you're here.",

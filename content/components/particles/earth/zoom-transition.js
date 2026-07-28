@@ -129,15 +129,16 @@ export function applyFeaturesSection3CameraOrbit(system, features, section3, pro
     system.cloudMesh.rotation.z = system.earthMesh?.rotation.z || 0;
   }
 
-  const cityBlendProgress = Math.max(0, Math.min(1, (p - 0.45) / 0.55));
-  const cityBlend = smootherstep(cityBlendProgress);
+  // City visibility is derived from the physical sun/normal terminator in the
+  // material shader. Keep the layer active through the whole camera orbit so
+  // lights never pop in because a DOM section boundary was crossed.
   if (system.cityGlowGroup) {
-    system.cityGlowGroup.visible = cityBlend > 0.001;
+    system.cityGlowGroup.visible = true;
     system.cityGlowGroup.traverse(object => {
       const glowOpacity = object.material?.uniforms?.glowOpacity;
       const baseOpacity = object.material?.userData?.baseGlowOpacity;
       if (glowOpacity && Number.isFinite(baseOpacity)) {
-        glowOpacity.value = baseOpacity * cityBlend;
+        glowOpacity.value = baseOpacity;
       }
     });
   }
@@ -196,19 +197,29 @@ export function applyScrollLinkedSectionVisuals(system, hero, features, progress
       features.surfaceEmissiveIntensity ?? 0,
       p
     );
-    if (material.userData.reliefShader?.uniforms?.terrainGlintIntensity) {
-      if (progress >= 1) {
-        material.userData.reliefShader.uniforms.terrainGlintIntensity.value = 0;
-      } else {
-        const glintFade = Math.pow(Math.max(0, 1 - p * 3.33), 2);
-        material.userData.reliefShader.uniforms.terrainGlintIntensity.value =
-          (hero.surfaceSpecularIntensity ?? 1) * glintFade;
-      }
-    }
     material.normalScale?.setScalar(
       lerp(hero.surfaceNormalScale ?? 1, features.surfaceNormalScale ?? 1, p)
     );
     material.bumpScale = lerp(hero.surfaceBumpScale ?? 0, features.surfaceBumpScale ?? 0, p);
+  }
+
+  const cityGlowMultiplier = lerp(
+    hero.cityGlowMultiplier ?? 1,
+    features.cityGlowMultiplier ?? 1,
+    p
+  );
+  system.cityGlowGroup?.traverse(object => {
+    const glowOpacity = object.material?.uniforms?.glowOpacity;
+    const baseOpacity = object.material?.userData?.baseGlowOpacity;
+    if (glowOpacity && Number.isFinite(baseOpacity)) {
+      glowOpacity.value = baseOpacity * cityGlowMultiplier;
+    }
+  });
+  const cityPointOpacity = system.cityLightsPoints?.getObjectByName?.(
+    "earth-city-light-points-mesh"
+  )?.material?.uniforms?.cityPointOpacity;
+  if (cityPointOpacity) {
+    cityPointOpacity.value = lerp(hero.cityPointOpacity ?? 0, features.cityPointOpacity ?? 0, p);
   }
 
   const clouds = system.cloudMesh;

@@ -139,4 +139,13 @@ export class PerformanceMonitor {
     this.pendingSamples = 0;
     if (this.onQualityChange) this.onQualityChange(this.currentQualityLevel);
   }
+
+  restoreQuality(qualityLevel) {
+    this.currentQualityLevel = qualityLevel;
+    this.pendingQualityLevel = qualityLevel;
+    this.pendingSamples = 0;
+    this.frame = 0;
+    this.lastTime = performance.now();
+    if (this.onQualityChange) this.onQualityChange(qualityLevel);
+  }
 }

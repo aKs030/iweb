@@ -7,6 +7,7 @@ import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 const log = createLogger("EarthAssets");
 const TEXTURE_TIMEOUT_MS = 15000;
 const KTX2_TRANSCODER_URL = "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/libs/basis/";
+const EARTH_CITY_LIGHTS_URL = "/content/media/data/earth-cities.bin?v=natural-earth-5-r1";
 const WIND_CLOUD_UNIFORMS = `
 uniform float cloudTime;
 uniform vec2 cloudWind;
@@ -14,7 +15,11 @@ uniform vec2 cloudPhase;
 uniform float cloudDistortion;
 uniform float cloudRotation;
 uniform float cloudDensityShade;
-uniform vec2 cloudCoverageRange;`;
+uniform float cloudIsShadow;
+uniform vec2 cloudCoverageRange;
+uniform vec2 cloudShadowUvOffset;
+uniform vec3 earthSunDirectionWorld;
+varying vec3 vCloudWorldNormal;`;
 const WIND_CLOUD_ALPHA_FRAGMENT = `
 #ifdef USE_ALPHAMAP
   vec2 centeredCloudUv = vAlphaMapUv - 0.5;
@@ -24,7 +29,7 @@ const WIND_CLOUD_ALPHA_FRAGMENT = `
     centeredCloudUv.x * cloudCos - centeredCloudUv.y * cloudSin,
     centeredCloudUv.x * cloudSin + centeredCloudUv.y * cloudCos
   ) + 0.5;
-  vec2 windUv = rotatedCloudUv + cloudPhase + cloudWind * cloudTime;
+  vec2 windUv = rotatedCloudUv + cloudPhase + cloudWind * cloudTime + cloudShadowUvOffset;
   float primaryWave = sin(rotatedCloudUv.y * 15.0 + cloudTime * 0.17);
   float crossWave = sin(rotatedCloudUv.x * 19.0 - cloudTime * 0.11);
   windUv += vec2(primaryWave, crossWave * 0.48) * cloudDistortion;
@@ -51,6 +56,16 @@ const WIND_CLOUD_ALPHA_FRAGMENT = `
   );
   // Subtle self-shadow: very thick clouds (cumulonimbus) darken at the base
   float cloudBaseShadow = 1.0 - smoothstep(0.58, 0.94, cloudCoverage) * 0.18;
+  float cloudSun = dot(normalize(vCloudWorldNormal), normalize(earthSunDirectionWorld));
+  float cloudDaylight = smoothstep(-0.12, 0.18, cloudSun);
+  float cloudTwilight = smoothstep(-0.18, -0.01, cloudSun)
+    * (1.0 - smoothstep(-0.01, 0.2, cloudSun));
+  cloudScatterTint = mix(
+    cloudScatterTint * vec3(0.28, 0.34, 0.46),
+    cloudScatterTint,
+    cloudDaylight
+  );
+  cloudScatterTint += vec3(0.16, 0.055, 0.018) * cloudTwilight;
   
   // Fresnel Edge Fade: fade out clouds exactly at the sphere limb to prevent them 
   // from sticking out past the earth's edge (the "broken halo" effect)
@@ -58,21 +73,32 @@ const WIND_CLOUD_ALPHA_FRAGMENT = `
   float cloudFresnel = clamp(vNormal.z, 0.0, 1.0);
   float edgeMask = smoothstep(0.05, 0.35, cloudFresnel);
 
+  float cloudLightVisibility = mix(0.22, 1.0, cloudDaylight);
+  if (cloudIsShadow > 0.5) {
+    cloudLightVisibility = smoothstep(-0.02, 0.2, cloudSun);
+  }
   diffuseColor.rgb *= cloudScatterTint * densityLight * cloudBaseShadow;
-  diffuseColor.a *= cloudCoverage * edgeMask;
+  diffuseColor.a *= cloudCoverage * edgeMask * cloudLightVisibility;
 #endif`;
 const TERRAIN_DISPLACEMENT_VERTEX = `
 #ifdef USE_DISPLACEMENTMAP
-  float terrainHeightSource = texture2D(displacementMap, vDisplacementMapUv).x;
-  float terrainLandHeight = smoothstep(0.018, 0.62, terrainHeightSource);
-  float terrainMountainHeight = pow(terrainLandHeight, 1.55);
-  transformed += normalize(objectNormal)
-    * (terrainMountainHeight * displacementScale + displacementBias);
+  if (abs(displacementScale) > 0.0001) {
+    float terrainHeightSource = texture2D(displacementMap, vDisplacementMapUv).x;
+    float terrainLandHeight = smoothstep(0.018, 0.62, terrainHeightSource);
+    float terrainMountainHeight = pow(terrainLandHeight, 1.55);
+    transformed += normalize(objectNormal)
+      * (terrainMountainHeight * displacementScale + displacementBias);
+  }
 #endif`;
 const DAYLIGHT_MAP_FRAGMENT = `#include <map_fragment>
 vec3 sourceAlbedo = texture2D(map, vMapUv).rgb;
 earthOceanMask = smoothstep(0.0, 0.03, sourceAlbedo.b - sourceAlbedo.r)
   * smoothstep(-0.005, 0.025, sourceAlbedo.b - sourceAlbedo.g);
+#ifdef USE_BUMPMAP
+  float earthElevationForWater = texture2D(bumpMap, vBumpMapUv).r;
+  float elevationWaterMask = 1.0 - smoothstep(0.003, 0.03, earthElevationForWater);
+  earthOceanMask *= mix(0.34, 1.0, elevationWaterMask);
+#endif
 vec3 daylightGrade = pow(max(diffuseColor.rgb, vec3(0.0)), vec3(0.92));
 float daylightLuma = dot(daylightGrade, vec3(0.2126, 0.7152, 0.0722));
 daylightGrade = mix(vec3(daylightLuma), daylightGrade, 1.045);
@@ -96,14 +122,15 @@ float darkForestMask = smoothstep(0.012, 0.1, sourceAlbedo.g - sourceAlbedo.b)
   * earthLandMask;
 vegetationMask = max(vegetationMask, darkForestMask * 0.78);
 // Richer, more saturated vegetation green
-vec3 forestGrade = daylightGrade * vec3(0.9, 1.24, 0.76);
-forestGrade += vec3(0.004, 0.022, 0.002);
+vec3 forestGrade = daylightGrade * vec3(0.95, 1.12, 0.88);
+forestGrade += vec3(0.003, 0.012, 0.002);
 daylightGrade = mix(
   daylightGrade,
   forestGrade,
-  vegetationMask * 0.3 * terrainDetailStrength
+  vegetationMask * 0.2 * terrainDetailStrength
 );
 #ifdef USE_BUMPMAP
+if (terrainDetailStrength > 0.01) {
   vec2 earthReliefTexel = vec2(0.000244140625, 0.00048828125);
   float reliefCenter = texture2D(bumpMap, vBumpMapUv).r;
   float reliefLeft = texture2D(bumpMap, vBumpMapUv - vec2(earthReliefTexel.x, 0.0)).r;
@@ -152,12 +179,13 @@ daylightGrade = mix(
   // Glaciers and permanent snow caps at high elevation
   float snowCapHeight = smoothstep(0.62, 0.80, reliefCenter) * reliefLandMask;
   daylightGrade = mix(daylightGrade, vec3(0.91, 0.93, 0.97), snowCapHeight * 0.58 * terrainDetailStrength);
+}
 #endif
 // Desert / arid zones: warm ochre toning (Sahara, Arabian Peninsula, outback)
 float desertLuma = smoothstep(0.50, 0.80, daylightLuma) * earthLandMask;
 float desertWarmth = smoothstep(0.02, 0.15, sourceAlbedo.r - sourceAlbedo.b);
 float desertMask = desertLuma * desertWarmth;
-daylightGrade = mix(daylightGrade, daylightGrade * vec3(1.07, 1.01, 0.83), desertMask * 0.46);
+daylightGrade = mix(daylightGrade, daylightGrade * vec3(1.055, 1.01, 0.88), desertMask * 0.3);
 // Polar ice caps: vMapUv.y = 0 (south) → 1 (north) on a standard sphere UV
 float polarNorth = smoothstep(0.72, 0.90, vMapUv.y);
 float polarSouth = smoothstep(0.28, 0.10, vMapUv.y);
@@ -171,10 +199,10 @@ float oceanLuma = dot(sourceAlbedo, vec3(0.2126, 0.7152, 0.0722));
 float oceanDepth = 1.0 - smoothstep(0.04, 0.22, oceanLuma);
 vec3 deepOcean    = oceanLuma * vec3(0.16, 0.38, 1.08);
 vec3 shallowOcean = oceanLuma * vec3(0.30, 0.72, 0.80);
-vec3 oceanGrade   = mix(sourceAlbedo, mix(shallowOcean, deepOcean, clamp(oceanDepth * 0.80 + 0.20, 0.0, 1.0)), 0.74);
+vec3 oceanGrade   = mix(sourceAlbedo, mix(shallowOcean, deepOcean, clamp(oceanDepth * 0.80 + 0.20, 0.0, 1.0)), 0.54);
 // Polar ocean: ice-white tint near the poles (Arctic / Antarctic pack ice)
 oceanGrade = mix(oceanGrade, iceWhite * 0.80, polarIceMask * 0.44);
-diffuseColor.rgb = min(mix(daylightGrade, oceanGrade, earthOceanMask * 0.60), vec3(1.0));`;
+diffuseColor.rgb = min(mix(daylightGrade, oceanGrade, earthOceanMask * 0.48), vec3(1.0));`;
 
 const EARTH_ROUGHNESS_FRAGMENT = `#include <roughnessmap_fragment>
 roughnessFactor = mix(roughnessFactor, 0.26, earthOceanMask);
@@ -183,65 +211,104 @@ float oceanMicroRough = fract(sin(dot(floor(vMapUv * 460.0), vec2(127.1, 311.7))
 roughnessFactor = mix(roughnessFactor, 0.22 + oceanMicroRough * 0.08, earthOceanMask * 0.50);`;
 
 const EARTH_FRESNEL_FRAGMENT = `float viewNDot = clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);
+float surfaceSunFacing = dot(normalize(vEarthWorldNormal), normalize(earthSunDirectionWorld));
+float nightHemisphere = 1.0 - smoothstep(-0.16, 0.12, surfaceSunFacing);
+float earthshineFresnel = pow(1.0 - viewNDot, 1.8);
+outgoingLight += diffuseColor.rgb
+  * vec3(0.075, 0.105, 0.17)
+  * nightHemisphere
+  * (0.55 + earthshineFresnel * 0.45);
 // Broad specular shimmer across the ocean face
 float broadWaterReflection = pow(1.0 - viewNDot, 1.45);
 outgoingLight += vec3(0.010, 0.013, 0.020) * broadWaterReflection * earthOceanMask;
-// Sun Glint: Intense solar specular reflection on ocean surface facing sun direction
-vec3 viewDir = normalize(vViewPosition);
-vec3 sunDir = normalize(vec3(terrainSunDirection.x, terrainSunDirection.y, 0.72));
-vec3 halfVector = normalize(sunDir + viewDir);
-float NdotH = clamp(dot(normal, halfVector), 0.0, 1.0);
-float oceanSunGlint = pow(NdotH, 140.0) * earthOceanMask;
-float oceanSoftGlint = pow(NdotH, 18.0) * earthOceanMask;
-vec3 glintColor = (vec3(1.0, 0.95, 0.86) * oceanSunGlint * 2.2 + vec3(0.95, 0.65, 0.35) * oceanSoftGlint * 0.35);
-outgoingLight += glintColor * terrainGlintIntensity;
 #include <opaque_fragment>`;
+
+const EARTH_EMISSIVE_FRAGMENT = `
+#ifdef USE_EMISSIVEMAP
+  vec3 earthNightSample = texture2D(emissiveMap, vEmissiveMapUv, -1.25).rgb;
+  float earthNightBrightness = max(
+    earthNightSample.r,
+    max(earthNightSample.g, earthNightSample.b)
+  );
+  float earthCityCores = smoothstep(0.055, 0.4, earthNightBrightness);
+  float earthBoostedBrightness = pow(max(earthNightBrightness, 0.0), 0.72);
+  vec3 earthWarmCityColor = mix(
+    earthNightSample,
+    vec3(1.0, 0.58, 0.22) * earthBoostedBrightness,
+    0.58
+  );
+  totalEmissiveRadiance *= earthWarmCityColor
+    * earthCityCores
+    * (1.32 + earthBoostedBrightness * 1.2);
+#endif
+float earthSunFacing = dot(normalize(vEarthWorldNormal), normalize(earthSunDirectionWorld));
+float earthNightMask = 1.0 - smoothstep(-0.1, 0.055, earthSunFacing);
+float earthTwilightLights = 1.0 - smoothstep(-0.025, 0.07, earthSunFacing);
+totalEmissiveRadiance *= earthNightMask * earthTwilightLights;`;
 
 function createCityGlow(THREE, nightTexture, segments, isMobileDevice) {
   const glowGroup = new THREE.Group();
+  const citySegments = isMobileDevice ? 80 : Math.min(segments, 160);
   const layerSettings = isMobileDevice
-    ? [{ altitude: 0.018, opacity: 0.16 }]
+    ? [{ altitude: 0.018, opacity: 0.23 }]
     : [
-        { altitude: 0.012, opacity: 0.18 },
-        { altitude: 0.032, opacity: 0.075 },
+        { altitude: 0.012, opacity: 0.27 },
+        { altitude: 0.032, opacity: 0.11 },
       ];
 
   layerSettings.forEach(({ altitude, opacity }) => {
-    const geometry = new THREE.SphereGeometry(CONFIG.EARTH.RADIUS + altitude, segments, segments);
+    const geometry = new THREE.SphereGeometry(
+      CONFIG.EARTH.RADIUS + altitude,
+      citySegments,
+      citySegments
+    );
     const material = new THREE.ShaderMaterial({
       uniforms: {
         cityMap: { value: nightTexture },
         glowOpacity: { value: opacity },
+        earthSunDirectionWorld: { value: new THREE.Vector3(0, 0, 1) },
       },
       vertexShader: `
         varying vec2 vCityUv;
+        varying vec3 vCityWorldNormal;
         void main() {
           vCityUv = uv;
+          vCityWorldNormal = normalize(mat3(modelMatrix) * normal);
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
       fragmentShader: `
         uniform sampler2D cityMap;
         uniform float glowOpacity;
+        uniform vec3 earthSunDirectionWorld;
         varying vec2 vCityUv;
+        varying vec3 vCityWorldNormal;
         void main() {
-          vec3 cityColor = texture2D(cityMap, vCityUv).rgb;
+          vec3 cityColor = texture2D(cityMap, vCityUv, -1.15).rgb;
           float brightness = max(cityColor.r, max(cityColor.g, cityColor.b));
           float warmSignal = max(
             cityColor.r * 1.1 - cityColor.b * 0.35,
             cityColor.g * 0.9 - cityColor.b * 0.28
           );
-          float roadMask = smoothstep(0.045, 0.22, warmSignal);
-          float cityCore = smoothstep(0.24, 0.68, brightness);
-          float lightMask = max(roadMask * 0.34, cityCore);
+          float roadSignal = pow(max(warmSignal, 0.0), 0.7);
+          float roadMask = smoothstep(0.018, 0.2, roadSignal);
+          float cityCore = smoothstep(0.095, 0.52, brightness);
+          float lightMask = max(roadMask * 0.42, cityCore);
           vec3 warmLight = mix(
             cityColor,
             vec3(1.0, 0.65, 0.3) * brightness,
             0.45
           );
+          float sunFacing = dot(
+            normalize(vCityWorldNormal),
+            normalize(earthSunDirectionWorld)
+          );
+          float nightMask = 1.0 - smoothstep(-0.12, 0.045, sunFacing);
+          float horizonFade = 1.0 - smoothstep(-0.1, -0.025, sunFacing);
+          float physicalVisibility = nightMask * mix(0.45, 1.0, horizonFade);
           gl_FragColor = vec4(
-            warmLight * (roadMask * 0.42 + cityCore * 1.15),
-            lightMask * glowOpacity
+            warmLight * (roadMask * 0.98 + cityCore * 1.34),
+            lightMask * glowOpacity * physicalVisibility
           );
         }
       `,
@@ -256,9 +323,87 @@ function createCityGlow(THREE, nightTexture, segments, isMobileDevice) {
     glowGroup.add(new THREE.Mesh(geometry, material));
   });
 
-  glowGroup.visible = false;
+  glowGroup.visible = true;
   glowGroup.renderOrder = 2;
   return glowGroup;
+}
+
+function createCityLightsPoints(THREE, cityBuffer, isMobileDevice) {
+  const group = new THREE.Group();
+  group.name = "earth-city-light-points";
+  if (!cityBuffer) return group;
+
+  const encoded = new Int16Array(cityBuffer);
+  const positions = [];
+  const weights = [];
+  const radius = CONFIG.EARTH.RADIUS + 0.018;
+
+  for (let index = 0; index < encoded.length; index += 3) {
+    const weight = Math.max(0, encoded[index + 2] / 10000);
+    if (isMobileDevice && weight < 0.28 && index % 2 === 0) continue;
+    const longitude = THREE.MathUtils.degToRad(encoded[index] / 100);
+    const latitude = THREE.MathUtils.degToRad(encoded[index + 1] / 100);
+    const latitudeRadius = Math.cos(latitude);
+    positions.push(
+      radius * Math.cos(longitude) * latitudeRadius,
+      radius * Math.sin(latitude),
+      -radius * Math.sin(longitude) * latitudeRadius
+    );
+    weights.push(weight);
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("cityWeight", new THREE.Float32BufferAttribute(weights, 1));
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      cityPointOpacity: { value: 0 },
+    },
+    vertexShader: `
+      attribute float cityWeight;
+      varying float vSurfaceFacing;
+      varying float vCityWeight;
+      void main() {
+        vCityWeight = cityWeight;
+        vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
+        vec3 viewNormal = normalize(normalMatrix * position);
+        vSurfaceFacing = smoothstep(
+          0.06,
+          0.22,
+          dot(viewNormal, normalize(-viewPosition.xyz))
+        );
+        gl_Position = projectionMatrix * viewPosition;
+        gl_PointSize = mix(2.0, 5.5, cityWeight)
+          * (12.0 / max(-viewPosition.z, 1.0));
+      }
+    `,
+    fragmentShader: `
+      uniform float cityPointOpacity;
+      varying float vSurfaceFacing;
+      varying float vCityWeight;
+      void main() {
+        float distanceToCenter = length(gl_PointCoord - 0.5) * 2.0;
+        float core = 1.0 - smoothstep(0.08, 0.42, distanceToCenter);
+        float halo = 1.0 - smoothstep(0.18, 1.0, distanceToCenter);
+        float alpha = (core + halo * 0.38)
+          * cityPointOpacity
+          * vSurfaceFacing
+          * mix(0.68, 1.0, vCityWeight);
+        vec3 color = mix(vec3(1.0, 0.36, 0.08), vec3(1.0, 0.78, 0.38), core);
+        gl_FragColor = vec4(color, alpha);
+      }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    depthTest: true,
+    toneMapped: false,
+  });
+  const points = new THREE.Points(geometry, material);
+  points.name = "earth-city-light-points-mesh";
+  points.renderOrder = 3;
+  group.add(points);
+  return group;
 }
 
 function selectTextureSet(renderer, isMobileDevice) {
@@ -324,6 +469,8 @@ function configureWindCloudMaterial(
     rotation = 0,
     densityShade = 0,
     coverage = [0.16, 0.72],
+    shadowOffsetFactor = 0,
+    isShadow = false,
     cacheKey,
   }
 ) {
@@ -335,23 +482,35 @@ function configureWindCloudMaterial(
     shader.uniforms.cloudDistortion = { value: distortion };
     shader.uniforms.cloudRotation = { value: rotation };
     shader.uniforms.cloudDensityShade = { value: densityShade };
+    shader.uniforms.cloudIsShadow = { value: isShadow ? 1 : 0 };
     shader.uniforms.cloudCoverageRange = {
       value: new THREE.Vector2(coverage[0], coverage[1]),
+    };
+    material.userData.shadowOffsetFactor = shadowOffsetFactor;
+    shader.uniforms.cloudShadowUvOffset = {
+      value: new THREE.Vector2(),
+    };
+    shader.uniforms.earthSunDirectionWorld = {
+      value: material.userData.earthSunDirectionWorld || new THREE.Vector3(0, 0, 1),
     };
     material.userData.cloudShader = shader;
     shader.fragmentShader = shader.fragmentShader
       .replace("void main() {", `${WIND_CLOUD_UNIFORMS}\nvoid main() {`)
       .replace("#include <alphamap_fragment>", WIND_CLOUD_ALPHA_FRAGMENT);
 
-    // MeshBasicMaterial doesn't compute vNormal by default, but the cloud alpha fragment uses it
-    if (material.type === "MeshBasicMaterial") {
-      shader.vertexShader = shader.vertexShader
-        .replace("#include <common>", "#include <common>\nvarying vec3 vNormal;")
-        .replace(
-          "#include <begin_vertex>",
-          "#include <begin_vertex>\n  vNormal = normalize(normalMatrix * normal);"
-        );
-    }
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+varying vec3 vCloudWorldNormal;
+${material.type === "MeshBasicMaterial" ? "varying vec3 vNormal;" : ""}`
+      )
+      .replace(
+        "#include <begin_vertex>",
+        `#include <begin_vertex>
+  vCloudWorldNormal = normalize(mat3(modelMatrix) * normal);
+  ${material.type === "MeshBasicMaterial" ? "vNormal = normalize(normalMatrix * normal);" : ""}`
+      );
   };
   material.customProgramCacheKey = () => cacheKey;
 }
@@ -926,7 +1085,8 @@ export async function createEarthSystem(
     dayTexture,
     nightTexture,
     normalTexture,
-    bumpTexture;
+    bumpTexture,
+    cityBuffer;
   let timeoutId;
   try {
     const texturePromise = Promise.all([
@@ -960,6 +1120,9 @@ export async function createEarthSystem(
       ),
       loadNamedTexture("normal", textureLoader.loadAsync(textureSet.NORMAL)),
       loadNamedTexture("bump", textureLoader.loadAsync(textureSet.BUMP)),
+      fetch(EARTH_CITY_LIGHTS_URL)
+        .then(response => (response.ok ? response.arrayBuffer() : null))
+        .catch(() => null),
     ]);
     [
       regionalTerrainTexture,
@@ -970,6 +1133,7 @@ export async function createEarthSystem(
       nightTexture,
       normalTexture,
       bumpTexture,
+      cityBuffer,
     ] = await Promise.race([
       texturePromise,
       new Promise((_, reject) => {
@@ -988,7 +1152,13 @@ export async function createEarthSystem(
     clearTimeout(timeoutId);
   }
 
-  const anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), isMobileDevice ? 4 : 16);
+  const qualityAnisotropy = qualityLevel === "LOW" ? 4 : qualityLevel === "MEDIUM" ? 8 : 16;
+  const deviceAnisotropy = isMobileDevice ? 8 : 16;
+  const anisotropy = Math.min(
+    renderer.capabilities.getMaxAnisotropy(),
+    qualityAnisotropy,
+    deviceAnisotropy
+  );
   configureTexture(THREE, dayTexture, anisotropy, THREE.SRGBColorSpace);
   configureTexture(THREE, nightTexture, anisotropy, THREE.SRGBColorSpace);
   configureTexture(THREE, normalTexture, anisotropy, THREE.NoColorSpace);
@@ -1026,12 +1196,13 @@ export async function createEarthSystem(
     clearcoatRoughness: 0.26,
     emissive: 0xffb65d,
     emissiveMap: nightTexture,
-    emissiveIntensity: 0.03,
+    emissiveIntensity: CONFIG.EARTH.CITY_LIGHT_INTENSITY,
     dithering: true,
   });
   dayMaterial.userData.terrainDetailStrength = 1;
   dayMaterial.userData.terrainSunDirection = new THREE.Vector2(-0.62, 0.78).normalize();
-  dayMaterial.userData.terrainGlintIntensity = 1.0;
+  dayMaterial.userData.earthSunDirectionWorld = new THREE.Vector3(0, 0, 1);
+  dayMaterial.userData.isEarthPhysicalLightingMaterial = true;
   dayMaterial.onBeforeCompile = shader => {
     shader.uniforms.terrainDetailStrength = {
       value: dayMaterial.userData.terrainDetailStrength,
@@ -1039,47 +1210,28 @@ export async function createEarthSystem(
     shader.uniforms.terrainSunDirection = {
       value: dayMaterial.userData.terrainSunDirection,
     };
-    shader.uniforms.terrainGlintIntensity = {
-      value: dayMaterial.userData.terrainGlintIntensity,
+    shader.uniforms.earthSunDirectionWorld = {
+      value: dayMaterial.userData.earthSunDirectionWorld,
     };
     dayMaterial.userData.reliefShader = shader;
-    shader.vertexShader = shader.vertexShader.replace(
-      "#include <displacementmap_vertex>",
-      TERRAIN_DISPLACEMENT_VERTEX
-    );
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vEarthWorldNormal;")
+      .replace(
+        "#include <defaultnormal_vertex>",
+        "#include <defaultnormal_vertex>\nvEarthWorldNormal = normalize(mat3(modelMatrix) * objectNormal);"
+      )
+      .replace("#include <displacementmap_vertex>", TERRAIN_DISPLACEMENT_VERTEX);
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "void main() {",
-        "uniform float terrainDetailStrength;\nuniform vec2 terrainSunDirection;\nuniform float terrainGlintIntensity;\nfloat earthOceanMask = 0.0;\nvoid main() {"
+        "uniform float terrainDetailStrength;\nuniform vec2 terrainSunDirection;\nuniform vec3 earthSunDirectionWorld;\nvarying vec3 vEarthWorldNormal;\nfloat earthOceanMask = 0.0;\nvoid main() {"
       )
       .replace("#include <map_fragment>", DAYLIGHT_MAP_FRAGMENT)
+      .replace("#include <emissivemap_fragment>", EARTH_EMISSIVE_FRAGMENT)
       .replace("#include <roughnessmap_fragment>", EARTH_ROUGHNESS_FRAGMENT)
-      .replace(
-        "#include <normal_fragment_maps>",
-        `#include <normal_fragment_maps>
-// Global 3D Tree Canopy effect
-// Exclude ocean areas using earthOceanMask
-if (earthOceanMask < 0.1) {
-  vec3 globalTexColor = texture2D(map, vMapUv).rgb;
-  // Isolate green areas (where green is stronger than red and blue)
-  float isGlobalGreen = smoothstep(0.01, 0.05, globalTexColor.g - max(globalTexColor.r, globalTexColor.b));
-  // High frequency noise for canopy micro-bumps (high scale for global earth)
-  vec2 globalTreeUv = vMapUv * 35000.0;
-  float gTreeNoise1 = fract(sin(dot(floor(globalTreeUv), vec2(12.9898, 78.233))) * 43758.5453);
-  float gTreeNoise2 = fract(sin(dot(floor(globalTreeUv + vec2(0.5, 0.5)), vec2(12.9898, 78.233))) * 43758.5453);
-  vec2 gf = fract(globalTreeUv);
-  gf = gf * gf * (3.0 - 2.0 * gf);
-  float gTreeBump = mix(gTreeNoise1, gTreeNoise2, gf.x * gf.y);
-  // Blend normal with the procedural tree normal
-  vec3 gTreeNormal = normalize(vec3(gTreeBump - 0.5, gTreeBump - 0.5, 1.2));
-  normal = normalize(mix(normal, gTreeNormal, isGlobalGreen * 0.38));
-  // Make trees rougher (less shiny than terrain)
-  roughnessFactor = mix(roughnessFactor, 0.98, isGlobalGreen);
-}`
-      )
       .replace("#include <opaque_fragment>", EARTH_FRESNEL_FRAGMENT);
   };
-  dayMaterial.customProgramCacheKey = () => "earth-unified-day-night-v18";
+  dayMaterial.customProgramCacheKey = () => "earth-city-points-v27";
   const nightMaterial = dayMaterial;
 
   // OPTIMIZATION: Reduce segments on mobile
@@ -1113,6 +1265,7 @@ if (earthOceanMask < 0.1) {
   };
 
   const cityGlowGroup = createCityGlow(THREE, nightTexture, segments, isMobileDevice);
+  const cityLightsPoints = createCityLightsPoints(THREE, cityBuffer, isMobileDevice);
   const proceduralTerrainGroup = createProceduralTerrainLayer(
     THREE,
     isMobileDevice,
@@ -1123,6 +1276,7 @@ if (earthOceanMask < 0.1) {
     regionalCloudTexture
   );
   earthMesh.add(cityGlowGroup);
+  earthMesh.add(cityLightsPoints);
   earthMesh.add(proceduralTerrainGroup);
   scene.add(earthMesh);
 
@@ -1131,6 +1285,7 @@ if (earthOceanMask < 0.1) {
     dayMaterial,
     nightMaterial,
     cityGlowGroup,
+    cityLightsPoints,
     proceduralTerrainGroup,
   };
 }
@@ -1309,7 +1464,9 @@ export async function createCloudLayer(
         distortion: 0.003,
         rotation: -0.012,
         coverage: [0.16, 0.72],
-        cacheKey: "earth-cloud-shadow-wind-v7",
+        shadowOffsetFactor: 0.0045,
+        isShadow: true,
+        cacheKey: "earth-cloud-shadow-sun-wind-v8",
       });
       const shadowGeometry = new THREE.SphereGeometry(
         CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.SHADOW_ALTITUDE,

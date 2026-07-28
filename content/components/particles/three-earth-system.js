@@ -37,6 +37,7 @@ import {
 } from "./earth/zoom-transition.js";
 import { StarManager, ShootingStarManager } from "./earth/stars.js";
 import { CardManager } from "./earth/cards.js";
+import { updatePhysicalLightingUniforms } from "./earth/physical-lighting.js";
 import {
   showLoadingState,
   hideLoadingState,
@@ -150,11 +151,10 @@ const SECTION_CONFIGS = {
     mobileEarth: { pos: { x: 0, y: -23.5, z: -1.2 }, scale: 5.25, rotation: -1.9 },
     moon: { pos: { x: -6, y: 1, z: -12 }, scale: 0.36 },
     lighting: {
-      // High contrast lighting to avoid washed-out look
-      ambientColor: 0x202b3d, // much darker, richer ambient tone
-      ambientIntensity: 0.35, // just enough to see the dark side details
-      sunIntensity: 2.6, // lowered slightly to prevent white-blowout
-      sunPosition: { x: 3.5, y: 6.8, z: 12 }, // sharper side-angle for deep shadows
+      ambientColor: 0x202b3d,
+      ambientIntensity: 0.35,
+      sunIntensity: 2.6,
+      sunPosition: { x: 3.5, y: 6.8, z: 12 },
       fillColor: 0x88bbff,
       fillIntensity: 0.1,
       rimIntensity: 0.0,
@@ -162,13 +162,15 @@ const SECTION_CONFIGS = {
     mode: "day",
     terrainRelief: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
     terrainDetailStrength: 1.0,
-    surfaceClearcoat: 0.06,
-    surfaceSpecularIntensity: 1.1,
-    surfaceEmissiveIntensity: 0.025,
-    surfaceNormalScale: 1.25, // very sharp normal mapping
+    surfaceClearcoat: 0.025,
+    surfaceSpecularIntensity: 0.5,
+    surfaceEmissiveIntensity: CONFIG.EARTH.CITY_LIGHT_INTENSITY,
+    surfaceNormalScale: 1.25,
     surfaceBumpScale: 0.024,
+    cityGlowMultiplier: 1,
+    cityPointOpacity: 0,
     cloudLayer: true,
-    cloudOpacity: 0.28, // reduced to stop clouds from washing out terrain
+    cloudOpacity: 0.28,
     cloudShadowOpacity: 0.04,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 1,
@@ -196,13 +198,15 @@ const SECTION_CONFIGS = {
       rimColor: 0x88bbff,
     },
     mode: "day",
-    terrainRelief: 0.012, // More visible 3D mountains
+    terrainRelief: 0.012,
     terrainDetailStrength: 0.6, // Sharper terrain textures
-    surfaceClearcoat: 0.02, // Very subtle ocean gloss
-    surfaceSpecularIntensity: 0.3, // Soft specularity (won't cause massive glint)
-    surfaceEmissiveIntensity: 0,
-    surfaceNormalScale: 1.0, // Good normal definition
+    surfaceClearcoat: 0.012,
+    surfaceSpecularIntensity: 0.16,
+    surfaceEmissiveIntensity: CONFIG.EARTH.CITY_LIGHT_INTENSITY,
+    surfaceNormalScale: 1.0,
     surfaceBumpScale: 0.012,
+    cityGlowMultiplier: 1,
+    cityPointOpacity: 0,
     cloudOpacity: 0.35, // More substantial clouds
     cloudShadowOpacity: 0.035, // Soft cloud shadows
     cloudScaleFactor: 1,
@@ -223,28 +227,30 @@ const SECTION_CONFIGS = {
     moon: { pos: { x: 4.6, y: 2.2, z: -9.4 }, scale: 0.46 },
     lighting: {
       ambientColor: 0x425b86,
-      ambientIntensity: 0.72,
-      sunIntensity: 0.7,
+      ambientIntensity: 0.64,
+      sunIntensity: 0.22,
       sunPosition: { x: -2.4, y: 3.2, z: 10.2 },
       fillColor: 0x79adff,
-      fillIntensity: 0.52,
+      fillIntensity: 0.32,
       rimColor: 0xffc76a,
-      rimIntensity: 0.72,
+      rimIntensity: 0,
     },
     mode: "night",
     terrainRelief: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
     terrainDetailStrength: 0,
-    surfaceClearcoat: 0.025,
-    surfaceSpecularIntensity: 1,
-    surfaceEmissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 6.8,
+    surfaceClearcoat: 0,
+    surfaceSpecularIntensity: 0.08,
+    surfaceEmissiveIntensity: CONFIG.EARTH.CITY_LIGHT_INTENSITY * 1.7,
     surfaceNormalScale: 0.72,
     surfaceBumpScale: CONFIG.EARTH.BUMP_SCALE,
+    cityGlowMultiplier: 1.85,
+    cityPointOpacity: 1,
     cloudLayer: true,
     cloudOpacity: 0.1,
     cloudShadowOpacity: 0.012,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 0,
-    cameraOrbit: -Math.PI * 0.5,
+    cameraOrbit: Math.PI * 0.38,
     axialTilt: -7,
     latitudeTilt: 28.5,
     scroll: {
@@ -284,6 +290,7 @@ class ThreeEarthSystem {
     /** @type {EarthObject|null} */ this.moonMesh = null;
     /** @type {EarthObject|null} */ this.cloudMesh = null;
     /** @type {THREE.Object3D|null} */ this.cityGlowGroup = null;
+    this.cityLightsPoints = null;
     /** @type {THREE.Object3D|null} */ this.proceduralTerrainGroup = null;
     /** @type {THREE.Vector3|null} */ this._terrainCameraLocal = null;
     /** @type {THREE.Vector3|null} */ this._terrainForwardAxis = null;
@@ -394,6 +401,7 @@ class ThreeEarthSystem {
       this.dayMaterial = earthAssets.dayMaterial;
       this.nightMaterial = earthAssets.nightMaterial;
       this.cityGlowGroup = earthAssets.cityGlowGroup;
+      this.cityLightsPoints = earthAssets.cityLightsPoints;
       this.proceduralTerrainGroup = earthAssets.proceduralTerrainGroup;
       this._terrainCameraLocal = new this.THREE.Vector3();
       this._terrainForwardAxis = new this.THREE.Vector3(0, 0, 1);
@@ -1005,7 +1013,6 @@ class ThreeEarthSystem {
       this.starManager?.update(totalTime);
     }
 
-    this._updateNightPulse(totalTime, capabilities);
     this._updateScrollLinkedEarthTarget(this._scrollProgress);
 
     if (Number.isFinite(this._scrollProgress)) {
@@ -1047,6 +1054,7 @@ class ThreeEarthSystem {
         ? null
         : this._scrollProgress
     );
+    updatePhysicalLightingUniforms(this);
     this.starManager?.syncToCamera(this.camera);
     this._updateFeatureCardExit();
 
@@ -1079,25 +1087,6 @@ class ThreeEarthSystem {
     } else if (this.container?.dataset.featureCards === "hidden") {
       this.cardManager.setProgress(1);
       this.container.dataset.featureCards = "visible";
-    }
-  }
-
-  _updateNightPulse(time, capabilities) {
-    if (
-      this.earthMesh?.userData.currentMode === "night" &&
-      !capabilities.isLowEnd &&
-      !capabilities.reducedMotion
-    ) {
-      const base = CONFIG.EARTH.EMISSIVE_INTENSITY * 4;
-      const pulse =
-        Math.sin(time * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-        CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
-        2;
-      const next = base + pulse;
-      // Skip the GPU write when the value hasn't changed meaningfully.
-      if (Math.abs(this.earthMesh.material.emissiveIntensity - next) > 0.001) {
-        this.earthMesh.material.emissiveIntensity = next;
-      }
     }
   }
 
@@ -1224,7 +1213,14 @@ class ThreeEarthSystem {
         material.opacity = terrainData.opacity * baseOpacity * lodWeight;
       });
 
-      const zoomLevel = em.scale.x > 1.75 ? "berlin" : em.scale.x > 0.78 ? "europe" : "globe";
+      const zoomLevel =
+        this.currentSection === "hero"
+          ? "berlin"
+          : em.scale.x > 1.75
+            ? "berlin"
+            : em.scale.x > 0.78
+              ? "europe"
+              : "globe";
       if (em.userData.zoomLevel !== zoomLevel) {
         em.userData.zoomLevel = zoomLevel;
         const zoomGeometries = /** @type {Record<string, THREE.BufferGeometry>|undefined} */ (
@@ -1389,6 +1385,16 @@ class ThreeEarthSystem {
     this.currentSection = newSection;
     this._currentSectionEl = target;
     document.body.dataset.homeSection = newSection;
+
+    if (newSection === "hero" && this.performanceMonitor) {
+      const preferredQuality = this.deviceCapabilities?.recommendedQuality || "HIGH";
+      this.performanceMonitor.restoreQuality(preferredQuality);
+    }
+    if (newSection === "hero" && this.proceduralTerrainGroup) {
+      const terrainData = this.proceduralTerrainGroup.userData;
+      terrainData.targetOpacity = SECTION_CONFIGS.hero.proceduralTerrainMix ?? 0;
+      terrainData.anchorLocked = false;
+    }
 
     const isHeroFeatureTransition = newSection === "hero" || newSection === "features";
     if (isHeroFeatureTransition) {
@@ -1633,6 +1639,18 @@ class ThreeEarthSystem {
 
     this._syncCloudVisibility(config);
 
+    this.cityGlowGroup?.traverse(object => {
+      const glowOpacity = object.material?.uniforms?.glowOpacity;
+      const baseOpacity = object.material?.userData?.baseGlowOpacity;
+      if (glowOpacity && Number.isFinite(baseOpacity)) {
+        glowOpacity.value = baseOpacity * (config.cityGlowMultiplier ?? 1);
+      }
+    });
+    const cityPointOpacity = this.cityLightsPoints?.getObjectByName?.(
+      "earth-city-light-points-mesh"
+    )?.material?.uniforms?.cityPointOpacity;
+    if (cityPointOpacity) cityPointOpacity.value = config.cityPointOpacity ?? 0;
+
     if (config.mode) {
       const newMode = config.mode;
       const nextMaterial = newMode === "day" ? this.dayMaterial : this.nightMaterial;
@@ -1671,7 +1689,7 @@ class ThreeEarthSystem {
         );
       }
       this.earthMesh.userData.currentMode = newMode;
-      if (this.cityGlowGroup) this.cityGlowGroup.visible = newMode === "night";
+      if (this.cityGlowGroup) this.cityGlowGroup.visible = true;
     }
 
     this._setLightTargets(config);
@@ -1860,11 +1878,9 @@ class ThreeEarthSystem {
     this.showcaseActive = true;
     this.showcaseOriginals = {
       cloudSpeed: CONFIG.CLOUDS.ROTATION_SPEED,
-      emissiveAmp: CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE,
     };
 
     CONFIG.CLOUDS.ROTATION_SPEED *= 3;
-    CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *= 3;
 
     try {
       const cur = this.cameraManager?.cameraOrbitAngle ?? 0;
@@ -1894,14 +1910,9 @@ class ThreeEarthSystem {
   }
 
   _revertShowcaseConfig() {
-    const originals = /** @type {{cloudSpeed?: number, emissiveAmp?: number}} */ (
-      this.showcaseOriginals
-    );
+    const originals = /** @type {{cloudSpeed?: number}} */ (this.showcaseOriginals);
     if (originals.cloudSpeed !== undefined) {
       CONFIG.CLOUDS.ROTATION_SPEED = originals.cloudSpeed;
-    }
-    if (originals.emissiveAmp !== undefined) {
-      CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE = originals.emissiveAmp;
     }
   }
 
@@ -1973,6 +1984,7 @@ class ThreeEarthSystem {
     this.moonMesh = null;
     this.cloudMesh = null;
     this.cityGlowGroup = null;
+    this.cityLightsPoints = null;
     this.proceduralTerrainGroup = null;
     this._terrainCameraLocal = null;
     this._terrainForwardAxis = null;

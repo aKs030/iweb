@@ -331,7 +331,7 @@
     "btn_contact": "Kontakt"
   },
   "home": {
-    "earth_description": "Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. Nutze die Steuerungstasten zum Zoomen und zum Wechseln zwischen den Kamera-Modi.",
+    "earth_description": "Eine hochauflösende 3D-Darstellung der gesamten Erde mit realistischen Texturen, Wolken, Stadtlichtern und adaptiven Detailstufen.",
     "earth_fallback": "CSS-Modus",
     "hero_region_label": "Willkommen im Portfolio — Startseite",
     "hero_title": "Schön, dass du da bist.",

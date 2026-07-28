@@ -83,12 +83,25 @@ export function getEarthTextureSetForDisplay({
   const isSlowConnection =
     effectiveType === "2g" || effectiveType === "3g" || effectiveType === "slow-2g";
 
-  const compact =
+  const constrained =
     saveData ||
     isSlowConnection ||
+    renderedWidth <= 1600 ||
+    (deviceMemory > 0 && deviceMemory <= 2) ||
+    maxTextureSize < 4096;
+  const compact =
+    constrained ||
     renderedWidth <= 2600 ||
     (deviceMemory > 0 && deviceMemory <= 4) ||
     maxTextureSize < 8192;
 
-  return getEarthTextureSet({ isMobile, compact });
+  if (constrained) return getEarthTextureSet({ isMobile: true });
+
+  // A high-end tablet benefits visibly from the 4K maps without paying the
+  // desktop-only 8K memory cost. Phones and constrained devices stay on 2K.
+  if (isMobile) {
+    return compact ? getEarthTextureSet({ isMobile: true }) : getEarthTextureSet({ compact: true });
+  }
+
+  return getEarthTextureSet({ compact });
 }
