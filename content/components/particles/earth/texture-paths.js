@@ -1,6 +1,6 @@
-const EARTH_TEXTURE_VERSION = "earth-20260725-r4";
-const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-20260726-r2";
-const EARTH_TEXTURE_CDN_URL = "https://img.abdulkerimsesli.de/earth/textures";
+const EARTH_TEXTURE_VERSION = "earth-20260728-r6";
+const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-20260728-r3";
+const EARTH_TEXTURE_CDN_URL = "/r2-proxy/earth/textures";
 
 function withTexturePath(filename) {
   return `${EARTH_TEXTURE_CDN_URL}/${filename}?v=${EARTH_TEXTURE_VERSION}`;
@@ -14,9 +14,9 @@ const EARTH_TEXTURES = Object.freeze({
   DAY: withTexturePath("earth_day_relief_8k.jpg"),
   DAY_KTX2: withTexturePath("earth_day_relief_8k.ktx2"),
   NIGHT: withTexturePath("earth_night_8k_nasa.jpg"),
-  NIGHT_KTX2: null,
+  NIGHT_KTX2: withTexturePath("earth_night_4k.ktx2"),
   NORMAL: withTexturePath("earth_normal_4k.webp"),
-  BUMP: withTexturePath("earth_displacement_16b_8k.png"),
+  BUMP: withTexturePath("earth_bump_4k.webp"),
   CLOUDS: withTexturePath("earth_clouds_4k.jpg"),
   CLOUDS_KTX2: withTexturePath("earth_clouds_4k.ktx2"),
   MOON: withTexturePath("moon_texture.webp"),
@@ -43,8 +43,8 @@ const EARTH_TEXTURES_MOBILE = Object.freeze({
   NIGHT_KTX2: withTexturePath("earth_night.ktx2"),
   NORMAL: withTexturePath("earth_normal.webp"),
   BUMP: withTexturePath("earth_bump.webp"),
-  CLOUDS: EARTH_TEXTURES.CLOUDS,
-  CLOUDS_KTX2: EARTH_TEXTURES.CLOUDS_KTX2,
+  CLOUDS: withTexturePath("earth_clouds_2k.jpg"),
+  CLOUDS_KTX2: null,
   MOON: EARTH_TEXTURES.MOON,
   MOON_BUMP: EARTH_TEXTURES.MOON_BUMP,
 });
@@ -55,6 +55,7 @@ export const EARTH_REGIONAL_TEXTURES = Object.freeze({
   HEIGHT: withRegionalTexturePath("closeup-height-v14.webp"),
   NORMAL: withRegionalTexturePath("closeup-normal-v14.webp"),
   CLOUDS: withTexturePath("earth_clouds_4k.jpg"),
+  CLOUDS_MOBILE: withTexturePath("earth_clouds_2k.jpg"),
 });
 
 export function getEarthTextureSet({ isMobile = false, compact = false } = {}) {

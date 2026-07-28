@@ -67,7 +67,7 @@ const FOOTER_SHELL_MARKUP = `
 					<a
 						href="/"
 						class="brand-link"
-						aria-label="Zur Startseite"
+						aria-label="Abdulkerim Sesli (aKs) – Zur Startseite"
 						data-i18n-attrs="aria-label:footer.home_aria"
 					>
 					<span class="full-name">Abdulkerim Sesli</span>
@@ -131,7 +131,7 @@ const FOOTER_SHELL_MARKUP = `
 					class="nav-btn"
 					type="button"
 						data-cookie-trigger
-						aria-label="Cookie-Einstellungen öffnen"
+						aria-label="Cookies – Einstellungen öffnen"
 						data-i18n-attrs="aria-label:footer.cookie_settings.open_aria"
 				>
 					<svg

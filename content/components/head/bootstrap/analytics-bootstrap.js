@@ -12,6 +12,7 @@ const GTM_PLACEHOLDER = "GTM-PLACEHOLDER";
 const hasGtmId = Boolean(GTM_ID && GTM_ID !== GTM_PLACEHOLDER);
 const hasGa4MeasurementId =
   typeof GA4_MEASUREMENT_ID === "string" && GA4_MEASUREMENT_ID.startsWith("G-");
+let analyticsScriptsLoaded = false;
 
 const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
 
@@ -35,6 +36,11 @@ function resolveConsentDecision(payloadValue, cookieName, legacyAccepted) {
   if (cookieValue === "accepted") return true;
   if (cookieValue === "rejected") return false;
   return legacyAccepted;
+}
+
+function hasAnalyticsConsent() {
+  const legacyAccepted = readCookie("cookie_consent") === "accepted";
+  return resolveConsentDecision(undefined, "cookie_analytics_consent", legacyAccepted);
 }
 
 function setupDataLayerProxy() {
@@ -155,6 +161,14 @@ function ensureGTMNoScript(runWhenDomReady) {
   }
 }
 
+function loadAnalyticsScripts(runWhenDomReady) {
+  if (analyticsScriptsLoaded || !hasAnalyticsConsent()) return;
+  analyticsScriptsLoaded = true;
+  injectGA4Fallback();
+  injectGTM();
+  ensureGTMNoScript(runWhenDomReady);
+}
+
 export function initAnalyticsBootstrap({ runWhenDomReady }) {
   try {
     gtag("consent", "default", {
@@ -177,9 +191,12 @@ export function initAnalyticsBootstrap({ runWhenDomReady }) {
     gtm_id: GTM_ID,
   });
 
-  injectGA4Fallback();
-  injectGTM();
-  ensureGTMNoScript(runWhenDomReady);
+  loadAnalyticsScripts(runWhenDomReady);
+  globalThis.addEventListener("analytics:consent-change", event => {
+    if (event instanceof CustomEvent && event.detail?.analytics === true) {
+      loadAnalyticsScripts(runWhenDomReady);
+    }
+  });
 }
 
 export function getAnalyticsBootstrapState() {

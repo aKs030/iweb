@@ -446,8 +446,9 @@ class ResourceHintsManager {
 
   initPrefetchFallback(routes = this.getSpeculationProfile().seedRoutes) {
     const speculativeRoutes = this.getPrefetchRoutes(this.getSpeculativeRoutes(routes));
-    speculativeRoutes.forEach(href => this.prefetch(href, { as: "document" }));
-    log.info(`Prefetch fallback initialized (${speculativeRoutes.length} routes)`);
+    log.info(
+      `Intent-only prefetch fallback initialized (${speculativeRoutes.length} eligible routes)`
+    );
   }
 
   updateInjectedSpeculationRules(routes) {
@@ -585,7 +586,6 @@ class ResourceHintsManager {
     }
 
     this.attachIntentPreloading();
-    this.attachIntersectionPrefetch();
     this.attachSpeculationRefresh();
   }
 

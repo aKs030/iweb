@@ -1,7 +1,6 @@
 import { applyCspNonce, scheduleIdleTask, upsertHeadLink } from "../../../core/utils/index.js";
 import { createLogger } from "../../../core/logger.js";
 import { resourceHints } from "../../../core/seo/index.js";
-import { getEarthTextureSet } from "#components/particles/index.js";
 
 const log = createLogger("head-assets");
 const DEPLOY_VERSION =
@@ -37,37 +36,13 @@ function upsertStyle(href) {
   });
 }
 
-function injectHomeLcpHints() {
-  if (getNormalizedPathname() !== "/") return;
-
-  const width = globalThis.innerWidth;
-  const textureSet = getEarthTextureSet({
-    isMobile: width < 768,
-    compact: width < 1440 || (globalThis.devicePixelRatio || 1) < 1.25,
-  });
-  upsertHeadLink({
-    rel: "prefetch",
-    href: textureSet.DAY,
-    as: "image",
-    dataset: { injectedBy: "head-inline", lcp: "hero-earth" },
-  });
-}
-
 function getStylesForPath() {
   const sharedPageStyles = [
     "/content/components/interactions/interactions.css",
     "/content/styles/pages/common.css",
   ];
   const stylesByPath = new Map([
-    [
-      "/",
-      [
-        ...sharedPageStyles,
-        "/content/styles/pages/home.css",
-        "/content/components/particles/three-earth.css",
-        "/content/components/typewriter/typewriter.css",
-      ],
-    ],
+    ["/", ["/content/styles/home.bundle.css"]],
     ["/videos", [...sharedPageStyles, "/content/styles/pages/videos.css"]],
     ["/blog", [...sharedPageStyles, "/content/styles/pages/blog.css"]],
     ["/about", [...sharedPageStyles, "/content/styles/pages/about.css"]],
@@ -125,7 +100,6 @@ export function injectCoreAssets({
         upsertStyle(withVersion(href));
       });
 
-      injectHomeLcpHints();
       deferNonCriticalAssets();
     });
   } catch (error) {
@@ -161,8 +135,10 @@ export function ensureFontDisplaySwap({ runWhenDomReady }) {
       document.querySelectorAll('link[href*="fonts.googleapis.com"]').forEach(link => {
         try {
           const el = /** @type {HTMLLinkElement} */ (link);
-          if (!el.href.includes("display=swap")) {
-            el.href += (el.href.includes("?") ? "&" : "?") + "display=swap";
+          const url = new URL(el.href);
+          if (!url.searchParams.has("display")) {
+            url.searchParams.set("display", "optional");
+            el.href = url.toString();
           }
         } catch {
           /* ignore */

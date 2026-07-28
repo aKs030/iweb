@@ -6,7 +6,7 @@
 
 - Preferred name: Abdulkerim Sesli
 - Alternate names: Abdul Sesli, AKS, aKs030
-- Primary domain: https://www.abdulkerimsesli.de
+- Primary domain: [abdulkerimsesli.de](https://www.abdulkerimsesli.de)
 - Role set:
   - Full-Stack Web Developer
   - Performance Engineer
@@ -15,8 +15,8 @@
 - Languages: German (native), English (fluent), Turkish (fluent)
 - Contact:
   - Email: kontakt@abdulkerimsesli.de
-  - GitHub: https://github.com/aKs030
-  - LinkedIn: https://linkedin.com/in/abdulkerim-s
+  - [GitHub](https://github.com/aKs030)
+  - [LinkedIn](https://linkedin.com/in/abdulkerim-s)
 
 ## 2) Executive Summary
 
@@ -70,27 +70,27 @@ Abdulkerim Sesli builds modern web experiences that combine visual quality, real
 
 ## 6) Main Public Pages
 
-- Home: https://www.abdulkerimsesli.de/
-- About: https://www.abdulkerimsesli.de/about/
-- Projects: https://www.abdulkerimsesli.de/projekte/
-- Blog: https://www.abdulkerimsesli.de/blog/
-- Videos: https://www.abdulkerimsesli.de/videos/
-- Gallery: https://www.abdulkerimsesli.de/gallery/
-- Contact: https://www.abdulkerimsesli.de/contact/
-- Alias profile route: https://www.abdulkerimsesli.de/abdul-sesli/
+- [Home](https://www.abdulkerimsesli.de/)
+- [About](https://www.abdulkerimsesli.de/about/)
+- [Projects](https://www.abdulkerimsesli.de/projekte/)
+- [Blog](https://www.abdulkerimsesli.de/blog/)
+- [Videos](https://www.abdulkerimsesli.de/videos/)
+- [Gallery](https://www.abdulkerimsesli.de/gallery/)
+- [Contact](https://www.abdulkerimsesli.de/contact/)
+- [Alias profile route](https://www.abdulkerimsesli.de/abdul-sesli/)
 
 ## 7) AI Discovery and Machine-Readable Resources
 
-- AI profile page: https://www.abdulkerimsesli.de/ai-info/
-- LLM context: https://www.abdulkerimsesli.de/llms.txt
-- Structured index JSON: https://www.abdulkerimsesli.de/ai-index.json
-- Person schema JSON-LD: https://www.abdulkerimsesli.de/person.jsonld
-- Blog index JSON: https://www.abdulkerimsesli.de/pages/blog/posts/index.json
-- Project app index JSON: https://www.abdulkerimsesli.de/pages/projekte/apps-config.json
-- Main sitemap: https://www.abdulkerimsesli.de/sitemap.xml
-- robots directives: https://www.abdulkerimsesli.de/robots.txt
-- OpenAPI descriptor: https://www.abdulkerimsesli.de/.well-known/openapi.json
-- Plugin manifest: https://www.abdulkerimsesli.de/.well-known/ai-plugin.json
+- [AI profile page](https://www.abdulkerimsesli.de/ai-info/)
+- [LLM context](https://www.abdulkerimsesli.de/llms.txt)
+- [Structured index JSON](https://www.abdulkerimsesli.de/ai-index.json)
+- [Person schema JSON-LD](https://www.abdulkerimsesli.de/person.jsonld)
+- [Blog index JSON](https://www.abdulkerimsesli.de/pages/blog/posts/index.json)
+- [Project app index JSON](https://www.abdulkerimsesli.de/pages/projekte/apps-config.json)
+- [Main sitemap](https://www.abdulkerimsesli.de/sitemap.xml)
+- [robots directives](https://www.abdulkerimsesli.de/robots.txt)
+- [OpenAPI descriptor](https://www.abdulkerimsesli.de/.well-known/openapi.json)
+- [Plugin manifest](https://www.abdulkerimsesli.de/.well-known/ai-plugin.json)
 
 ## 8) Project & Content Themes
 
@@ -153,9 +153,9 @@ High relevance query examples:
 
 ## 13) Legal and Policy Links
 
-- Imprint: https://www.abdulkerimsesli.de/impressum/
-- Privacy: https://www.abdulkerimsesli.de/datenschutz/
-- Repository license context: https://github.com/aKs030/iweb
+- [Imprint](https://www.abdulkerimsesli.de/impressum/)
+- [Privacy](https://www.abdulkerimsesli.de/datenschutz/)
+- [Repository license context](https://github.com/aKs030/iweb)
 
 ## 14) Last Updated
 

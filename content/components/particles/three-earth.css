@@ -42,7 +42,7 @@
     width: min(72vw, 46rem);
     aspect-ratio: 1;
     border-radius: 50%;
-    background-image: url("https://img.abdulkerimsesli.de/earth/textures/earth_day.webp");
+    background-image: url("/r2-proxy/earth/textures/earth_day.webp");
     background-size: cover;
     box-shadow:
       inset -7rem -2rem 8rem rgb(0 3 12 / 88%),
@@ -61,7 +61,7 @@
     aspect-ratio: 1;
     border-radius: 50%;
     background:
-      url("https://img.abdulkerimsesli.de/earth/textures/moon_texture.webp") center / cover,
+      url("/r2-proxy/earth/textures/moon_texture.webp") center / cover,
       #aaa;
     box-shadow:
       inset -1.1rem -0.25rem 1.6rem rgb(0 0 0 / 72%),

@@ -56,7 +56,8 @@ export class ThreeEarthManager {
     const networkNavigator = /** @type {Navigator & { connection?: { saveData?: boolean } }} */ (
       navigator
     );
-    if (networkNavigator.connection?.saveData) {
+    const reducedData = Boolean(globalThis.matchMedia?.("(prefers-reduced-data: reduce)")?.matches);
+    if (networkNavigator.connection?.saveData || reducedData) {
       log.info("Three.js skipped: save-data mode");
       this.announce("3D-Darstellung deaktiviert — Datensparmodus aktiv");
       return;
@@ -65,8 +66,10 @@ export class ThreeEarthManager {
     this.isLoading = true;
     AppLoadManager.block("three-earth");
 
-    // Preload the primary texture immediately when earth loading starts
-    this.preloadTextures();
+    // The visible regional terrain is already preloaded by the home document.
+    // Only warm deferred globe assets here so an unused day texture cannot
+    // compete with the first 3D frame.
+    this.prefetchDeferredTextures();
 
     // Set loading timeout to prevent indefinite readiness gating
     const loadingTimeout = this.timers.setTimeout(() => {
@@ -99,7 +102,7 @@ export class ThreeEarthManager {
     }
   }
 
-  preloadTextures() {
+  prefetchDeferredTextures() {
     const width = globalThis.innerWidth;
     const textureSet = getEarthTextureSetForDisplay({
       isMobile: width < 768,
@@ -111,26 +114,9 @@ export class ThreeEarthManager {
     });
 
     const supportsCompressedTextures = typeof WebAssembly !== "undefined";
-    const useCompressedPrimary = width < 768 && supportsCompressedTextures;
-    const primaryTexture = (useCompressedPrimary && textureSet.DAY_KTX2) || textureSet.DAY;
 
-    // Avoid late-preload console warnings: only preload before window load fires.
-    const canPreloadNow = document.readyState !== "complete";
-    if (canPreloadNow) {
-      upsertHeadLink({
-        rel: "preload",
-        href: primaryTexture,
-        as: useCompressedPrimary ? "fetch" : "image",
-        crossOrigin: "anonymous",
-        dataset: { injectedBy: "three-earth" },
-        attrs: {
-          fetchpriority: "high",
-          ...(useCompressedPrimary ? { type: "image/ktx2" } : {}),
-        },
-      });
-    }
-
-    // Secondary textures are queued as low-priority prefetches.
+    // Globe textures are applied after the regional first frame. Queue only
+    // assets whose selected URL is stable across desktop quality tiers.
     [
       (supportsCompressedTextures && textureSet.NIGHT_KTX2) || textureSet.NIGHT,
       textureSet.NORMAL,

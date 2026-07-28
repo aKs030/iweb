@@ -18,6 +18,8 @@ export class CameraManager {
     this.cameraOrbitAngle = 0;
     this.targetOrbitAngle = 0;
     this.scrollLinkedActive = false;
+    this.scrollOrbitKeepsFraming = false;
+    this.scrollOrbitPivot = null;
 
     this.transition = {
       active: false,
@@ -42,6 +44,8 @@ export class CameraManager {
   }
 
   updateCameraForSection(sectionName) {
+    this.scrollOrbitKeepsFraming = false;
+    this.scrollOrbitPivot = null;
     if (sectionName !== "hero" && sectionName !== "features") {
       this.scrollLinkedActive = false;
     }
@@ -151,15 +155,35 @@ export class CameraManager {
     const orbitProgress = Math.min(Math.abs(angleDiff) / Math.PI, 1);
     const orbitEased = 1 - Math.pow(1 - orbitProgress, 4);
 
-    const baseFactor = 0.06 + orbitEased * 0.12;
+    const baseFactor = 0.035 + orbitEased * 0.065;
     const adjustedFactor = 1 - Math.pow(1 - baseFactor, timeScale);
-
-    this.cameraOrbitAngle += angleDiff * adjustedFactor;
+    const requestedStep = angleDiff * adjustedFactor;
+    const maxStep = 1.5 * Math.min(delta, 1 / 30);
+    this.cameraOrbitAngle += Math.sign(requestedStep) * Math.min(Math.abs(requestedStep), maxStep);
 
     const radius = this.mouseState.zoom;
-    const finalX = this.cameraTarget.x + Math.sin(this.cameraOrbitAngle) * radius * 0.75;
+    const lookAt = this.camera.userData.currentLookAt;
+    const orbitSin = Math.sin(this.cameraOrbitAngle);
+    const orbitCos = Math.cos(this.cameraOrbitAngle);
+    const orbitPivot = this.scrollOrbitPivot;
+    const pivotX = orbitPivot?.x || 0;
+    const pivotZ = orbitPivot?.z || 0;
+    const baseOffsetX = this.cameraTarget.x - pivotX;
+    const baseOffsetZ = radius - pivotZ;
+    const finalX = this.scrollOrbitKeepsFraming
+      ? pivotX + baseOffsetX * orbitCos + baseOffsetZ * orbitSin
+      : this.cameraTarget.x + orbitSin * radius * 0.75;
     const finalY = this.cameraTarget.y;
-    const finalZ = Math.cos(this.cameraOrbitAngle) * radius;
+    const finalZ = this.scrollOrbitKeepsFraming
+      ? pivotZ - baseOffsetX * orbitSin + baseOffsetZ * orbitCos
+      : orbitCos * radius;
+
+    if (this.scrollOrbitKeepsFraming && lookAt && orbitPivot) {
+      const lookOffsetX = lookAt.x - pivotX;
+      const lookOffsetZ = lookAt.z - pivotZ;
+      lookAt.x = pivotX + lookOffsetX * orbitCos + lookOffsetZ * orbitSin;
+      lookAt.z = pivotZ - lookOffsetX * orbitSin + lookOffsetZ * orbitCos;
+    }
 
     if (transitionWasActive || this.scrollLinkedActive) {
       this.cameraPosition.x = finalX;
@@ -191,6 +215,16 @@ export class CameraManager {
   }
 
   setTargetOrbitAngle(angle) {
+    this.scrollOrbitKeepsFraming = false;
+    this.scrollOrbitPivot = null;
+    this.targetOrbitAngle = angle;
+  }
+
+  setScrollLinkedOrbitAngle(angle, pivot) {
+    this.transition.active = false;
+    this.scrollLinkedActive = true;
+    this.scrollOrbitKeepsFraming = true;
+    this.scrollOrbitPivot = pivot;
     this.targetOrbitAngle = angle;
   }
 

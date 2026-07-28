@@ -82,6 +82,8 @@ export class SiteFooter extends HTMLElement {
   #listeners = new Map();
   #unsubscribeLanguage = null;
   #overlayCleanup = null;
+  #footerHeightObserver = null;
+  #footerHeightFrame = 0;
 
   /** @type {FooterElements} */
   #elements = {
@@ -153,6 +155,12 @@ export class SiteFooter extends HTMLElement {
 
     this.#unsubscribeLanguage?.();
     this.#unsubscribeLanguage = null;
+    this.#footerHeightObserver?.disconnect();
+    this.#footerHeightObserver = null;
+    if (this.#footerHeightFrame) {
+      cancelAnimationFrame(this.#footerHeightFrame);
+      this.#footerHeightFrame = 0;
+    }
 
     resetFooterState();
 
@@ -276,17 +284,37 @@ export class SiteFooter extends HTMLElement {
     try {
       const root = document.documentElement;
       const { cookieBanner } = this.#elements;
-
-      const bannerHeight =
-        showBanner && cookieBanner
-          ? Math.round(cookieBanner.getBoundingClientRect().height || 0)
-          : 0;
-
-      // we no longer store a base height in state; the constant 76px is the
-      // height of the collapsed footer and matches the CSS default.
-      root.style.setProperty("--footer-height", `${76 + bannerHeight}px`);
-
       root.classList.toggle("footer-cookie-visible", !!showBanner);
+      this.#footerHeightObserver?.disconnect();
+
+      const applyHeight = bannerHeight => {
+        if (this.#footerHeightFrame) cancelAnimationFrame(this.#footerHeightFrame);
+        this.#footerHeightFrame = requestAnimationFrame(() => {
+          root.style.setProperty("--footer-height", `${76 + Math.round(bannerHeight)}px`);
+          this.#footerHeightFrame = 0;
+        });
+      };
+
+      if (!showBanner || !cookieBanner) {
+        applyHeight(0);
+        return;
+      }
+
+      if (typeof ResizeObserver === "function") {
+        this.#footerHeightObserver ||= new ResizeObserver(entries => {
+          const entry = entries[0];
+          const borderBox = Array.isArray(entry?.borderBoxSize)
+            ? entry.borderBoxSize[0]
+            : entry?.borderBoxSize;
+          applyHeight(borderBox?.blockSize ?? entry?.contentRect.height ?? 0);
+        });
+        this.#footerHeightObserver.observe(cookieBanner);
+        return;
+      }
+
+      requestAnimationFrame(() => {
+        applyHeight(cookieBanner.getBoundingClientRect().height || 0);
+      });
     } catch {
       /* noop */
     }

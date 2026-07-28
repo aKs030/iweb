@@ -147,10 +147,7 @@ body:not(.has-typingjs) .typewriter-title .typed-text {
   overflow: hidden;
   border-right: var(--size-2) solid var(--text-primary);
   inline-size: max-content;
-  max-inline-size: 0;
-  animation:
-    typing var(--tw-fallback-duration) steps(var(--tw-fallback-steps)) forwards,
-    blink-caret var(--tw-caret-duration) step-end infinite;
+  max-inline-size: 100%;
 }
 
 /* Locked state for TypeWriter */
@@ -158,18 +155,6 @@ body:not(.has-typingjs) .typewriter-title .typed-text {
   pointer-events: none;
   -webkit-user-select: none;
   user-select: none;
-}
-
-@keyframes typing {
-  to {
-    max-inline-size: 100%;
-  }
-}
-
-@keyframes blink-caret {
-  50% {
-    border-right-color: transparent;
-  }
 }
 
 /* ── Robot Collision Impact Effects ─────────────────────────── */

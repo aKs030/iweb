@@ -10,6 +10,13 @@ import { PROXY_MEDIA_CONTENT_TYPES } from "../_shared/media-assets.js";
 
 const CACHE_HEADER_NAME = "X-R2-Proxy-Cache";
 const PROXY_PATH_PATTERN = new RegExp(`^${R2_PROXY_BASE_PATH}\\/?(.*)$`);
+const IMMUTABLE_EARTH_CACHE_CONTROL = "public, max-age=31536000, immutable";
+
+function getEarthAssetHeaders(proxyPath) {
+  return String(proxyPath).startsWith("earth/textures/")
+    ? { "Cache-Control": IMMUTABLE_EARTH_CACHE_CONTROL }
+    : {};
+}
 
 function normalizeProxyPath(pathname) {
   const match = String(pathname || "").match(PROXY_PATH_PATTERN);
@@ -44,6 +51,9 @@ const handlers = createAssetProxyHandlers({
   },
   cacheHeaderName: CACHE_HEADER_NAME,
   contentTypes: PROXY_MEDIA_CONTENT_TYPES,
+  extraHeaders({ proxyPath }) {
+    return getEarthAssetHeaders(proxyPath);
+  },
   errorMessage: "R2 proxy failed",
   invalidPathMessage: "Invalid R2 media path",
   isLocalRequest(requestUrl) {
@@ -68,6 +78,7 @@ const handlers = createAssetProxyHandlers({
     return {
       body: localMedia.body,
       cacheStatus: "BYPASS",
+      extraHeaders: getEarthAssetHeaders(proxyPath),
       populateHeaders(headers) {
         localMedia.writeHttpMetadata(headers);
         if (localMedia.httpEtag) {

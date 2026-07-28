@@ -487,6 +487,7 @@
 
 .robot-thinking.is-visible {
   opacity: 1;
+  animation: thinkingPulse 2s ease-in-out infinite;
 }
 
 .robot-magnifying-glass {

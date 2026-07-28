@@ -6,8 +6,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
   rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&amp;family=Space+Grotesk:wght@700&amp;display=swap"
+  href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&amp;family=Space+Grotesk:wght@700&amp;display=optional"
+  media="print"
+  data-async-css
 />
+<noscript>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&amp;family=Space+Grotesk:wght@700&amp;display=optional"
+  />
+</noscript>
 
 <!-- Import Map for no-build ES modules: vendors + internal aliases -->
 <!-- Must be as early as possible in the head for both base and standalone pages -->
@@ -19,8 +27,8 @@
       "react-dom": "https://esm.sh/react-dom@19.2.4?deps=react@19.2.4",
       "react-dom/client": "https://esm.sh/react-dom@19.2.4/client?deps=react@19.2.4",
       "lucide-react": "https://esm.sh/lucide-react@1.7.0?deps=react@19.2.4",
-      "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.min.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/",
+      "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.min.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/",
       "htm": "https://esm.sh/htm@3.1.1",
       "#core/": "/content/core/",
       "#components/": "/content/components/",
@@ -118,13 +126,11 @@
 <!-- Core style foundation -->
 <link
   rel="stylesheet"
-  href="/content/styles/foundation.css?v={{DEPLOY_VERSION}}"
+  href="/content/styles/core.bundle.css?v={{DEPLOY_VERSION}}"
   id="foundation-css"
   fetchpriority="high"
 />
 
-<!-- Core CSS loaded immediately; page-specific CSS is handled by regular stylesheets -->
-<link rel="stylesheet" href="/content/styles/main.css?v={{DEPLOY_VERSION}}" fetchpriority="high" />
 <link
   rel="stylesheet"
   href="/content/styles/animations.css?v={{DEPLOY_VERSION}}"
@@ -137,16 +143,6 @@
   media="print"
   data-async-css
 />
-<link rel="stylesheet" href="/content/components/menu/styles/menu-base.css?v={{DEPLOY_VERSION}}" />
-<link
-  rel="stylesheet"
-  href="/content/components/menu/styles/menu-states.css?v={{DEPLOY_VERSION}}"
-/>
-<link
-  rel="stylesheet"
-  href="/content/components/menu/styles/menu-mobile.css?v={{DEPLOY_VERSION}}"
-/>
-<link rel="stylesheet" href="/content/components/footer/footer.css?v={{DEPLOY_VERSION}}" />
 <link
   rel="stylesheet"
   href="/content/components/enhancements/enhancements.css?v={{DEPLOY_VERSION}}"
@@ -188,6 +184,7 @@
 </script>
 
 <link rel="preconnect" href="https://esm.sh" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="preconnect" href="https://img.abdulkerimsesli.de" crossorigin />
 
 <!-- Preload core app JS -->

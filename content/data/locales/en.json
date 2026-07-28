@@ -34,7 +34,7 @@
   },
   "footer": {
     "navigation_aria": "Footer navigation",
-    "home_aria": "Go to home page",
+    "home_aria": "Abdulkerim Sesli (aKs) – Go to home page",
     "about": {
       "title": "Profile",
       "text": "Portfolio for code, 3D, AI, and visual experiments with a focus on speed, clarity, and atmosphere."
@@ -75,7 +75,7 @@
     "cookie_settings": {
       "title": "Cookie Settings",
       "close": "Close",
-      "open_aria": "Open cookie settings",
+      "open_aria": "Cookies – Open settings",
       "intro": "We use necessary cookies and optional analytics.",
       "required": {
         "title": "Required",

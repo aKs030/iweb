@@ -22,6 +22,8 @@
     "wrangler": "^4.114.0"
   },
   "scripts": {
+    "build:css": "node scripts/build-css-bundles.mjs",
+    "check:css": "node scripts/build-css-bundles.mjs --check",
     "dev": "wrangler pages dev . --port 8080 --show-interactive-dev-session=false",
     "db:migrate:local": "wrangler d1 migrations apply DB_LIKES --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB_LIKES --remote",

@@ -10,10 +10,14 @@ import {
   registerParticleSystem,
   unregisterParticleSystem,
   sharedCleanupManager,
-  sharedParallaxManager,
 } from "./shared-particle-system.js";
 
 import { CONFIG } from "./earth/config.js";
+import {
+  detectDeviceCapabilities,
+  getOptimizedConfig,
+  supportsWebGL,
+} from "./earth/device-capabilities.js";
 import { setupScene, setupLighting } from "./earth/scene.js";
 import {
   createEarthKTX2Loader,
@@ -23,9 +27,11 @@ import {
 } from "./earth/assets.js";
 import { CameraManager } from "./earth/camera.js";
 import {
+  applyFeaturesSection3CameraOrbit,
   applyScrollLinkedEarthTransform,
   applyScrollLinkedSectionVisuals,
   EarthZoomTransition,
+  getFeaturesToSection3ScrollProgress,
   getHeroToFeaturesScrollProgress as getScrollProgress,
   getHeroToFeaturesZoomProgress as getZoomProgress,
 } from "./earth/zoom-transition.js";
@@ -107,7 +113,7 @@ const smoothstep = (min, max, value) => {
  *     orbit?: number,
  *   },
  * }} SectionConfig
- * @typedef {DeviceCapabilities & { recommendedQuality?: string }} EarthDeviceCapabilities
+ * @typedef {DeviceCapabilities & { recommendedQuality?: string, reducedMotion?: boolean }} EarthDeviceCapabilities
  * @typedef {{
  *   cloudLayer?: boolean,
  *   highCloudLayer?: boolean,
@@ -182,11 +188,11 @@ const SECTION_CONFIGS = {
     moon: { pos: { x: 4.8, y: 2.35, z: -9.6 }, scale: 0.62 },
     lighting: {
       ambientColor: 0x5f6678,
-      ambientIntensity: 0.45, // Softer ambient for more 3D volume
-      sunIntensity: 2.2, // Stronger sun to compensate
-      sunPosition: { x: 1.5, y: 4.2, z: 10.0 }, // Adjusted for better side-lighting
+      ambientIntensity: 0.45,
+      sunIntensity: 2.2,
+      sunPosition: { x: 1.5, y: 4.2, z: 10.0 },
       fillIntensity: 0.15,
-      rimIntensity: 0.3, // Gentle rim light for edge separation
+      rimIntensity: 0.3,
       rimColor: 0x88bbff,
     },
     mode: "day",
@@ -203,7 +209,7 @@ const SECTION_CONFIGS = {
     proceduralTerrainMix: 1,
     cameraOrbit: 0,
     axialTilt: -7,
-    latitudeTilt: -30,
+    latitudeTilt: 28.5,
     scroll: {
       pos: { x: 0.12, y: -0.08, z: 0.12 },
       scale: 0.04,
@@ -212,25 +218,25 @@ const SECTION_CONFIGS = {
     },
   },
   section3: {
-    earth: { pos: { x: 1.35, y: -1.2, z: -2.75 }, scale: 0.56, rotation: 0.35 },
-    mobileEarth: { pos: { x: 0.85, y: -0.9, z: -2.8 }, scale: 0.52, rotation: 0.35 },
+    earth: { pos: { x: 0, y: -1.35, z: -2.35 }, scale: 1.12, rotation: -1.9 },
+    mobileEarth: { pos: { x: 0, y: -1.1, z: -2.4 }, scale: 1, rotation: -1.9 },
     moon: { pos: { x: 4.6, y: 2.2, z: -9.4 }, scale: 0.46 },
     lighting: {
-      ambientColor: 0x3b4d70,
-      ambientIntensity: 0.58,
-      sunIntensity: 0.62,
+      ambientColor: 0x425b86,
+      ambientIntensity: 0.72,
+      sunIntensity: 0.7,
       sunPosition: { x: -2.4, y: 3.2, z: 10.2 },
-      fillColor: 0x6ea8ff,
-      fillIntensity: 0.38,
+      fillColor: 0x79adff,
+      fillIntensity: 0.52,
       rimColor: 0xffc76a,
-      rimIntensity: 0.58,
+      rimIntensity: 0.72,
     },
     mode: "night",
     terrainRelief: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
     terrainDetailStrength: 0,
     surfaceClearcoat: 0.025,
     surfaceSpecularIntensity: 1,
-    surfaceEmissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.4,
+    surfaceEmissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 6.8,
     surfaceNormalScale: 0.72,
     surfaceBumpScale: CONFIG.EARTH.BUMP_SCALE,
     cloudLayer: true,
@@ -238,12 +244,14 @@ const SECTION_CONFIGS = {
     cloudShadowOpacity: 0.012,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 0,
-    cameraOrbit: 0,
+    cameraOrbit: -Math.PI * 0.5,
+    axialTilt: -7,
+    latitudeTilt: 28.5,
     scroll: {
-      pos: { x: -0.48, y: 0.24, z: 0.16 },
-      scale: 0.08,
+      pos: { x: 0, y: 0, z: 0 },
+      scale: 0,
       rotation: 0,
-      orbit: -0.1,
+      orbit: 0,
     },
   },
 };
@@ -584,13 +592,7 @@ class ThreeEarthSystem {
   _setupStarsAndLighting() {
     try {
       this.starManager = new StarManager(this.THREE, this.scene);
-      const starField = this.starManager.createStarField();
-
-      sharedParallaxManager.addHandler((/** @type {number} */ progress) => {
-        if (!starField || !this.starManager) return;
-        starField.rotation.y = progress * Math.PI * 0.2;
-        starField.position.z = Math.sin(progress * Math.PI) * 15;
-      }, "three-earth-stars");
+      this.starManager.createStarField();
 
       const lights = setupLighting(this.THREE, this.scene);
       this.directionalLight = lights.directionalLight;
@@ -598,8 +600,6 @@ class ThreeEarthSystem {
       this.fillLight = lights.fillLight;
       this.rimLight = lights.rimLight;
 
-      // Pre-allocate light-target objects once so _setLightTargets can use .set()
-      // instead of allocating new Vector3/Color instances on every section change.
       this._lightTargets = {
         directionalIntensity: 0,
         directionalPosition: new this.THREE.Vector3(),
@@ -947,9 +947,9 @@ class ThreeEarthSystem {
       this.animationFrameId = requestAnimationFrame(this.animate);
 
       const cap = /** @type {EarthDeviceCapabilities} */ (
-        this.deviceCapabilities || detectDeviceCapabilities()
+        this.deviceCapabilities || detectDeviceCapabilities(log)
       );
-      const targetFrameTime = cap.isLowEnd ? 33.33 : 16.67;
+      const targetFrameTime = cap.isLowEnd || cap.reducedMotion ? 33.33 : 16.67;
 
       const now = performance.now();
       if (this._resetAnimationTimer) {
@@ -959,7 +959,7 @@ class ThreeEarthSystem {
       }
       const elapsed = now - lastFrameTime;
 
-      if (cap.isLowEnd && elapsed < targetFrameTime) return;
+      if ((cap.isLowEnd || cap.reducedMotion) && elapsed < targetFrameTime) return;
       lastFrameTime = now;
 
       timer.update();
@@ -987,18 +987,23 @@ class ThreeEarthSystem {
    * @param {EarthDeviceCapabilities} capabilities
    */
   _updateFrame(totalTime, delta, capabilities) {
-    if (this.cloudMesh) {
-      this.cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED * 30 * delta;
-    }
-    this._updateCloudWind(totalTime);
-    if (this.moonMesh) {
-      this.moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED * 20 * delta;
+    if (!capabilities.reducedMotion) {
+      if (this.cloudMesh) {
+        this.cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED * 30 * delta;
+      }
+      this._updateCloudWind(totalTime);
+      if (this.moonMesh) {
+        this.moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED * 20 * delta;
+      }
     }
     this._scrollProgress = getScrollProgress(this.currentSection);
-    if (!Number.isFinite(this._scrollProgress)) {
+    const featuresSection3Progress = getFeaturesToSection3ScrollProgress(this.currentSection);
+    if (!Number.isFinite(this._scrollProgress) && !Number.isFinite(featuresSection3Progress)) {
       this.earthAmbientRotation += CONFIG.EARTH.AMBIENT_ROTATION_SPEED * delta;
     }
-    if (!capabilities.isLowEnd) this.starManager?.update(totalTime);
+    if (!capabilities.isLowEnd && !capabilities.reducedMotion) {
+      this.starManager?.update(totalTime);
+    }
 
     this._updateNightPulse(totalTime, capabilities);
     this._updateScrollLinkedEarthTarget(this._scrollProgress);
@@ -1017,8 +1022,32 @@ class ThreeEarthSystem {
         getZoomProgress(this._scrollProgress)
       );
     }
-    this.cameraManager?.updateCameraPosition(delta);
-    this._updateTransforms(delta, this._scrollProgress);
+    if (Number.isFinite(featuresSection3Progress)) {
+      applyFeaturesSection3CameraOrbit(
+        this,
+        SECTION_CONFIGS.features,
+        SECTION_CONFIGS.section3,
+        featuresSection3Progress,
+        delta
+      );
+      applyScrollLinkedSectionVisuals(
+        this,
+        SECTION_CONFIGS.features,
+        SECTION_CONFIGS.section3,
+        featuresSection3Progress,
+        CONFIG
+      );
+    }
+    if (!Number.isFinite(featuresSection3Progress)) {
+      this.cameraManager?.updateCameraPosition(delta);
+    }
+    this._updateTransforms(
+      delta,
+      Number.isFinite(featuresSection3Progress) && featuresSection3Progress > 0
+        ? null
+        : this._scrollProgress
+    );
+    this.starManager?.syncToCamera(this.camera);
     this._updateFeatureCardExit();
 
     if (this.cardManager) {
@@ -1033,7 +1062,9 @@ class ThreeEarthSystem {
       this.cardManager.update(totalTime * 1000);
     }
 
-    if (!capabilities.isLowEnd) this.shootingStarManager?.update(delta);
+    if (!capabilities.isLowEnd && !capabilities.reducedMotion) {
+      this.shootingStarManager?.update(delta);
+    }
     this.performanceMonitor?.update();
 
     this._render();
@@ -1052,7 +1083,11 @@ class ThreeEarthSystem {
   }
 
   _updateNightPulse(time, capabilities) {
-    if (this.earthMesh?.userData.currentMode === "night" && !capabilities.isLowEnd) {
+    if (
+      this.earthMesh?.userData.currentMode === "night" &&
+      !capabilities.isLowEnd &&
+      !capabilities.reducedMotion
+    ) {
       const base = CONFIG.EARTH.EMISSIVE_INTENSITY * 4;
       const pulse =
         Math.sin(time * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
@@ -1366,12 +1401,17 @@ class ThreeEarthSystem {
           getZoomProgress(scrollProgress)
         );
       }
+    } else if (newSection === "section3") {
+      this._zoomTransition.stop();
     } else {
       this._startEarthZoomTransition(newSection);
       this.cameraManager?.updateCameraForSection(newSection);
     }
 
-    if (!isHeroFeatureTransition || this.earthMesh?.userData.currentMode !== "day") {
+    if (
+      newSection !== "section3" &&
+      (!isHeroFeatureTransition || this.earthMesh?.userData.currentMode !== "day")
+    ) {
       this._updateEarthForSection(newSection);
     }
     this._syncFeatureCardsForSection();
@@ -1952,7 +1992,7 @@ class ThreeEarthSystem {
 
   _detectAndEnsureWebGL() {
     try {
-      this.deviceCapabilities = detectDeviceCapabilities();
+      this.deviceCapabilities = detectDeviceCapabilities(log);
       Object.assign(CONFIG, getOptimizedConfig(this.deviceCapabilities));
     } catch (err) {
       log.debug("Device detection failed", err);
@@ -1961,7 +2001,7 @@ class ThreeEarthSystem {
     const urlParams = new URL(location.href).searchParams;
     const forceThree = urlParams.get("forceThree") === "1";
 
-    if (!supportsWebGL() && !forceThree) {
+    if (!supportsWebGL(log) && !forceThree) {
       log.warn("WebGL not supported, falling back to CSS");
       const container = getElementById("threeEarthContainer");
       if (container) {
@@ -2017,92 +2057,4 @@ function disposeMaterial(material) {
     });
   }
   material.dispose?.();
-}
-
-function supportsWebGL() {
-  try {
-    const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-
-    if (!gl) {
-      log.warn("WebGL context not available");
-      return false;
-    }
-
-    log.debug("WebGL is supported");
-    return true;
-  } catch (e) {
-    log.warn("WebGL detection failed:", e);
-    return false;
-  }
-}
-
-/**
- * @returns {EarthDeviceCapabilities}
- */
-function detectDeviceCapabilities() {
-  try {
-    const ua = (navigator.userAgent || "").toLowerCase();
-    const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
-    const deviceNavigator =
-      /** @type {Navigator & { deviceMemory?: number, connection?: { saveData?: boolean } }} */ (
-        navigator
-      );
-    const cores = deviceNavigator.hardwareConcurrency || 0;
-    const memory = Number(deviceNavigator.deviceMemory || 0);
-    const saveData = Boolean(deviceNavigator.connection?.saveData);
-    const isLegacyMobile =
-      /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(ua);
-    const isLowEnd =
-      isLegacyMobile || saveData || (cores > 0 && cores <= 2 && (memory === 0 || memory <= 2));
-
-    let recommendedQuality;
-    if (isLowEnd) recommendedQuality = "LOW";
-    else if (isMobile || (cores > 0 && cores <= 4) || (memory > 0 && memory <= 4))
-      recommendedQuality = "MEDIUM";
-    else recommendedQuality = "HIGH";
-
-    log.debug("Device capabilities:", {
-      isMobile,
-      isLowEnd,
-      cores,
-      memory,
-      saveData,
-      recommendedQuality,
-    });
-
-    return { isMobile, isLowEnd, recommendedQuality };
-  } catch (err) {
-    log.warn("Device detection failed:", err);
-    return { isMobile: false, isLowEnd: false, recommendedQuality: "MEDIUM" };
-  }
-}
-
-/**
- * @param {EarthDeviceCapabilities|null|undefined} capabilities
- */
-function getOptimizedConfig(capabilities) {
-  if (!capabilities) return {};
-  if (capabilities.isLowEnd) {
-    return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS: 72, SEGMENTS_MOBILE: 48 },
-      STARS: { ...CONFIG.STARS, COUNT: 1000 },
-      PERFORMANCE: {
-        ...CONFIG.PERFORMANCE,
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.25),
-      },
-      CLOUDS: { ...CONFIG.CLOUDS, OPACITY: 0 },
-    };
-  }
-  if (capabilities.isMobile) {
-    return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 96 },
-      STARS: { ...CONFIG.STARS, COUNT: 2400 },
-      PERFORMANCE: {
-        ...CONFIG.PERFORMANCE,
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.75),
-      },
-    };
-  }
-  return {};
 }

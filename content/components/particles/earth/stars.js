@@ -132,6 +132,7 @@ export class StarManager {
     });
 
     this.starField = new this.THREE.Points(starGeometry, starMaterial);
+    this.starField.frustumCulled = false;
     this.scene.add(this.starField);
 
     return this.starField;
@@ -140,6 +141,12 @@ export class StarManager {
   update(elapsedTime) {
     if (this.starField && !this.isDisposed) {
       this.starField.material.uniforms.time.value = elapsedTime;
+    }
+  }
+
+  syncToCamera(camera) {
+    if (this.starField && camera && !this.isDisposed) {
+      this.starField.position.copy(camera.position);
     }
   }
 

@@ -63,7 +63,7 @@ function buildSpeculationRulesJson(prefetchUrls) {
       {
         source: "list",
         urls: prefetchUrls,
-        eagerness: "moderate",
+        eagerness: "conservative",
       },
     ],
     prerender: [

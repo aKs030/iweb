@@ -15,6 +15,7 @@ const lerpColor = (start, end, amount) =>
   (clampByte(lerp(channel(start, 8), channel(end, 8), amount)) << 8) |
   clampByte(lerp(channel(start, 0), channel(end, 0), amount));
 let scrollRangeCache = null;
+let sectionTransitionRangeCache = null;
 
 export function getHeroToFeaturesScrollProgress(currentSection) {
   if (currentSection !== "hero" && currentSection !== "features") return null;
@@ -52,12 +53,95 @@ export function getHeroToFeaturesScrollProgress(currentSection) {
   return Math.max(0, Math.min(1, (scrollTop - start) / range));
 }
 
+export function getFeaturesToSection3ScrollProgress(currentSection) {
+  if (currentSection !== "features" && currentSection !== "section3") return null;
+
+  const features = document.getElementById("features");
+  const section3 = document.getElementById("section3");
+  if (!features || !section3) return null;
+
+  if (
+    sectionTransitionRangeCache?.w !== innerWidth ||
+    sectionTransitionRangeCache?.h !== innerHeight ||
+    sectionTransitionRangeCache?.featuresTop !== features.offsetTop ||
+    sectionTransitionRangeCache?.section3Top !== section3.offsetTop
+  ) {
+    const parsedPadding = Number.parseFloat(
+      getComputedStyle(document.documentElement).scrollPaddingTop
+    );
+    const padding = Number.isFinite(parsedPadding) ? parsedPadding : 0;
+    const start = Math.max(0, features.offsetTop - padding);
+    sectionTransitionRangeCache = {
+      w: innerWidth,
+      h: innerHeight,
+      featuresTop: features.offsetTop,
+      section3Top: section3.offsetTop,
+      start,
+      end: Math.max(start + 1, section3.offsetTop - padding),
+    };
+  }
+
+  const { start, end } = sectionTransitionRangeCache;
+  const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+  return Math.max(0, Math.min(1, (scrollTop - start) / (end - start)));
+}
+
 export function getScrollLinkedVerticalRotation(progress, startRotation, turn) {
   return startRotation + turn * progress;
 }
 
 export const getHeroToFeaturesZoomProgress = progress =>
   smootherstep(Math.max(0, Math.min(1, progress)));
+
+export function applyFeaturesSection3CameraOrbit(system, features, section3, progress, delta) {
+  const p = getHeroToFeaturesZoomProgress(progress);
+  const nextConfig = p >= 0.9 ? section3 : features;
+  if (system.earthMesh?.userData.currentMode !== nextConfig.mode) {
+    system._updateEarthForSection(nextConfig === section3 ? "section3" : "features");
+  }
+  system._zoomTransition.stop();
+  const startOrbit = features.cameraOrbit ?? 0;
+  const endOrbit = section3.cameraOrbit ?? startOrbit;
+  const cameraOrbit = startOrbit + (endOrbit - startOrbit) * p;
+  const earthConfig =
+    system.isMobileDevice && features.mobileEarth ? features.mobileEarth : features.earth;
+  if (system.earthMesh) {
+    system.earthMesh.position.set(earthConfig.pos.x, earthConfig.pos.y, earthConfig.pos.z);
+    system.earthMesh.scale.setScalar(earthConfig.scale);
+    system.earthMesh.rotation.x = ((features.latitudeTilt ?? 0) * Math.PI) / 180;
+    system.earthMesh.rotation.z = ((features.axialTilt ?? 0) * Math.PI) / 180;
+    system.earthMesh.userData.targetPosition?.set(
+      earthConfig.pos.x,
+      earthConfig.pos.y,
+      earthConfig.pos.z
+    );
+    system.earthMesh.userData.targetScale = earthConfig.scale;
+  }
+  system.cameraManager?.setScrollLinkedPresetProgress("features", "section3", p);
+  system.cameraManager?.setScrollLinkedOrbitAngle(cameraOrbit, earthConfig.pos);
+  system.cameraManager?.updateCameraPosition(delta);
+  if (system.earthMesh) {
+    system.earthMesh.rotation.y = earthConfig.rotation || 0;
+    system.earthMesh.userData.targetRotation = earthConfig.rotation || 0;
+  }
+  if (system.cloudMesh) {
+    system.cloudMesh.rotation.x = system.earthMesh?.rotation.x || 0;
+    system.cloudMesh.rotation.z = system.earthMesh?.rotation.z || 0;
+  }
+
+  const cityBlendProgress = Math.max(0, Math.min(1, (p - 0.45) / 0.55));
+  const cityBlend = smootherstep(cityBlendProgress);
+  if (system.cityGlowGroup) {
+    system.cityGlowGroup.visible = cityBlend > 0.001;
+    system.cityGlowGroup.traverse(object => {
+      const glowOpacity = object.material?.uniforms?.glowOpacity;
+      const baseOpacity = object.material?.userData?.baseGlowOpacity;
+      if (glowOpacity && Number.isFinite(baseOpacity)) {
+        glowOpacity.value = baseOpacity * cityBlend;
+      }
+    });
+  }
+}
 
 export function applyScrollLinkedSectionVisuals(system, hero, features, progress, config) {
   const p = getHeroToFeaturesZoomProgress(progress);

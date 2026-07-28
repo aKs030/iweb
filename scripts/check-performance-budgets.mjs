@@ -1,6 +1,7 @@
-import { readdir, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import { extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { gzipSync } from "node:zlib";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const roots = ["content", "pages", "functions"];
@@ -8,6 +9,7 @@ const budgets = {
   ".js": { total: 1_650_000, single: 70_000 },
   ".css": { total: 450_000, single: 45_000 },
 };
+const generatedBundleBudget = { raw: 120_000, gzip: 25_000 };
 
 async function collect(directory) {
   const files = [];
@@ -24,7 +26,9 @@ const allFiles = (await Promise.all(roots.map(directory => collect(join(root, di
 const failures = [];
 
 for (const [extension, limits] of Object.entries(budgets)) {
-  const matching = allFiles.filter(path => extname(path) === extension);
+  const matching = allFiles.filter(
+    path => extname(path) === extension && !path.endsWith(".bundle.css")
+  );
   const sizes = await Promise.all(
     matching.map(async path => ({ path, bytes: (await stat(path)).size }))
   );
@@ -38,6 +42,24 @@ for (const [extension, limits] of Object.entries(budgets)) {
     }
   }
   console.warn(`${extension}: ${total} B total across ${sizes.length} files`);
+}
+
+const generatedBundles = allFiles.filter(path => path.endsWith(".bundle.css"));
+for (const path of generatedBundles) {
+  const source = await readFile(path);
+  const rawBytes = source.byteLength;
+  const gzipBytes = gzipSync(source, { level: 9 }).byteLength;
+  if (rawBytes > generatedBundleBudget.raw) {
+    failures.push(
+      `${relative(root, path)}: ${rawBytes} B exceeds ${generatedBundleBudget.raw} B raw`
+    );
+  }
+  if (gzipBytes > generatedBundleBudget.gzip) {
+    failures.push(
+      `${relative(root, path)}: ${gzipBytes} B exceeds ${generatedBundleBudget.gzip} B gzip`
+    );
+  }
+  console.warn(`${relative(root, path)}: ${rawBytes} B raw, ${gzipBytes} B gzip`);
 }
 
 if (failures.length) {

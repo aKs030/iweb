@@ -72,39 +72,53 @@ function makeLineMeasurer(subtitleEl) {
   document.body.appendChild(measurer);
 
   const cs = getComputedStyle(subtitleEl);
-  [
-    "font-size",
-    "line-height",
-    "font-family",
-    "font-weight",
-    "letter-spacing",
-    "word-spacing",
-    "font-kerning",
-    "font-variant-ligatures",
-    "text-transform",
-    "text-rendering",
-    "word-break",
-    "overflow-wrap",
-    "hyphens",
-  ].forEach(p => measurer.style.setProperty(p, cs.getPropertyValue(p)));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const letterSpacing = parseFloat(cs.letterSpacing) || 0;
+  const wordSpacing = parseFloat(cs.wordSpacing) || 0;
+  let cachedLineHeight = 0;
+  let cachedMeasurement = null;
+
+  if (context) {
+    context.font = cs.font;
+    if ("fontKerning" in context) context.fontKerning = cs.fontKerning;
+  }
 
   const getLineHeight = () => {
+    if (cachedLineHeight) return cachedLineHeight;
     const lh = cs.lineHeight.trim();
     if (lh.endsWith("px")) {
       const v = parseFloat(lh);
-      if (!isNaN(v)) return v;
+      if (!isNaN(v)) {
+        cachedLineHeight = v;
+        return cachedLineHeight;
+      }
     }
     const num = parseFloat(lh);
     if (!isNaN(num)) {
       const fs = parseFloat(cs.fontSize);
-      if (!isNaN(fs)) return num * fs;
+      if (!isNaN(fs)) {
+        cachedLineHeight = num * fs;
+        return cachedLineHeight;
+      }
     }
     const probe = document.createElement("span");
     probe.className = "typewriter-measure-probe";
     probe.textContent = "A";
     measurer.replaceChildren(probe);
     const firstChild = /** @type {HTMLElement|null} */ (measurer.firstChild);
-    return firstChild?.getBoundingClientRect().height || 0;
+    cachedLineHeight = firstChild?.getBoundingClientRect().height || 0;
+    return cachedLineHeight;
+  };
+
+  const measureTextWidth = text => {
+    if (!context) return 0;
+    const spaces = text.split(" ").length - 1;
+    return (
+      context.measureText(text).width +
+      Math.max(0, text.length - 1) * letterSpacing +
+      spaces * wordSpacing
+    );
   };
 
   /**
@@ -112,29 +126,29 @@ function makeLineMeasurer(subtitleEl) {
    * @returns {string[]}
    */
   const getLines = text => {
-    measurer.replaceChildren();
-    const words = text.split(" ");
-    const lines = [];
-    let currentLine = [];
-
     const rect = subtitleEl.getBoundingClientRect();
     const cap = Math.min(window.innerWidth * 0.92, 820);
     const measuredMaxWidth = parseFloat(cs.maxWidth);
     const fallbackAvailable = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
-    const preferredWidth =
-      Number.isFinite(measuredMaxWidth) && measuredMaxWidth > 0
-        ? measuredMaxWidth
-        : fallbackAvailable;
-    measurer.style.width = Math.max(1, Math.min(preferredWidth || cap, cap)) + "px";
+    const availableWidth = Math.max(
+      1,
+      Math.min(
+        Number.isFinite(measuredMaxWidth) && measuredMaxWidth > 0
+          ? measuredMaxWidth
+          : fallbackAvailable || cap,
+        cap
+      )
+    );
+    const cacheKey = `${text}\n${availableWidth}`;
+    if (cachedMeasurement?.key === cacheKey) return cachedMeasurement.lines;
 
-    const lh = getLineHeight();
-    if (!lh) return [text];
+    const words = text.split(/\s+/).filter(Boolean);
+    const lines = [];
+    let currentLine = [];
 
     words.forEach((/** @type {string} */ word) => {
       const testLine = currentLine.length ? currentLine.join(" ") + " " + word : word;
-      measurer.textContent = testLine;
-
-      if (measurer.getBoundingClientRect().height > lh * 1.1) {
+      if (currentLine.length && context && measureTextWidth(testLine) > availableWidth) {
         if (currentLine.length) {
           lines.push(currentLine.join(" "));
           currentLine = [word];
@@ -151,7 +165,9 @@ function makeLineMeasurer(subtitleEl) {
       lines.push(currentLine.join(" "));
     }
 
-    return lines.length ? lines : [text];
+    const measuredLines = lines.length ? lines : [text];
+    cachedMeasurement = { key: cacheKey, lines: measuredLines };
+    return measuredLines;
   };
 
   return {
@@ -160,9 +176,9 @@ function makeLineMeasurer(subtitleEl) {
      * @param {string} text
      * @returns {number}
      */
-    reserveFor(text) {
+    reserveFor(text, measuredLines = null) {
       const lh = getLineHeight();
-      const linesArr = getLines(text);
+      const linesArr = measuredLines || getLines(text);
       const lines = linesArr.length;
 
       setCSSVars(subtitleEl, {
@@ -175,6 +191,7 @@ function makeLineMeasurer(subtitleEl) {
     /** Remove the off-screen measurer element from the DOM */
     destroy() {
       measurer.remove();
+      canvas.remove();
     },
   };
 }
@@ -471,6 +488,23 @@ export async function initHeroSubtitle(options = {}) {
     }
 
     const measurer = makeLineMeasurer(subtitleEl);
+    const initialBottom = parseFloat(getComputedStyle(subtitleEl).bottom);
+    const fallbackBottom = subtitleEl.classList.contains("typewriter-title--fixed") ? 24 : 16;
+    const baseBottom = Number.isFinite(initialBottom) ? initialBottom : fallbackBottom;
+    let overlapFrame = 0;
+    let footerResizeObserver = null;
+
+    const getFooterElement = () => {
+      const siteFooterHost = /** @type {HTMLElement | null} */ (
+        document.querySelector("site-footer")
+      );
+      return /** @type {HTMLElement | null} */ (
+        siteFooterHost?.shadowRoot?.querySelector(".site-footer") ||
+          document.querySelector("site-footer .site-footer") ||
+          document.querySelector("footer.site-footer") ||
+          siteFooterHost
+      );
+    };
 
     // Local helper to keep subtitle anchored directly above the footer edge
     /**
@@ -478,23 +512,8 @@ export async function initHeroSubtitle(options = {}) {
      */
     const checkFooterOverlap = el => {
       try {
-        el.style.removeProperty("bottom");
-        const fallbackBase = el.classList.contains("typewriter-title--fixed") ? 24 : 16;
         const footerGap = 8;
-        const computedBottom = parseFloat(getComputedStyle(el).bottom);
-        const baseBottom = Number.isFinite(computedBottom) ? computedBottom : fallbackBase;
-
-        const siteFooterHost = /** @type {HTMLElement | null} */ (
-          document.querySelector("site-footer")
-        );
-        const shadowFooter = siteFooterHost?.shadowRoot?.querySelector(".site-footer");
-
-        const footer = /** @type {HTMLElement | null} */ (
-          shadowFooter ||
-            document.querySelector("site-footer .site-footer") ||
-            document.querySelector("footer.site-footer") ||
-            siteFooterHost
-        );
+        const footer = getFooterElement();
         if (!footer) {
           setCSSVars(el, { bottom: `${Math.round(baseBottom)}px` });
           return;
@@ -508,6 +527,14 @@ export async function initHeroSubtitle(options = {}) {
       } catch (err) {
         log.warn("TypeWriter: checkFooterOverlap failed", err);
       }
+    };
+
+    const scheduleOverlapCheck = () => {
+      if (overlapFrame) cancelAnimationFrame(overlapFrame);
+      overlapFrame = requestAnimationFrame(() => {
+        overlapFrame = 0;
+        checkFooterOverlap(subtitleEl);
+      });
     };
 
     const start = () => {
@@ -533,7 +560,7 @@ export async function initHeroSubtitle(options = {}) {
           const linesArr = measurer.getLines(text);
           const formattedText = linesArr.join("\n");
 
-          const lines = measurer.reserveFor(text);
+          const lines = measurer.reserveFor(text, linesArr);
           const cs = getComputedStyle(subtitleEl);
           const lh = parseFloat(cs.getPropertyValue("--lh-px")) || 0;
           const gap = parseFloat(cs.getPropertyValue("--gap-px")) || 0;
@@ -542,9 +569,7 @@ export async function initHeroSubtitle(options = {}) {
             "--box-h": `${Math.max(0, lines * lh + (lines - 1) * gap)}px`,
           });
           // Use rAF to ensure layout is updated before measuring
-          if (subtitleEl) {
-            requestAnimationFrame(() => checkFooterOverlap(subtitleEl));
-          }
+          scheduleOverlapCheck();
 
           return formattedText;
         },
@@ -560,23 +585,18 @@ export async function initHeroSubtitle(options = {}) {
       };
       document.addEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
 
-      // Robust polling to fix race conditions on initial load
-      const pollOverlap = () => {
-        if (subtitleEl) checkFooterOverlap(subtitleEl);
-      };
-
-      // Check immediately, then poll for a short duration
-      pollOverlap();
-      const pollInterval = tw.timerManager.setInterval(pollOverlap, 100);
-      tw.timerManager.setTimeout(() => tw.timerManager.clearInterval(pollInterval), 2000);
+      scheduleOverlapCheck();
+      const footer = getFooterElement();
+      if (footer && typeof ResizeObserver === "function") {
+        footerResizeObserver = new ResizeObserver(scheduleOverlapCheck);
+        footerResizeObserver.observe(footer);
+      }
 
       const unsubscribeOverlayState = activeOverlay.subscribe(() => {
-        pollOverlap();
+        scheduleOverlapCheck();
       });
       // And on resize
-      const onResize = () => {
-        if (subtitleEl) requestAnimationFrame(pollOverlap);
-      };
+      const onResize = scheduleOverlapCheck;
       window.addEventListener("resize", onResize, { passive: true });
 
       typeWriterInstance = tw;
@@ -586,6 +606,9 @@ export async function initHeroSubtitle(options = {}) {
         document.removeEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
         unsubscribeOverlayState();
         window.removeEventListener("resize", onResize);
+        footerResizeObserver?.disconnect();
+        footerResizeObserver = null;
+        if (overlapFrame) cancelAnimationFrame(overlapFrame);
         tw.timerManager?.clearAll?.();
         measurer.destroy();
       };

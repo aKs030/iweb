@@ -124,11 +124,7 @@ const HOME_TITLE = { title: "menu.home", subtitle: "menu.home_sub" };
 const CONTACT_TITLE = { title: "menu.contact", subtitle: "menu.contact_sub" };
 
 export const MenuConfig = {
-  CSS_URLS: [
-    "/content/components/menu/styles/menu-base.css",
-    "/content/components/menu/styles/menu-states.css",
-    "/content/components/menu/styles/menu-mobile.css",
-  ],
+  CSS_URLS: ["/content/styles/core.bundle.css"],
   DEFERRED_CSS_URLS: ["/content/components/menu/styles/menu-search.css"],
   SHADOW_CSS_URLS: [
     "/content/components/menu/styles/menu-base.css",

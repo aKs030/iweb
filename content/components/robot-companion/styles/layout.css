@@ -17,10 +17,9 @@
   /* Hidden until entry animation sets start position */
   opacity: 0;
 
-  /* Smooth position transitions for scroll-based context changes */
   transition:
-    bottom 0.6s var(--ease-standard),
-    top 0.6s var(--ease-standard);
+    opacity 0.2s ease,
+    transform 0.3s var(--ease-standard);
 }
 
 /* ── Robot Positionen pro Seite ─────────────────────────────────────────────
@@ -258,7 +257,6 @@ body[data-home-section="section3"] #robot-companion-container:not(.robot-chat--o
   position: relative;
   isolation: isolate;
   will-change: transform;
-  animation: cyberGlitch 12s infinite;
   overflow: visible;
 }
 

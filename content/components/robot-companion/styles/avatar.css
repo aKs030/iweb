@@ -340,7 +340,6 @@
 .robot-thinking {
   opacity: 0;
   transition: opacity 0.3s ease;
-  animation: thinkingPulse 2s ease-in-out infinite;
 }
 
 @keyframes thinkingPulse {

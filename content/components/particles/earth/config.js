@@ -82,11 +82,12 @@ export const CONFIG = {
         lookAt: { x: 0, y: -1.05, z: -1.15 },
       },
       section3: {
-        x: -1.1,
-        y: 3.4,
-        z: 11.3,
-        fov: 46,
-        lookAt: { x: 0.45, y: -0.5, z: -1.6 },
+        // Keep Section 2 distance/FOV; the sideways perspective comes from camera orbit.
+        x: 0.42,
+        y: 3.65,
+        z: 11.55,
+        fov: 40,
+        lookAt: { x: 0, y: -1.05, z: -1.15 },
       },
     },
     TRANSITION_DURATION: 2.45,

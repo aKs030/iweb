@@ -26,8 +26,7 @@ const withVersion = href => (href.startsWith("/") ? `${href}${v}` : href);
 
 const CORE_RESOURCES = [
   // Core CSS is loaded immediately by the document head
-  { href: `/content/styles/foundation.css${v}`, rel: "preload", as: "style" },
-  { href: `/content/styles/main.css${v}`, rel: "preload", as: "style" },
+  { href: `/content/styles/core.bundle.css${v}`, rel: "preload", as: "style" },
 
   // Core JS modules — start parsing before HTML fully loaded
   { href: `/content/main.js${v}`, rel: "modulepreload" },
@@ -50,15 +49,7 @@ const SHARED_ROUTE_STYLES = [
 ];
 
 const ROUTE_STYLE_RESOURCES = new Map([
-  [
-    "/",
-    [
-      ...SHARED_ROUTE_STYLES,
-      "/content/styles/pages/home.css",
-      "/content/components/particles/three-earth.css",
-      "/content/components/typewriter/typewriter.css",
-    ],
-  ],
+  ["/", ["/content/styles/home.bundle.css"]],
   ["/videos", [...SHARED_ROUTE_STYLES, "/content/styles/pages/videos.css"]],
   ["/blog", [...SHARED_ROUTE_STYLES, "/content/styles/pages/blog.css"]],
   ["/about", [...SHARED_ROUTE_STYLES, "/content/styles/pages/about.css"]],

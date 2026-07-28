@@ -159,7 +159,10 @@ const createFooterShell = () => {
       {
         href: "/",
         className: "brand-link",
-        "aria-label": translatedAttribute("footer.home_aria", "Zur Startseite"),
+        "aria-label": translatedAttribute(
+          "footer.home_aria",
+          "Abdulkerim Sesli (aKs) – Zur Startseite"
+        ),
         "data-i18n-attrs": "aria-label:footer.home_aria",
       },
       el("span", { className: "full-name" }, "Abdulkerim Sesli"),
@@ -183,7 +186,7 @@ const createFooterShell = () => {
         "data-cookie-trigger": true,
         "aria-label": translatedAttribute(
           "footer.cookie_settings.open_aria",
-          "Cookie-Einstellungen öffnen"
+          "Cookies – Einstellungen öffnen"
         ),
         "data-i18n-attrs": "aria-label:footer.cookie_settings.open_aria",
       },

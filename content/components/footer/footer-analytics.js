@@ -36,10 +36,16 @@ export class AnalyticsManager {
   updateConsent(granted) {
     const win = /** @type {import('../../core/types.js').GlobalWindow} */ (window);
 
-    if (typeof win.gtag !== "function") return;
-
     const analyticsGranted = typeof granted === "boolean" ? granted : Boolean(granted?.analytics);
     const adsGranted = typeof granted === "boolean" ? granted : Boolean(granted?.ads);
+
+    globalThis.dispatchEvent(
+      new CustomEvent("analytics:consent-change", {
+        detail: { analytics: analyticsGranted, ads: adsGranted },
+      })
+    );
+
+    if (typeof win.gtag !== "function") return;
 
     try {
       win.gtag("consent", "update", {

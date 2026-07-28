@@ -6,7 +6,7 @@ import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 
 const log = createLogger("EarthAssets");
 const TEXTURE_TIMEOUT_MS = 15000;
-const KTX2_TRANSCODER_URL = "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/libs/basis/";
+const KTX2_TRANSCODER_URL = "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/libs/basis/";
 const WIND_CLOUD_UNIFORMS = `
 uniform float cloudTime;
 uniform vec2 cloudWind;
@@ -96,12 +96,12 @@ float darkForestMask = smoothstep(0.012, 0.1, sourceAlbedo.g - sourceAlbedo.b)
   * earthLandMask;
 vegetationMask = max(vegetationMask, darkForestMask * 0.78);
 // Richer, more saturated vegetation green
-vec3 forestGrade = daylightGrade * vec3(0.84, 1.48, 0.63);
-forestGrade += vec3(0.006, 0.046, 0.002);
+vec3 forestGrade = daylightGrade * vec3(0.9, 1.24, 0.76);
+forestGrade += vec3(0.004, 0.022, 0.002);
 daylightGrade = mix(
   daylightGrade,
   forestGrade,
-  vegetationMask * 0.44 * terrainDetailStrength
+  vegetationMask * 0.3 * terrainDetailStrength
 );
 #ifdef USE_BUMPMAP
   vec2 earthReliefTexel = vec2(0.000244140625, 0.00048828125);
@@ -183,12 +183,6 @@ float oceanMicroRough = fract(sin(dot(floor(vMapUv * 460.0), vec2(127.1, 311.7))
 roughnessFactor = mix(roughnessFactor, 0.22 + oceanMicroRough * 0.08, earthOceanMask * 0.50);`;
 
 const EARTH_FRESNEL_FRAGMENT = `float viewNDot = clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);
-// Globaler Rayleigh-artiger Dunst am Erdrand (wirkt auch ueber Land)
-float globalHaze = pow(1.0 - viewNDot, 5.2);
-outgoingLight += vec3(0.035, 0.055, 0.095) * globalHaze;
-// Strong blue Fresnel rim – visible at the ocean horizon
-float earthFresnel = pow(1.0 - viewNDot, 4.2);
-outgoingLight += vec3(0.028, 0.036, 0.058) * earthFresnel * earthOceanMask;
 // Broad specular shimmer across the ocean face
 float broadWaterReflection = pow(1.0 - viewNDot, 1.45);
 outgoingLight += vec3(0.010, 0.013, 0.020) * broadWaterReflection * earthOceanMask;
@@ -203,22 +197,13 @@ vec3 glintColor = (vec3(1.0, 0.95, 0.86) * oceanSunGlint * 2.2 + vec3(0.95, 0.65
 outgoingLight += glintColor * terrainGlintIntensity;
 #include <opaque_fragment>`;
 
-const NIGHT_EARTHLIGHT_FRAGMENT = `float nightEarthFresnel = pow(
-  1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0),
-  2.2
-);
-// Subtle blue-indigo earthshine tint on the night side
-outgoingLight += diffuseColor.rgb * vec3(0.09, 0.13, 0.22);
-outgoingLight += vec3(0.014, 0.040, 0.088) * nightEarthFresnel;
-#include <opaque_fragment>`;
-
 function createCityGlow(THREE, nightTexture, segments, isMobileDevice) {
   const glowGroup = new THREE.Group();
   const layerSettings = isMobileDevice
-    ? [{ altitude: 0.018, opacity: 0.11 }]
+    ? [{ altitude: 0.018, opacity: 0.16 }]
     : [
-        { altitude: 0.012, opacity: 0.105 },
-        { altitude: 0.032, opacity: 0.045 },
+        { altitude: 0.012, opacity: 0.18 },
+        { altitude: 0.032, opacity: 0.075 },
       ];
 
   layerSettings.forEach(({ altitude, opacity }) => {
@@ -242,8 +227,22 @@ function createCityGlow(THREE, nightTexture, segments, isMobileDevice) {
         void main() {
           vec3 cityColor = texture2D(cityMap, vCityUv).rgb;
           float brightness = max(cityColor.r, max(cityColor.g, cityColor.b));
-          float cityMask = smoothstep(0.24, 0.72, brightness);
-          gl_FragColor = vec4(cityColor * cityMask, cityMask * glowOpacity);
+          float warmSignal = max(
+            cityColor.r * 1.1 - cityColor.b * 0.35,
+            cityColor.g * 0.9 - cityColor.b * 0.28
+          );
+          float roadMask = smoothstep(0.045, 0.22, warmSignal);
+          float cityCore = smoothstep(0.24, 0.68, brightness);
+          float lightMask = max(roadMask * 0.34, cityCore);
+          vec3 warmLight = mix(
+            cityColor,
+            vec3(1.0, 0.65, 0.3) * brightness,
+            0.45
+          );
+          gl_FragColor = vec4(
+            warmLight * (roadMask * 0.42 + cityCore * 1.15),
+            lightMask * glowOpacity
+          );
         }
       `,
       transparent: true,
@@ -253,6 +252,7 @@ function createCityGlow(THREE, nightTexture, segments, isMobileDevice) {
       side: THREE.FrontSide,
       toneMapped: false,
     });
+    material.userData.baseGlowOpacity = opacity;
     glowGroup.add(new THREE.Mesh(geometry, material));
   });
 
@@ -354,19 +354,6 @@ function configureWindCloudMaterial(
     }
   };
   material.customProgramCacheKey = () => cacheKey;
-}
-
-function createSolidTexture(THREE, color, colorSpace) {
-  const texture = new THREE.DataTexture(
-    new Uint8Array([...color, 255]),
-    1,
-    1,
-    THREE.RGBAFormat,
-    THREE.UnsignedByteType
-  );
-  texture.colorSpace = colorSpace;
-  texture.needsUpdate = true;
-  return texture;
 }
 
 function terrainDirection(THREE, x, y, target = new THREE.Vector3()) {
@@ -544,7 +531,7 @@ float treeBump = mix(treeNoise1, treeNoise2, f.x * f.y);
 // Generate a fake normal from the bump
 vec3 treeNormal = normalize(vec3(treeBump - 0.5, treeBump - 0.5, 1.2));
 // Blend normal with the procedural tree normal
-normal = normalize(mix(normal, treeNormal, isGreen * 0.95));
+normal = normalize(mix(normal, treeNormal, isGreen * 0.42));
 // Make trees rougher (less shiny than terrain)
 roughnessFactor = mix(roughnessFactor, 0.98, isGreen);`
       )
@@ -614,15 +601,6 @@ function createProceduralTerrainLayer(
   terrain.renderOrder = 5;
   group.add(terrain);
 
-  const cloudShadowGeometry = geometry.clone();
-  const cloudShadowPositions = cloudShadowGeometry.getAttribute("position");
-  const cloudShadowPoint = new THREE.Vector3();
-  for (let index = 0; index < cloudShadowPositions.count; index += 1) {
-    cloudShadowPoint.fromBufferAttribute(cloudShadowPositions, index);
-    cloudShadowPoint.setLength(cloudShadowPoint.length() + 0.002);
-    cloudShadowPositions.setXYZ(index, cloudShadowPoint.x, cloudShadowPoint.y, cloudShadowPoint.z);
-  }
-
   const regionalCloudShadowMaterial = new THREE.MeshStandardMaterial({
     alphaMap: regionalCloudTexture,
     color: 0x101923,
@@ -643,19 +621,11 @@ function createProceduralTerrainLayer(
     coverage: [0.07, 0.6],
     cacheKey: "earth-regional-cloud-shadow-wind-v5",
   });
-  const regionalCloudShadow = new THREE.Mesh(cloudShadowGeometry, regionalCloudShadowMaterial);
+  const regionalCloudShadow = new THREE.Mesh(geometry, regionalCloudShadowMaterial);
   regionalCloudShadow.name = "earth-regional-cloud-shadow";
   regionalCloudShadow.renderOrder = 6;
+  regionalCloudShadow.scale.setScalar(1 + 0.002 / CONFIG.EARTH.RADIUS);
   group.add(regionalCloudShadow);
-
-  const cloudGeometry = geometry.clone();
-  const cloudPositions = cloudGeometry.getAttribute("position");
-  const cloudPoint = new THREE.Vector3();
-  for (let index = 0; index < cloudPositions.count; index += 1) {
-    cloudPoint.fromBufferAttribute(cloudPositions, index);
-    cloudPoint.setLength(cloudPoint.length() + 0.003);
-    cloudPositions.setXYZ(index, cloudPoint.x, cloudPoint.y, cloudPoint.z);
-  }
 
   const regionalCloudMaterial = new THREE.MeshStandardMaterial({
     alphaMap: regionalCloudTexture,
@@ -680,19 +650,11 @@ function createProceduralTerrainLayer(
     coverage: [0.07, 0.6],
     cacheKey: "earth-regional-cloud-low-wind-v5",
   });
-  const regionalClouds = new THREE.Mesh(cloudGeometry, regionalCloudMaterial);
+  const regionalClouds = new THREE.Mesh(geometry, regionalCloudMaterial);
   regionalClouds.name = "earth-regional-cloud-low";
   regionalClouds.renderOrder = 7;
+  regionalClouds.scale.setScalar(1 + 0.003 / CONFIG.EARTH.RADIUS);
   group.add(regionalClouds);
-
-  const highCloudGeometry = geometry.clone();
-  const highCloudPositions = highCloudGeometry.getAttribute("position");
-  const highCloudPoint = new THREE.Vector3();
-  for (let index = 0; index < highCloudPositions.count; index += 1) {
-    highCloudPoint.fromBufferAttribute(highCloudPositions, index);
-    highCloudPoint.setLength(highCloudPoint.length() + 0.007);
-    highCloudPositions.setXYZ(index, highCloudPoint.x, highCloudPoint.y, highCloudPoint.z);
-  }
 
   const regionalHighCloudMaterial = new THREE.MeshStandardMaterial({
     alphaMap: regionalCloudTexture,
@@ -718,12 +680,19 @@ function createProceduralTerrainLayer(
     coverage: [0.16, 0.74],
     cacheKey: "earth-regional-cloud-high-wind-v5",
   });
-  const regionalHighClouds = new THREE.Mesh(highCloudGeometry, regionalHighCloudMaterial);
+  const regionalHighClouds = new THREE.Mesh(geometry, regionalHighCloudMaterial);
   regionalHighClouds.name = "earth-regional-cloud-high";
   regionalHighClouds.renderOrder = 8;
+  regionalHighClouds.scale.setScalar(1 + 0.007 / CONFIG.EARTH.RADIUS);
   group.add(regionalHighClouds);
   // Add 3D Details (Cities and Trees) using InstancedMesh
-  const numInstances = isMobileDevice ? 5000 : qualityLevel === "LOW" ? 8000 : 25000;
+  const numInstances = isMobileDevice
+    ? 5000
+    : qualityLevel === "LOW"
+      ? 8000
+      : qualityLevel === "MEDIUM"
+        ? 14000
+        : 25000;
 
   // Create geometries
   const buildingGeometry = new THREE.BoxGeometry(0.0015, 0.0015, 0.0015);
@@ -953,7 +922,11 @@ export async function createEarthSystem(
   let regionalTerrainTexture,
     regionalTerrainHeightTexture,
     regionalTerrainNormalTexture,
-    regionalCloudTexture;
+    regionalCloudTexture,
+    dayTexture,
+    nightTexture,
+    normalTexture,
+    bumpTexture;
   let timeoutId;
   try {
     const texturePromise = Promise.all([
@@ -971,13 +944,32 @@ export async function createEarthSystem(
         "regional terrain normals",
         textureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.NORMAL)
       ),
-      loadNamedTexture("regional clouds", textureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.CLOUDS)),
+      loadNamedTexture(
+        "regional clouds",
+        textureLoader.loadAsync(
+          isMobileDevice ? EARTH_REGIONAL_TEXTURES.CLOUDS_MOBILE : EARTH_REGIONAL_TEXTURES.CLOUDS
+        )
+      ),
+      loadNamedTexture(
+        "day",
+        loadPreferredTexture(ktx2Loader, textureLoader, textureSet.DAY_KTX2, textureSet.DAY)
+      ),
+      loadNamedTexture(
+        "night",
+        loadPreferredTexture(ktx2Loader, textureLoader, textureSet.NIGHT_KTX2, textureSet.NIGHT)
+      ),
+      loadNamedTexture("normal", textureLoader.loadAsync(textureSet.NORMAL)),
+      loadNamedTexture("bump", textureLoader.loadAsync(textureSet.BUMP)),
     ]);
     [
       regionalTerrainTexture,
       regionalTerrainHeightTexture,
       regionalTerrainNormalTexture,
       regionalCloudTexture,
+      dayTexture,
+      nightTexture,
+      normalTexture,
+      bumpTexture,
     ] = await Promise.race([
       texturePromise,
       new Promise((_, reject) => {
@@ -997,10 +989,6 @@ export async function createEarthSystem(
   }
 
   const anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), isMobileDevice ? 4 : 16);
-  const dayTexture = createSolidTexture(THREE, [28, 67, 92], THREE.SRGBColorSpace);
-  const nightTexture = createSolidTexture(THREE, [0, 0, 0], THREE.SRGBColorSpace);
-  const normalTexture = createSolidTexture(THREE, [128, 128, 255], THREE.NoColorSpace);
-  const bumpTexture = createSolidTexture(THREE, [0, 0, 0], THREE.NoColorSpace);
   configureTexture(THREE, dayTexture, anisotropy, THREE.SRGBColorSpace);
   configureTexture(THREE, nightTexture, anisotropy, THREE.SRGBColorSpace);
   configureTexture(THREE, normalTexture, anisotropy, THREE.NoColorSpace);
@@ -1036,7 +1024,8 @@ export async function createEarthSystem(
     metalness: 0,
     clearcoat: 0.035,
     clearcoatRoughness: 0.26,
-    emissive: 0xffffff,
+    emissive: 0xffb65d,
+    emissiveMap: nightTexture,
     emissiveIntensity: 0.03,
     dithering: true,
   });
@@ -1083,42 +1072,22 @@ if (earthOceanMask < 0.1) {
   float gTreeBump = mix(gTreeNoise1, gTreeNoise2, gf.x * gf.y);
   // Blend normal with the procedural tree normal
   vec3 gTreeNormal = normalize(vec3(gTreeBump - 0.5, gTreeBump - 0.5, 1.2));
-  normal = normalize(mix(normal, gTreeNormal, isGlobalGreen * 0.95));
+  normal = normalize(mix(normal, gTreeNormal, isGlobalGreen * 0.38));
   // Make trees rougher (less shiny than terrain)
   roughnessFactor = mix(roughnessFactor, 0.98, isGlobalGreen);
 }`
       )
       .replace("#include <opaque_fragment>", EARTH_FRESNEL_FRAGMENT);
   };
-  dayMaterial.customProgramCacheKey = () => "earth-day-relief-water-v17";
-
-  const nightMaterial = new THREE.MeshPhysicalMaterial({
-    map: dayTexture,
-    normalMap: normalTexture,
-    bumpMap: bumpTexture,
-    bumpScale: CONFIG.EARTH.BUMP_SCALE,
-    displacementMap: bumpTexture,
-    displacementScale: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
-    normalScale: new THREE.Vector2(0.85, 0.85),
-    roughness: 0.76,
-    metalness: 0,
-    clearcoat: 0.025,
-    clearcoatRoughness: 0.34,
-    emissive: 0xffb65d,
-    emissiveMap: nightTexture,
-    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.4,
-    dithering: true,
-  });
-  nightMaterial.onBeforeCompile = shader => {
-    shader.fragmentShader = shader.fragmentShader.replace(
-      "#include <opaque_fragment>",
-      NIGHT_EARTHLIGHT_FRAGMENT
-    );
-  };
-  nightMaterial.customProgramCacheKey = () => "earth-night-earthlight-v1";
+  dayMaterial.customProgramCacheKey = () => "earth-unified-day-night-v18";
+  const nightMaterial = dayMaterial;
 
   // OPTIMIZATION: Reduce segments on mobile
-  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+  const segments = isMobileDevice
+    ? CONFIG.EARTH.SEGMENTS_MOBILE
+    : qualityLevel === "MEDIUM"
+      ? Math.min(CONFIG.EARTH.SEGMENTS, 256)
+      : CONFIG.EARTH.SEGMENTS;
 
   const earthGeometry = new THREE.SphereGeometry(CONFIG.EARTH.RADIUS, segments, segments);
   const earthMesh = new THREE.Mesh(earthGeometry, dayMaterial);
@@ -1156,56 +1125,6 @@ if (earthOceanMask < 0.1) {
   earthMesh.add(cityGlowGroup);
   earthMesh.add(proceduralTerrainGroup);
   scene.add(earthMesh);
-
-  void Promise.all([
-    loadNamedTexture(
-      "day",
-      loadPreferredTexture(ktx2Loader, textureLoader, textureSet.DAY_KTX2, textureSet.DAY)
-    ),
-    loadNamedTexture(
-      "night",
-      loadPreferredTexture(ktx2Loader, textureLoader, textureSet.NIGHT_KTX2, textureSet.NIGHT)
-    ),
-    loadNamedTexture("normal", textureLoader.loadAsync(textureSet.NORMAL)),
-    loadNamedTexture("bump", textureLoader.loadAsync(textureSet.BUMP)),
-  ])
-    .then(([loadedDayTexture, loadedNightTexture, loadedNormalTexture, loadedBumpTexture]) => {
-      if (!earthMesh.parent) {
-        [loadedDayTexture, loadedNightTexture, loadedNormalTexture, loadedBumpTexture].forEach(
-          texture => texture.dispose()
-        );
-        return;
-      }
-
-      configureTexture(THREE, loadedDayTexture, anisotropy, THREE.SRGBColorSpace);
-      configureTexture(THREE, loadedNightTexture, anisotropy, THREE.SRGBColorSpace);
-      configureTexture(THREE, loadedNormalTexture, anisotropy, THREE.NoColorSpace);
-      configureTexture(THREE, loadedBumpTexture, anisotropy, THREE.NoColorSpace);
-
-      dayMaterial.map = loadedDayTexture;
-      dayMaterial.normalMap = loadedNormalTexture;
-      dayMaterial.bumpMap = loadedBumpTexture;
-      dayMaterial.displacementMap = loadedBumpTexture;
-      dayMaterial.needsUpdate = true;
-
-      nightMaterial.map = loadedDayTexture;
-      nightMaterial.normalMap = loadedNormalTexture;
-      nightMaterial.bumpMap = loadedBumpTexture;
-      nightMaterial.displacementMap = loadedBumpTexture;
-      nightMaterial.emissiveMap = loadedNightTexture;
-      nightMaterial.needsUpdate = true;
-
-      cityGlowGroup.traverse(object => {
-        if (object.material?.uniforms?.cityMap) {
-          object.material.uniforms.cityMap.value = loadedNightTexture;
-        }
-      });
-
-      [dayTexture, nightTexture, normalTexture, bumpTexture].forEach(texture => texture.dispose());
-    })
-    .catch(error => {
-      if (isLocalDevRuntime()) log.warn("Deferred globe textures failed:", error);
-    });
 
   return {
     earthMesh,

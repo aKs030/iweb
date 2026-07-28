@@ -45,6 +45,9 @@ export class ParticleSystem {
     this._onTouchMove = null;
     /** @type {(() => void)|null} */
     this._onResize = null;
+    /** @type {(() => void)|null} */
+    this._onVisibilityChange = null;
+    this.reducedMotion = Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
     this.resize();
     this.init();
     this.setupEvents();
@@ -125,12 +128,24 @@ export class ParticleSystem {
     this._onResize = () => {
       this.resize();
       this.init();
+      if (this.reducedMotion) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.draw();
+      }
+    };
+    this._onVisibilityChange = () => {
+      if (document.hidden) {
+        this.pause();
+      } else {
+        this.start();
+      }
     };
 
     window.addEventListener("mousemove", this._onMouseMove, { passive: true });
     window.addEventListener("touchstart", this._onTouchMove, { passive: true });
     window.addEventListener("touchmove", this._onTouchMove, { passive: true });
     window.addEventListener("resize", this._onResize, { passive: true });
+    document.addEventListener("visibilitychange", this._onVisibilityChange);
   }
 
   update() {
@@ -229,15 +244,24 @@ export class ParticleSystem {
   }
 
   start() {
-    if (this.animationId) return;
+    if (document.hidden || this.animationId !== null) return;
+    if (this.reducedMotion) {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.draw();
+      return;
+    }
     this.animate();
   }
 
-  stop() {
-    if (this.animationId) {
+  pause() {
+    if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
+  }
+
+  stop() {
+    this.pause();
     if (this._onMouseMove) {
       window.removeEventListener("mousemove", this._onMouseMove);
       this._onMouseMove = null;
@@ -250,6 +274,10 @@ export class ParticleSystem {
     if (this._onResize) {
       window.removeEventListener("resize", this._onResize);
       this._onResize = null;
+    }
+    if (this._onVisibilityChange) {
+      document.removeEventListener("visibilitychange", this._onVisibilityChange);
+      this._onVisibilityChange = null;
     }
   }
 }
