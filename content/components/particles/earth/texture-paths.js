@@ -1,6 +1,7 @@
-const EARTH_TEXTURE_VERSION = "earth-20260728-r6";
-const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-20260728-r3";
+const EARTH_TEXTURE_VERSION = "earth-eox-global-20260728-r1";
+const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-berlin-2025-20260729-r5";
 const EARTH_TEXTURE_CDN_URL = "/r2-proxy/earth/textures";
+const EARTH_DETAIL_TILE_VERSION = "earth-detail-eox-2025-20260728-r1";
 
 function withTexturePath(filename) {
   return `${EARTH_TEXTURE_CDN_URL}/${filename}?v=${EARTH_TEXTURE_VERSION}`;
@@ -11,8 +12,8 @@ function withRegionalTexturePath(filename) {
 }
 
 const EARTH_TEXTURES = Object.freeze({
-  DAY: withTexturePath("earth_day_relief_8k.jpg"),
-  DAY_KTX2: withTexturePath("earth_day_relief_8k.ktx2"),
+  DAY: withTexturePath("earth_eox_cloudless_2025_8k.webp"),
+  DAY_KTX2: null,
   NIGHT: withTexturePath("earth_night_8k_nasa.jpg"),
   NIGHT_KTX2: withTexturePath("earth_night_4k.ktx2"),
   NORMAL: withTexturePath("earth_normal_4k.webp"),
@@ -24,8 +25,8 @@ const EARTH_TEXTURES = Object.freeze({
 });
 
 const EARTH_TEXTURES_STANDARD = Object.freeze({
-  DAY: withTexturePath("earth_day_relief_4k.jpg"),
-  DAY_KTX2: withTexturePath("earth_day_relief_4k.ktx2"),
+  DAY: withTexturePath("earth_eox_cloudless_2025_4k.webp"),
+  DAY_KTX2: null,
   NIGHT: withTexturePath("earth_night_4k.webp"),
   NIGHT_KTX2: withTexturePath("earth_night_4k.ktx2"),
   NORMAL: withTexturePath("earth_normal_4k.webp"),
@@ -37,8 +38,8 @@ const EARTH_TEXTURES_STANDARD = Object.freeze({
 });
 
 const EARTH_TEXTURES_MOBILE = Object.freeze({
-  DAY: withTexturePath("earth_day_relief_2k.jpg"),
-  DAY_KTX2: withTexturePath("earth_day_relief_2k.ktx2"),
+  DAY: withTexturePath("earth_eox_cloudless_2025_2k.webp"),
+  DAY_KTX2: null,
   NIGHT: withTexturePath("earth_night.webp"),
   NIGHT_KTX2: withTexturePath("earth_night.ktx2"),
   NORMAL: withTexturePath("earth_normal.webp"),
@@ -50,13 +51,16 @@ const EARTH_TEXTURES_MOBILE = Object.freeze({
 });
 
 export const EARTH_REGIONAL_TEXTURES = Object.freeze({
-  TERRAIN: withRegionalTexturePath("closeup-terrain-v14.webp"),
-  TERRAIN_MOBILE: withRegionalTexturePath("closeup-terrain-v14-2k.webp"),
-  HEIGHT: withRegionalTexturePath("closeup-height-v14.webp"),
-  NORMAL: withRegionalTexturePath("closeup-normal-v14.webp"),
-  CLOUDS: withTexturePath("earth_clouds_4k.jpg"),
-  CLOUDS_MOBILE: withTexturePath("earth_clouds_2k.jpg"),
+  TERRAIN: withRegionalTexturePath("closeup-berlin-city-lakes-forest-eox-2025.webp"),
+  TERRAIN_MOBILE: withRegionalTexturePath("closeup-berlin-city-lakes-forest-eox-2025-2k.webp"),
+  HEIGHT: withRegionalTexturePath("closeup-berlin-city-lakes-forest-height-eox-2025.webp"),
+  NORMAL: withRegionalTexturePath("closeup-berlin-city-lakes-forest-normal-eox-2025.webp"),
+  WATER: withRegionalTexturePath("closeup-berlin-city-lakes-forest-water-eox-2025.webp"),
 });
+
+export function getEarthDetailTileUrl(row, column) {
+  return `${EARTH_TEXTURE_CDN_URL}/tiles/eox-cloudless-2025/r${row}-c${column}.webp?v=${EARTH_DETAIL_TILE_VERSION}`;
+}
 
 export function getEarthTextureSet({ isMobile = false, compact = false } = {}) {
   if (isMobile) return EARTH_TEXTURES_MOBILE;

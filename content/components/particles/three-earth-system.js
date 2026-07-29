@@ -26,6 +26,7 @@ import {
   createCloudLayer,
 } from "./earth/assets.js";
 import { CameraManager } from "./earth/camera.js";
+import { EarthDetailTileManager } from "./earth/detail-tiles.js";
 import {
   applyFeaturesSection3CameraOrbit,
   applyScrollLinkedEarthTransform,
@@ -55,7 +56,6 @@ const EARTH_TRANSFORM_DAMPING = Object.freeze({
 });
 const EARTH_ZOOM_LOD = Object.freeze({
   globeFadeEnd: 0.68,
-  europeFull: 1.2,
   berlinStart: 2.2,
   berlinFull: 4.2,
 });
@@ -170,9 +170,9 @@ const SECTION_CONFIGS = {
     cityGlowMultiplier: 1,
     cityPointOpacity: 0,
     cloudLayer: true,
-    cloudOpacity: 0.28,
-    cloudShadowOpacity: 0.04,
-    cloudScaleFactor: 1,
+    cloudOpacity: 0.36,
+    cloudShadowOpacity: 0.045,
+    cloudScaleFactor: 1.004,
     proceduralTerrainMix: 1,
     cameraOrbit: 0,
     axialTilt: -7,
@@ -185,8 +185,8 @@ const SECTION_CONFIGS = {
     },
   },
   features: {
-    earth: { pos: { x: 0, y: -1.35, z: -2.35 }, scale: 1.12, rotation: -1.9 },
-    mobileEarth: { pos: { x: 0, y: -1.1, z: -2.4 }, scale: 1, rotation: -1.9 },
+    earth: { pos: { x: 0, y: -1.35, z: -2.35 }, scale: 1.12, rotation: -1.52 },
+    mobileEarth: { pos: { x: 0, y: -1.1, z: -2.4 }, scale: 1, rotation: -1.52 },
     moon: { pos: { x: 4.8, y: 2.35, z: -9.6 }, scale: 0.62 },
     lighting: {
       ambientColor: 0x5f6678,
@@ -210,7 +210,7 @@ const SECTION_CONFIGS = {
     cloudOpacity: 0.35, // More substantial clouds
     cloudShadowOpacity: 0.035, // Soft cloud shadows
     cloudScaleFactor: 1,
-    proceduralTerrainMix: 1,
+    proceduralTerrainMix: 0,
     cameraOrbit: 0,
     axialTilt: -7,
     latitudeTilt: 28.5,
@@ -222,8 +222,8 @@ const SECTION_CONFIGS = {
     },
   },
   section3: {
-    earth: { pos: { x: 0, y: -1.35, z: -2.35 }, scale: 1.12, rotation: -1.9 },
-    mobileEarth: { pos: { x: 0, y: -1.1, z: -2.4 }, scale: 1, rotation: -1.9 },
+    earth: { pos: { x: 0, y: -1.35, z: -2.35 }, scale: 1.12, rotation: -1.52 },
+    mobileEarth: { pos: { x: 0, y: -1.1, z: -2.4 }, scale: 1, rotation: -1.52 },
     moon: { pos: { x: 4.6, y: 2.2, z: -9.4 }, scale: 0.46 },
     lighting: {
       ambientColor: 0x425b86,
@@ -291,6 +291,7 @@ class ThreeEarthSystem {
     /** @type {EarthObject|null} */ this.cloudMesh = null;
     /** @type {THREE.Object3D|null} */ this.cityGlowGroup = null;
     this.cityLightsPoints = null;
+    this.detailTileManager = null;
     /** @type {THREE.Object3D|null} */ this.proceduralTerrainGroup = null;
     /** @type {THREE.Vector3|null} */ this._terrainCameraLocal = null;
     /** @type {THREE.Vector3|null} */ this._terrainForwardAxis = null;
@@ -403,6 +404,13 @@ class ThreeEarthSystem {
       this.cityGlowGroup = earthAssets.cityGlowGroup;
       this.cityLightsPoints = earthAssets.cityLightsPoints;
       this.proceduralTerrainGroup = earthAssets.proceduralTerrainGroup;
+      this.detailTileManager = new EarthDetailTileManager(
+        this.THREE,
+        this.earthMesh,
+        this.renderer,
+        this.isMobileDevice,
+        this.deviceCapabilities?.recommendedQuality || "MEDIUM"
+      );
       this._terrainCameraLocal = new this.THREE.Vector3();
       this._terrainForwardAxis = new this.THREE.Vector3(0, 0, 1);
       this._terrainTilt = new this.THREE.Quaternion().setFromEuler(
@@ -628,6 +636,7 @@ class ThreeEarthSystem {
       this.cloudMesh.position.copy(this.earthMesh.position);
       this.cloudMesh.scale.copy(this.earthMesh.scale);
       this.cloudMesh.rotation.z = this.earthMesh.rotation.z;
+      this.cloudMesh.rotation.y = this.earthMesh.rotation.y;
       this.cloudMesh.userData.currentScaleFactor = 1;
       this.cloudMesh.userData.targetScaleFactor = 1;
       this.scene.add(this.cloudMesh);
@@ -718,6 +727,7 @@ class ThreeEarthSystem {
 
     this._syncCloudVisibility(sectionConfig);
     this._applyTerrainQuality(cfg);
+    this.detailTileManager?.setQualityLevel(level);
     if (this.shootingStarManager) {
       this.shootingStarManager.disabled = !cfg.meteorShowers;
     }
@@ -1042,8 +1052,20 @@ class ThreeEarthSystem {
         SECTION_CONFIGS.features,
         SECTION_CONFIGS.section3,
         featuresSection3Progress,
-        CONFIG
+        CONFIG,
+        false
       );
+    }
+    if (this.proceduralTerrainGroup) {
+      const terrainData = this.proceduralTerrainGroup.userData;
+      terrainData.followCamera = false;
+      terrainData.targetOpacity = Number.isFinite(this._scrollProgress)
+        ? 1 - getZoomProgress(this._scrollProgress)
+        : (SECTION_CONFIGS[this.currentSection]?.proceduralTerrainMix ?? 0);
+      if (this.container) {
+        this.container.dataset.earthSurface =
+          terrainData.targetOpacity > 0 ? "regional-city-lakes-forest" : "global-eox";
+      }
     }
     if (!Number.isFinite(featuresSection3Progress)) {
       this.cameraManager?.updateCameraPosition(delta);
@@ -1053,6 +1075,13 @@ class ThreeEarthSystem {
       Number.isFinite(featuresSection3Progress) && featuresSection3Progress > 0
         ? null
         : this._scrollProgress
+    );
+    this.detailTileManager?.update(
+      this.camera,
+      this.earthMesh?.userData.currentMode,
+      this.earthMesh?.scale.x || 0,
+      delta,
+      (this.proceduralTerrainGroup?.userData.opacity || 0) > 0.05
     );
     updatePhysicalLightingUniforms(this);
     this.starManager?.syncToCamera(this.camera);
@@ -1082,7 +1111,7 @@ class ThreeEarthSystem {
     if (this.currentSection !== "features" || !this.cardManager) return;
     const isLeaving = this._currentSectionEl?.classList.contains("is-leaving-before-scroll");
     if (isLeaving) {
-      this.cardManager.hideImmediate();
+      this.cardManager.setProgress(0);
       if (this.container) this.container.dataset.featureCards = "hidden";
     } else if (this.container?.dataset.featureCards === "hidden") {
       this.cardManager.setProgress(1);
@@ -1100,9 +1129,8 @@ class ThreeEarthSystem {
     };
 
     updateMaterials(this.cloudMesh?.userData?.windMaterials);
-    if (this.proceduralTerrainGroup?.visible) {
-      updateMaterials(this.proceduralTerrainGroup.userData.windMaterials);
-    }
+    const regionalClouds = this.proceduralTerrainGroup?.userData.cloudTexture;
+    if (regionalClouds) regionalClouds.offset.x = (0.06 + time * 0.00000045) % 1;
   }
 
   _updateTransforms(delta = 0.016, heroFeatureProgress = null) {
@@ -1159,21 +1187,7 @@ class ThreeEarthSystem {
       const targetOpacity = Number.isFinite(terrainData.targetOpacity)
         ? terrainData.targetOpacity
         : 0;
-      const regionalVisibility = smoothstep(
-        EARTH_ZOOM_LOD.globeFadeEnd,
-        EARTH_ZOOM_LOD.europeFull,
-        em.scale.x
-      );
-      const berlinWeight = smoothstep(
-        EARTH_ZOOM_LOD.berlinStart,
-        EARTH_ZOOM_LOD.berlinFull,
-        em.scale.x
-      );
-      const europeWeight = regionalVisibility * (1 - berlinWeight);
-      const globeWeight = 1 - Math.max(berlinWeight, europeWeight);
-      const berlinVisualWeight = smoothstep(0.52, 0.9, berlinWeight);
-      const cloudWeight = berlinVisualWeight;
-      const visibleOpacityTarget = targetOpacity * berlinVisualWeight;
+      const visibleOpacityTarget = targetOpacity;
       const positionSettled =
         !em.userData.targetPosition || em.position.distanceTo(em.userData.targetPosition) < 0.3;
       const scaleSettled =
@@ -1191,30 +1205,29 @@ class ThreeEarthSystem {
           this._terrainCameraLocal
         );
         terrainGroup.quaternion.multiply(this._terrainTilt);
-        terrainData.anchorLocked = positionSettled && scaleSettled;
+        terrainData.anchorInitialized = true;
+        terrainData.anchorLocked = !terrainData.followCamera && positionSettled && scaleSettled;
       }
 
-      terrainData.berlinWeight = berlinWeight;
-      terrainData.europeWeight = europeWeight;
-      terrainData.globeWeight = globeWeight;
-      terrainData.opacity = Number.isFinite(heroFeatureProgress)
-        ? visibleOpacityTarget
-        : terrainData.opacity + (visibleOpacityTarget - terrainData.opacity) * scaleLerp;
+      const terrainOpacityLerp = Number.isFinite(heroFeatureProgress)
+        ? getDampingFactor(11, delta)
+        : scaleLerp;
+      terrainData.opacity += (visibleOpacityTarget - terrainData.opacity) * terrainOpacityLerp;
+      if (Math.abs(visibleOpacityTarget - terrainData.opacity) < 0.002) {
+        terrainData.opacity = visibleOpacityTarget;
+      }
       terrainGroup.visible = terrainData.opacity > 0.004;
-      terrainData.fadeMaterials?.forEach(({ material, baseOpacity, lod }) => {
-        const lodWeight =
-          lod === "berlin"
-            ? berlinVisualWeight
-            : lod === "europe"
-              ? europeWeight
-              : lod === "cloud"
-                ? cloudWeight
-                : 1;
-        material.opacity = terrainData.opacity * baseOpacity * lodWeight;
+      terrainData.fadeMaterials?.forEach(({ material, baseOpacity }) => {
+        material.opacity = terrainData.opacity * baseOpacity;
       });
 
-      const zoomLevel =
-        this.currentSection === "hero"
+      const zoomLevel = Number.isFinite(heroFeatureProgress)
+        ? em.scale.x > EARTH_ZOOM_LOD.berlinStart
+          ? "berlin"
+          : em.scale.x > EARTH_ZOOM_LOD.globeFadeEnd
+            ? "europe"
+            : "globe"
+        : this.currentSection === "hero"
           ? "berlin"
           : em.scale.x > 1.75
             ? "berlin"
@@ -1393,7 +1406,7 @@ class ThreeEarthSystem {
     if (newSection === "hero" && this.proceduralTerrainGroup) {
       const terrainData = this.proceduralTerrainGroup.userData;
       terrainData.targetOpacity = SECTION_CONFIGS.hero.proceduralTerrainMix ?? 0;
-      terrainData.anchorLocked = false;
+      if (!terrainData.anchorInitialized) terrainData.anchorLocked = false;
     }
 
     const isHeroFeatureTransition = newSection === "hero" || newSection === "features";
@@ -1461,7 +1474,7 @@ class ThreeEarthSystem {
       this._featuresCameraNeedsSettleLayout = false;
       if (this.container) this.container.dataset.featureCards = "visible";
     } else {
-      this.cardManager.hideImmediate();
+      this.cardManager.setProgress(0);
       this._featuresCameraNeedsSettleLayout = false;
       if (this.container) this.container.dataset.featureCards = "hidden";
     }
@@ -1631,10 +1644,17 @@ class ThreeEarthSystem {
     if (this.proceduralTerrainGroup) {
       const nextTerrainOpacity = config.proceduralTerrainMix ?? 0;
       const terrainData = this.proceduralTerrainGroup.userData;
-      if (nextTerrainOpacity > 0 && (terrainData.targetOpacity ?? 0) <= 0) {
+      if (
+        nextTerrainOpacity > 0 &&
+        (terrainData.targetOpacity ?? 0) <= 0 &&
+        !terrainData.anchorInitialized
+      ) {
         terrainData.anchorLocked = false;
       }
       terrainData.targetOpacity = nextTerrainOpacity;
+      if (this.container) {
+        this.container.dataset.earthSurface = nextTerrainOpacity > 0 ? "regional" : "global";
+      }
     }
 
     this._syncCloudVisibility(config);
@@ -1940,6 +1960,8 @@ class ThreeEarthSystem {
   }
 
   _disposeScene() {
+    this.detailTileManager?.dispose();
+    this.detailTileManager = null;
     const zoomGeometries = /** @type {Record<string, THREE.BufferGeometry>|undefined} */ (
       this.earthMesh?.userData?.zoomGeometries
     );
@@ -1985,6 +2007,7 @@ class ThreeEarthSystem {
     this.cloudMesh = null;
     this.cityGlowGroup = null;
     this.cityLightsPoints = null;
+    this.detailTileManager = null;
     this.proceduralTerrainGroup = null;
     this._terrainCameraLocal = null;
     this._terrainForwardAxis = null;

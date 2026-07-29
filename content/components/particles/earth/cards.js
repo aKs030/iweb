@@ -13,8 +13,8 @@ export class CardManager {
     this.raycaster = new THREE.Raycaster();
     this.isVisible = false;
     this._revealStartedAt = 0;
+    this._lastUpdateTime = 0;
 
-    // Internal state
     this._resizeRAF = null;
     this._lastCameraLayoutAt = 0;
     this._sharedGeometry = null;
@@ -22,12 +22,10 @@ export class CardManager {
     this._tmpVec = new THREE.Vector3();
     this._orientDummy = new THREE.Object3D();
 
-    // Group to hold all cards
     this.cardGroup = new THREE.Group();
     this.scene.add(this.cardGroup);
     this.cardGroup.visible = false;
 
-    // Texture cache to reuse generated canvases / textures when card content is identical
     this._textureCache = new Map();
   }
 
@@ -1382,7 +1380,6 @@ export class CardManager {
     }
 
     this.cards.forEach(card => {
-      // Stagger entrance slightly
       const stagger = (card.userData.entranceDelay || 0) / 800;
       const local = Math.max(0, Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger)));
       card.userData.entranceTarget = local;
@@ -1423,6 +1420,11 @@ export class CardManager {
 
   update(time) {
     if (!this.cardGroup.visible) return;
+    const deltaSeconds =
+      this._lastUpdateTime > 0
+        ? Math.min(1 / 15, Math.max(1 / 240, (time - this._lastUpdateTime) / 1000))
+        : 1 / 60;
+    this._lastUpdateTime = time;
 
     if (this._revealStartedAt > 0) {
       const elapsed = performance.now() - this._revealStartedAt;
@@ -1439,9 +1441,8 @@ export class CardManager {
     this.camera.getWorldPosition(this._tmpVec);
 
     this.cards.forEach(card => {
-      this._updateCardEntranceAndOpacity(card);
-      // Removed hover tilt/motion as mouse tracking is disabled
-      this._applyOrientation(card);
+      this._updateCardEntranceAndOpacity(card, deltaSeconds);
+      this._applyOrientation(card, deltaSeconds);
       this._updateCardGlow(card, time);
       this._updatePortalMotion(card, time);
     });
@@ -1451,7 +1452,7 @@ export class CardManager {
     }
   }
 
-  _updateCardEntranceAndOpacity(card) {
+  _updateCardEntranceAndOpacity(card, deltaSeconds) {
     const targetEntrance =
       typeof card.userData.entranceTarget === "number"
         ? card.userData.entranceTarget
@@ -1459,10 +1460,10 @@ export class CardManager {
           ? 1
           : 0;
 
-    // Speed up the animation so it feels super fluid and snappy (0.12 instead of 0.02)
-    card.userData.entranceProgress += (targetEntrance - card.userData.entranceProgress) * 0.15;
+    const entranceFactor = 1 - Math.exp(-9.75 * deltaSeconds);
+    card.userData.entranceProgress +=
+      (targetEntrance - card.userData.entranceProgress) * entranceFactor;
 
-    // Lock to zero if it's super close, preventing zombie artifacts during transitions
     if (targetEntrance === 0 && card.userData.entranceProgress < 0.005) {
       card.userData.entranceProgress = 0;
       this._applyPortalEntranceTransform(card, 0);
@@ -1479,10 +1480,10 @@ export class CardManager {
     card.material.opacity = easedOpacity;
   }
 
-  _applyOrientation(card) {
+  _applyOrientation(card, deltaSeconds) {
     this._orientDummy.position.copy(card.position);
     this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z);
-    card.quaternion.slerp(this._orientDummy.quaternion, 0.05);
+    card.quaternion.slerp(this._orientDummy.quaternion, 1 - Math.exp(-3.08 * deltaSeconds));
   }
 
   _updateCardGlow(card, time) {

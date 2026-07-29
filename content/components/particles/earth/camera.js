@@ -94,18 +94,19 @@ export class CameraManager {
     if (!start || !end) return;
 
     const p = Math.max(0, Math.min(1, progress));
-    const isHeroPerspectiveMove = startName === "hero" && endName === "features";
-    const perspectiveArc = isHeroPerspectiveMove ? Math.sin(Math.PI * p) : 0;
     this.transition.active = false;
     this.scrollLinkedActive = true;
-    this.cameraTarget.x = lerp(start.x, end.x, p) + perspectiveArc * 0.52;
-    this.cameraTarget.y = lerp(start.y, end.y, p) + perspectiveArc * 0.18;
+    this.cameraTarget.x = lerp(start.x, end.x, p);
+    this.cameraTarget.y = lerp(start.y, end.y, p);
     this.mouseState.zoom = lerp(start.z, end.z, p);
-    this.camera.fov = lerp(start.fov ?? CONFIG.CAMERA.FOV, end.fov ?? CONFIG.CAMERA.FOV, p);
-    this.camera.updateProjectionMatrix();
+    const nextFov = lerp(start.fov ?? CONFIG.CAMERA.FOV, end.fov ?? CONFIG.CAMERA.FOV, p);
+    if (Math.abs(this.camera.fov - nextFov) > 0.01) {
+      this.camera.fov = nextFov;
+      this.camera.updateProjectionMatrix();
+    }
     this._vLookAt.set(
-      lerp(start.lookAt.x, end.lookAt.x, p) - perspectiveArc * 0.16,
-      lerp(start.lookAt.y, end.lookAt.y, p) - perspectiveArc * 0.08,
+      lerp(start.lookAt.x, end.lookAt.x, p),
+      lerp(start.lookAt.y, end.lookAt.y, p),
       lerp(start.lookAt.z, end.lookAt.z, p)
     );
     if (!this.camera.userData.currentLookAt) {

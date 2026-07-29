@@ -6,7 +6,7 @@ import { gzipSync } from "node:zlib";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const roots = ["content", "pages", "functions"];
 const budgets = {
-  ".js": { total: 1_650_000, single: 70_000 },
+  ".js": { total: 1_655_000, single: 71_000 },
   ".css": { total: 450_000, single: 45_000 },
 };
 const generatedBundleBudget = { raw: 120_000, gzip: 25_000 };

@@ -540,7 +540,7 @@ function terrainSurfacePoint(THREE, x, y, elevation = 0.018, target = new THREE.
 }
 
 function createTerrainHeightSampler(THREE, terrainHeightTexture) {
-  const image = terrainHeightTexture.image;
+  const image = terrainHeightTexture?.image;
   const width = image?.naturalWidth || image?.videoWidth || image?.width || 0;
   const height = image?.naturalHeight || image?.videoHeight || image?.height || 0;
   if (!width || !height) return null;
@@ -717,6 +717,7 @@ function createProceduralTerrainLayer(
   terrainTexture,
   terrainHeightTexture,
   terrainNormalTexture,
+  regionalWaterTexture,
   regionalCloudTexture
 ) {
   const group = new THREE.Group();
@@ -734,7 +735,7 @@ function createProceduralTerrainLayer(
     widthSegments,
     heightSegments,
     sampleHeight,
-    3.8 // Massive 3D relief for mountains
+    1.7
   );
   const terrainMaterial = new THREE.MeshStandardMaterial({
     map: terrainTexture,
@@ -760,115 +761,83 @@ function createProceduralTerrainLayer(
   terrain.renderOrder = 5;
   group.add(terrain);
 
-  const regionalCloudShadowMaterial = new THREE.MeshStandardMaterial({
-    alphaMap: regionalCloudTexture,
-    color: 0x101923,
-    roughness: 1,
+  const waterMaterial = new THREE.MeshPhysicalMaterial({
+    alphaMap: regionalWaterTexture,
+    color: 0x1678ad,
+    emissive: 0x0a3550,
+    emissiveIntensity: 0.2,
+    roughness: 0.18,
     metalness: 0,
+    clearcoat: 0.65,
+    clearcoatRoughness: 0.18,
     transparent: true,
-    opacity: 0.05,
+    opacity: 0.76,
     depthTest: false,
     depthWrite: false,
     blending: THREE.NormalBlending,
     side: THREE.FrontSide,
     dithering: true,
   });
-  configureWindCloudMaterial(THREE, regionalCloudShadowMaterial, {
-    wind: [0.00075, 0.000045],
-    distortion: 0.0022,
-    rotation: -0.025,
-    coverage: [0.07, 0.6],
-    cacheKey: "earth-regional-cloud-shadow-wind-v5",
+  const water = new THREE.Mesh(geometry, waterMaterial);
+  water.name = "earth-regional-lakes";
+  water.renderOrder = 6;
+  water.scale.setScalar(1 + 0.003 / CONFIG.EARTH.RADIUS);
+  group.add(water);
+
+  const regionalCloudShadowMaterial = new THREE.MeshBasicMaterial({
+    alphaMap: regionalCloudTexture,
+    color: 0x17232e,
+    transparent: true,
+    opacity: 0.075,
+    depthTest: false,
+    depthWrite: false,
   });
   const regionalCloudShadow = new THREE.Mesh(geometry, regionalCloudShadowMaterial);
   regionalCloudShadow.name = "earth-regional-cloud-shadow";
-  regionalCloudShadow.renderOrder = 6;
-  regionalCloudShadow.scale.setScalar(1 + 0.002 / CONFIG.EARTH.RADIUS);
+  regionalCloudShadow.renderOrder = 7;
+  regionalCloudShadow.scale.setScalar(1 + 0.008 / CONFIG.EARTH.RADIUS);
   group.add(regionalCloudShadow);
 
-  const regionalCloudMaterial = new THREE.MeshStandardMaterial({
+  const regionalCloudMaterial = new THREE.MeshLambertMaterial({
     alphaMap: regionalCloudTexture,
-    color: 0xffffff,
-    emissive: 0x83909b,
-    emissiveIntensity: 0.1,
-    roughness: 1,
-    metalness: 0,
+    color: 0xf3f7fa,
+    emissive: 0x46515c,
+    emissiveIntensity: 0.16,
     transparent: true,
-    opacity: 0.4,
+    opacity: 0.6,
     depthTest: false,
     depthWrite: false,
-    blending: THREE.NormalBlending,
-    side: THREE.FrontSide,
     dithering: true,
-  });
-  configureWindCloudMaterial(THREE, regionalCloudMaterial, {
-    wind: [0.00075, 0.000045],
-    distortion: 0.0022,
-    rotation: -0.025,
-    densityShade: 0.14,
-    coverage: [0.07, 0.6],
-    cacheKey: "earth-regional-cloud-low-wind-v5",
   });
   const regionalClouds = new THREE.Mesh(geometry, regionalCloudMaterial);
-  regionalClouds.name = "earth-regional-cloud-low";
-  regionalClouds.renderOrder = 7;
-  regionalClouds.scale.setScalar(1 + 0.003 / CONFIG.EARTH.RADIUS);
+  regionalClouds.name = "earth-regional-clouds";
+  regionalClouds.renderOrder = 8;
+  regionalClouds.scale.setScalar(1 + 0.022 / CONFIG.EARTH.RADIUS);
   group.add(regionalClouds);
 
-  const regionalHighCloudMaterial = new THREE.MeshStandardMaterial({
-    alphaMap: regionalCloudTexture,
-    color: 0xf8fbff,
-    emissive: 0x8996a2,
-    emissiveIntensity: 0.11,
-    roughness: 1,
-    metalness: 0,
-    transparent: true,
-    opacity: 0.14,
-    depthTest: false,
-    depthWrite: false,
-    blending: THREE.NormalBlending,
-    side: THREE.FrontSide,
-    dithering: true,
-  });
-  configureWindCloudMaterial(THREE, regionalHighCloudMaterial, {
-    wind: [0.0011, -0.000035],
-    phase: [0.31, 0.045],
-    distortion: 0.0036,
-    rotation: 0.065,
-    densityShade: 0.12,
-    coverage: [0.16, 0.74],
-    cacheKey: "earth-regional-cloud-high-wind-v5",
-  });
-  const regionalHighClouds = new THREE.Mesh(geometry, regionalHighCloudMaterial);
-  regionalHighClouds.name = "earth-regional-cloud-high";
-  regionalHighClouds.renderOrder = 8;
-  regionalHighClouds.scale.setScalar(1 + 0.007 / CONFIG.EARTH.RADIUS);
-  group.add(regionalHighClouds);
-  // Add 3D Details (Cities and Trees) using InstancedMesh
   const numInstances = isMobileDevice
-    ? 5000
+    ? 4000
     : qualityLevel === "LOW"
-      ? 8000
+      ? 2500
       : qualityLevel === "MEDIUM"
-        ? 14000
-        : 25000;
+        ? 8000
+        : 12000;
 
-  // Create geometries
-  const buildingGeometry = new THREE.BoxGeometry(0.0015, 0.0015, 0.0015);
-  // Shift origin to bottom so they scale up from the ground
+  const buildingGeometry = new THREE.BoxGeometry(0.0018, 0.0018, 0.0018);
   buildingGeometry.translate(0, 0, 0.00075);
 
   const treeGeometry = new THREE.ConeGeometry(0.0008, 0.002, 5);
   treeGeometry.translate(0, 0, 0.001);
-  treeGeometry.rotateX(Math.PI / 2); // align with z-axis (up from surface)
+  treeGeometry.rotateX(Math.PI / 2);
 
-  // Edge fade logic for instances is handled via a custom shader below
   const buildingMaterial = new THREE.MeshStandardMaterial({
-    color: 0x8899aa,
-    roughness: 0.7,
-    metalness: 0.2,
+    color: 0x77828d,
+    emissive: 0x202933,
+    emissiveIntensity: 0.06,
+    roughness: 0.72,
+    metalness: 0.18,
     transparent: true,
-    opacity: 1, // Will be controlled by userData/fadeMaterials
+    opacity: 1,
   });
 
   const treeMaterial = new THREE.MeshStandardMaterial({
@@ -879,13 +848,11 @@ function createProceduralTerrainLayer(
     opacity: 1,
   });
 
-  // Share the terrain edge fade shader modification for the instances
   configureInstanceFade(buildingMaterial);
   configureInstanceFade(treeMaterial);
 
   const cityMesh = new THREE.InstancedMesh(buildingGeometry, buildingMaterial, numInstances);
   const forestMesh = new THREE.InstancedMesh(treeGeometry, treeMaterial, numInstances);
-  // Add an instanced buffer attribute for UVs so instances fade exactly like the terrain
   const cityUvArray = new Float32Array(numInstances * 2);
   const forestUvArray = new Float32Array(numInstances * 2);
 
@@ -908,15 +875,16 @@ function createProceduralTerrainLayer(
 
   let cityCount = 0;
   let treeCount = 0;
+  const maxCityInstances = Math.floor(numInstances * 0.35);
+  const maxForestInstances = Math.floor(numInstances * 0.12);
 
-  // We use a seeded random for stable placement
   let seed = 12345;
   const random = () => {
     seed = (seed * 9301 + 49297) % 233280;
     return seed / 233280;
   };
 
-  const reliefScaleNum = 3.8;
+  const reliefScaleNum = 1.7;
 
   const tempColor = new THREE.Color();
   const dir = new THREE.Vector3();
@@ -924,24 +892,22 @@ function createProceduralTerrainLayer(
   const colorData = [0, 0, 0];
 
   for (let i = 0; i < numInstances * 4; i++) {
-    if (cityCount >= numInstances && treeCount >= numInstances) break;
+    if (cityCount >= maxCityInstances && treeCount >= maxForestInstances) break;
 
-    // Distribute randomly across the region
     const r1 = random();
     const r2 = random();
-    const radius = Math.sqrt(r1) * 0.95; // keep slightly away from absolute edge
+    const radius = Math.sqrt(r1) * 0.95;
     const theta = r2 * Math.PI * 2;
 
     const x = radius * Math.cos(theta);
     const y = radius * Math.sin(theta);
+    const distanceFromBerlinCenter = Math.hypot(x, y + 0.05);
 
-    // UV coordinates (0 to 1)
     const u = (x + 1) / 2;
     const v = (y + 1) / 2;
 
     const sourceHeight = sampleHeight ? sampleHeight(u, v) : 0.2;
 
-    // Avoid oceans
     if (sourceHeight < 0.02) continue;
 
     const landHeight = THREE.MathUtils.smoothstep(sourceHeight, 0.12, 0.82);
@@ -952,14 +918,10 @@ function createProceduralTerrainLayer(
 
     terrainSurfacePoint(THREE, x, y, elevation, tempPoint);
 
-    // Determine normal at this point to orient the object
     dir.copy(tempPoint).normalize();
 
     dummy.position.copy(tempPoint);
-    // Align z-axis to surface normal
     dummy.quaternion.setFromUnitVectors(upVector, dir);
-
-    // Random rotation around local z-axis
     dummy.rotateZ(random() * Math.PI * 2);
 
     let isCity = false;
@@ -974,10 +936,9 @@ function createProceduralTerrainLayer(
       const max = Math.max(r, g, b);
       const min = Math.min(r, g, b);
 
-      // Forests are green dominant, cities are relatively grey and bright
       if (g > r + 10 && g > b + 10 && max > 30 && max < 200) {
         isForest = true;
-      } else if (max - min < 20 && max > 60 && max < 200) {
+      } else if (max - min < 38 && max > 45 && max < 210) {
         isCity = true;
       }
     } else {
@@ -988,36 +949,34 @@ function createProceduralTerrainLayer(
 
     const scatterNoise = (Math.sin(x * 50) + Math.cos(y * 50)) * 0.5 + 0.5;
 
-    // Cities prefer lower flatter ground and specific noise regions
     if (
-      isCity &&
+      (isCity || distanceFromBerlinCenter < 0.4) &&
+      distanceFromBerlinCenter < 0.62 &&
       sourceHeight > 0.02 &&
-      sourceHeight < 0.15 &&
+      sourceHeight < 0.45 &&
       scatterNoise > 0.3 &&
-      cityCount < numInstances
+      cityCount < maxCityInstances
     ) {
-      // City (lowlands)
-      const heightScale = 0.5 + random() * 2.5; // Random building heights
-      dummy.scale.set(0.6 + random() * 0.4, 0.6 + random() * 0.4, heightScale);
+      const coreStrength = THREE.MathUtils.clamp(1 - distanceFromBerlinCenter / 0.62, 0, 1);
+      const footprintScale = 0.9 + random() * 0.7 + coreStrength * 0.55;
+      const heightScale = 1.4 + random() * 3.2 + coreStrength * (2.4 + random() * 3.8);
+      dummy.scale.set(footprintScale, footprintScale, heightScale);
       dummy.updateMatrix();
       cityMesh.setMatrixAt(cityCount, dummy.matrix);
       cityUvArray[cityCount * 2] = u;
       cityUvArray[cityCount * 2 + 1] = v;
 
-      // Color variation for buildings
-      tempColor.setHSL(0.6, 0.1, 0.3 + random() * 0.4);
+      tempColor.setHSL(0.6, 0.08, 0.3 + random() * 0.25);
       cityMesh.setColorAt(cityCount, tempColor);
       cityCount++;
-
-      // Trees prefer mid elevations and different noise regions
     } else if (
       isForest &&
+      distanceFromBerlinCenter > 0.46 &&
       sourceHeight >= 0.03 &&
       sourceHeight < 0.5 &&
       scatterNoise > 0.2 &&
-      treeCount < numInstances
+      treeCount < maxForestInstances
     ) {
-      // Forest
       const scale = 0.5 + random() * 0.8;
       dummy.scale.set(scale, scale, scale);
       dummy.updateMatrix();
@@ -1025,7 +984,6 @@ function createProceduralTerrainLayer(
       forestUvArray[treeCount * 2] = u;
       forestUvArray[treeCount * 2 + 1] = v;
 
-      // Color variation for trees
       tempColor.setHSL(0.3 + random() * 0.05, 0.5 + random() * 0.4, 0.15 + random() * 0.2);
       forestMesh.setColorAt(treeCount, tempColor);
       treeCount++;
@@ -1044,23 +1002,16 @@ function createProceduralTerrainLayer(
   group.userData.opacity = 0;
   group.userData.targetOpacity = 1;
   group.userData.anchorLocked = false;
+  group.userData.anchorInitialized = false;
   group.userData.terrainMaterial = terrainMaterial;
-  group.userData.berlinWeight = 1;
-  group.userData.europeWeight = 0;
-  group.userData.globeWeight = 0;
-  group.userData.highCloudMesh = regionalHighClouds;
-  group.userData.windMaterials = [
-    regionalCloudShadowMaterial,
-    regionalCloudMaterial,
-    regionalHighCloudMaterial,
-  ];
+  group.userData.cloudTexture = regionalCloudTexture;
   group.userData.fadeMaterials = [
-    { material: terrainMaterial, baseOpacity: 1, lod: "berlin" },
-    { material: regionalCloudShadowMaterial, baseOpacity: 0.05, lod: "berlin" },
-    { material: regionalCloudMaterial, baseOpacity: 0.4, lod: "berlin" },
-    { material: regionalHighCloudMaterial, baseOpacity: 0.14, lod: "berlin" },
-    { material: buildingMaterial, baseOpacity: 1, lod: "berlin" },
-    { material: treeMaterial, baseOpacity: 1, lod: "berlin" },
+    { material: terrainMaterial, baseOpacity: 1 },
+    { material: waterMaterial, baseOpacity: 0.76 },
+    { material: regionalCloudShadowMaterial, baseOpacity: 0.075 },
+    { material: regionalCloudMaterial, baseOpacity: 0.6 },
+    { material: buildingMaterial, baseOpacity: 1 },
+    { material: treeMaterial, baseOpacity: 1 },
   ];
   return group;
 }
@@ -1081,6 +1032,7 @@ export async function createEarthSystem(
   let regionalTerrainTexture,
     regionalTerrainHeightTexture,
     regionalTerrainNormalTexture,
+    regionalWaterTexture,
     regionalCloudTexture,
     dayTexture,
     nightTexture,
@@ -1091,25 +1043,24 @@ export async function createEarthSystem(
   try {
     const texturePromise = Promise.all([
       loadNamedTexture(
-        "regional terrain",
+        "EOX city hemisphere",
         textureLoader.loadAsync(
           isMobileDevice ? EARTH_REGIONAL_TEXTURES.TERRAIN_MOBILE : EARTH_REGIONAL_TEXTURES.TERRAIN
         )
       ),
       loadNamedTexture(
-        "regional terrain height",
+        "EOX regional height",
         textureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.HEIGHT)
       ),
       loadNamedTexture(
-        "regional terrain normals",
+        "EOX regional normal",
         textureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.NORMAL)
       ),
       loadNamedTexture(
-        "regional clouds",
-        textureLoader.loadAsync(
-          isMobileDevice ? EARTH_REGIONAL_TEXTURES.CLOUDS_MOBILE : EARTH_REGIONAL_TEXTURES.CLOUDS
-        )
+        "EOX regional lakes",
+        textureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.WATER)
       ),
+      loadNamedTexture("regional clouds", textureLoader.loadAsync(textureSet.CLOUDS)),
       loadNamedTexture(
         "day",
         loadPreferredTexture(ktx2Loader, textureLoader, textureSet.DAY_KTX2, textureSet.DAY)
@@ -1128,6 +1079,7 @@ export async function createEarthSystem(
       regionalTerrainTexture,
       regionalTerrainHeightTexture,
       regionalTerrainNormalTexture,
+      regionalWaterTexture,
       regionalCloudTexture,
       dayTexture,
       nightTexture,
@@ -1165,22 +1117,16 @@ export async function createEarthSystem(
   configureTexture(THREE, bumpTexture, anisotropy, THREE.NoColorSpace);
   configureTexture(THREE, regionalTerrainTexture, anisotropy, THREE.SRGBColorSpace);
   regionalTerrainTexture.wrapS = THREE.ClampToEdgeWrapping;
-  // The regional layer is fixed relative to the camera. Sampling its full-resolution
-  // source directly keeps roads and tree crowns crisp instead of blending mip levels.
-  regionalTerrainTexture.generateMipmaps = false;
-  regionalTerrainTexture.minFilter = THREE.LinearFilter;
-  regionalTerrainTexture.magFilter = THREE.LinearFilter;
-  regionalTerrainTexture.needsUpdate = true;
   configureTexture(THREE, regionalTerrainHeightTexture, anisotropy, THREE.NoColorSpace);
   regionalTerrainHeightTexture.wrapS = THREE.ClampToEdgeWrapping;
   configureTexture(THREE, regionalTerrainNormalTexture, anisotropy, THREE.NoColorSpace);
   regionalTerrainNormalTexture.wrapS = THREE.ClampToEdgeWrapping;
+  configureTexture(THREE, regionalWaterTexture, anisotropy, THREE.NoColorSpace);
+  regionalWaterTexture.wrapS = THREE.ClampToEdgeWrapping;
   configureTexture(THREE, regionalCloudTexture, anisotropy, THREE.NoColorSpace);
-  regionalCloudTexture.wrapS = THREE.RepeatWrapping;
-  regionalCloudTexture.wrapT = THREE.ClampToEdgeWrapping;
-  regionalCloudTexture.repeat.set(0.42, 0.38);
-  regionalCloudTexture.offset.set(0.02, 0.4);
-  regionalCloudTexture.needsUpdate = true;
+  regionalCloudTexture.wrapS = regionalCloudTexture.wrapT = THREE.RepeatWrapping;
+  regionalCloudTexture.repeat.set(0.42, 0.34);
+  regionalCloudTexture.offset.set(0.06, 0.37);
 
   const dayMaterial = new THREE.MeshPhysicalMaterial({
     map: dayTexture,
@@ -1273,6 +1219,7 @@ export async function createEarthSystem(
     regionalTerrainTexture,
     regionalTerrainHeightTexture,
     regionalTerrainNormalTexture,
+    regionalWaterTexture,
     regionalCloudTexture
   );
   earthMesh.add(cityGlowGroup);

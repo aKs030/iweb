@@ -90,11 +90,17 @@ export function getScrollLinkedVerticalRotation(progress, startRotation, turn) {
   return startRotation + turn * progress;
 }
 
-export const getHeroToFeaturesZoomProgress = progress =>
-  smootherstep(Math.max(0, Math.min(1, progress)));
+const getStagedProgress = (progress, start, end) => {
+  const t = Math.max(0, Math.min(1, (progress - start) / Math.max(0.0001, end - start)));
+  return t * t * (3 - 2 * t);
+};
+
+export const getHeroToFeaturesRotationProgress = progress => getStagedProgress(progress, 0, 0.38);
+
+export const getHeroToFeaturesZoomProgress = progress => getStagedProgress(progress, 0.24, 1);
 
 export function applyFeaturesSection3CameraOrbit(system, features, section3, progress, delta) {
-  const p = getHeroToFeaturesZoomProgress(progress);
+  const p = smootherstep(Math.max(0, Math.min(1, progress)));
   const nextConfig = p >= 0.9 ? section3 : features;
   if (system.earthMesh?.userData.currentMode !== nextConfig.mode) {
     system._updateEarthForSection(nextConfig === section3 ? "section3" : "features");
@@ -144,8 +150,17 @@ export function applyFeaturesSection3CameraOrbit(system, features, section3, pro
   }
 }
 
-export function applyScrollLinkedSectionVisuals(system, hero, features, progress, config) {
-  const p = getHeroToFeaturesZoomProgress(progress);
+export function applyScrollLinkedSectionVisuals(
+  system,
+  hero,
+  features,
+  progress,
+  config,
+  stagedZoom = true
+) {
+  const p = stagedZoom
+    ? getHeroToFeaturesZoomProgress(progress)
+    : smootherstep(Math.max(0, Math.min(1, progress)));
   const day = config.LIGHTING.DAY;
   const lightValue = (section, key, fallback) => section.lighting?.[key] ?? fallback;
   const blendLight = (key, fallback) =>
@@ -277,27 +292,27 @@ export function applyScrollLinkedEarthTransform({
   const features =
     isMobile && featuresConfig.mobileEarth ? featuresConfig.mobileEarth : featuresConfig.earth;
   const scrollProgress = Math.max(0, Math.min(1, progress));
-  const synchronizedProgress = getHeroToFeaturesZoomProgress(scrollProgress);
+  const rotationProgress = getHeroToFeaturesRotationProgress(scrollProgress);
+  const zoomProgress = getHeroToFeaturesZoomProgress(scrollProgress);
+  const positionProgress = 1 - Math.pow(1 - zoomProgress, 2.15);
   const verticalRotation = getScrollLinkedVerticalRotation(
-    synchronizedProgress,
+    rotationProgress,
     startLatitude,
     verticalTurn
   );
   earth.position.set(
-    lerp(hero.pos.x, features.pos.x, synchronizedProgress),
-    lerp(hero.pos.y, features.pos.y, synchronizedProgress),
-    lerp(hero.pos.z, features.pos.z, synchronizedProgress)
+    lerp(hero.pos.x, features.pos.x, positionProgress),
+    lerp(hero.pos.y, features.pos.y, positionProgress),
+    lerp(hero.pos.z, features.pos.z, positionProgress)
   );
-  // Scale proportionally so the perceived zoom advances with the rotation.
-  // A linear scale leaves a large visible size change for the end of the scroll.
-  const scale = lerpScale(hero.scale, features.scale, synchronizedProgress);
+  const scale = lerpScale(hero.scale, features.scale, zoomProgress);
   earth.scale.setScalar(scale);
   earth.userData.targetPosition?.copy(earth.position);
   earth.userData.targetScale = scale;
   earth.userData.targetRotation = lerp(
     hero.rotation || 0,
     features.rotation || 0,
-    synchronizedProgress
+    rotationProgress
   );
   earth.rotation.y = earth.userData.targetRotation + ambientRotation;
   earth.rotation.x = verticalRotation;
