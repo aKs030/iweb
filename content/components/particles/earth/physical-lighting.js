@@ -31,7 +31,5 @@ export function updatePhysicalLightingUniforms(system) {
   };
 
   updateObject(system.cityGlowGroup);
-  updateObject(system.cityLightsPoints);
   updateObject(system.cloudMesh);
-  updateObject(system.proceduralTerrainGroup);
 }

@@ -6,6 +6,7 @@ import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 
 const log = createLogger("EarthAssets");
 const TEXTURE_TIMEOUT_MS = 15000;
+const OPTIONAL_TEXTURE_TIMEOUT_MS = 5000;
 const KTX2_TRANSCODER_URL = "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/libs/basis/";
 const EARTH_CITY_LIGHTS_URL = "/content/media/data/earth-cities.bin?v=natural-earth-5-r1";
 const WIND_CLOUD_UNIFORMS = `
@@ -47,14 +48,11 @@ const WIND_CLOUD_ALPHA_FRAGMENT = `
     1.0 + cloudDensityShade * 0.22,
     cloudCoverage
   );
-  // Forward-scatter tint: thin cloud edges warm up against sunlight;
-  // dense cloud tops stay bright cool-white (Mie scattering).
   vec3 cloudScatterTint = mix(
-    vec3(1.05, 0.99, 0.91),  // warm golden-orange at thin edges
-    vec3(0.97, 0.98, 1.02),  // cool blue-white at dense tops
+    vec3(1.05, 0.99, 0.91),
+    vec3(0.97, 0.98, 1.02),
     cloudCoverage
   );
-  // Subtle self-shadow: very thick clouds (cumulonimbus) darken at the base
   float cloudBaseShadow = 1.0 - smoothstep(0.58, 0.94, cloudCoverage) * 0.18;
   float cloudSun = dot(normalize(vCloudWorldNormal), normalize(earthSunDirectionWorld));
   float cloudDaylight = smoothstep(-0.12, 0.18, cloudSun);
@@ -66,10 +64,6 @@ const WIND_CLOUD_ALPHA_FRAGMENT = `
     cloudDaylight
   );
   cloudScatterTint += vec3(0.16, 0.055, 0.018) * cloudTwilight;
-  
-  // Fresnel Edge Fade: fade out clouds exactly at the sphere limb to prevent them 
-  // from sticking out past the earth's edge (the "broken halo" effect)
-  // Note: 'normal' is not defined yet here, so we use the view-space 'vNormal.z'
   float cloudFresnel = clamp(vNormal.z, 0.0, 1.0);
   float edgeMask = smoothstep(0.05, 0.35, cloudFresnel);
 
@@ -91,7 +85,7 @@ const TERRAIN_DISPLACEMENT_VERTEX = `
   }
 #endif`;
 const DAYLIGHT_MAP_FRAGMENT = `#include <map_fragment>
-vec3 sourceAlbedo = texture2D(map, vMapUv).rgb;
+vec3 sourceAlbedo = sampledDiffuseColor.rgb;
 earthOceanMask = smoothstep(0.0, 0.03, sourceAlbedo.b - sourceAlbedo.r)
   * smoothstep(-0.005, 0.025, sourceAlbedo.b - sourceAlbedo.g);
 #ifdef USE_BUMPMAP
@@ -121,7 +115,6 @@ float darkForestMask = smoothstep(0.012, 0.1, sourceAlbedo.g - sourceAlbedo.b)
   * (1.0 - smoothstep(0.28, 0.62, daylightLuma))
   * earthLandMask;
 vegetationMask = max(vegetationMask, darkForestMask * 0.78);
-// Richer, more saturated vegetation green
 vec3 forestGrade = daylightGrade * vec3(0.95, 1.12, 0.88);
 forestGrade += vec3(0.003, 0.012, 0.002);
 daylightGrade = mix(
@@ -131,7 +124,7 @@ daylightGrade = mix(
 );
 #ifdef USE_BUMPMAP
 if (terrainDetailStrength > 0.01) {
-  vec2 earthReliefTexel = vec2(0.000244140625, 0.00048828125);
+  vec2 earthReliefTexel = 1.0 / vec2(textureSize(bumpMap, 0));
   float reliefCenter = texture2D(bumpMap, vBumpMapUv).r;
   float reliefLeft = texture2D(bumpMap, vBumpMapUv - vec2(earthReliefTexel.x, 0.0)).r;
   float reliefRight = texture2D(bumpMap, vBumpMapUv + vec2(earthReliefTexel.x, 0.0)).r;
@@ -176,17 +169,14 @@ if (terrainDetailStrength > 0.01) {
     mountainGrade,
     mountainMask * 0.45 * terrainDetailStrength
   );
-  // Glaciers and permanent snow caps at high elevation
   float snowCapHeight = smoothstep(0.62, 0.80, reliefCenter) * reliefLandMask;
   daylightGrade = mix(daylightGrade, vec3(0.91, 0.93, 0.97), snowCapHeight * 0.58 * terrainDetailStrength);
 }
 #endif
-// Desert / arid zones: warm ochre toning (Sahara, Arabian Peninsula, outback)
 float desertLuma = smoothstep(0.50, 0.80, daylightLuma) * earthLandMask;
 float desertWarmth = smoothstep(0.02, 0.15, sourceAlbedo.r - sourceAlbedo.b);
 float desertMask = desertLuma * desertWarmth;
 daylightGrade = mix(daylightGrade, daylightGrade * vec3(1.055, 1.01, 0.88), desertMask * 0.3);
-// Polar ice caps: vMapUv.y = 0 (south) → 1 (north) on a standard sphere UV
 float polarNorth = smoothstep(0.72, 0.90, vMapUv.y);
 float polarSouth = smoothstep(0.28, 0.10, vMapUv.y);
 float polarLat   = max(polarNorth, polarSouth);
@@ -194,19 +184,16 @@ float iceBrightness = smoothstep(0.40, 0.66, daylightLuma);
 float polarIceMask = polarLat * iceBrightness;
 vec3 iceWhite = vec3(0.91, 0.94, 0.98);
 daylightGrade = mix(daylightGrade, iceWhite, polarIceMask * earthLandMask * 0.82);
-// Enhanced ocean: deep indigo-blue far offshore, teal-green near coastlines
 float oceanLuma = dot(sourceAlbedo, vec3(0.2126, 0.7152, 0.0722));
 float oceanDepth = 1.0 - smoothstep(0.04, 0.22, oceanLuma);
 vec3 deepOcean    = oceanLuma * vec3(0.16, 0.38, 1.08);
 vec3 shallowOcean = oceanLuma * vec3(0.30, 0.72, 0.80);
 vec3 oceanGrade   = mix(sourceAlbedo, mix(shallowOcean, deepOcean, clamp(oceanDepth * 0.80 + 0.20, 0.0, 1.0)), 0.54);
-// Polar ocean: ice-white tint near the poles (Arctic / Antarctic pack ice)
 oceanGrade = mix(oceanGrade, iceWhite * 0.80, polarIceMask * 0.44);
 diffuseColor.rgb = min(mix(daylightGrade, oceanGrade, earthOceanMask * 0.48), vec3(1.0));`;
 
 const EARTH_ROUGHNESS_FRAGMENT = `#include <roughnessmap_fragment>
 roughnessFactor = mix(roughnessFactor, 0.26, earthOceanMask);
-// Micro-scale ocean roughness: hash noise simulates subtle wave-pattern variation
 float oceanMicroRough = fract(sin(dot(floor(vMapUv * 460.0), vec2(127.1, 311.7))) * 43758.5453);
 roughnessFactor = mix(roughnessFactor, 0.22 + oceanMicroRough * 0.08, earthOceanMask * 0.50);`;
 
@@ -218,7 +205,6 @@ outgoingLight += diffuseColor.rgb
   * vec3(0.075, 0.105, 0.17)
   * nightHemisphere
   * (0.55 + earthshineFresnel * 0.45);
-// Broad specular shimmer across the ocean face
 float broadWaterReflection = pow(1.0 - viewNDot, 1.45);
 outgoingLight += vec3(0.010, 0.013, 0.020) * broadWaterReflection * earthOceanMask;
 #include <opaque_fragment>`;
@@ -245,6 +231,37 @@ float earthSunFacing = dot(normalize(vEarthWorldNormal), normalize(earthSunDirec
 float earthNightMask = 1.0 - smoothstep(-0.1, 0.055, earthSunFacing);
 float earthTwilightLights = 1.0 - smoothstep(-0.025, 0.07, earthSunFacing);
 totalEmissiveRadiance *= earthNightMask * earthTwilightLights;`;
+
+function createAtmosphereLayer(THREE, segments) {
+  const geometry = new THREE.SphereGeometry(
+    CONFIG.EARTH.RADIUS + 0.024,
+    Math.min(segments, 128),
+    Math.min(segments, 128)
+  );
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `varying float vAtmosphereFresnel;
+void main(){
+vec4 p=modelViewMatrix*vec4(position,1.);
+vec3 n=normalize(normalMatrix*normal),v=normalize(-p.xyz);
+vAtmosphereFresnel=pow(1.-max(dot(n,v),0.),2.4);
+gl_Position=projectionMatrix*p;
+}`,
+    fragmentShader: `varying float vAtmosphereFresnel;
+void main(){
+float a=smoothstep(.08,.92,vAtmosphereFresnel)*.13;
+gl_FragColor=vec4(.34,.62,1.,a);
+}`,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.BackSide,
+    blending: THREE.NormalBlending,
+    toneMapped: false,
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.name = "earth-atmosphere";
+  mesh.renderOrder = 1;
+  return mesh;
+}
 
 function createCityGlow(THREE, nightTexture, segments, isMobileDevice) {
   const glowGroup = new THREE.Group();
@@ -406,12 +423,19 @@ function createCityLightsPoints(THREE, cityBuffer, isMobileDevice) {
   return group;
 }
 
-function selectTextureSet(renderer, isMobileDevice) {
+function getTexturePixelRatio(isMobileDevice, qualityLevel) {
+  const quality = CONFIG.QUALITY_LEVELS[qualityLevel] || CONFIG.QUALITY_LEVELS.HIGH;
+  const limit = isMobileDevice ? quality.mobilePixelRatio : quality.desktopPixelRatio;
+  return Math.min(window.devicePixelRatio || 1, limit);
+}
+
+function selectTextureSet(renderer, isMobileDevice, qualityLevel) {
   return getEarthTextureSetForDisplay({
     isMobile: isMobileDevice,
     width: renderer.domElement.clientWidth,
-    pixelRatio: Math.min(window.devicePixelRatio || 1, CONFIG.PERFORMANCE.PIXEL_RATIO),
+    pixelRatio: getTexturePixelRatio(isMobileDevice, qualityLevel),
     maxTextureSize: renderer.capabilities.maxTextureSize,
+    saveData: qualityLevel === "LOW",
   });
 }
 
@@ -443,6 +467,38 @@ async function loadNamedTexture(label, texturePromise) {
     throw new Error(`${label}: ${error instanceof Error ? error.message : String(error)}`, {
       cause: error,
     });
+  }
+}
+
+async function loadOptionalTexture(label, texturePromise, timeoutMs = OPTIONAL_TEXTURE_TIMEOUT_MS) {
+  let timedOut = false;
+  let timeoutId;
+  const guardedTexturePromise = texturePromise
+    .then(texture => {
+      if (timedOut) {
+        texture.dispose();
+        return null;
+      }
+      return texture;
+    })
+    .catch(error => {
+      if (isLocalDevRuntime()) {
+        log.warn(`Optional texture unavailable (${label}):`, error);
+      }
+      return null;
+    });
+  const timeoutPromise = new Promise(resolve => {
+    timeoutId = setTimeout(() => {
+      timedOut = true;
+      if (isLocalDevRuntime()) log.warn(`Optional texture timed out (${label})`);
+      resolve(null);
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([guardedTexturePromise, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -515,19 +571,22 @@ ${material.type === "MeshBasicMaterial" ? "varying vec3 vNormal;" : ""}`
   material.customProgramCacheKey = () => cacheKey;
 }
 
+const REGIONAL_LONGITUDE_HALF_EXTENT = 45;
+const REGIONAL_LATITUDE_HALF_EXTENT = 35.34;
+const REGIONAL_SURFACE_ELEVATION = 0.028;
+
 function terrainDirection(THREE, x, y, target = new THREE.Vector3()) {
-  const longitudeExtent = THREE.MathUtils.degToRad(44);
-  const latitudeExtent = THREE.MathUtils.degToRad(30);
+  const longitudeExtent = THREE.MathUtils.degToRad(REGIONAL_LONGITUDE_HALF_EXTENT);
+  const latitudeExtent = THREE.MathUtils.degToRad(REGIONAL_LATITUDE_HALF_EXTENT);
   const latitude = Math.asin(THREE.MathUtils.clamp(y * Math.sin(latitudeExtent), -0.999, 0.999));
   const latitudeRadius = Math.cos(latitude);
   const longitude = Math.asin(
     THREE.MathUtils.clamp(
-      (x * Math.sin(longitudeExtent)) / Math.max(latitudeRadius, 0.75),
+      (x * Math.sin(longitudeExtent)) / Math.max(latitudeRadius, 0.74),
       -0.999,
       0.999
     )
   );
-
   return target.set(
     Math.sin(longitude) * latitudeRadius,
     Math.sin(latitude),
@@ -539,10 +598,20 @@ function terrainSurfacePoint(THREE, x, y, elevation = 0.018, target = new THREE.
   return terrainDirection(THREE, x, y, target).multiplyScalar(CONFIG.EARTH.RADIUS + elevation);
 }
 
-function createTerrainHeightSampler(THREE, terrainHeightTexture) {
-  const image = terrainHeightTexture?.image;
-  const width = image?.naturalWidth || image?.videoWidth || image?.width || 0;
-  const height = image?.naturalHeight || image?.videoHeight || image?.height || 0;
+const getTerrainSamplingSize = image => {
+  const sourceWidth = image?.naturalWidth || image?.videoWidth || image?.width || 0;
+  const sourceHeight = image?.naturalHeight || image?.videoHeight || image?.height || 0;
+  if (!sourceWidth || !sourceHeight) return { width: 0, height: 0 };
+  const scale = Math.min(1, 1024 / Math.max(sourceWidth, sourceHeight));
+  return {
+    width: Math.max(1, Math.round(sourceWidth * scale)),
+    height: Math.max(1, Math.round(sourceHeight * scale)),
+  };
+};
+
+function createTerrainMaskSampler(THREE, terrainMaskTexture) {
+  const image = terrainMaskTexture?.image;
+  const { width, height } = getTerrainSamplingSize(image);
   if (!width || !height) return null;
 
   try {
@@ -569,15 +638,14 @@ function createTerrainHeightSampler(THREE, terrainHeightTexture) {
       return THREE.MathUtils.lerp(top, bottom, blendY);
     };
   } catch (error) {
-    if (isLocalDevRuntime()) log.warn("Terrain height sampling failed:", error);
+    if (isLocalDevRuntime()) log.warn("Terrain mask sampling failed:", error);
     return null;
   }
 }
 
 function createTerrainColorSampler(THREE, terrainTexture) {
   const image = terrainTexture.image;
-  const width = image?.naturalWidth || image?.videoWidth || image?.width || 0;
-  const height = image?.naturalHeight || image?.videoHeight || image?.height || 0;
+  const { width, height } = getTerrainSamplingSize(image);
   if (!width || !height) return null;
 
   try {
@@ -603,28 +671,15 @@ function createTerrainColorSampler(THREE, terrainTexture) {
   }
 }
 
-function createRegionalTerrainGeometry(
-  THREE,
-  widthSegments,
-  heightSegments,
-  sampleHeight,
-  reliefScale = 1
-) {
+function createRegionalTerrainGeometry(THREE, widthSegments, heightSegments) {
   const geometry = new THREE.PlaneGeometry(2, 2, widthSegments, heightSegments);
   const positions = geometry.getAttribute("position");
-  const uvs = geometry.getAttribute("uv");
 
   const tempPoint = new THREE.Vector3();
   for (let index = 0; index < positions.count; index += 1) {
     const x = positions.getX(index);
     const y = positions.getY(index);
-    const sourceHeight = sampleHeight ? sampleHeight(uvs.getX(index), uvs.getY(index)) : 0.2;
-    const landHeight = THREE.MathUtils.smoothstep(sourceHeight, 0.12, 0.82);
-    const mountainHeight = Math.pow(landHeight, 1.35);
-    const edgeBlend = THREE.MathUtils.smoothstep(Math.abs(x), 0.55, 1);
-    const edgeRelief = THREE.MathUtils.lerp(1, 0.55, edgeBlend);
-    const elevation = 0.004 + mountainHeight * 0.03 * edgeRelief * reliefScale;
-    terrainSurfacePoint(THREE, x, y, elevation, tempPoint);
+    terrainSurfacePoint(THREE, x, y, REGIONAL_SURFACE_ELEVATION, tempPoint);
     positions.setXYZ(index, tempPoint.x, tempPoint.y, tempPoint.z);
   }
 
@@ -656,58 +711,27 @@ function configureInstanceFade(material) {
       .replace(
         "#include <alphamap_fragment>",
         `#include <alphamap_fragment>
-      float regionalFadeX =
-        smoothstep(0.0, 0.13, vInstanceUv.x)
-        * smoothstep(0.0, 0.13, 1.0 - vInstanceUv.x);
-      float regionalFadeY =
-        smoothstep(0.0, 0.15, vInstanceUv.y)
-        * smoothstep(0.0, 0.15, 1.0 - vInstanceUv.y);
-      float regionalEdgeFade = regionalFadeX * regionalFadeY;
+      vec2 regionalCenteredUv = (vInstanceUv - 0.5) * 2.0;
+      float regionalRadius = length(regionalCenteredUv);
+      float regionalEdgeFade = 1.0 - smoothstep(0.46, 1.0, regionalRadius);
       diffuseColor.a *= regionalEdgeFade;`
       );
   };
-  material.customProgramCacheKey = () => "earth-regional-instance-fade-v2";
+  material.customProgramCacheKey = () => "earth-regional-instance-radial-fade-v3";
 }
 
-function configureRegionalTerrainEdgeFade(material) {
+function configureRegionalSurfaceFade(material, cacheKey, uvVarying = "vMapUv") {
   material.onBeforeCompile = shader => {
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        "#include <normal_fragment_maps>",
-        `#include <normal_fragment_maps>
-// 3D Tree Canopy effect (Procedural normal mapping for forests)
-vec3 texColor = texture2D(map, vMapUv).rgb;
-// Isolate green areas (where green is stronger than red and blue)
-float isGreen = smoothstep(0.01, 0.05, texColor.g - max(texColor.r, texColor.b));
-// High frequency pseudo-random noise for canopy micro-bumps
-vec2 treeUv = vMapUv * 7500.0;
-float treeNoise1 = fract(sin(dot(floor(treeUv), vec2(12.9898, 78.233))) * 43758.5453);
-float treeNoise2 = fract(sin(dot(floor(treeUv + vec2(0.5, 0.5)), vec2(12.9898, 78.233))) * 43758.5453);
-// Smooth interpolation for the noise
-vec2 f = fract(treeUv);
-f = f * f * (3.0 - 2.0 * f);
-float treeBump = mix(treeNoise1, treeNoise2, f.x * f.y);
-// Generate a fake normal from the bump
-vec3 treeNormal = normalize(vec3(treeBump - 0.5, treeBump - 0.5, 1.2));
-// Blend normal with the procedural tree normal
-normal = normalize(mix(normal, treeNormal, isGreen * 0.42));
-// Make trees rougher (less shiny than terrain)
-roughnessFactor = mix(roughnessFactor, 0.98, isGreen);`
-      )
-      .replace(
-        "#include <alphamap_fragment>",
-        `#include <alphamap_fragment>
-float regionalFadeX =
-  smoothstep(0.0, 0.13, vMapUv.x)
-  * smoothstep(0.0, 0.13, 1.0 - vMapUv.x);
-float regionalFadeY =
-  smoothstep(0.0, 0.15, vMapUv.y)
-  * smoothstep(0.0, 0.15, 1.0 - vMapUv.y);
-float regionalEdgeFade = regionalFadeX * regionalFadeY;
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <alphamap_fragment>",
+      `#include <alphamap_fragment>
+vec2 regionalCenteredUv = (${uvVarying} - 0.5) * 2.0;
+float regionalRadius = length(regionalCenteredUv);
+float regionalEdgeFade = 1.0 - smoothstep(0.46, 1.0, regionalRadius);
 diffuseColor.a *= regionalEdgeFade;`
-      );
+    );
   };
-  material.customProgramCacheKey = () => "earth-regional-terrain-edge-fade-v4";
+  material.customProgramCacheKey = () => cacheKey;
 }
 
 function createProceduralTerrainLayer(
@@ -715,113 +739,97 @@ function createProceduralTerrainLayer(
   isMobileDevice,
   qualityLevel,
   terrainTexture,
-  terrainHeightTexture,
-  terrainNormalTexture,
-  regionalWaterTexture,
-  regionalCloudTexture
+  regionalWaterTexture
 ) {
   const group = new THREE.Group();
   group.name = "earth-procedural-region";
   group.renderOrder = 5;
+  group.visible = false;
+  group.userData.opacity = 0;
+  group.userData.targetOpacity = 0;
+  group.userData.anchorLocked = false;
+  group.userData.anchorInitialized = false;
+  group.userData.regionalAvailable = false;
+  group.userData.cityMesh = null;
+  group.userData.forestMesh = null;
+  group.userData.cityFullCount = 0;
+  group.userData.forestFullCount = 0;
+  group.userData.fadeMaterials = [];
+
+  if (!terrainTexture) {
+    regionalWaterTexture?.dispose();
+    return group;
+  }
 
   const lowQuality = qualityLevel === "LOW";
   const mediumQuality = qualityLevel === "MEDIUM";
-  const widthSegments = lowQuality ? 160 : isMobileDevice ? 224 : mediumQuality ? 352 : 512;
-  const heightSegments = lowQuality ? 120 : isMobileDevice ? 168 : mediumQuality ? 264 : 384;
-  const sampleHeight = createTerrainHeightSampler(THREE, terrainHeightTexture);
+  const widthSegments = lowQuality ? 48 : isMobileDevice ? 64 : mediumQuality ? 72 : 96;
+  const heightSegments = lowQuality ? 40 : isMobileDevice ? 52 : mediumQuality ? 60 : 80;
   const sampleColor = createTerrainColorSampler(THREE, terrainTexture);
-  const geometry = createRegionalTerrainGeometry(
-    THREE,
-    widthSegments,
-    heightSegments,
-    sampleHeight,
-    1.7
-  );
+  const sampleWater = regionalWaterTexture
+    ? createTerrainMaskSampler(THREE, regionalWaterTexture)
+    : null;
+  const geometry = createRegionalTerrainGeometry(THREE, widthSegments, heightSegments);
   const terrainMaterial = new THREE.MeshStandardMaterial({
     map: terrainTexture,
-    normalMap: terrainNormalTexture,
-    normalScale: new THREE.Vector2(1.2, 1.2), // Sharper details
-    bumpMap: terrainHeightTexture,
-    bumpScale: 0.012, // Taller bumps
-    emissive: 0xffffff,
-    emissiveMap: terrainTexture,
-    emissiveIntensity: 0.065,
-    roughness: 0.88,
+    color: 0xffffff,
+    emissive: 0x101719,
+    emissiveIntensity: 0.08,
+    roughness: 0.9,
     metalness: 0,
     transparent: true,
     opacity: 1,
-    depthTest: false,
+    depthTest: true,
     depthWrite: false,
     side: THREE.FrontSide,
     dithering: true,
   });
-  configureRegionalTerrainEdgeFade(terrainMaterial);
+  configureRegionalSurfaceFade(terrainMaterial, "earth-regional-surface-radial-fade-v5");
   const terrain = new THREE.Mesh(geometry, terrainMaterial);
-  terrain.name = "earth-regional-mountains";
+  terrain.name = "earth-regional-surface";
   terrain.renderOrder = 5;
   group.add(terrain);
 
-  const waterMaterial = new THREE.MeshPhysicalMaterial({
-    alphaMap: regionalWaterTexture,
-    color: 0x1678ad,
-    emissive: 0x0a3550,
-    emissiveIntensity: 0.2,
-    roughness: 0.18,
-    metalness: 0,
-    clearcoat: 0.65,
-    clearcoatRoughness: 0.18,
-    transparent: true,
-    opacity: 0.76,
-    depthTest: false,
-    depthWrite: false,
-    blending: THREE.NormalBlending,
-    side: THREE.FrontSide,
-    dithering: true,
-  });
-  const water = new THREE.Mesh(geometry, waterMaterial);
-  water.name = "earth-regional-lakes";
-  water.renderOrder = 6;
-  water.scale.setScalar(1 + 0.003 / CONFIG.EARTH.RADIUS);
-  group.add(water);
+  let waterMaterial = null;
+  if (regionalWaterTexture) {
+    waterMaterial = new THREE.MeshPhysicalMaterial({
+      alphaMap: regionalWaterTexture,
+      color: 0x1678ad,
+      emissive: 0x0a3550,
+      emissiveIntensity: 0.2,
+      roughness: 0.18,
+      metalness: 0,
+      clearcoat: 0.65,
+      clearcoatRoughness: 0.18,
+      transparent: true,
+      opacity: 0.76,
+      depthTest: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+      side: THREE.FrontSide,
+      dithering: true,
+    });
+    configureRegionalSurfaceFade(
+      waterMaterial,
+      "earth-regional-water-radial-fade-v2",
+      "vAlphaMapUv"
+    );
+    const water = new THREE.Mesh(geometry, waterMaterial);
+    water.name = "earth-regional-lakes";
+    water.renderOrder = 6;
+    water.scale.setScalar(1 + 0.0015 / CONFIG.EARTH.RADIUS);
+    group.add(water);
+  }
 
-  const regionalCloudShadowMaterial = new THREE.MeshBasicMaterial({
-    alphaMap: regionalCloudTexture,
-    color: 0x17232e,
-    transparent: true,
-    opacity: 0.075,
-    depthTest: false,
-    depthWrite: false,
-  });
-  const regionalCloudShadow = new THREE.Mesh(geometry, regionalCloudShadowMaterial);
-  regionalCloudShadow.name = "earth-regional-cloud-shadow";
-  regionalCloudShadow.renderOrder = 7;
-  regionalCloudShadow.scale.setScalar(1 + 0.008 / CONFIG.EARTH.RADIUS);
-  group.add(regionalCloudShadow);
-
-  const regionalCloudMaterial = new THREE.MeshLambertMaterial({
-    alphaMap: regionalCloudTexture,
-    color: 0xf3f7fa,
-    emissive: 0x46515c,
-    emissiveIntensity: 0.16,
-    transparent: true,
-    opacity: 0.6,
-    depthTest: false,
-    depthWrite: false,
-    dithering: true,
-  });
-  const regionalClouds = new THREE.Mesh(geometry, regionalCloudMaterial);
-  regionalClouds.name = "earth-regional-clouds";
-  regionalClouds.renderOrder = 8;
-  regionalClouds.scale.setScalar(1 + 0.022 / CONFIG.EARTH.RADIUS);
-  group.add(regionalClouds);
-
-  const numInstances = isMobileDevice
-    ? 4000
-    : qualityLevel === "LOW"
+  const instanceBudget = lowQuality
+    ? 1600
+    : isMobileDevice
       ? 2500
       : qualityLevel === "MEDIUM"
-        ? 8000
-        : 12000;
+        ? 4000
+        : 6000;
+  const maxCityInstances = Math.floor(instanceBudget * 0.35);
+  const maxForestInstances = Math.floor(instanceBudget * 0.12);
 
   const buildingGeometry = new THREE.BoxGeometry(0.0018, 0.0018, 0.0018);
   buildingGeometry.translate(0, 0, 0.00075);
@@ -838,6 +846,7 @@ function createProceduralTerrainLayer(
     metalness: 0.18,
     transparent: true,
     opacity: 1,
+    depthTest: true,
   });
 
   const treeMaterial = new THREE.MeshStandardMaterial({
@@ -846,18 +855,16 @@ function createProceduralTerrainLayer(
     metalness: 0.0,
     transparent: true,
     opacity: 1,
+    depthTest: true,
   });
 
   configureInstanceFade(buildingMaterial);
   configureInstanceFade(treeMaterial);
 
-  const cityMesh = new THREE.InstancedMesh(buildingGeometry, buildingMaterial, numInstances);
-  const forestMesh = new THREE.InstancedMesh(treeGeometry, treeMaterial, numInstances);
-  const cityUvArray = new Float32Array(numInstances * 2);
-  const forestUvArray = new Float32Array(numInstances * 2);
-
-  cityMesh.geometry = cityMesh.geometry.clone();
-  forestMesh.geometry = forestMesh.geometry.clone();
+  const cityMesh = new THREE.InstancedMesh(buildingGeometry, buildingMaterial, maxCityInstances);
+  const forestMesh = new THREE.InstancedMesh(treeGeometry, treeMaterial, maxForestInstances);
+  const cityUvArray = new Float32Array(maxCityInstances * 2);
+  const forestUvArray = new Float32Array(maxForestInstances * 2);
 
   const cityUvAttribute = new THREE.InstancedBufferAttribute(cityUvArray, 2);
   const forestUvAttribute = new THREE.InstancedBufferAttribute(forestUvArray, 2);
@@ -875,8 +882,6 @@ function createProceduralTerrainLayer(
 
   let cityCount = 0;
   let treeCount = 0;
-  const maxCityInstances = Math.floor(numInstances * 0.35);
-  const maxForestInstances = Math.floor(numInstances * 0.12);
 
   let seed = 12345;
   const random = () => {
@@ -884,14 +889,12 @@ function createProceduralTerrainLayer(
     return seed / 233280;
   };
 
-  const reliefScaleNum = 1.7;
-
   const tempColor = new THREE.Color();
   const dir = new THREE.Vector3();
   const tempPoint = new THREE.Vector3();
   const colorData = [0, 0, 0];
 
-  for (let i = 0; i < numInstances * 4; i++) {
+  for (let i = 0; i < instanceBudget * 4; i++) {
     if (cityCount >= maxCityInstances && treeCount >= maxForestInstances) break;
 
     const r1 = random();
@@ -905,18 +908,10 @@ function createProceduralTerrainLayer(
 
     const u = (x + 1) / 2;
     const v = (y + 1) / 2;
+    const waterCoverage = sampleWater ? sampleWater(u, v) : 0;
+    if (waterCoverage > 0.18) continue;
 
-    const sourceHeight = sampleHeight ? sampleHeight(u, v) : 0.2;
-
-    if (sourceHeight < 0.02) continue;
-
-    const landHeight = THREE.MathUtils.smoothstep(sourceHeight, 0.12, 0.82);
-    const mountainHeight = Math.pow(landHeight, 1.35);
-    const edgeBlend = THREE.MathUtils.smoothstep(Math.abs(x), 0.55, 1);
-    const edgeRelief = THREE.MathUtils.lerp(1, 0.55, edgeBlend);
-    const elevation = 0.004 + mountainHeight * 0.03 * edgeRelief * reliefScaleNum;
-
-    terrainSurfacePoint(THREE, x, y, elevation, tempPoint);
+    terrainSurfacePoint(THREE, x, y, REGIONAL_SURFACE_ELEVATION, tempPoint);
 
     dir.copy(tempPoint).normalize();
 
@@ -952,8 +947,6 @@ function createProceduralTerrainLayer(
     if (
       (isCity || distanceFromBerlinCenter < 0.4) &&
       distanceFromBerlinCenter < 0.62 &&
-      sourceHeight > 0.02 &&
-      sourceHeight < 0.45 &&
       scatterNoise > 0.3 &&
       cityCount < maxCityInstances
     ) {
@@ -972,8 +965,6 @@ function createProceduralTerrainLayer(
     } else if (
       isForest &&
       distanceFromBerlinCenter > 0.46 &&
-      sourceHeight >= 0.03 &&
-      sourceHeight < 0.5 &&
       scatterNoise > 0.2 &&
       treeCount < maxForestInstances
     ) {
@@ -999,21 +990,61 @@ function createProceduralTerrainLayer(
   group.add(cityMesh);
   group.add(forestMesh);
 
-  group.userData.opacity = 0;
   group.userData.targetOpacity = 1;
-  group.userData.anchorLocked = false;
-  group.userData.anchorInitialized = false;
-  group.userData.terrainMaterial = terrainMaterial;
-  group.userData.cloudTexture = regionalCloudTexture;
+  group.userData.regionalAvailable = true;
+  group.userData.cityMesh = cityMesh;
+  group.userData.forestMesh = forestMesh;
+  group.userData.cityFullCount = cityCount;
+  group.userData.forestFullCount = treeCount;
   group.userData.fadeMaterials = [
     { material: terrainMaterial, baseOpacity: 1 },
-    { material: waterMaterial, baseOpacity: 0.76 },
-    { material: regionalCloudShadowMaterial, baseOpacity: 0.075 },
-    { material: regionalCloudMaterial, baseOpacity: 0.6 },
+    ...(waterMaterial ? [{ material: waterMaterial, baseOpacity: 0.76 }] : []),
     { material: buildingMaterial, baseOpacity: 1 },
     { material: treeMaterial, baseOpacity: 1 },
   ];
   return group;
+}
+
+function configureRegionalCloudMaterial(material, terrainData) {
+  material.onBeforeCompile = shader => {
+    shader.uniforms.rct = { value: 0 };
+    terrainData.rcs = shader;
+    shader.fragmentShader = shader.fragmentShader
+      .replace("void main() {", "uniform float rct;\nvoid main() {")
+      .replace(
+        "#include <alphamap_fragment>",
+        `#ifdef USE_ALPHAMAP
+vec2 u=vAlphaMapUv*vec2(.42,.34)+vec2(.06,.37);
+u+=vec2(rct*.0016,sin(rct*.07)*.004);
+float a=smoothstep(.16,.72,texture2D(alphaMap,u).g);
+vec2 p=(vAlphaMapUv-.5)*2.;
+diffuseColor.a*=a*(1.-smoothstep(.52,1.,length(p)));
+#endif`
+      );
+  };
+  material.customProgramCacheKey = () => "ercw1";
+}
+
+export function attachRegionalCloudLayer(THREE, terrainGroup, cloudGroup) {
+  const terrain = terrainGroup?.getObjectByName?.("earth-regional-surface");
+  const cloudTexture = cloudGroup?.userData?.cloudTexture;
+  if (!terrain?.geometry || !cloudTexture) return;
+
+  const material = new THREE.MeshBasicMaterial({
+    alphaMap: cloudTexture,
+    transparent: true,
+    opacity: 0.34,
+    depthTest: false,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  configureRegionalCloudMaterial(material, terrainGroup.userData);
+
+  const mesh = new THREE.Mesh(terrain.geometry, material);
+  mesh.renderOrder = 9;
+  terrainGroup.add(mesh);
+
+  terrainGroup.userData.fadeMaterials?.push({ material, baseOpacity: 0.34 });
 }
 
 export async function createEarthSystem(
@@ -1027,13 +1058,29 @@ export async function createEarthSystem(
 ) {
   const manager = loadingManager || new THREE.LoadingManager();
   const textureLoader = new THREE.TextureLoader(manager);
-  const textureSet = selectTextureSet(renderer, isMobileDevice);
+  const regionalTextureLoader = new THREE.TextureLoader();
+  const textureSet = selectTextureSet(renderer, isMobileDevice, qualityLevel);
+  const useCompactRegionalTexture =
+    qualityLevel === "LOW" ||
+    renderer.domElement.clientWidth * getTexturePixelRatio(isMobileDevice, qualityLevel) <= 1600 ||
+    renderer.capabilities.maxTextureSize < 4096;
+  const pendingTextures = new Set();
+  let textureLoadAbandoned = false;
+  const trackTexture = texturePromise =>
+    texturePromise.then(texture => {
+      if (!texture?.isTexture) return texture;
+      if (textureLoadAbandoned) texture.dispose();
+      else pendingTextures.add(texture);
+      return texture;
+    });
+  const abandonTextureLoad = () => {
+    textureLoadAbandoned = true;
+    pendingTextures.forEach(texture => texture.dispose());
+    pendingTextures.clear();
+  };
 
   let regionalTerrainTexture,
-    regionalTerrainHeightTexture,
-    regionalTerrainNormalTexture,
     regionalWaterTexture,
-    regionalCloudTexture,
     dayTexture,
     nightTexture,
     normalTexture,
@@ -1042,60 +1089,60 @@ export async function createEarthSystem(
   let timeoutId;
   try {
     const texturePromise = Promise.all([
-      loadNamedTexture(
-        "EOX city hemisphere",
-        textureLoader.loadAsync(
-          isMobileDevice ? EARTH_REGIONAL_TEXTURES.TERRAIN_MOBILE : EARTH_REGIONAL_TEXTURES.TERRAIN
+      trackTexture(
+        loadNamedTexture(
+          "day",
+          loadPreferredTexture(ktx2Loader, textureLoader, textureSet.DAY_KTX2, textureSet.DAY)
         )
       ),
-      loadNamedTexture(
-        "EOX regional height",
-        textureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.HEIGHT)
+      trackTexture(
+        loadNamedTexture(
+          "night",
+          loadPreferredTexture(ktx2Loader, textureLoader, textureSet.NIGHT_KTX2, textureSet.NIGHT)
+        )
       ),
-      loadNamedTexture(
-        "EOX regional normal",
-        textureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.NORMAL)
+      trackTexture(loadNamedTexture("normal", textureLoader.loadAsync(textureSet.NORMAL))),
+      trackTexture(loadNamedTexture("bump", textureLoader.loadAsync(textureSet.BUMP))),
+      trackTexture(
+        loadOptionalTexture(
+          "EOX Berlin regional surface",
+          regionalTextureLoader.loadAsync(
+            useCompactRegionalTexture
+              ? EARTH_REGIONAL_TEXTURES.TERRAIN_MOBILE
+              : EARTH_REGIONAL_TEXTURES.TERRAIN
+          )
+        )
       ),
-      loadNamedTexture(
-        "EOX regional lakes",
-        textureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.WATER)
+      trackTexture(
+        loadOptionalTexture(
+          "EOX regional lakes",
+          regionalTextureLoader.loadAsync(EARTH_REGIONAL_TEXTURES.WATER)
+        )
       ),
-      loadNamedTexture("regional clouds", textureLoader.loadAsync(textureSet.CLOUDS)),
-      loadNamedTexture(
-        "day",
-        loadPreferredTexture(ktx2Loader, textureLoader, textureSet.DAY_KTX2, textureSet.DAY)
-      ),
-      loadNamedTexture(
-        "night",
-        loadPreferredTexture(ktx2Loader, textureLoader, textureSet.NIGHT_KTX2, textureSet.NIGHT)
-      ),
-      loadNamedTexture("normal", textureLoader.loadAsync(textureSet.NORMAL)),
-      loadNamedTexture("bump", textureLoader.loadAsync(textureSet.BUMP)),
       fetch(EARTH_CITY_LIGHTS_URL)
         .then(response => (response.ok ? response.arrayBuffer() : null))
         .catch(() => null),
     ]);
     [
-      regionalTerrainTexture,
-      regionalTerrainHeightTexture,
-      regionalTerrainNormalTexture,
-      regionalWaterTexture,
-      regionalCloudTexture,
       dayTexture,
       nightTexture,
       normalTexture,
       bumpTexture,
+      regionalTerrainTexture,
+      regionalWaterTexture,
       cityBuffer,
     ] = await Promise.race([
       texturePromise,
       new Promise((_, reject) => {
-        timeoutId = setTimeout(
-          () => reject(new Error("Texture loading timeout")),
-          TEXTURE_TIMEOUT_MS
-        );
+        timeoutId = setTimeout(() => {
+          abandonTextureLoad();
+          reject(new Error("Texture loading timeout"));
+        }, TEXTURE_TIMEOUT_MS);
       }),
     ]);
+    pendingTextures.clear();
   } catch (err) {
+    abandonTextureLoad();
     if (isLocalDevRuntime()) log.error("Texture loading failed:", err);
     throw new Error(`Texture loading failed: ${err instanceof Error ? err.message : err}`, {
       cause: err,
@@ -1115,25 +1162,20 @@ export async function createEarthSystem(
   configureTexture(THREE, nightTexture, anisotropy, THREE.SRGBColorSpace);
   configureTexture(THREE, normalTexture, anisotropy, THREE.NoColorSpace);
   configureTexture(THREE, bumpTexture, anisotropy, THREE.NoColorSpace);
-  configureTexture(THREE, regionalTerrainTexture, anisotropy, THREE.SRGBColorSpace);
-  regionalTerrainTexture.wrapS = THREE.ClampToEdgeWrapping;
-  configureTexture(THREE, regionalTerrainHeightTexture, anisotropy, THREE.NoColorSpace);
-  regionalTerrainHeightTexture.wrapS = THREE.ClampToEdgeWrapping;
-  configureTexture(THREE, regionalTerrainNormalTexture, anisotropy, THREE.NoColorSpace);
-  regionalTerrainNormalTexture.wrapS = THREE.ClampToEdgeWrapping;
-  configureTexture(THREE, regionalWaterTexture, anisotropy, THREE.NoColorSpace);
-  regionalWaterTexture.wrapS = THREE.ClampToEdgeWrapping;
-  configureTexture(THREE, regionalCloudTexture, anisotropy, THREE.NoColorSpace);
-  regionalCloudTexture.wrapS = regionalCloudTexture.wrapT = THREE.RepeatWrapping;
-  regionalCloudTexture.repeat.set(0.42, 0.34);
-  regionalCloudTexture.offset.set(0.06, 0.37);
+  if (regionalTerrainTexture) {
+    configureTexture(THREE, regionalTerrainTexture, anisotropy, THREE.SRGBColorSpace);
+    regionalTerrainTexture.wrapS = THREE.ClampToEdgeWrapping;
+  }
+  if (regionalWaterTexture) {
+    configureTexture(THREE, regionalWaterTexture, anisotropy, THREE.NoColorSpace);
+    regionalWaterTexture.wrapS = THREE.ClampToEdgeWrapping;
+  }
 
   const dayMaterial = new THREE.MeshPhysicalMaterial({
     map: dayTexture,
     normalMap: normalTexture,
     normalScale: new THREE.Vector2(0.94, 0.94),
     bumpMap: bumpTexture,
-    bumpScale: CONFIG.EARTH.BUMP_SCALE,
     displacementMap: bumpTexture,
     displacementScale: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
     roughness: 0.86,
@@ -1180,14 +1222,18 @@ export async function createEarthSystem(
   dayMaterial.customProgramCacheKey = () => "earth-city-points-v27";
   const nightMaterial = dayMaterial;
 
-  // OPTIMIZATION: Reduce segments on mobile
   const segments = isMobileDevice
     ? CONFIG.EARTH.SEGMENTS_MOBILE
     : qualityLevel === "MEDIUM"
-      ? Math.min(CONFIG.EARTH.SEGMENTS, 256)
+      ? Math.min(CONFIG.EARTH.SEGMENTS, 160)
       : CONFIG.EARTH.SEGMENTS;
 
   const earthGeometry = new THREE.SphereGeometry(CONFIG.EARTH.RADIUS, segments, segments);
+  const europeSegments = isMobileDevice ? 96 : Math.min(segments, 160);
+  const europeGeometry =
+    europeSegments === segments
+      ? earthGeometry
+      : new THREE.SphereGeometry(CONFIG.EARTH.RADIUS, europeSegments, europeSegments);
   const earthMesh = new THREE.Mesh(earthGeometry, dayMaterial);
   earthMesh.position.set(0, -6, 0);
   earthMesh.scale.set(1.5, 1.5, 1.5);
@@ -1198,32 +1244,22 @@ export async function createEarthSystem(
   earthMesh.userData.targetRotation = 0;
   earthMesh.userData.zoomGeometries = {
     berlin: earthGeometry,
-    europe: new THREE.SphereGeometry(
-      CONFIG.EARTH.RADIUS,
-      isMobileDevice ? 128 : Math.min(segments, 256),
-      isMobileDevice ? 128 : Math.min(segments, 256)
-    ),
-    globe: new THREE.SphereGeometry(
-      CONFIG.EARTH.RADIUS,
-      isMobileDevice ? 96 : Math.min(segments, 144),
-      isMobileDevice ? 96 : Math.min(segments, 144)
-    ),
+    europe: europeGeometry,
   };
 
   const cityGlowGroup = createCityGlow(THREE, nightTexture, segments, isMobileDevice);
   const cityLightsPoints = createCityLightsPoints(THREE, cityBuffer, isMobileDevice);
+  const atmosphere = createAtmosphereLayer(THREE, segments);
   const proceduralTerrainGroup = createProceduralTerrainLayer(
     THREE,
     isMobileDevice,
     qualityLevel,
     regionalTerrainTexture,
-    regionalTerrainHeightTexture,
-    regionalTerrainNormalTexture,
-    regionalWaterTexture,
-    regionalCloudTexture
+    regionalWaterTexture
   );
   earthMesh.add(cityGlowGroup);
   earthMesh.add(cityLightsPoints);
+  earthMesh.add(atmosphere);
   earthMesh.add(proceduralTerrainGroup);
   scene.add(earthMesh);
 
@@ -1237,13 +1273,13 @@ export async function createEarthSystem(
   };
 }
 
-export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, loadingManager) {
-  const textureLoader = new THREE.TextureLoader(loadingManager);
-  const textureSet = selectTextureSet(renderer, isMobileDevice);
+export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, qualityLevel) {
+  const textureLoader = new THREE.TextureLoader();
+  const textureSet = selectTextureSet(renderer, isMobileDevice, qualityLevel);
 
   const [moonTexture, moonBumpTexture] = await Promise.all([
-    textureLoader.loadAsync(textureSet.MOON).catch(() => null),
-    textureLoader.loadAsync(textureSet.MOON_BUMP).catch(() => null),
+    loadOptionalTexture("moon surface", textureLoader.loadAsync(textureSet.MOON)),
+    loadOptionalTexture("moon relief", textureLoader.loadAsync(textureSet.MOON_BUMP)),
   ]);
 
   const anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), isMobileDevice ? 4 : 16);
@@ -1273,7 +1309,6 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
 
   const moonLOD = new THREE.LOD();
 
-  // High detail
   const moonGeometryHigh = new THREE.SphereGeometry(
     CONFIG.MOON.RADIUS,
     isMobileDevice ? 64 : CONFIG.MOON.SEGMENTS,
@@ -1281,11 +1316,9 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
   );
   moonLOD.addLevel(new THREE.Mesh(moonGeometryHigh, moonMaterial), 0);
 
-  // Medium detail
   const moonGeometryMed = new THREE.SphereGeometry(CONFIG.MOON.RADIUS, 48, 48);
   moonLOD.addLevel(new THREE.Mesh(moonGeometryMed, moonMaterial), 35);
 
-  // Low detail
   const moonGeometryLow = new THREE.SphereGeometry(CONFIG.MOON.RADIUS, 24, 24);
   moonLOD.addLevel(new THREE.Mesh(moonGeometryLow, moonMaterial), 80);
 
@@ -1297,26 +1330,20 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
   return moonLOD;
 }
 
-export async function createCloudLayer(
-  THREE,
-  renderer,
-  loadingManager,
-  isMobileDevice,
-  ktx2Loader = null
-) {
-  const textureLoader = new THREE.TextureLoader(loadingManager);
+export async function createCloudLayer(THREE, renderer, isMobileDevice, qualityLevel = "HIGH") {
+  const textureLoader = new THREE.TextureLoader();
   try {
-    const textureSet = selectTextureSet(renderer, isMobileDevice);
-    const useCompressedClouds = isMobileDevice || renderer.capabilities.maxTextureSize < 8192;
-    const cloudTexture = useCompressedClouds
-      ? await loadPreferredTexture(
-          ktx2Loader,
-          textureLoader,
-          textureSet.CLOUDS_KTX2,
-          textureSet.CLOUDS
-        )
-      : await textureLoader.loadAsync(textureSet.CLOUDS);
-    const anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), isMobileDevice ? 8 : 16);
+    const textureSet = selectTextureSet(renderer, isMobileDevice, qualityLevel);
+    const cloudTexture = await loadOptionalTexture(
+      "cloud surface",
+      textureLoader.loadAsync(textureSet.CLOUDS),
+      7000
+    );
+    if (!cloudTexture) return new THREE.Object3D();
+    const anisotropy = Math.min(
+      renderer.capabilities.getMaxAnisotropy(),
+      qualityLevel === "LOW" ? 4 : isMobileDevice ? 8 : 16
+    );
     configureTexture(THREE, cloudTexture, anisotropy, THREE.NoColorSpace);
     cloudTexture.wrapS = THREE.RepeatWrapping;
     cloudTexture.wrapT = THREE.ClampToEdgeWrapping;
@@ -1345,7 +1372,8 @@ export async function createCloudLayer(
       cacheKey: "earth-cloud-low-wind-v8",
     });
 
-    const segments = isMobileDevice ? 96 : Math.min(CONFIG.EARTH.SEGMENTS, 256);
+    const segments =
+      qualityLevel === "LOW" ? 64 : isMobileDevice ? 80 : Math.min(CONFIG.EARTH.SEGMENTS, 144);
 
     const cloudGeometry = new THREE.SphereGeometry(
       CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE,
@@ -1358,44 +1386,46 @@ export async function createCloudLayer(
     const cloudGroup = new THREE.Group();
     cloudGroup.add(cloudMesh);
 
-    const highCloudMaterial = new THREE.MeshStandardMaterial({
-      alphaMap: cloudTexture,
-      color: 0xf8fbff,
-      emissive: 0x75889b,
-      emissiveIntensity: 0.1,
-      roughness: 1,
-      metalness: 0,
-      transparent: true,
-      opacity: CONFIG.CLOUDS.OPACITY * CONFIG.CLOUDS.HIGH_OPACITY_FACTOR,
-      blending: THREE.NormalBlending,
-      depthWrite: false,
-      alphaTest: 0,
-      side: THREE.FrontSide,
-      dithering: true,
-    });
-    configureWindCloudMaterial(THREE, highCloudMaterial, {
-      wind: [0.00055, -0.000015],
-      phase: [0.23, 0.018],
-      distortion: 0.005,
-      rotation: 0.04,
-      densityShade: 0.15, // increased for volumetric cloud depth
-      coverage: [0.24, 0.77],
-      cacheKey: "earth-cloud-high-wind-v5",
-    });
-    const highCloudGeometry = new THREE.SphereGeometry(
-      CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.HIGH_ALTITUDE,
-      segments,
-      segments
-    );
-    const highCloudMesh = new THREE.Mesh(highCloudGeometry, highCloudMaterial);
-    highCloudMesh.name = "earth-cloud-high";
-    highCloudMesh.renderOrder = 8;
-    highCloudMesh.rotation.y = 0.08;
-    cloudGroup.add(highCloudMesh);
+    const windMaterials = [lowCloudMaterial];
+    if (qualityLevel === "HIGH") {
+      const highCloudMaterial = new THREE.MeshStandardMaterial({
+        alphaMap: cloudTexture,
+        color: 0xf8fbff,
+        emissive: 0x75889b,
+        emissiveIntensity: 0.1,
+        roughness: 1,
+        metalness: 0,
+        transparent: true,
+        opacity: CONFIG.CLOUDS.OPACITY * CONFIG.CLOUDS.HIGH_OPACITY_FACTOR,
+        blending: THREE.NormalBlending,
+        depthWrite: false,
+        alphaTest: 0,
+        side: THREE.FrontSide,
+        dithering: true,
+      });
+      configureWindCloudMaterial(THREE, highCloudMaterial, {
+        wind: [0.00055, -0.000015],
+        phase: [0.23, 0.018],
+        distortion: 0.005,
+        rotation: 0.04,
+        densityShade: 0.15,
+        coverage: [0.24, 0.77],
+        cacheKey: "earth-cloud-high-wind-v5",
+      });
+      const highCloudGeometry = new THREE.SphereGeometry(
+        CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.HIGH_ALTITUDE,
+        segments,
+        segments
+      );
+      const highCloudMesh = new THREE.Mesh(highCloudGeometry, highCloudMaterial);
+      highCloudMesh.name = "earth-cloud-high";
+      highCloudMesh.renderOrder = 8;
+      highCloudMesh.rotation.y = 0.08;
+      cloudGroup.add(highCloudMesh);
+      windMaterials.push(highCloudMaterial);
+    }
 
-    const windMaterials = [lowCloudMaterial, highCloudMaterial];
-
-    if (!isMobileDevice) {
+    if (!isMobileDevice && qualityLevel !== "LOW") {
       const shadowMaterial = new THREE.MeshBasicMaterial({
         alphaMap: cloudTexture,
         color: 0x07111d,
@@ -1429,7 +1459,7 @@ export async function createCloudLayer(
     }
 
     cloudGroup.userData.windMaterials = windMaterials;
-    cloudGroup.userData.highCloudMesh = highCloudMesh;
+    cloudGroup.userData.cloudTexture = cloudTexture;
     return cloudGroup;
   } catch (error) {
     log.warn("Cloud texture failed to load:", error);

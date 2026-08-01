@@ -1026,11 +1026,29 @@
   }
 
   .hero__poster {
+    position: relative;
+    isolation: isolate;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0;
     max-width: min(100%, 58rem);
+    translate: 0 -1.75rem;
+  }
+
+  body.three-earth-active .hero__poster::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -2.5rem -5rem -3rem;
+    background: radial-gradient(
+      ellipse 62% 60% at 50% 44%,
+      rgb(2 7 16 / 62%) 0%,
+      rgb(2 7 16 / 34%) 48%,
+      transparent 78%
+    );
+    filter: blur(14px);
+    pointer-events: none;
   }
 
   .hero__header-group {
@@ -1068,8 +1086,23 @@
     text-shadow: 0 0 18px color-mix(in srgb, var(--home-accent-cyan) 22%, transparent);
   }
 
+  .hero__header-group::after {
+    content: "";
+    inline-size: clamp(2.75rem, 7vw, 4.5rem);
+    block-size: 1px;
+    margin-block-start: clamp(0.45rem, 0.8vw, 0.7rem);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--home-accent-warm) 82%, white),
+      transparent
+    );
+    opacity: 0.72;
+    box-shadow: 0 0 18px color-mix(in srgb, var(--home-accent-warm) 34%, transparent);
+  }
+
   .hero__title {
-    margin: clamp(1.35rem, 2.3vw, 2rem) 0 0;
+    margin: clamp(0.9rem, 1.7vw, 1.35rem) 0 0;
     width: min(100%, 17ch);
     max-width: 17ch;
     white-space: normal;
@@ -1110,6 +1143,9 @@
     font-weight: 400;
     line-height: 1.62;
     text-wrap: pretty;
+    text-shadow:
+      0 2px 16px rgb(0 0 0 / 82%),
+      0 10px 38px rgb(0 0 0 / 62%);
   }
 
   /* Shared Buttons */
@@ -1573,23 +1609,18 @@
       --home-aurora-blur-e: 44px;
     }
     .hero__poster {
-      position: relative;
-      isolation: isolate;
       max-width: none;
+      translate: none;
     }
     body.three-earth-active .hero__poster::before {
-      content: "";
-      position: absolute;
-      z-index: -1;
       inset: -1.25rem -0.8rem -1.8rem;
       background: radial-gradient(
         ellipse 72% 64% at 50% 48%,
-        rgb(3 8 18 / 52%) 0%,
-        rgb(3 8 18 / 24%) 48%,
+        rgb(3 8 18 / 58%) 0%,
+        rgb(3 8 18 / 28%) 48%,
         transparent 78%
       );
-      filter: blur(10px);
-      pointer-events: none;
+      filter: blur(12px);
     }
   }
 

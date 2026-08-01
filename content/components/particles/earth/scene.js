@@ -1,12 +1,12 @@
 import { CONFIG } from "./config.js";
+import { getResponsiveCameraFov, isMobileCameraViewport } from "./camera.js";
 
 export function setupScene(THREE, container) {
   const scene = new THREE.Scene();
 
   const aspectRatio = container.clientWidth / container.clientHeight;
-  // Use wider FOV on mobile for better vertical card visibility
-  const isMobile = container.clientWidth < 768;
-  const fov = isMobile ? 55 : CONFIG.CAMERA.FOV;
+  const isMobile = isMobileCameraViewport(container.clientWidth);
+  const fov = getResponsiveCameraFov(CONFIG.CAMERA.FOV, isMobile);
   const camera = new THREE.PerspectiveCamera(
     fov,
     aspectRatio,
@@ -32,11 +32,9 @@ export function setupScene(THREE, container) {
 
   container.appendChild(renderer.domElement);
 
-  // Ensure canvas is visible immediately
   renderer.domElement.style.opacity = "1";
   renderer.domElement.style.visibility = "visible";
 
-  // Mark that the renderer DOM element has been attached so tests or other code can detect presence
   try {
     container.dataset.threeAttached = "1";
     document.dispatchEvent(
@@ -53,7 +51,6 @@ export function setupScene(THREE, container) {
 
 export function setupLighting(THREE, scene) {
   const directionalLight = new THREE.DirectionalLight(0xfff4e5, CONFIG.SUN.INTENSITY);
-  // Light the camera-facing hemisphere so Europe remains legible in the hero.
   directionalLight.position.set(0, 7, 14);
   scene.add(directionalLight);
 

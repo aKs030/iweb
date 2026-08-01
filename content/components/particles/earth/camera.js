@@ -1,12 +1,26 @@
 import { CONFIG } from "./config.js";
 import { createLogger } from "../../../core/logger.js";
+import { isMobileDeviceLike } from "./device-capabilities.js";
 
 const log = createLogger("EarthCamera");
+const MOBILE_CAMERA_BREAKPOINT = 768;
+const MOBILE_CAMERA_FOV = 55;
 const lerp = (start, end, amount) => start + (end - start) * amount;
 const smootherstep = value => {
   const t = Math.max(0, Math.min(1, value));
   return t * t * t * (t * (t * 6 - 15) + 10);
 };
+
+export function isMobileCameraViewport(width = globalThis.innerWidth || 0) {
+  return isMobileDeviceLike() || width <= MOBILE_CAMERA_BREAKPOINT;
+}
+
+export function getResponsiveCameraFov(
+  baseFov = CONFIG.CAMERA.FOV,
+  isMobile = isMobileCameraViewport()
+) {
+  return isMobile ? MOBILE_CAMERA_FOV : baseFov;
+}
 
 export class CameraManager {
   constructor(THREE, camera) {
@@ -80,7 +94,7 @@ export class CameraManager {
     this.transition.endPos = { x: preset.x, y: preset.y };
     this.transition.presetZ = preset.z;
     this.transition.startFov = this.camera.fov;
-    this.transition.endFov = preset.fov ?? CONFIG.CAMERA.FOV;
+    this.transition.endFov = getResponsiveCameraFov(preset.fov ?? CONFIG.CAMERA.FOV);
     this.transition.endLookAt = new this.THREE.Vector3(
       preset.lookAt.x,
       preset.lookAt.y,
@@ -99,7 +113,10 @@ export class CameraManager {
     this.cameraTarget.x = lerp(start.x, end.x, p);
     this.cameraTarget.y = lerp(start.y, end.y, p);
     this.mouseState.zoom = lerp(start.z, end.z, p);
-    const nextFov = lerp(start.fov ?? CONFIG.CAMERA.FOV, end.fov ?? CONFIG.CAMERA.FOV, p);
+    const isMobile = isMobileCameraViewport();
+    const startFov = getResponsiveCameraFov(start.fov ?? CONFIG.CAMERA.FOV, isMobile);
+    const endFov = getResponsiveCameraFov(end.fov ?? CONFIG.CAMERA.FOV, isMobile);
+    const nextFov = lerp(startFov, endFov, p);
     if (Math.abs(this.camera.fov - nextFov) > 0.01) {
       this.camera.fov = nextFov;
       this.camera.updateProjectionMatrix();

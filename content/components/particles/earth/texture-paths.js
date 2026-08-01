@@ -2,6 +2,10 @@ const EARTH_TEXTURE_VERSION = "earth-eox-global-20260728-r1";
 const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-berlin-2025-20260729-r5";
 const EARTH_TEXTURE_CDN_URL = "/r2-proxy/earth/textures";
 const EARTH_DETAIL_TILE_VERSION = "earth-detail-eox-2025-20260728-r1";
+const EARTH_2K_MAX_RENDER_WIDTH = 1600;
+const EARTH_8K_MIN_RENDER_WIDTH = 3840;
+const EARTH_8K_MIN_DEVICE_MEMORY_GB = 8;
+const EARTH_MAX_RENDER_PIXEL_RATIO = 2;
 
 function withTexturePath(filename) {
   return `${EARTH_TEXTURE_CDN_URL}/${filename}?v=${EARTH_TEXTURE_VERSION}`;
@@ -19,7 +23,6 @@ const EARTH_TEXTURES = Object.freeze({
   NORMAL: withTexturePath("earth_normal_4k.webp"),
   BUMP: withTexturePath("earth_bump_4k.webp"),
   CLOUDS: withTexturePath("earth_clouds_4k.jpg"),
-  CLOUDS_KTX2: withTexturePath("earth_clouds_4k.ktx2"),
   MOON: withTexturePath("moon_texture.webp"),
   MOON_BUMP: withTexturePath("moon_bump.webp"),
 });
@@ -32,7 +35,6 @@ const EARTH_TEXTURES_STANDARD = Object.freeze({
   NORMAL: withTexturePath("earth_normal_4k.webp"),
   BUMP: withTexturePath("earth_bump_4k.webp"),
   CLOUDS: withTexturePath("earth_clouds_4k.jpg"),
-  CLOUDS_KTX2: EARTH_TEXTURES.CLOUDS_KTX2,
   MOON: withTexturePath("moon_texture.webp"),
   MOON_BUMP: withTexturePath("moon_bump.webp"),
 });
@@ -45,7 +47,6 @@ const EARTH_TEXTURES_MOBILE = Object.freeze({
   NORMAL: withTexturePath("earth_normal.webp"),
   BUMP: withTexturePath("earth_bump.webp"),
   CLOUDS: withTexturePath("earth_clouds_2k.jpg"),
-  CLOUDS_KTX2: null,
   MOON: EARTH_TEXTURES.MOON,
   MOON_BUMP: EARTH_TEXTURES.MOON_BUMP,
 });
@@ -53,8 +54,6 @@ const EARTH_TEXTURES_MOBILE = Object.freeze({
 export const EARTH_REGIONAL_TEXTURES = Object.freeze({
   TERRAIN: withRegionalTexturePath("closeup-berlin-city-lakes-forest-eox-2025.webp"),
   TERRAIN_MOBILE: withRegionalTexturePath("closeup-berlin-city-lakes-forest-eox-2025-2k.webp"),
-  HEIGHT: withRegionalTexturePath("closeup-berlin-city-lakes-forest-height-eox-2025.webp"),
-  NORMAL: withRegionalTexturePath("closeup-berlin-city-lakes-forest-normal-eox-2025.webp"),
   WATER: withRegionalTexturePath("closeup-berlin-city-lakes-forest-water-eox-2025.webp"),
 });
 
@@ -62,7 +61,7 @@ export function getEarthDetailTileUrl(row, column) {
   return `${EARTH_TEXTURE_CDN_URL}/tiles/eox-cloudless-2025/r${row}-c${column}.webp?v=${EARTH_DETAIL_TILE_VERSION}`;
 }
 
-export function getEarthTextureSet({ isMobile = false, compact = false } = {}) {
+function getEarthTextureSet({ isMobile = false, compact = false } = {}) {
   if (isMobile) return EARTH_TEXTURES_MOBILE;
   return compact ? EARTH_TEXTURES_STANDARD : EARTH_TEXTURES;
 }
@@ -75,13 +74,12 @@ export function getEarthTextureSetForDisplay({
   deviceMemory = Number(globalThis.navigator?.deviceMemory || 0),
   saveData = Boolean(globalThis.navigator?.connection?.saveData),
 } = {}) {
-  // Use the physical screen resolution as the capability signal, not just the
-  // current browser window width. A narrow/un-maximized window on a high-res or
-  // retina display previously got downgraded to the 4K set even though the
-  // hardware (and bandwidth, in most cases) can easily handle 8K.
-  const screenWidth = globalThis.screen?.width || width;
-  const referenceWidth = Math.max(width, screenWidth);
-  const renderedWidth = referenceWidth * pixelRatio;
+  const safeWidth = Math.max(0, Number(width) || 0);
+  const safePixelRatio = Math.min(
+    EARTH_MAX_RENDER_PIXEL_RATIO,
+    Math.max(1, Number(pixelRatio) || 1)
+  );
+  const renderedWidth = safeWidth * safePixelRatio;
 
   const effectiveType = globalThis.navigator?.connection?.effectiveType;
   const isSlowConnection =
@@ -90,22 +88,21 @@ export function getEarthTextureSetForDisplay({
   const constrained =
     saveData ||
     isSlowConnection ||
-    renderedWidth <= 1600 ||
+    renderedWidth <= EARTH_2K_MAX_RENDER_WIDTH ||
     (deviceMemory > 0 && deviceMemory <= 2) ||
     maxTextureSize < 4096;
-  const compact =
-    constrained ||
-    renderedWidth <= 2600 ||
-    (deviceMemory > 0 && deviceMemory <= 4) ||
-    maxTextureSize < 8192;
+  const has8KMemory =
+    deviceMemory >= EARTH_8K_MIN_DEVICE_MEMORY_GB || (deviceMemory === 0 && renderedWidth >= 5120);
+  const supports8K =
+    !isMobile &&
+    !constrained &&
+    renderedWidth >= EARTH_8K_MIN_RENDER_WIDTH &&
+    has8KMemory &&
+    maxTextureSize >= 8192;
 
   if (constrained) return getEarthTextureSet({ isMobile: true });
 
-  // A high-end tablet benefits visibly from the 4K maps without paying the
-  // desktop-only 8K memory cost. Phones and constrained devices stay on 2K.
-  if (isMobile) {
-    return compact ? getEarthTextureSet({ isMobile: true }) : getEarthTextureSet({ compact: true });
-  }
+  if (isMobile) return getEarthTextureSet({ compact: true });
 
-  return getEarthTextureSet({ compact });
+  return supports8K ? getEarthTextureSet() : getEarthTextureSet({ compact: true });
 }

@@ -1,9 +1,8 @@
 export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 320,
-    SEGMENTS_MOBILE: 144,
-    BUMP_SCALE: 0.014,
+    SEGMENTS: 192,
+    SEGMENTS_MOBILE: 112,
     HERO_DISPLACEMENT_SCALE: 0.024,
     DEFAULT_DISPLACEMENT_SCALE: 0,
     AMBIENT_ROTATION_SPEED: 0,
@@ -12,12 +11,12 @@ export const CONFIG = {
   },
   CLOUDS: {
     ALTITUDE: 0.012,
-    HIGH_ALTITUDE: 0.024,
+    HIGH_ALTITUDE: 0.021,
     SHADOW_ALTITUDE: 0.004,
-    SHADOW_OPACITY: 0.028,
-    HIGH_OPACITY_FACTOR: 0.4,
-    ROTATION_SPEED: 0.000045,
-    OPACITY: 0.26,
+    SHADOW_OPACITY: 0.022,
+    HIGH_OPACITY_FACTOR: 0.32,
+    ROTATION_SPEED: 0.000065,
+    OPACITY: 0.22,
   },
   SUN: {
     INTENSITY: 1.8,
@@ -39,7 +38,7 @@ export const CONFIG = {
     },
   },
   STARS: {
-    COUNT: 4800,
+    COUNT: 3600,
     TWINKLE_SPEED: 0.34,
   },
   MOON: {
@@ -65,13 +64,6 @@ export const CONFIG = {
         fov: 45,
         lookAt: { x: 0, y: -1.5, z: 0 },
       },
-      europe: {
-        x: 0.42,
-        y: 3.65,
-        z: 11.55,
-        fov: 40,
-        lookAt: { x: 0, y: -1.05, z: -1.15 },
-      },
       features: {
         x: 0.42,
         y: 3.65,
@@ -92,13 +84,10 @@ export const CONFIG = {
   },
   SHOOTING_STARS: {
     BASE_FREQUENCY: 0.003,
-    SHOWER_FREQUENCY: 0.02,
-    SHOWER_DURATION: 180,
-    SHOWER_COOLDOWN: 1200,
     MAX_SIMULTANEOUS: 3,
   },
   PERFORMANCE: {
-    PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2),
+    PIXEL_RATIO: Math.min(globalThis.devicePixelRatio || 1, 2),
   },
   QUALITY_LEVELS: {
     HIGH: {
@@ -113,7 +102,7 @@ export const CONFIG = {
     MEDIUM: {
       minFPS: 28,
       cloudLayer: true,
-      highCloudLayer: true,
+      highCloudLayer: false,
       terrainDetailScale: 0.78,
       meteorShowers: true,
       desktopPixelRatio: 1.7,

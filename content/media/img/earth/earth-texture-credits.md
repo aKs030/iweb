@@ -15,10 +15,12 @@ under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
 `closeup-berlin-city-lakes-forest-eox-2025.webp` and its 2K delivery variant
 provide a balanced Berlin regional view with the city, surrounding lakes, and
-forest areas mapped across the complete camera-facing hemisphere in the first
-section. They use the same EOxCloudless 2025 source as the global daytime
-surface. Derived height, normal, and water masks provide the local 3D relief
-and lake reflections. The regional layer fades away before the global globe
+forest areas in the first section. The image follows a curved 90° × 70.7°
+region—roughly half the camera-facing hemisphere—with its source aspect ratio
+preserved, then blends radially into the global daytime surface. Both use the
+same EOxCloudless 2025 source. A derived water mask supplies local lake
+reflections; geometry and lighting provide subtle 3D depth without artificial
+height or normal maps. The regional layer fades away before the global globe
 view.
 
 `earth_night_8k.jpg` and `earth_clouds_4k.jpg` are by Solar System Scope,

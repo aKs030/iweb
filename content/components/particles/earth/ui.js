@@ -20,14 +20,22 @@ function calculateQualityLevel(fps, currentQualityLevel) {
   return fps >= mediumThreshold + 5 ? "MEDIUM" : "LOW";
 }
 
+const QUALITY_ORDER = Object.freeze({ LOW: 0, MEDIUM: 1, HIGH: 2 });
+
+function clampQualityLevel(qualityLevel, maximumQualityLevel) {
+  return QUALITY_ORDER[qualityLevel] <= QUALITY_ORDER[maximumQualityLevel]
+    ? qualityLevel
+    : maximumQualityLevel;
+}
+
 const log = createLogger("EarthUI");
 
-/*
-  Earth loading UI
-  - Publishes loading progress through AppLoadManager events.
-  - Maintains aria-busy state on the Earth container.
-  - Stays independent from route-specific loader DOM.
-*/
+function removeRetryButton(errorElement) {
+  const retryButton = errorElement?.querySelector(".three-earth-retry");
+  if (!retryButton) return;
+  retryButton.onclick = null;
+  retryButton.remove();
+}
 
 export function showLoadingState(container, progress) {
   if (!container) return;
@@ -51,6 +59,7 @@ export function hideLoadingState(container) {
 
   container.setAttribute("aria-busy", "false");
   delete container.dataset.earthLoading;
+  removeRetryButton(container.querySelector(".three-earth-error"));
 }
 
 export function showErrorState(container, error, retryCallback) {
@@ -64,41 +73,50 @@ export function showErrorState(container, error, retryCallback) {
   const errorElement = container.querySelector(".three-earth-error");
   if (errorElement) {
     errorElement.classList.remove("hidden");
-    // Keep the error element minimal—just a subtle indicator "CSS-Modus"
-    // No verbose error message, just a silent fallback to static/CSS background
     const errorText = errorElement.querySelector("p");
-    if (errorText) {
-      // Simple indicator only, no "WebGL nicht verfügbar" text
-      errorText.textContent = "CSS-Modus";
-    }
+    if (errorText) errorText.textContent = "CSS-Modus";
 
-    // Add retry button if not present
     let retryBtn = errorElement.querySelector(".three-earth-retry");
-    if (!retryBtn && retryCallback) {
+    if (!retryCallback) {
+      removeRetryButton(errorElement);
+      return;
+    }
+    if (!retryBtn) {
       retryBtn = document.createElement("button");
       retryBtn.className = "retry-btn three-earth-retry";
       retryBtn.type = "button";
       retryBtn.textContent = "Neu versuchen";
-      retryBtn.addEventListener("click", async () => {
-        try {
-          await retryCallback();
-        } catch (err) {
-          log.error("Retry failed:", err);
-          if (errorText) errorText.textContent = `Fehler: ${err.message}`;
-        }
-      });
       errorElement.appendChild(retryBtn);
     }
+
+    retryBtn.disabled = false;
+    retryBtn.onclick = async () => {
+      retryBtn.disabled = true;
+      try {
+        await retryCallback();
+      } catch (err) {
+        log.error("Retry failed:", err);
+        const message = err instanceof Error ? err.message : String(err);
+        if (errorText) errorText.textContent = `Fehler: ${message}`;
+      } finally {
+        if (retryBtn.isConnected) retryBtn.disabled = false;
+      }
+    };
   }
 }
 
 export class PerformanceMonitor {
-  constructor(onQualityChange, initialQualityLevel = "HIGH") {
+  constructor(
+    onQualityChange,
+    initialQualityLevel = "HIGH",
+    maximumQualityLevel = initialQualityLevel
+  ) {
     this.onQualityChange = onQualityChange;
     this.frame = 0;
     this.lastTime = performance.now();
     this.fps = 60;
     this.currentQualityLevel = initialQualityLevel;
+    this.maximumQualityLevel = maximumQualityLevel;
     this.pendingQualityLevel = initialQualityLevel;
     this.pendingSamples = 0;
   }
@@ -116,7 +134,10 @@ export class PerformanceMonitor {
   }
 
   adjustQuality() {
-    const newQualityLevel = calculateQualityLevel(this.fps, this.currentQualityLevel);
+    const newQualityLevel = clampQualityLevel(
+      calculateQualityLevel(this.fps, this.currentQualityLevel),
+      this.maximumQualityLevel
+    );
     if (newQualityLevel === this.currentQualityLevel) {
       this.pendingQualityLevel = newQualityLevel;
       this.pendingSamples = 0;
@@ -130,22 +151,12 @@ export class PerformanceMonitor {
     }
 
     this.pendingSamples++;
-    const qualityOrder = { LOW: 0, MEDIUM: 1, HIGH: 2 };
-    const isUpgrade = qualityOrder[newQualityLevel] > qualityOrder[this.currentQualityLevel];
+    const isUpgrade = QUALITY_ORDER[newQualityLevel] > QUALITY_ORDER[this.currentQualityLevel];
     const requiredSamples = isUpgrade ? 3 : 2;
     if (this.pendingSamples < requiredSamples) return;
 
     this.currentQualityLevel = newQualityLevel;
     this.pendingSamples = 0;
     if (this.onQualityChange) this.onQualityChange(this.currentQualityLevel);
-  }
-
-  restoreQuality(qualityLevel) {
-    this.currentQualityLevel = qualityLevel;
-    this.pendingQualityLevel = qualityLevel;
-    this.pendingSamples = 0;
-    this.frame = 0;
-    this.lastTime = performance.now();
-    if (this.onQualityChange) this.onQualityChange(qualityLevel);
   }
 }

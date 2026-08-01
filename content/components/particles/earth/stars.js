@@ -168,9 +168,6 @@ export class ShootingStarManager {
     this.THREE = THREE;
     this.activeStars = [];
     this.pool = []; // Object pool for meshes
-    this.isShowerActive = false;
-    this.showerTimer = 0;
-    this.showerCooldownTimer = 0;
     this.disabled = false;
     this.isDisposed = false;
 
@@ -238,22 +235,10 @@ export class ShootingStarManager {
     // Normalize speed to 60Hz ticks to preserve config values
     const timeScale = (delta || 0.016) * 60;
 
-    if (this.isShowerActive) {
-      this.showerTimer += timeScale;
-      if (this.showerTimer >= CONFIG.SHOOTING_STARS.SHOWER_DURATION) {
-        this.isShowerActive = false;
-        this.showerCooldownTimer = CONFIG.SHOOTING_STARS.SHOWER_COOLDOWN;
-      }
-    }
-
-    if (this.showerCooldownTimer > 0) this.showerCooldownTimer -= timeScale;
-
-    const spawnChance = this.isShowerActive
-      ? CONFIG.SHOOTING_STARS.SHOWER_FREQUENCY
-      : CONFIG.SHOOTING_STARS.BASE_FREQUENCY;
-
     // Adjust probability for time step
-    if (Math.random() < spawnChance * timeScale) this.createShootingStar();
+    if (Math.random() < CONFIG.SHOOTING_STARS.BASE_FREQUENCY * timeScale) {
+      this.createShootingStar();
+    }
 
     for (let i = this.activeStars.length - 1; i >= 0; i--) {
       const star = this.activeStars[i];
@@ -275,13 +260,6 @@ export class ShootingStarManager {
         this.activeStars.splice(i, 1);
       }
     }
-  }
-
-  triggerShower() {
-    if (this.isDisposed || this.isShowerActive || this.showerCooldownTimer > 0) return;
-    this.isShowerActive = true;
-    this.showerTimer = 0;
-    log.info("🌠 Meteor shower triggered!");
   }
 
   cleanup() {

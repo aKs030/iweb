@@ -8,6 +8,10 @@ const lerpScale = (start, end, amount) => {
   if (start <= 0 || end <= 0) return lerp(start, end, amount);
   return Math.exp(lerp(Math.log(start), Math.log(end), amount));
 };
+const lerpAngle = (start, end, amount) => {
+  const delta = Math.atan2(Math.sin(end - start), Math.cos(end - start));
+  return start + delta * amount;
+};
 const channel = (color, shift) => (color >> shift) & 255;
 const clampByte = v => Math.max(0, Math.min(255, Math.round(v)));
 const lerpColor = (start, end, amount) =>
@@ -24,7 +28,6 @@ export function getHeroToFeaturesScrollProgress(currentSection) {
   const features = document.getElementById("features");
   if (!hero || !features) return null;
 
-  // Compare numeric fields directly – avoids building a string on every frame.
   if (
     scrollRangeCache?.w !== innerWidth ||
     scrollRangeCache?.h !== innerHeight ||
@@ -109,35 +112,43 @@ export function applyFeaturesSection3CameraOrbit(system, features, section3, pro
   const startOrbit = features.cameraOrbit ?? 0;
   const endOrbit = section3.cameraOrbit ?? startOrbit;
   const cameraOrbit = startOrbit + (endOrbit - startOrbit) * p;
-  const earthConfig =
-    system.isMobileDevice && features.mobileEarth ? features.mobileEarth : features.earth;
+  const usesMobileLayout = Boolean(system.isMobileLayout);
+  const startEarth =
+    usesMobileLayout && features.mobileEarth ? features.mobileEarth : features.earth;
+  const endEarth = usesMobileLayout && section3.mobileEarth ? section3.mobileEarth : section3.earth;
+  const earthPosition = {
+    x: lerp(startEarth.pos.x, endEarth.pos.x, p),
+    y: lerp(startEarth.pos.y, endEarth.pos.y, p),
+    z: lerp(startEarth.pos.z, endEarth.pos.z, p),
+  };
+  const earthScale = lerpScale(startEarth.scale, endEarth.scale, p);
+  const earthRotation = lerpAngle(startEarth.rotation ?? 0, endEarth.rotation ?? 0, p);
+  const latitudeTilt = lerp(features.latitudeTilt ?? 0, section3.latitudeTilt ?? 0, p);
+  const axialTilt = lerp(features.axialTilt ?? 0, section3.axialTilt ?? 0, p);
   if (system.earthMesh) {
-    system.earthMesh.position.set(earthConfig.pos.x, earthConfig.pos.y, earthConfig.pos.z);
-    system.earthMesh.scale.setScalar(earthConfig.scale);
-    system.earthMesh.rotation.x = ((features.latitudeTilt ?? 0) * Math.PI) / 180;
-    system.earthMesh.rotation.z = ((features.axialTilt ?? 0) * Math.PI) / 180;
+    system.earthMesh.position.set(earthPosition.x, earthPosition.y, earthPosition.z);
+    system.earthMesh.scale.setScalar(earthScale);
+    system.earthMesh.rotation.x = (latitudeTilt * Math.PI) / 180;
+    system.earthMesh.rotation.z = (axialTilt * Math.PI) / 180;
     system.earthMesh.userData.targetPosition?.set(
-      earthConfig.pos.x,
-      earthConfig.pos.y,
-      earthConfig.pos.z
+      earthPosition.x,
+      earthPosition.y,
+      earthPosition.z
     );
-    system.earthMesh.userData.targetScale = earthConfig.scale;
+    system.earthMesh.userData.targetScale = earthScale;
   }
   system.cameraManager?.setScrollLinkedPresetProgress("features", "section3", p);
-  system.cameraManager?.setScrollLinkedOrbitAngle(cameraOrbit, earthConfig.pos);
+  system.cameraManager?.setScrollLinkedOrbitAngle(cameraOrbit, earthPosition);
   system.cameraManager?.updateCameraPosition(delta);
   if (system.earthMesh) {
-    system.earthMesh.rotation.y = earthConfig.rotation || 0;
-    system.earthMesh.userData.targetRotation = earthConfig.rotation || 0;
+    system.earthMesh.rotation.y = earthRotation;
+    system.earthMesh.userData.targetRotation = earthRotation;
   }
   if (system.cloudMesh) {
     system.cloudMesh.rotation.x = system.earthMesh?.rotation.x || 0;
     system.cloudMesh.rotation.z = system.earthMesh?.rotation.z || 0;
   }
 
-  // City visibility is derived from the physical sun/normal terminator in the
-  // material shader. Keep the layer active through the whole camera orbit so
-  // lights never pop in because a DOM section boundary was crossed.
   if (system.cityGlowGroup) {
     system.cityGlowGroup.visible = true;
     system.cityGlowGroup.traverse(object => {
@@ -215,7 +226,6 @@ export function applyScrollLinkedSectionVisuals(
     material.normalScale?.setScalar(
       lerp(hero.surfaceNormalScale ?? 1, features.surfaceNormalScale ?? 1, p)
     );
-    material.bumpScale = lerp(hero.surfaceBumpScale ?? 0, features.surfaceBumpScale ?? 0, p);
   }
 
   const cityGlowMultiplier = lerp(
@@ -337,8 +347,6 @@ export class EarthZoomTransition {
     this.endLatitude = 0;
     this.startPosition = { x: 0, y: 0, z: 0 };
     this.endPosition = { x: 0, y: 0, z: 0 };
-    // Cache last computed progress to avoid redundant performance.now() calls
-    // when multiple getters are called within the same animation frame.
     this._progressCache = null;
   }
 
@@ -375,8 +383,6 @@ export class EarthZoomTransition {
 
   _progress() {
     const now = performance.now();
-    // Cache progress for 8 ms so multiple getters in the same animation frame
-    // share one calculation instead of each calling performance.now() + smootherstep.
     if (this._progressCache !== null && now - this._progressCache.time < 8) {
       return this._progressCache.value;
     }

@@ -1,14 +1,22 @@
 import { CONFIG } from "./config.js";
 
+export function isMobileDeviceLike(deviceNavigator = globalThis.navigator) {
+  const ua = (deviceNavigator?.userAgent || "").toLowerCase();
+  return (
+    /mobile|tablet|android|ios|iphone|ipad/.test(ua) ||
+    (ua.includes("macintosh") && (deviceNavigator?.maxTouchPoints || 0) > 1)
+  );
+}
+
 export function supportsWebGL(log) {
   try {
     const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    const gl = canvas.getContext("webgl2");
     if (!gl) {
       log.warn("WebGL context not available");
       return false;
     }
-    log.debug("WebGL is supported");
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
     return true;
   } catch (error) {
     log.warn("WebGL detection failed:", error);
@@ -19,7 +27,7 @@ export function supportsWebGL(log) {
 export function detectDeviceCapabilities(log) {
   try {
     const ua = (navigator.userAgent || "").toLowerCase();
-    const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
+    const isMobile = isMobileDeviceLike(navigator);
     const deviceNavigator =
       /** @type {Navigator & { deviceMemory?: number, connection?: { saveData?: boolean } }} */ (
         navigator
@@ -39,16 +47,6 @@ export function detectDeviceCapabilities(log) {
     else if (isMobile || (cores > 0 && cores <= 4) || (memory > 0 && memory <= 4))
       recommendedQuality = "MEDIUM";
     else recommendedQuality = "HIGH";
-
-    log.debug("Device capabilities:", {
-      isMobile,
-      isLowEnd,
-      cores,
-      memory,
-      saveData,
-      reducedMotion,
-      recommendedQuality,
-    });
 
     return { isMobile, isLowEnd, reducedMotion, recommendedQuality };
   } catch (error) {

@@ -12,7 +12,6 @@ export class CardManager {
     this.cards = [];
     this.raycaster = new THREE.Raycaster();
     this.isVisible = false;
-    this._revealStartedAt = 0;
     this._lastUpdateTime = 0;
 
     this._resizeRAF = null;
@@ -1364,7 +1363,6 @@ export class CardManager {
   }
 
   setProgress(progress) {
-    this._revealStartedAt = 0;
     const p = Math.max(
       0,
       Math.min(1, typeof progress === "number" && !Number.isNaN(progress) ? progress : 0)
@@ -1387,20 +1385,8 @@ export class CardManager {
     });
   }
 
-  revealStaggered() {
-    this.isVisible = true;
-    this.cardGroup.visible = true;
-    this._revealStartedAt = performance.now();
-    this.cards.forEach(card => {
-      card.userData.entranceTarget = 0;
-      card.userData.targetOpacity = 1;
-    });
-    this.alignCardsToCameraImmediate();
-  }
-
   hideImmediate() {
     this.isVisible = false;
-    this._revealStartedAt = 0;
     this.cards.forEach(card => {
       card.userData.entranceTarget = 0;
       card.userData.entranceProgress = 0;
@@ -1425,18 +1411,6 @@ export class CardManager {
         ? Math.min(1 / 15, Math.max(1 / 240, (time - this._lastUpdateTime) / 1000))
         : 1 / 60;
     this._lastUpdateTime = time;
-
-    if (this._revealStartedAt > 0) {
-      const elapsed = performance.now() - this._revealStartedAt;
-      let revealComplete = true;
-      this.cards.forEach(card => {
-        const delay = card.userData.entranceDelay || 0;
-        const progress = Math.max(0, Math.min(1, (elapsed - delay) / 320));
-        card.userData.entranceTarget = progress;
-        if (progress < 1) revealComplete = false;
-      });
-      if (revealComplete) this._revealStartedAt = 0;
-    }
 
     this.camera.getWorldPosition(this._tmpVec);
 

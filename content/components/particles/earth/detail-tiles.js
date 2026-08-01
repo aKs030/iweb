@@ -4,6 +4,12 @@ import { getEarthDetailTileUrl } from "./texture-paths.js";
 const COLUMNS = 8;
 const ROWS = 4;
 const RETIRE_DELAY_MS = 1600;
+const STARTUP_DELAY_MS = 900;
+const ENABLE_STABILITY_MS = 450;
+const TILE_ENABLE_SCALE = 0.98;
+const TILE_DISABLE_SCALE = 0.88;
+const TILE_RETRY_DELAY_MS = 15000;
+const MAX_TILE_LOAD_ATTEMPTS = 2;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const damping = (rate, delta) => 1 - Math.exp(-rate * Math.min(delta, 1 / 15));
 
@@ -22,6 +28,11 @@ export class EarthDetailTileManager {
     this.tiles = new Map();
     this.cameraLocal = new THREE.Vector3();
     this.desiredKeys = new Set();
+    this.failedTiles = new Map();
+    this.enabled = false;
+    this.eligibleSince = null;
+    this.startupReadyAt = performance.now() + STARTUP_DELAY_MS;
+    this.disposed = false;
     this.fadeTexture = this._createFadeTexture();
     earthMesh.add(this.group);
   }
@@ -31,15 +42,28 @@ export class EarthDetailTileManager {
   }
 
   update(camera, mode, scale, delta, suppressed = false) {
-    const enabled =
+    const now = performance.now();
+    const scaleThreshold = this.enabled ? TILE_DISABLE_SCALE : TILE_ENABLE_SCALE;
+    const eligible =
       !suppressed &&
       this.qualityLevel !== "LOW" &&
       this.renderer.capabilities.maxTextureSize >= 4096 &&
       mode === "day" &&
-      scale >= 2.1;
+      scale >= scaleThreshold;
+
+    if (!eligible || now < this.startupReadyAt) {
+      this.enabled = false;
+      this.eligibleSince = null;
+    } else if (!this.enabled) {
+      this.eligibleSince ??= now;
+      if (now - this.eligibleSince >= ENABLE_STABILITY_MS) {
+        this.enabled = true;
+      }
+    }
+
     this.desiredKeys.clear();
 
-    if (enabled) {
+    if (this.enabled) {
       this.earthMesh.updateWorldMatrix(true, false);
       this.cameraLocal.copy(camera.position);
       this.earthMesh.worldToLocal(this.cameraLocal);
@@ -64,7 +88,6 @@ export class EarthDetailTileManager {
       }
     }
 
-    const now = performance.now();
     const fade = damping(5.5, delta);
     let visibleTiles = 0;
     this.tiles.forEach((tile, key) => {
@@ -81,13 +104,12 @@ export class EarthDetailTileManager {
         !desired &&
         tile.opacity < 0.005 &&
         now - tile.lastUsed > RETIRE_DELAY_MS &&
-        (!enabled || this.tiles.size > 3)
+        (!this.enabled || this.tiles.size > 3)
       ) {
         this._disposeTile(key, tile);
       }
     });
     this.group.visible = visibleTiles > 0;
-    this.renderer.domElement.dataset.earthDetailTiles = String(visibleTiles);
   }
 
   _requestTile(row, column) {
@@ -96,7 +118,16 @@ export class EarthDetailTileManager {
     const existing = this.tiles.get(key);
     if (existing) return;
 
-    const tile = { mesh: null, opacity: 0, lastUsed: performance.now(), cancelled: false };
+    const now = performance.now();
+    const previousFailure = this.failedTiles.get(key);
+    if (
+      previousFailure &&
+      (previousFailure.attempts >= MAX_TILE_LOAD_ATTEMPTS || now < previousFailure.retryAt)
+    ) {
+      return;
+    }
+
+    const tile = { mesh: null, opacity: 0, lastUsed: now, cancelled: false };
     this.tiles.set(key, tile);
     this.loader
       .loadAsync(getEarthDetailTileUrl(row, column))
@@ -105,6 +136,7 @@ export class EarthDetailTileManager {
           texture.dispose();
           return;
         }
+        this.failedTiles.delete(key);
         texture.colorSpace = this.THREE.SRGBColorSpace;
         texture.anisotropy = Math.min(this.renderer.capabilities.getMaxAnisotropy(), 8);
         texture.wrapS = this.THREE.ClampToEdgeWrapping;
@@ -114,7 +146,7 @@ export class EarthDetailTileManager {
         texture.needsUpdate = true;
 
         const geometry = new this.THREE.SphereGeometry(
-          CONFIG.EARTH.RADIUS + 0.0035,
+          CONFIG.EARTH.RADIUS + 0.015,
           44,
           28,
           (column / COLUMNS) * Math.PI * 2,
@@ -142,7 +174,14 @@ export class EarthDetailTileManager {
         this.group.add(mesh);
       })
       .catch(() => {
-        this.tiles.delete(key);
+        if (this.tiles.get(key) === tile) this.tiles.delete(key);
+        if (tile.cancelled || this.disposed) return;
+
+        const attempts = (previousFailure?.attempts || 0) + 1;
+        this.failedTiles.set(key, {
+          attempts,
+          retryAt: performance.now() + TILE_RETRY_DELAY_MS * attempts,
+        });
       });
   }
 
@@ -185,10 +224,13 @@ export class EarthDetailTileManager {
   }
 
   dispose() {
+    this.disposed = true;
+    this.enabled = false;
+    this.eligibleSince = null;
     this.tiles.forEach((tile, key) => this._disposeTile(key, tile));
     this.tiles.clear();
+    this.failedTiles.clear();
     this.group.removeFromParent();
     this.fadeTexture.dispose();
-    delete this.renderer.domElement.dataset.earthDetailTiles;
   }
 }
