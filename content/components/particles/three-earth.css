@@ -120,7 +120,7 @@
 
   /* Section-based Opacity Transitions */
   .three-earth-container[data-section="hero"] {
-    opacity: 0.96;
+    opacity: 1;
   }
 
   .three-earth-container[data-section="features"] {

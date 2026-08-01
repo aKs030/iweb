@@ -226,6 +226,26 @@ export function applyScrollLinkedSectionVisuals(
     material.normalScale?.setScalar(
       lerp(hero.surfaceNormalScale ?? 1, features.surfaceNormalScale ?? 1, p)
     );
+    const oceanShader = material.userData?.reliefShader;
+    const oceanGradeStrength = lerp(
+      hero.oceanGradeStrength ?? 0.48,
+      features.oceanGradeStrength ?? 0.48,
+      p
+    );
+    const oceanSaturation = lerp(hero.oceanSaturation ?? 1, features.oceanSaturation ?? 1, p);
+    const oceanBrightness = lerp(hero.oceanBrightness ?? 1, features.oceanBrightness ?? 1, p);
+    material.userData.oceanGradeStrength = oceanGradeStrength;
+    material.userData.oceanSaturation = oceanSaturation;
+    material.userData.oceanBrightness = oceanBrightness;
+    if (oceanShader?.uniforms?.oceanGradeStrength) {
+      oceanShader.uniforms.oceanGradeStrength.value = oceanGradeStrength;
+    }
+    if (oceanShader?.uniforms?.oceanSaturation) {
+      oceanShader.uniforms.oceanSaturation.value = oceanSaturation;
+    }
+    if (oceanShader?.uniforms?.oceanBrightness) {
+      oceanShader.uniforms.oceanBrightness.value = oceanBrightness;
+    }
   }
 
   const cityGlowMultiplier = lerp(

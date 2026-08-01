@@ -189,8 +189,13 @@ float oceanDepth = 1.0 - smoothstep(0.04, 0.22, oceanLuma);
 vec3 deepOcean    = oceanLuma * vec3(0.16, 0.38, 1.08);
 vec3 shallowOcean = oceanLuma * vec3(0.30, 0.72, 0.80);
 vec3 oceanGrade   = mix(sourceAlbedo, mix(shallowOcean, deepOcean, clamp(oceanDepth * 0.80 + 0.20, 0.0, 1.0)), 0.54);
+float gradedOceanLuma = dot(oceanGrade, vec3(0.2126, 0.7152, 0.0722));
+oceanGrade = mix(vec3(gradedOceanLuma), oceanGrade, oceanSaturation) * oceanBrightness;
 oceanGrade = mix(oceanGrade, iceWhite * 0.80, polarIceMask * 0.44);
-diffuseColor.rgb = min(mix(daylightGrade, oceanGrade, earthOceanMask * 0.48), vec3(1.0));`;
+diffuseColor.rgb = min(
+  mix(daylightGrade, oceanGrade, earthOceanMask * oceanGradeStrength),
+  vec3(1.0)
+);`;
 
 const EARTH_ROUGHNESS_FRAGMENT = `#include <roughnessmap_fragment>
 roughnessFactor = mix(roughnessFactor, 0.26, earthOceanMask);
@@ -794,15 +799,15 @@ function createProceduralTerrainLayer(
   if (regionalWaterTexture) {
     waterMaterial = new THREE.MeshPhysicalMaterial({
       alphaMap: regionalWaterTexture,
-      color: 0x1678ad,
-      emissive: 0x0a3550,
-      emissiveIntensity: 0.2,
-      roughness: 0.18,
+      color: 0x0b3c5a,
+      emissive: 0x02080d,
+      emissiveIntensity: 0.04,
+      roughness: 0.28,
       metalness: 0,
-      clearcoat: 0.65,
-      clearcoatRoughness: 0.18,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.24,
       transparent: true,
-      opacity: 0.76,
+      opacity: 0.38,
       depthTest: true,
       depthWrite: false,
       blending: THREE.NormalBlending,
@@ -998,7 +1003,7 @@ function createProceduralTerrainLayer(
   group.userData.forestFullCount = treeCount;
   group.userData.fadeMaterials = [
     { material: terrainMaterial, baseOpacity: 1 },
-    ...(waterMaterial ? [{ material: waterMaterial, baseOpacity: 0.76 }] : []),
+    ...(waterMaterial ? [{ material: waterMaterial, baseOpacity: 0.38 }] : []),
     { material: buildingMaterial, baseOpacity: 1 },
     { material: treeMaterial, baseOpacity: 1 },
   ];
@@ -1188,12 +1193,24 @@ export async function createEarthSystem(
     dithering: true,
   });
   dayMaterial.userData.terrainDetailStrength = 1;
+  dayMaterial.userData.oceanGradeStrength = 0.48;
+  dayMaterial.userData.oceanSaturation = 1;
+  dayMaterial.userData.oceanBrightness = 1;
   dayMaterial.userData.terrainSunDirection = new THREE.Vector2(-0.62, 0.78).normalize();
   dayMaterial.userData.earthSunDirectionWorld = new THREE.Vector3(0, 0, 1);
   dayMaterial.userData.isEarthPhysicalLightingMaterial = true;
   dayMaterial.onBeforeCompile = shader => {
     shader.uniforms.terrainDetailStrength = {
       value: dayMaterial.userData.terrainDetailStrength,
+    };
+    shader.uniforms.oceanGradeStrength = {
+      value: dayMaterial.userData.oceanGradeStrength,
+    };
+    shader.uniforms.oceanSaturation = {
+      value: dayMaterial.userData.oceanSaturation,
+    };
+    shader.uniforms.oceanBrightness = {
+      value: dayMaterial.userData.oceanBrightness,
     };
     shader.uniforms.terrainSunDirection = {
       value: dayMaterial.userData.terrainSunDirection,
@@ -1212,14 +1229,14 @@ export async function createEarthSystem(
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "void main() {",
-        "uniform float terrainDetailStrength;\nuniform vec2 terrainSunDirection;\nuniform vec3 earthSunDirectionWorld;\nvarying vec3 vEarthWorldNormal;\nfloat earthOceanMask = 0.0;\nvoid main() {"
+        "uniform float terrainDetailStrength;\nuniform float oceanGradeStrength;\nuniform float oceanSaturation;\nuniform float oceanBrightness;\nuniform vec2 terrainSunDirection;\nuniform vec3 earthSunDirectionWorld;\nvarying vec3 vEarthWorldNormal;\nfloat earthOceanMask = 0.0;\nvoid main() {"
       )
       .replace("#include <map_fragment>", DAYLIGHT_MAP_FRAGMENT)
       .replace("#include <emissivemap_fragment>", EARTH_EMISSIVE_FRAGMENT)
       .replace("#include <roughnessmap_fragment>", EARTH_ROUGHNESS_FRAGMENT)
       .replace("#include <opaque_fragment>", EARTH_FRESNEL_FRAGMENT);
   };
-  dayMaterial.customProgramCacheKey = () => "earth-city-points-v27";
+  dayMaterial.customProgramCacheKey = () => "earth-city-points-v28";
   const nightMaterial = dayMaterial;
 
   const segments = isMobileDevice

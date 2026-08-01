@@ -105,8 +105,12 @@ const SECTION_CONFIGS = {
       rimIntensity: 0.0,
     },
     mode: "day",
+    atmosphereVisible: false,
     terrainRelief: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
     terrainDetailStrength: 1.0,
+    oceanGradeStrength: 0.48,
+    oceanSaturation: 1,
+    oceanBrightness: 1,
     surfaceClearcoat: 0.025,
     surfaceSpecularIntensity: 0.5,
     surfaceEmissiveIntensity: CONFIG.EARTH.CITY_LIGHT_INTENSITY,
@@ -138,12 +142,16 @@ const SECTION_CONFIGS = {
       sunIntensity: 2.2,
       sunPosition: { x: 1.5, y: 4.2, z: 10.0 },
       fillIntensity: 0.15,
-      rimIntensity: 0.3,
+      rimIntensity: 0,
       rimColor: 0x88bbff,
     },
     mode: "day",
+    atmosphereVisible: false,
     terrainRelief: 0.012,
     terrainDetailStrength: 0.6,
+    oceanGradeStrength: 0.72,
+    oceanSaturation: 1.28,
+    oceanBrightness: 1.16,
     surfaceClearcoat: 0.012,
     surfaceSpecularIntensity: 0.16,
     surfaceEmissiveIntensity: CONFIG.EARTH.CITY_LIGHT_INTENSITY,
@@ -179,8 +187,12 @@ const SECTION_CONFIGS = {
       rimIntensity: 0,
     },
     mode: "night",
+    atmosphereVisible: true,
     terrainRelief: CONFIG.EARTH.DEFAULT_DISPLACEMENT_SCALE,
     terrainDetailStrength: 0,
+    oceanGradeStrength: 0.48,
+    oceanSaturation: 1,
+    oceanBrightness: 0.9,
     surfaceClearcoat: 0,
     surfaceSpecularIntensity: 0.08,
     surfaceEmissiveIntensity: CONFIG.EARTH.CITY_LIGHT_INTENSITY * 1.7,
@@ -1557,6 +1569,8 @@ class ThreeEarthSystem {
     }
 
     this._syncCloudVisibility(config);
+    const atmosphere = this.earthMesh.getObjectByName?.("earth-atmosphere");
+    if (atmosphere) atmosphere.visible = config.atmosphereVisible !== false;
 
     this.cityGlowGroup?.traverse(object => {
       const glowOpacity = object.material?.uniforms?.glowOpacity;
@@ -1596,6 +1610,21 @@ class ThreeEarthSystem {
         const reliefShader = /** @type {any} */ (this.dayMaterial.userData.reliefShader);
         if (reliefShader?.uniforms?.terrainDetailStrength) {
           reliefShader.uniforms.terrainDetailStrength.value = terrainDetailStrength;
+        }
+        const oceanGradeStrength = config.oceanGradeStrength ?? 0.48;
+        const oceanSaturation = config.oceanSaturation ?? 1;
+        const oceanBrightness = config.oceanBrightness ?? 1;
+        this.dayMaterial.userData.oceanGradeStrength = oceanGradeStrength;
+        this.dayMaterial.userData.oceanSaturation = oceanSaturation;
+        this.dayMaterial.userData.oceanBrightness = oceanBrightness;
+        if (reliefShader?.uniforms?.oceanGradeStrength) {
+          reliefShader.uniforms.oceanGradeStrength.value = oceanGradeStrength;
+        }
+        if (reliefShader?.uniforms?.oceanSaturation) {
+          reliefShader.uniforms.oceanSaturation.value = oceanSaturation;
+        }
+        if (reliefShader?.uniforms?.oceanBrightness) {
+          reliefShader.uniforms.oceanBrightness.value = oceanBrightness;
         }
       }
       this.earthMesh.material = nextMaterial;

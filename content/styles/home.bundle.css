@@ -927,11 +927,11 @@
     transition: opacity 0.1s ease-out;
   }
 
-  /* Keep the daylight Earth and its ocean colors unobscured. The hero
-     vignette sits above the WebGL canvas and previously turned the lower,
-     ocean-heavy portion of the globe almost black. */
+  /* The WebGL scene already supplies its own atmospheric falloff. Do not
+     place another vignette over the daylight Earth, otherwise its texture
+     loses contrast and looks faded. */
   body.three-earth-active .hero::after {
-    opacity: calc(var(--home-hero-vignette-opacity) * 0.5);
+    opacity: 0;
   }
 
   .hero__earth-credit {
@@ -1040,14 +1040,14 @@
     content: "";
     position: absolute;
     z-index: -1;
-    inset: -2.5rem -5rem -3rem;
+    inset: -1.5rem -3rem -2rem;
     background: radial-gradient(
-      ellipse 62% 60% at 50% 44%,
-      rgb(2 7 16 / 62%) 0%,
-      rgb(2 7 16 / 34%) 48%,
-      transparent 78%
+      ellipse 58% 54% at 50% 43%,
+      rgb(2 7 16 / 42%) 0%,
+      rgb(2 7 16 / 18%) 50%,
+      transparent 76%
     );
-    filter: blur(14px);
+    filter: blur(12px);
     pointer-events: none;
   }
 
@@ -1965,7 +1965,7 @@
 
   /* Section-based Opacity Transitions */
   .three-earth-container[data-section="hero"] {
-    opacity: 0.96;
+    opacity: 1;
   }
 
   .three-earth-container[data-section="features"] {
