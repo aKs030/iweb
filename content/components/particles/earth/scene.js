@@ -33,7 +33,7 @@ export function setupScene(THREE, container) {
 
   // Cinematic rendering additions
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   // Very subtle depth cue — aggressive fog flattens the city, so keep density low
   scene.fog = new THREE.FogExp2(0x060c14, 0.012);
