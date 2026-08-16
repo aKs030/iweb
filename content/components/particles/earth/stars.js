@@ -167,15 +167,22 @@ export class ShootingStarManager {
     this.scene = scene;
     this.THREE = THREE;
     this.activeStars = [];
-    this.pool = []; // Object pool for meshes
+    this.pool = [];
     this.disabled = false;
     this.isDisposed = false;
 
-    this.sharedGeometry = new this.THREE.SphereGeometry(0.05, 8, 8);
+    // Tapered aerodynamic luminous streak geometry (points along Y axis)
+    this.sharedGeometry = new this.THREE.CylinderGeometry(0.012, 0.065, 2.4, 8, 1, true);
+    this.sharedGeometry.translate(0, 1.2, 0); // Origin at tail
+
     this.sharedMaterial = new this.THREE.MeshBasicMaterial({
-      color: 0xfffdef,
+      color: 0xebf6ff,
       transparent: true,
-      opacity: 1.0,
+      opacity: 0,
+      blending: this.THREE.AdditiveBlending,
+      depthWrite: false,
+      depthTest: true,
+      side: this.THREE.DoubleSide,
     });
   }
 
@@ -188,36 +195,44 @@ export class ShootingStarManager {
       let isNew = false;
       if (this.pool.length > 0) {
         star = this.pool.pop();
-        star.material.opacity = 1.0;
+        star.material.opacity = 0;
         star.visible = true;
       } else {
-        // Each star needs its own material instance because opacity is animated
-        // independently (stars fade at different times). Without the clone, all
-        // active stars would share the same opacity and fade together.
         const material = this.sharedMaterial.clone();
         star = new this.THREE.Mesh(this.sharedGeometry, material);
         isNew = true;
       }
 
-      const startPos = {
-        x: (Math.random() - 0.5) * 100,
-        y: 20 + Math.random() * 20,
-        z: -50 - Math.random() * 50,
-      };
+      // Choose a pleasant star tint: pure diamond white, icy cyan, or pale champagne gold
+      const palette = [0xffffff, 0xc7ecff, 0xfff0d0, 0x90e0ef];
+      const starColor = palette[Math.floor(Math.random() * palette.length)];
+      star.material.color.setHex(starColor);
+
+      // Spawn in upper quadrant of the visible viewport background
+      const spawnX = (Math.random() - 0.45) * 36;
+      const spawnY = 8 + Math.random() * 16;
+      const spawnZ = -10 - Math.random() * 18;
+
+      // Realistic meteor entry angle (streaking diagonally downward)
+      const speed = 0.55 + Math.random() * 0.45;
+      const angle = -Math.PI * 0.22 + (Math.random() - 0.5) * 0.35;
       const velocity = new this.THREE.Vector3(
-        (Math.random() - 0.9) * 0.2,
-        (Math.random() - 0.6) * -0.2,
-        0
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed,
+        (Math.random() - 0.5) * 0.15
       );
 
-      star.position.set(startPos.x, startPos.y, startPos.z);
-      star.scale.set(1, 1, 2 + Math.random() * 3);
-      star.lookAt(star.position.clone().add(velocity));
+      star.position.set(spawnX, spawnY, spawnZ);
+      const streakLength = 1.0 + Math.random() * 0.8;
+      star.scale.set(1, streakLength, 1);
+
+      const direction = velocity.clone().normalize();
+      star.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 1, 0), direction);
 
       this.activeStars.push({
         mesh: star,
         velocity,
-        lifetime: 300 + Math.random() * 200,
+        lifetime: 40 + Math.random() * 30, // in frames
         age: 0,
       });
 
@@ -232,10 +247,8 @@ export class ShootingStarManager {
   update(delta) {
     if (this.disabled || this.isDisposed) return;
 
-    // Normalize speed to 60Hz ticks to preserve config values
     const timeScale = (delta || 0.016) * 60;
 
-    // Adjust probability for time step
     if (Math.random() < CONFIG.SHOOTING_STARS.BASE_FREQUENCY * timeScale) {
       this.createShootingStar();
     }
@@ -244,18 +257,23 @@ export class ShootingStarManager {
       const star = this.activeStars[i];
       star.age += timeScale;
 
-      // Scale velocity by timeScale (optimized to avoid allocation)
       star.mesh.position.addScaledVector(star.velocity, timeScale);
 
-      const fadeStart = star.lifetime * 0.7;
-      if (star.age > fadeStart) {
-        const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
-        star.mesh.material.opacity = 1 - fadeProgress;
+      // Smooth fade-in during the first 25% of life, peak at 1.0, fade-out after 65%
+      const lifeProgress = star.age / star.lifetime;
+      let currentOpacity;
+      if (lifeProgress < 0.25) {
+        currentOpacity = lifeProgress / 0.25;
+      } else if (lifeProgress < 0.65) {
+        currentOpacity = 1.0;
+      } else {
+        currentOpacity = Math.max(0, 1.0 - (lifeProgress - 0.65) / 0.35);
       }
+      star.mesh.material.opacity = currentOpacity * 0.92;
 
-      if (star.age > star.lifetime) {
+      if (star.age >= star.lifetime) {
         star.mesh.visible = false;
-        // star.mesh.material.dispose(); // Don't dispose, reuse!
+        star.mesh.material.opacity = 0;
         this.pool.push(star.mesh);
         this.activeStars.splice(i, 1);
       }
@@ -270,14 +288,12 @@ export class ShootingStarManager {
     });
     this.activeStars = [];
 
-    // Dispose pooled stars
     this.pool.forEach(mesh => {
       if (mesh.material) mesh.material.dispose();
       this.scene.remove(mesh);
     });
     this.pool = [];
 
-    // Dispose shared resources
     if (this.sharedGeometry) this.sharedGeometry.dispose();
     if (this.sharedMaterial) this.sharedMaterial.dispose();
   }

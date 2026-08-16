@@ -1,12 +1,12 @@
 let activeFrame = 0;
 let activeCleanup = null;
 
-const smootherstep = value => {
+const smoothstep = value => {
   const t = Math.max(0, Math.min(1, value));
-  return t * t * t * (t * (t * 6 - 15) + 10);
+  return t * t * (3 - 2 * t);
 };
 
-export function scrollToSectionSlow(section, { duration = 2100, reduceMotion = false } = {}) {
+export function scrollToSectionSlow(section, { duration = 1700, reduceMotion = false } = {}) {
   if (!(section instanceof HTMLElement)) return;
   if (activeFrame) {
     cancelAnimationFrame(activeFrame);
@@ -37,7 +37,7 @@ export function scrollToSectionSlow(section, { duration = 2100, reduceMotion = f
 
   const step = now => {
     const progress = Math.min(1, (now - startedAt) / duration);
-    window.scrollTo({ top: start + distance * smootherstep(progress), behavior: "auto" });
+    window.scrollTo({ top: start + distance * smoothstep(progress), behavior: "auto" });
     if (progress < 1) {
       activeFrame = requestAnimationFrame(step);
       return;

@@ -1,9 +1,9 @@
 const EARTH_TEXTURE_VERSION = "earth-eox-global-20260728-r1";
-const EARTH_REGIONAL_TEXTURE_VERSION = "earth-regional-berlin-2025-20260729-r5";
 const EARTH_TEXTURE_CDN_URL = "/r2-proxy/earth/textures";
 const EARTH_DETAIL_TILE_VERSION = "earth-detail-eox-2025-20260728-r1";
 const EARTH_2K_MAX_RENDER_WIDTH = 1600;
-const EARTH_8K_MIN_RENDER_WIDTH = 3840;
+const EARTH_8K_MIN_RENDER_WIDTH = 3200;
+const EARTH_8K_MIN_UNKNOWN_MEMORY_RENDER_WIDTH = 3840;
 const EARTH_8K_MIN_DEVICE_MEMORY_GB = 8;
 const EARTH_MAX_RENDER_PIXEL_RATIO = 2;
 
@@ -12,7 +12,7 @@ function withTexturePath(filename) {
 }
 
 function withRegionalTexturePath(filename) {
-  return `${EARTH_TEXTURE_CDN_URL}/${filename}?v=${EARTH_REGIONAL_TEXTURE_VERSION}`;
+  return `/content/media/img/earth/${filename}`;
 }
 
 const EARTH_TEXTURES = Object.freeze({
@@ -52,9 +52,9 @@ const EARTH_TEXTURES_MOBILE = Object.freeze({
 });
 
 export const EARTH_REGIONAL_TEXTURES = Object.freeze({
-  TERRAIN: withRegionalTexturePath("closeup-berlin-city-lakes-forest-eox-2025.webp"),
-  TERRAIN_MOBILE: withRegionalTexturePath("closeup-berlin-city-lakes-forest-eox-2025-2k.webp"),
-  WATER: withRegionalTexturePath("closeup-berlin-city-lakes-forest-water-eox-2025.webp"),
+  TERRAIN: withRegionalTexturePath("berlin-mitte-truedop-sommer-2025-4k-r2.webp"),
+  TERRAIN_MOBILE: withRegionalTexturePath("berlin-mitte-truedop-sommer-2025-2k-r2.webp"),
+  WATER: withRegionalTexturePath("berlin-mitte-water-eox-2025-2k-r2.png"),
 });
 
 export function getEarthDetailTileUrl(row, column) {
@@ -92,7 +92,8 @@ export function getEarthTextureSetForDisplay({
     (deviceMemory > 0 && deviceMemory <= 2) ||
     maxTextureSize < 4096;
   const has8KMemory =
-    deviceMemory >= EARTH_8K_MIN_DEVICE_MEMORY_GB || (deviceMemory === 0 && renderedWidth >= 5120);
+    deviceMemory >= EARTH_8K_MIN_DEVICE_MEMORY_GB ||
+    (deviceMemory === 0 && renderedWidth >= EARTH_8K_MIN_UNKNOWN_MEMORY_RENDER_WIDTH);
   const supports8K =
     !isMobile &&
     !constrained &&

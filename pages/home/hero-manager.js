@@ -26,10 +26,10 @@ const SECTION3_REVEAL = Object.freeze({
   exitRatio: 0.28,
   thresholds: Object.freeze([0, 0.28, 0.52, 1]),
 });
-const SECTION_EXIT_BEFORE_SCROLL_MS = 560;
-const SECTION_EXIT_SCROLL_MS = 2200;
+const SECTION_EXIT_BEFORE_SCROLL_MS = 420;
+const SECTION_EXIT_SCROLL_MS = 1700;
 const SECTION_SNAP_TOLERANCE_PX = 64;
-const SECTION_TOUCH_INTENT_PX = 8;
+const SECTION_TOUCH_INTENT_PX = 16;
 
 function updateRepeatedReveal(element, entry, { enterRatio, exitRatio }) {
   const isVisible = element.classList.contains("is-visible");

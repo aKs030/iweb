@@ -3,23 +3,6 @@
  * @version 2.0.1
  */
 
-/**
- * @typedef {import('../../core/types.js').DOMCache} DOMCache
- * @typedef {import('../../core/types.js').EventListenerRegistry} EventListenerRegistry
- * @typedef {import('../../core/types.js').OverlayController} OverlayController
- * @typedef {import('../../core/types.js').PageContext} PageContext
- * @typedef {import('../../core/types.js').RobotMood} RobotMood
- * @typedef {import('../../core/types.js').TimerID} TimerID
- */
-
-// augment global window with our custom fields
-/**
- * @typedef {Window & typeof globalThis & {
- *   ROBOT_USER_NAME?: string;
- *   ROBOT_NO_COOKIES?: boolean | '1';
- * }} RobotWindow
- */
-
 import { RobotAnimation } from "./modules/robot-animation.js";
 import { RobotChat } from "./modules/robot-chat.js";
 import { createLogger } from "../../core/logger.js";
@@ -53,96 +36,82 @@ const ROBOT_CHAT_CSS_URL = "/content/components/robot-companion/styles/chat.css"
 const ROBOT_MOTION_CSS_URL = "/content/components/robot-companion/styles/animations.css";
 const ROBOT_HIDDEN_STORAGE_KEY = "robot-companion-hidden";
 
-/**
- * Robot Companion Class
- * Main controller for the AI robot companion
- */
 export class RobotCompanion {
   containerId = "robot-companion-container";
 
   constructor() {
-    // Initialize DOM Builder
-    /** @type {RobotDOMBuilder} */
     this.domBuilder = new RobotDOMBuilder();
 
-    // Initialize State Manager
-    /** @type {RobotStateManager} */
     this.stateManager = new RobotStateManager();
 
-    /** @type {TimerManager} */
     this.timerManager = new TimerManager("RobotCompanion");
 
-    /** @type {any} */
     this._agentService = null;
-    /** @type {Promise<any>|null} */
+
     this._agentFeaturesPromise = null;
-    /** @type {Promise<any>|null} */
+
     this._intelligenceModulePromise = null;
-    /** @type {Promise<void>|null} */
+
     this._interactiveModulesPromise = null;
-    /** @type {Promise<any>|null} */
+
     this._baseStylesPromise = null;
-    /** @type {Promise<any>|null} */
+
     this._chatStylesPromise = null;
-    /** @type {Promise<any>|null} */
+
     this._motionStylesPromise = null;
-    /** @type {string} */
+
     this._agentIdentitySyncedFor = "";
-    /** @type {boolean} */
+
     this._imageUploadHydrated = false;
-    /** @type {RobotAnimation} */
+
     this.animationModule = new RobotAnimation(this);
-    /** @type {import('./modules/robot-collision.js').RobotCollision|null} */
+
     this.collisionModule = null;
-    /** @type {RobotChat} */
+
     this.chatModule = new RobotChat(this);
-    /** @type {import('./modules/robot-intelligence.js').RobotIntelligence|null} */
+
     this.intelligenceModule = null;
-    /** @type {import('./modules/robot-emotions.js').RobotEmotions|null} */
+
     this.emotionsModule = null;
-    /** @type {import('./modules/robot-context-reactions.js').RobotContextReactions|null} */
+
     this.contextReactionsModule = null;
 
-    /** @type {boolean} Flag to prevent footer overlap check from overriding keyboard adjustment */
     this.isKeyboardAdjustmentActive = false;
-    /** @type {boolean} Hide local bubble text so chat responses stay Cloudflare-AI only */
+
     this.disableLocalBubbleTexts = true;
 
-    /** @type {number} Store initial layout height for detecting keyboard */
     this.initialLayoutHeight = typeof globalThis !== "undefined" ? globalThis.innerHeight : 0;
 
-    /** @type {PageContext|null} */
     this.currentObservedContext = null;
-    /** @type {ReturnType<typeof createObserver>|null} */
+
     this._sectionObserver = null;
-    /** @type {ResizeObserver|null} */
+
     this._footerLayoutObserver = null;
-    /** @type {Element|null} */
+
     this._observedFooterEl = null;
-    /** @type {PageContext|null} */
+
     this._lastKnownContext = null;
-    /** @type {Element|null} */
+
     this._typeWriterEl = null;
-    /** @type {IntersectionObserver|null} */
+
     this._hydrationObserver = null;
-    /** @type {TimerID|null} */
+
     this._hydrationFallbackTimer = null;
-    /** @type {boolean} */
+
     this.isHydrated = false;
-    /** @type {(() => void)|null} */
+
     this._overlayStateCleanup = null;
-    /** @type {(() => void)|null} */
+
     this._overlayControllerCleanup = null;
-    /** @type {EventListener|null} */
+
     this._handleViewportResize = null;
-    /** @type {EventListener|null} */
+
     this._onHeroTypingEnd = null;
-    /** @type {EventListener|null} */
+
     this._scrollListener = null;
-    /** @type {EventListener|null} */
+
     this._contentCollisionHandler = null;
 
-    /** @type {EventListenerRegistry} */
     this._eventListeners = {
       scroll: [],
       resize: [],
@@ -154,87 +123,48 @@ export class RobotCompanion {
       dom: [],
     };
 
-    /** @type {TimerID | null} */
     this._scrollTimeout = null;
 
-    // Load analytics from storage and calculate mood
     if (typeof this.stateManager.loadFromStorage === "function") {
       this.stateManager.loadFromStorage();
     }
     const mood = this.calculateMood();
     this.stateManager.setState({ mood });
 
-    // Only hydrate identity from the URL here. Agent/network sync is deferred
-    // until the first real AI interaction.
     this.hydrateNameFromUrl();
 
-    /** @type {Set<string>} */
     this.easterEggFound = new Set(JSON.parse(localStorage.getItem("robot-easter-eggs") || "[]"));
 
-    /** @type {DOMCache} */
     this.dom = {};
   }
 
-  /**
-   * Safe timeout wrapper for automatic cleanup
-   * @param {Function} callback - Callback function
-   * @param {number} delay - Delay in milliseconds
-   * @returns {ReturnType<typeof setTimeout>} Timeout ID
-   */
   _setTimeout(callback, delay) {
     return this.timerManager.setTimeout(callback, delay);
   }
 
-  /**
-   * Safe interval wrapper for automatic cleanup
-   * @param {Function} callback - Callback function
-   * @param {number} delay - Delay in milliseconds
-   * @returns {ReturnType<typeof setInterval>} Interval ID
-   */
   _setInterval(callback, delay) {
     return this.timerManager.setInterval(callback, delay);
   }
 
-  /**
-   * Safe requestAnimationFrame wrapper for automatic cleanup
-   * @param {Function} callback - Callback function
-   * @returns {number} Animation frame ID
-   */
   _requestAnimationFrame(callback) {
     return this.timerManager.requestAnimationFrame(callback);
   }
 
-  /**
-   * Clear timeout and remove from registry
-   * @param {ReturnType<typeof setTimeout>} id - Timeout ID
-   */
   _clearTimeout(id) {
     this.timerManager.clearTimeout(id);
   }
 
-  /**
-   * Clear interval and remove from registry
-   * @param {ReturnType<typeof setInterval>} id - Interval ID
-   */
   _clearInterval(id) {
     this.timerManager.clearInterval(id);
   }
 
-  /**
-   * Cancel animation frame and remove from registry
-   * @param {number} id - Animation frame ID
-   */
   _cancelAnimationFrame(id) {
     this.timerManager.cancelAnimationFrame(id);
   }
 
-  /**
-   * Lazy load the AI Agent Service (tool-calling, memory, streaming)
-   * @returns {Promise<any>}
-   */
   async getAgentService() {
     if (!this._agentService) {
-      const { AIAgentService } = await import(/* webpackIgnore: true */ "./ai-agent-service.js");
+      const { AIAgentService } = await import("./ai-agent-service.js");
       this._agentService = new AIAgentService();
     }
     return this._agentService;
@@ -336,11 +266,6 @@ export class RobotCompanion {
     return agentService;
   }
 
-  /**
-   * Ensure a user name is present, falling back to URL parameter and
-   * prompting if necessary.  If a new name is chosen we'll also update
-   * the query string so the link can be shared between browsers.
-   */
   async setUserName(name, options = {}) {
     const { persist = true } = options;
     const { name: norm } = writeRobotUserName(name, { syncUrl: true });
@@ -351,8 +276,8 @@ export class RobotCompanion {
     if (persist) {
       try {
         await this.prepareAgentFeatures();
-      } catch {
-        /* ignore */
+      } catch (err) {
+        void err;
       }
     }
 
@@ -366,8 +291,8 @@ export class RobotCompanion {
 
     try {
       this._agentService?.clearUserIdentity?.({ clearUrl: false });
-    } catch {
-      /* ignore */
+    } catch (err) {
+      void err;
     }
 
     return "";
@@ -384,7 +309,6 @@ export class RobotCompanion {
       return this.dom.footer;
     }
 
-    // Prefer the fixed footer inside <site-footer>, then fallback targets.
     this.dom.footer =
       document.querySelector("site-footer .site-footer") ||
       document.querySelector("footer.site-footer") ||
@@ -449,8 +373,8 @@ export class RobotCompanion {
       if (this._observedFooterEl) {
         try {
           this._footerLayoutObserver.unobserve(this._observedFooterEl);
-        } catch {
-          /* ignore */
+        } catch (err) {
+          void err;
         }
       }
 
@@ -459,9 +383,7 @@ export class RobotCompanion {
     };
 
     const checkOverlap = () => {
-      // Skip if search animation is active
       if (this.animationModule.searchAnimation && this.animationModule.searchAnimation.active) {
-        // Ensure bottom is reset so transform works from base position
         if (this.dom.container.style.bottom) {
           this.dom.container.style.bottom = "";
         }
@@ -469,7 +391,6 @@ export class RobotCompanion {
         return;
       }
 
-      // If keyboard adjustment is active, skip overlap check to prevent overriding style.bottom
       if (this.isKeyboardAdjustmentActive) {
         ticking = false;
         return;
@@ -480,7 +401,6 @@ export class RobotCompanion {
         return;
       }
 
-      // When positioned via 'top' (e.g. gallery), skip footer overlap entirely
       const pageCtx = this.dom.container.dataset.pageContext;
       if (pageCtx === "gallery") {
         ticking = false;
@@ -523,7 +443,7 @@ export class RobotCompanion {
       globalThis.addEventListener("scroll", requestTick, { passive: true });
       globalThis.addEventListener("resize", requestTick, { passive: true });
       footerEvents.forEach(eventName => document.addEventListener(eventName, requestTick));
-      // Registriere Listener für Cleanup
+
       this._eventListeners.scroll.push({
         target: globalThis,
         handler: requestTick,
@@ -609,14 +529,12 @@ export class RobotCompanion {
     if (typeof globalThis === "undefined" || !globalThis.visualViewport) return;
 
     this._handleViewportResize = () => {
-      // Skip if search animation is active
       if (this.animationModule.searchAnimation && this.animationModule.searchAnimation.active) {
         return;
       }
 
       if (!this.dom.window || !this.dom.container) return;
 
-      // If chat is closed, ensure we clean up state and do nothing else
       if (!this.chatModule.isOpen) {
         if (this.isKeyboardAdjustmentActive) {
           this.isKeyboardAdjustmentActive = false;
@@ -627,7 +545,6 @@ export class RobotCompanion {
         return;
       }
 
-      // Use initialLayoutHeight if available to detect shrink-resize behaviors
       const referenceHeight =
         this.initialLayoutHeight ||
         (typeof globalThis !== "undefined" ? globalThis.innerHeight : 0);
@@ -638,13 +555,9 @@ export class RobotCompanion {
       const heightDiff = referenceHeight - visualHeight;
       const isInputFocused = document.activeElement === this.dom.input;
 
-      // Threshold: > 150px difference usually implies keyboard.
-      // Also trigger if input is focused and difference is measurable (>50px).
       const isKeyboardOverlay = heightDiff > 150 || (isInputFocused && heightDiff > 50);
 
       if (isKeyboardOverlay) {
-        // Keyboard is open (overlay mode or partial resize).
-        // Keep the chat window above the keyboard area.
         this.isKeyboardAdjustmentActive = true;
 
         const safeMargin = 10;
@@ -652,10 +565,8 @@ export class RobotCompanion {
         this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
         this.dom.window.style.bottom = `${Math.max(8, heightDiff + safeMargin)}px`;
       } else {
-        // Keyboard is closed
         this.isKeyboardAdjustmentActive = false;
 
-        // Reset styles to allow CSS / footer overlap logic to take over
         this.dom.container.style.bottom = "";
         this.dom.window.style.bottom = "";
         this.dom.window.style.maxHeight = "";
@@ -665,7 +576,7 @@ export class RobotCompanion {
     if (typeof globalThis !== "undefined" && globalThis.visualViewport) {
       globalThis.visualViewport.addEventListener("resize", this._handleViewportResize);
       globalThis.visualViewport.addEventListener("scroll", this._handleViewportResize);
-      // Registriere Listener für Cleanup
+
       this._eventListeners.visualViewportResize.push({
         target: globalThis.visualViewport,
         handler: this._handleViewportResize,
@@ -685,7 +596,7 @@ export class RobotCompanion {
       const blurHandler = () => this._setTimeout(handleResize, 200);
       this.dom.input.addEventListener("focus", handleResize);
       this.dom.input.addEventListener("blur", blurHandler);
-      // Registriere Listener für Cleanup
+
       this._eventListeners.inputFocus = {
         target: this.dom.input,
         handler: handleResize,
@@ -711,7 +622,6 @@ export class RobotCompanion {
   registerOverlayController() {
     if (this._overlayControllerCleanup) return;
 
-    /** @type {OverlayController} */
     const robotOverlayController = {
       open: () => this.chatModule.applyOverlayState(true),
       close: ({ restoreFocus = true } = {}) => {
@@ -797,7 +707,7 @@ export class RobotCompanion {
         }
       );
       this._hydrationObserver.observe(this.dom.container);
-      this._hydrationFallbackTimer = /** @type {TimerID} */ (this._setTimeout(hydrateNow, 7000));
+      this._hydrationFallbackTimer = this._setTimeout(hydrateNow, 7000);
       return;
     }
 
@@ -832,7 +742,6 @@ export class RobotCompanion {
     this.setupSectionChangeDetection();
     this.setupPageContextMorphing();
 
-    // Start context-aware reactions monitoring
     this._setTimeout(() => {
       this.contextReactionsModule?.startMonitoring?.();
       this.contextReactionsModule?.setupIdleReaction?.(60000);
@@ -872,16 +781,14 @@ export class RobotCompanion {
         if (this._scrollTimeout) {
           this._clearTimeout(this._scrollTimeout);
         }
-        this._scrollTimeout = /** @type {TimerID} */ (
-          this._setTimeout(() => {
-            this.maybeTriggerContextReaction();
-            try {
-              this.checkTypewriterCollision();
-            } catch (err) {
-              log.warn("RobotCompanion: scroll handler collision check failed", err);
-            }
-          }, 220)
-        );
+        this._scrollTimeout = this._setTimeout(() => {
+          this.maybeTriggerContextReaction();
+          try {
+            this.checkTypewriterCollision();
+          } catch (err) {
+            log.warn("RobotCompanion: scroll handler collision check failed", err);
+          }
+        }, 220);
       });
     };
 
@@ -889,7 +796,7 @@ export class RobotCompanion {
       globalThis.addEventListener("scroll", this._scrollListener, {
         passive: true,
       });
-      // Registriere Listener für Cleanup
+
       this._eventListeners.scroll.push({
         target: globalThis,
         handler: this._scrollListener,
@@ -915,18 +822,9 @@ export class RobotCompanion {
     this.maybeTriggerContextReaction(this._lastKnownContext);
   }
 
-  /**
-   * View Transitions Morphing – set `data-page-context` on the container so
-   * the CSS position rules kick in. During SPA navigations the attribute
-   * changes *inside* `document.startViewTransition()`, which causes the
-   * browser to smoothly morph the robot from old → new position.
-   */
   setupPageContextMorphing() {
-    // Set initial context immediately
     this._updatePageContextAttribute();
 
-    // Re-evaluate after every SPA page swap dispatched by view-transitions.js
-    /** @type {() => void} */
     const onPageChanged = () => this._updatePageContextAttribute();
 
     window.addEventListener("page:changed", onPageChanged, { passive: true });
@@ -937,20 +835,11 @@ export class RobotCompanion {
     });
   }
 
-  /**
-   * Resolve current page context and apply it as a data attribute.
-   * When the context actually changes (SPA navigation), reset patrol
-   * and collision state so the robot settles cleanly in its new position.
-   * @private
-   */
   _updatePageContextAttribute() {
     const ctx = this.getPageContext();
     const container = this.dom?.container;
     if (!container) return;
 
-    // Map the granular section contexts to the broader page-level ones
-    // used in the CSS morph rules.
-    /** @type {Record<string, string>} */
     const contextMap = {
       hero: "home",
       features: "home",
@@ -972,18 +861,14 @@ export class RobotCompanion {
     if (prev !== mapped) {
       container.dataset.pageContext = mapped;
 
-      // Clear typewriter ref – it may not exist on the new page
       this._typeWriterEl = null;
 
-      // Reset patrol to prevent leftover offsets from the old page
       if (this.animationModule) {
         this.animationModule.patrol.x = 0;
         this.animationModule.patrol.y = 0;
         this.animationModule.patrol.isPaused = false;
         container.style.transform = "translate3d(0px, 0px, 0)";
 
-        // When returning to home via SPA navigation, re-trigger entry animation.
-        // Skip initial load (prev === undefined) — the hydration callback handles that.
         if (mapped === "home" && prev !== undefined && this.collisionModule) {
           this._setTimeout(() => {
             this.animationModule.startTypeWriterKnockbackAnimation();
@@ -991,7 +876,6 @@ export class RobotCompanion {
         }
       }
 
-      // Invalidate collision caches
       if (this.collisionModule) {
         this.collisionModule._lastCollisionCheck = 0;
         this.collisionModule._lastObstacleUpdate = 0;
@@ -1007,7 +891,6 @@ export class RobotCompanion {
       restoreFocus: false,
     });
 
-    // Module Cleanup
     this.chatModule?.destroy();
     this.animationModule?.destroy();
     this.intelligenceModule?.destroy();
@@ -1038,7 +921,6 @@ export class RobotCompanion {
       this._hydrationFallbackTimer = null;
     }
 
-    // Observer Cleanup
     if (this._sectionObserver) {
       this._sectionObserver.disconnect();
       this._sectionObserver = null;
@@ -1049,23 +931,19 @@ export class RobotCompanion {
       this._observedFooterEl = null;
     }
 
-    // State Manager Cleanup
     if (this.stateManager) {
       this.stateManager.destroy();
     }
-    // Zentrale Event-Listener Cleanup
+
     if (this._eventListeners) {
-      // Scroll Listeners
       this._eventListeners.scroll.forEach(({ target, handler }) => {
         target.removeEventListener("scroll", handler);
       });
 
-      // Resize Listeners
       this._eventListeners.resize.forEach(({ target, handler }) => {
         target.removeEventListener("resize", handler);
       });
 
-      // Visual Viewport Listeners
       this._eventListeners.visualViewportResize.forEach(({ target, handler }) => {
         target.removeEventListener("resize", handler);
       });
@@ -1073,7 +951,6 @@ export class RobotCompanion {
         target.removeEventListener("scroll", handler);
       });
 
-      // Input Listeners
       if (this._eventListeners.inputFocus) {
         const { target, handler } = this._eventListeners.inputFocus;
         target.removeEventListener("focus", handler);
@@ -1083,24 +960,21 @@ export class RobotCompanion {
         target.removeEventListener("blur", handler);
       }
 
-      // Hero Typing End Listener
       if (this._eventListeners.heroTypingEnd) {
         const { target, handler } = this._eventListeners.heroTypingEnd;
         target.removeEventListener(ROBOT_EVENTS.HERO_TYPING_END, handler);
       }
 
-      // DOM element listeners
       if (this._eventListeners.dom && this._eventListeners.dom.length) {
         this._eventListeners.dom.forEach(({ target, event, handler }) => {
           try {
             target.removeEventListener(event, handler);
-          } catch {
-            /* ignore */
+          } catch (err) {
+            void err;
           }
         });
       }
 
-      // Clear alle Referenzen
       this._eventListeners = {
         scroll: [],
         resize: [],
@@ -1113,13 +987,11 @@ export class RobotCompanion {
       };
     }
 
-    // Zentrale Timer Cleanup
     if (this.timerManager) {
       this.timerManager.clearAll();
     }
     this._scrollTimeout = null;
 
-    // DOM Cleanup
     if (this.dom.container && this.dom.container.parentNode) {
       this.dom.container?.remove();
     }
@@ -1128,10 +1000,6 @@ export class RobotCompanion {
     }
   }
 
-  /**
-   * Calculate current mood based on time and analytics
-   * @returns {RobotMood}
-   */
   calculateMood() {
     const hour = new Date().getHours();
     const state = this.stateManager.getState();
@@ -1165,11 +1033,6 @@ export class RobotCompanion {
     }
   }
 
-  /**
-   * Unlock easter egg achievement
-   * @param {string} id - Easter egg ID
-   * @param {string} message - Achievement message
-   */
   unlockEasterEgg(id, message) {
     this.easterEggFound.add(id);
     localStorage.setItem("robot-easter-eggs", JSON.stringify([...this.easterEggFound]));
@@ -1177,10 +1040,6 @@ export class RobotCompanion {
     this._setTimeout(() => this.chatModule.hideBubble(), 10000);
   }
 
-  /**
-   * Track section visit for analytics
-   * @param {PageContext} context - Page context
-   */
   trackSectionVisit(context) {
     this.stateManager.trackSectionVisit(context);
     const { analytics } = this.stateManager.getState();
@@ -1231,11 +1090,9 @@ export class RobotCompanion {
   }
 
   createDOM() {
-    // Use DOM Builder for XSS-safe element creation
     const container = this.domBuilder.createContainer();
     document.body.appendChild(container);
 
-    // Cache DOM references
     this.dom.container = container;
     this.dom.floatWrapper = container.querySelector(".robot-float-wrapper");
     this.dom.bubble = document.getElementById("robot-bubble");
@@ -1259,8 +1116,8 @@ export class RobotCompanion {
     this.dom.magnifyingGlass = container.querySelector(".robot-magnifying-glass");
     this.dom.mouth = container.querySelector(".robot-mouth");
 
-    const anim = /** @type {any} */ (this.animationModule);
-    // flame colours may need adjustment after DOM creation
+    const anim = this.animationModule;
+
     anim.ensureFlameColors();
     this._requestAnimationFrame(() => anim.startIdleEyeMovement());
     this.setRobotHidden(localStorage.getItem(ROBOT_HIDDEN_STORAGE_KEY) === "true", {
@@ -1277,17 +1134,11 @@ export class RobotCompanion {
     this.dom.window = chatWindow;
     this.dom.messages = document.getElementById("robot-messages");
     this.dom.inputArea = document.getElementById("robot-input-area");
-    this.dom.input = /** @type {HTMLInputElement} */ (document.getElementById("robot-chat-input"));
-    this.dom.sendBtn = /** @type {HTMLButtonElement} */ (
-      document.getElementById("robot-chat-send")
-    );
-    this.dom.stopBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById("robot-chat-stop")
-    );
+    this.dom.input = document.getElementById("robot-chat-input");
+    this.dom.sendBtn = document.getElementById("robot-chat-send");
+    this.dom.stopBtn = document.getElementById("robot-chat-stop");
     this.dom.closeBtn = chatWindow.querySelector(".chat-close-btn");
-    this.dom.memoryBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById("robot-chat-settings")
-    );
+    this.dom.memoryBtn = document.getElementById("robot-chat-settings");
 
     this.attachChatEvents();
     this.setupChatInputViewportHandlers();
@@ -1296,9 +1147,7 @@ export class RobotCompanion {
   async ensureImageUploadHydrated() {
     if (this._imageUploadHydrated) return true;
 
-    const imageUploadInput = /** @type {HTMLInputElement|null} */ (
-      document.getElementById("robot-image-upload")
-    );
+    const imageUploadInput = document.getElementById("robot-image-upload");
     if (!imageUploadInput) return false;
 
     const _onImageChange = e => {
@@ -1324,9 +1173,7 @@ export class RobotCompanion {
     const isReady = await this.ensureImageUploadHydrated();
     if (!isReady) return;
 
-    const imageUploadInput = /** @type {HTMLInputElement|null} */ (
-      document.getElementById("robot-image-upload")
-    );
+    const imageUploadInput = document.getElementById("robot-image-upload");
     imageUploadInput?.click();
   }
 
@@ -1366,7 +1213,6 @@ export class RobotCompanion {
       handler: _onBubbleClose,
     });
 
-    // Search Events
     const _onSearchOpened = () => {
       this.animationModule.startSearchAnimation();
     };
@@ -1497,10 +1343,6 @@ export class RobotCompanion {
     this.chatModule.syncComposerState();
   }
 
-  /**
-   * Get current page context based on URL and visible sections
-   * @returns {PageContext}
-   */
   getPageContext() {
     try {
       if (this.currentObservedContext) return this.currentObservedContext;
@@ -1510,10 +1352,6 @@ export class RobotCompanion {
       const lower = path.toLowerCase();
       const midY = (window.innerHeight || 0) / 2;
 
-      /**
-       * @param {string} selector
-       * @returns {boolean}
-       */
       const sectionCheck = selector => {
         try {
           const el = document.querySelector(selector);
@@ -1525,7 +1363,6 @@ export class RobotCompanion {
         }
       };
 
-      /** @type {PageContext} */
       let context = "default";
 
       if (sectionCheck("#hero")) context = "hero";
@@ -1560,7 +1397,7 @@ export class RobotCompanion {
 
   setupSectionObservers() {
     if (this._sectionObserver) return;
-    /** @type {Array<{selector: string, ctx: PageContext}>} */
+
     const sectionMap = [
       { selector: "#hero", ctx: "hero" },
       { selector: "#features", ctx: "features" },
@@ -1577,7 +1414,7 @@ export class RobotCompanion {
             if (match) {
               if (this.currentObservedContext === match.ctx) return;
               this.currentObservedContext = match.ctx;
-              // Update state manager
+
               this.stateManager.setState({ currentContext: match.ctx });
               this.maybeTriggerContextReaction(match.ctx);
             }
@@ -1593,7 +1430,6 @@ export class RobotCompanion {
     });
   }
 
-  // ─── Chat Module Proxy Methods (used by collision/animation/intelligence modules) ───
   toggleChat(force) {
     if (force ?? !this.chatModule.isOpen) {
       void this.loadChatCSS();
@@ -1626,10 +1462,6 @@ export class RobotCompanion {
     return this.chatModule.clearBubbleSequence();
   }
 
-  /**
-   * Async initialization - moved out of constructor for testability
-   * @returns {Promise<void>}
-   */
   async initialize() {
     if (!this.dom.container) this.init();
   }

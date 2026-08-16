@@ -515,7 +515,7 @@
     content: "";
     position: absolute;
     inset: -25%;
-    opacity: 0.26;
+    opacity: 0.18;
     background:
       radial-gradient(ellipse at 50% 50%, rgb(120 155 220 / 14%) 0%, transparent 58%),
       linear-gradient(
@@ -934,21 +934,92 @@
     opacity: 0;
   }
 
+  body.three-earth-active .home-aurora {
+    display: none;
+  }
+
+  body.three-earth-active .home-cosmos-bg {
+    /* Sky-haze gradient – Section 1 shows Berlin from above, not from space */
+    background:
+      /* Subtle atmospheric haze at top (sky) */
+      radial-gradient(ellipse 140% 60% at 50% 0%, rgb(135 175 230 / 28%) 0%, transparent 62%),
+      /* Warm ground haze toward bottom where city fills the frame */
+        radial-gradient(ellipse 120% 50% at 50% 100%, rgb(180 160 120 / 12%) 0%, transparent 58%),
+      /* Deep atmospheric vignette at sides */
+        radial-gradient(circle at 0% 50%, rgb(20 42 80 / 22%), transparent 40%),
+      radial-gradient(circle at 100% 50%, rgb(20 42 80 / 18%), transparent 40%),
+      /* Base sky: midnight blue */
+        linear-gradient(170deg, #0a1628 0%, #0d2040 28%, #08182e 65%, #040c1c 100%);
+    background-size: auto;
+    background-position: center;
+  }
+
+  body.three-earth-active .home-cosmos-bg::before {
+    /* Slightly richer nebula shimmer to complement the brighter earth */
+    opacity: 0.14;
+  }
+
+  body.three-earth-active .home-stars,
+  body.three-earth-active .home-scanline,
+  body.three-earth-active .hero__signal {
+    display: none;
+  }
+
   .hero__earth-credit {
     position: absolute;
     right: clamp(1rem, 2vw, 2rem);
     bottom: clamp(4.6rem, 10vh, 5.4rem);
     z-index: 6;
-    color: rgb(255 255 255 / 52%);
-    font-size: 0.625rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--clr-dark-blue, #050b18) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--clr-white) 14%, transparent);
+    color: color-mix(in srgb, var(--clr-white) 78%, transparent);
+    font-size: 0.6875rem;
+    font-weight: 500;
     letter-spacing: 0.02em;
     text-decoration: none;
-    transition: color 160ms ease;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 42%);
+    transition:
+      color 180ms ease,
+      border-color 180ms ease,
+      background 180ms ease,
+      transform 180ms ease;
+  }
+
+  .hero__earth-credit-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00f0b5;
+    box-shadow: 0 0 8px #00f0b5;
+    animation: creditDotPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes creditDotPulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(0.85);
+    }
   }
 
   .hero__earth-credit:hover,
   .hero__earth-credit:focus-visible {
-    color: rgb(255 255 255 / 82%);
+    color: #ffffff;
+    border-color: color-mix(in srgb, var(--home-accent-cyan) 60%, white);
+    background: color-mix(in srgb, var(--clr-dark-blue, #08142a) 88%, transparent);
+    transform: translateY(-1px);
   }
 
   .hero__fx {
@@ -1034,20 +1105,28 @@
     gap: 0;
     max-width: min(100%, 58rem);
     translate: 0 -1.75rem;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 
   body.three-earth-active .hero__poster::before {
     content: "";
     position: absolute;
     z-index: -1;
-    inset: -1.5rem -3rem -2rem;
+    inset: -3rem -6rem -4rem;
     background: radial-gradient(
-      ellipse 58% 54% at 50% 43%,
-      rgb(2 7 16 / 42%) 0%,
-      rgb(2 7 16 / 18%) 50%,
-      transparent 76%
+      ellipse 78% 72% at 50% 46%,
+      /* soft core vignette – guarantees crisp text readability directly over Berlin 3D map */
+        rgb(1 5 14 / 68%) 0%,
+      rgb(1 5 14 / 36%) 45%,
+      rgb(1 5 14 / 10%) 72%,
+      transparent 92%
     );
-    filter: blur(12px);
+    filter: blur(24px);
     pointer-events: none;
   }
 
@@ -1114,8 +1193,10 @@
     line-height: var(--home-hero-title-line);
     text-wrap: balance;
     text-shadow:
-      0 16px 64px rgb(0 0 0 / 48%),
-      0 0 32px color-mix(in srgb, var(--home-accent-warm) 12%, transparent);
+      /* deeper shadows so title stays crisp over the brighter realistic earth */
+      0 2px 8px rgb(0 0 0 / 72%),
+      0 16px 64px rgb(0 0 0 / 62%),
+      0 0 48px color-mix(in srgb, var(--home-accent-warm) 16%, transparent);
   }
 
   @supports ((-webkit-background-clip: text) or (background-clip: text)) {
@@ -1613,14 +1694,15 @@
       translate: none;
     }
     body.three-earth-active .hero__poster::before {
-      inset: -1.25rem -0.8rem -1.8rem;
+      inset: -1.5rem -1rem -2rem;
       background: radial-gradient(
-        ellipse 72% 64% at 50% 48%,
-        rgb(3 8 18 / 58%) 0%,
-        rgb(3 8 18 / 28%) 48%,
-        transparent 78%
+        ellipse 80% 72% at 50% 50%,
+        /* stronger on mobile – brighter earth needs more contrast for text */ rgb(1 5 14 / 82%) 0%,
+        rgb(1 5 14 / 52%) 42%,
+        rgb(1 5 14 / 20%) 66%,
+        transparent 84%
       );
-      filter: blur(12px);
+      filter: blur(14px);
     }
   }
 
@@ -1978,7 +2060,7 @@
   }
 
   .three-earth-container[data-section="site-footer"] {
-    opacity: 0.28;
+    opacity: 0.35;
     visibility: visible;
     pointer-events: none;
   }

@@ -26,10 +26,16 @@ export function updatePhysicalLightingUniforms(system) {
         const shadowOffset = material?.userData?.cloudShader?.uniforms?.cloudShadowUvOffset?.value;
         const shadowFactor = material?.userData?.shadowOffsetFactor || 0;
         shadowOffset?.set?.(-sunDirection.x * shadowFactor, sunDirection.y * shadowFactor * 0.55);
+
+        // Update the new Rayleigh/Mie atmosphere sun direction
+        if (material?.userData?.isSunTracked && material?.uniforms?.sunDirection?.value) {
+          material.uniforms.sunDirection.value.copy(sunDirection);
+        }
       });
     });
   };
 
   updateObject(system.cityGlowGroup);
   updateObject(system.cloudMesh);
+  if (system.earthMesh) updateObject(system.earthMesh);
 }

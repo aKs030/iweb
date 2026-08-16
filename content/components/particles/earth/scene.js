@@ -28,7 +28,15 @@ export function setupScene(THREE, container) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  // Golden-hour look: slightly lower exposure protects highlights from a low sun
   renderer.toneMappingExposure = 1.08;
+
+  // Cinematic rendering additions
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // Very subtle depth cue — aggressive fog flattens the city, so keep density low
+  scene.fog = new THREE.FogExp2(0x060c14, 0.012);
 
   container.appendChild(renderer.domElement);
 
@@ -50,16 +58,36 @@ export function setupScene(THREE, container) {
 }
 
 export function setupLighting(THREE, scene) {
-  const directionalLight = new THREE.DirectionalLight(0xfff4e5, CONFIG.SUN.INTENSITY);
-  directionalLight.position.set(0, 7, 14);
+  // Low, raking golden-hour sun → long hard shadows that break up flat rooftops
+  const directionalLight = new THREE.DirectionalLight(0xffe8c8, CONFIG.SUN.INTENSITY);
+  directionalLight.position.set(10, 3, 12);
+
+  // Cinematic shadows — 4096 on desktop for crisp inter-building shadows
+  directionalLight.castShadow = true;
+  const shadowRes = typeof window !== "undefined" && window.devicePixelRatio >= 1.5 ? 4096 : 2048;
+  directionalLight.shadow.mapSize.width = shadowRes;
+  directionalLight.shadow.mapSize.height = shadowRes;
+  directionalLight.shadow.camera.near = 0.5;
+  directionalLight.shadow.camera.far = 45.0;
+  // Tight frustum around the city closeup area
+  const shadowBounds = 7.0;
+  directionalLight.shadow.camera.left = -shadowBounds;
+  directionalLight.shadow.camera.right = shadowBounds;
+  directionalLight.shadow.camera.top = shadowBounds;
+  directionalLight.shadow.camera.bottom = -shadowBounds;
+  // Slight negative bias keeps shadow acne away without Peter-Panning
+  directionalLight.shadow.bias = -0.0008;
+  directionalLight.shadow.normalBias = 0.02;
   scene.add(directionalLight);
 
-  const fillLight = new THREE.DirectionalLight(0x6ea8ff, CONFIG.LIGHTING.DAY.FILL_INTENSITY);
-  fillLight.position.set(9, -1.5, 10);
+  // Cool-blue sky fill from the opposite side — gives buildings depth
+  const fillLight = new THREE.DirectionalLight(0x7ab8ff, CONFIG.LIGHTING.DAY.FILL_INTENSITY);
+  fillLight.position.set(-8, 4, 6);
   scene.add(fillLight);
 
-  const rimLight = new THREE.PointLight(0xffc76a, CONFIG.LIGHTING.DAY.RIM_INTENSITY, 80, 1.8);
-  rimLight.position.set(8, 6, 10);
+  // Warm rim/bounce from low horizon — simulates ground-reflected golden light
+  const rimLight = new THREE.PointLight(0xff9840, CONFIG.LIGHTING.DAY.RIM_INTENSITY, 90, 1.6);
+  rimLight.position.set(12, 1, 8);
   scene.add(rimLight);
 
   const ambientLight = new THREE.AmbientLight(

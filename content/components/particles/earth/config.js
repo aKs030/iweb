@@ -1,33 +1,33 @@
 export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 192,
+    SEGMENTS: 208,
     SEGMENTS_MOBILE: 112,
-    HERO_DISPLACEMENT_SCALE: 0.024,
+    HERO_DISPLACEMENT_SCALE: 0,
     DEFAULT_DISPLACEMENT_SCALE: 0,
     AMBIENT_ROTATION_SPEED: 0,
     CITY_LIGHT_INTENSITY: 1.35,
     AXIAL_TILT: -23.4,
   },
   CLOUDS: {
-    ALTITUDE: 0.012,
-    HIGH_ALTITUDE: 0.021,
-    SHADOW_ALTITUDE: 0.004,
-    SHADOW_OPACITY: 0.022,
-    HIGH_OPACITY_FACTOR: 0.32,
+    ALTITUDE: 0.014,
+    HIGH_ALTITUDE: 0.024,
+    SHADOW_ALTITUDE: 0.0035,
+    SHADOW_OPACITY: 0.018,
+    HIGH_OPACITY_FACTOR: 0.24,
     ROTATION_SPEED: 0.000065,
-    OPACITY: 0.22,
+    OPACITY: 0.2,
   },
   SUN: {
-    INTENSITY: 1.8,
+    INTENSITY: 2.2,
   },
   LIGHTING: {
     DAY: {
-      AMBIENT_INTENSITY: 1.4,
-      AMBIENT_COLOR: 0x606060,
-      SUN_INTENSITY: 1.8,
-      FILL_INTENSITY: 0.28,
-      RIM_INTENSITY: 0.32,
+      AMBIENT_INTENSITY: 1.1,
+      AMBIENT_COLOR: 0x505060,
+      SUN_INTENSITY: 2.2,
+      FILL_INTENSITY: 0.18,
+      RIM_INTENSITY: 0.45,
     },
     NIGHT: {
       AMBIENT_INTENSITY: 0.36,
@@ -39,7 +39,7 @@ export const CONFIG = {
   },
   STARS: {
     COUNT: 3600,
-    TWINKLE_SPEED: 0.34,
+    TWINKLE_SPEED: 0.24,
   },
   MOON: {
     RADIUS: 0.95,
@@ -53,16 +53,16 @@ export const CONFIG = {
     FOV: 45,
     NEAR: 0.1,
     FAR: 1000,
-    ZOOM_MIN: 5,
-    ZOOM_MAX: 25,
+    ZOOM_MIN: 8,
+    ZOOM_MAX: 18.5,
     LERP_FACTOR: 0.06,
     PRESETS: {
       hero: {
         x: 0,
-        y: 4.1,
-        z: 10.8,
-        fov: 45,
-        lookAt: { x: 0, y: -1.5, z: 0 },
+        y: 4.8, // optimal height for a cinematic flyover feel
+        z: 15.0, // pulled back for wide skyline view
+        fov: 40, // balanced FOV for depth and scale
+        lookAt: { x: 0, y: -2.6, z: 0 }, // gaze towards the horizon
       },
       features: {
         x: 0.42,
@@ -79,12 +79,19 @@ export const CONFIG = {
         fov: 40,
         lookAt: { x: 0, y: -1.05, z: -1.15 },
       },
+      "site-footer": {
+        x: 0.42,
+        y: 3.65,
+        z: 11.55,
+        fov: 40,
+        lookAt: { x: 0, y: -1.05, z: -1.15 },
+      },
     },
-    TRANSITION_DURATION: 2.45,
+    TRANSITION_DURATION: 2.05,
   },
   SHOOTING_STARS: {
-    BASE_FREQUENCY: 0.003,
-    MAX_SIMULTANEOUS: 3,
+    BASE_FREQUENCY: 0.012,
+    MAX_SIMULTANEOUS: 4,
   },
   PERFORMANCE: {
     PIXEL_RATIO: Math.min(globalThis.devicePixelRatio || 1, 2),

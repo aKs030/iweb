@@ -72,7 +72,7 @@ export class ThreeEarthManager {
 
     const loadPromise = (async () => {
       try {
-        const { initThreeEarth } = await import("../three-earth-system.js");
+        const { initThreeEarth } = await import("../three-earth-system.js?v=berlin-mitte-r2");
         if (generation !== this.loadGeneration) return;
         if (typeof initThreeEarth !== "function") {
           throw new Error("initThreeEarth not found in module exports");

@@ -225,7 +225,14 @@ export class CameraManager {
   }
 
   handleWheel(e) {
-    this.mouseState.zoom -= e.deltaY * 0.01;
+    const pixelDelta =
+      e.deltaMode === 1
+        ? e.deltaY * 16
+        : e.deltaMode === 2
+          ? e.deltaY * (globalThis.innerHeight || 800)
+          : e.deltaY;
+    const limitedDelta = Math.max(-180, Math.min(180, pixelDelta));
+    this.mouseState.zoom -= limitedDelta * 0.0035;
     this.mouseState.zoom = Math.max(
       CONFIG.CAMERA.ZOOM_MIN,
       Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom)

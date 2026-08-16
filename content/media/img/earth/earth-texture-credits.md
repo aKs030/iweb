@@ -23,6 +23,25 @@ reflections; geometry and lighting provide subtle 3D depth without artificial
 height or normal maps. The regional layer fades away before the global globe
 view.
 
+`berlin-city-center-eox-2025-4k-r1.webp` and its 2K delivery variant provide
+the tighter Section 1 city view. The 4096 × 3350 source was requested directly
+from the official EOX WMS using the `s2cloudless-2025` layer for the Berlin
+bounding box `13.08,52.358,13.73,52.682`. The aligned water layer comes from
+the official EOX `hydrography` WMS layer. This tighter source preserves roughly
+10-metre ground detail instead of enlarging the broader regional image.
+
+`berlin-mitte-truedop-sommer-2025-4k-r2.webp` and its 2K delivery variant are
+the current Section 1 surface. They use the official Geoportal Berlin summer
+2025 TrueDOP RGB layer for the 6.0 × 4.907 km Berlin-Mitte bounding box
+`388779.259,5817618.546,394779.259,5822525.773` in EPSG:25833. The source
+orthophoto has 0.20-metre ground resolution and is delivered here at about
+1.465 metres per texture pixel. The aligned mask uses the EOX `hydrography`
+WMS layer. The TrueDOP data is available under Datenlizenz Deutschland – Zero
+– Version 2.0.
+
+- [Geoportal Berlin TrueDOP Sommer 2025](https://daten.berlin.de/datensaetze/digitale-farbige-trueorthophotos-sommer-2025-truedop20rgbi-wms-d714b73c)
+- [Datenlizenz Deutschland – Zero – Version 2.0](https://www.govdata.de/dl-de/zero-2-0)
+
 `earth_night_8k.jpg` and `earth_clouds_4k.jpg` are by Solar System Scope,
 downloaded through Wikimedia Commons, and licensed under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

@@ -56,6 +56,8 @@ export function getHeroToFeaturesScrollProgress(currentSection) {
   return Math.max(0, Math.min(1, (scrollTop - start) / range));
 }
 
+let footerTransitionRangeCache = null;
+
 export function getFeaturesToSection3ScrollProgress(currentSection) {
   if (currentSection !== "features" && currentSection !== "section3") return null;
 
@@ -89,8 +91,45 @@ export function getFeaturesToSection3ScrollProgress(currentSection) {
   return Math.max(0, Math.min(1, (scrollTop - start) / (end - start)));
 }
 
-export function getScrollLinkedVerticalRotation(progress, startRotation, turn) {
-  return startRotation + turn * progress;
+export function getSection3ToFooterScrollProgress(currentSection) {
+  if (currentSection !== "section3" && currentSection !== "site-footer") return null;
+
+  const section3 = document.getElementById("section3");
+  const footer = document.querySelector(
+    "site-footer, footer.site-footer, .site-footer, #site-footer"
+  );
+  if (!section3 || !footer) return null;
+
+  const footerTop = footer.offsetTop || document.documentElement.scrollHeight - innerHeight;
+
+  if (
+    footerTransitionRangeCache?.w !== innerWidth ||
+    footerTransitionRangeCache?.h !== innerHeight ||
+    footerTransitionRangeCache?.section3Top !== section3.offsetTop ||
+    footerTransitionRangeCache?.footerTop !== footerTop
+  ) {
+    const parsedPadding = Number.parseFloat(
+      getComputedStyle(document.documentElement).scrollPaddingTop
+    );
+    const padding = Number.isFinite(parsedPadding) ? parsedPadding : 0;
+    const start = Math.max(0, section3.offsetTop - padding);
+    footerTransitionRangeCache = {
+      w: innerWidth,
+      h: innerHeight,
+      section3Top: section3.offsetTop,
+      footerTop,
+      start,
+      end: Math.max(start + 1, footerTop - padding),
+    };
+  }
+
+  const { start, end } = footerTransitionRangeCache;
+  const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+  return Math.max(0, Math.min(1, (scrollTop - start) / (end - start)));
+}
+
+export function getScrollLinkedVerticalRotation(progress, startRotation, endRotation) {
+  return lerpAngle(startRotation, endRotation, progress);
 }
 
 const getStagedProgress = (progress, start, end) => {
@@ -98,15 +137,24 @@ const getStagedProgress = (progress, start, end) => {
   return t * t * (3 - 2 * t);
 };
 
-export const getHeroToFeaturesRotationProgress = progress => getStagedProgress(progress, 0, 0.38);
+export const getHeroToFeaturesRotationProgress = progress => getStagedProgress(progress, 0.1, 0.84);
 
-export const getHeroToFeaturesZoomProgress = progress => getStagedProgress(progress, 0.24, 1);
+export const getHeroToFeaturesZoomProgress = progress => getStagedProgress(progress, 0.04, 0.9);
 
-export function applyFeaturesSection3CameraOrbit(system, features, section3, progress, delta) {
+export function applyFeaturesSection3CameraOrbit(
+  system,
+  features,
+  section3,
+  progress,
+  delta,
+  startName = "features",
+  endName = "section3"
+) {
   const p = smootherstep(Math.max(0, Math.min(1, progress)));
   const nextConfig = p >= 0.9 ? section3 : features;
+  const nextName = p >= 0.9 ? endName : startName;
   if (system.earthMesh?.userData.currentMode !== nextConfig.mode) {
-    system._updateEarthForSection(nextConfig === section3 ? "section3" : "features");
+    system._updateEarthForSection(nextName);
   }
   system._zoomTransition.stop();
   const startOrbit = features.cameraOrbit ?? 0;
@@ -137,7 +185,7 @@ export function applyFeaturesSection3CameraOrbit(system, features, section3, pro
     );
     system.earthMesh.userData.targetScale = earthScale;
   }
-  system.cameraManager?.setScrollLinkedPresetProgress("features", "section3", p);
+  system.cameraManager?.setScrollLinkedPresetProgress(startName, endName, p);
   system.cameraManager?.setScrollLinkedOrbitAngle(cameraOrbit, earthPosition);
   system.cameraManager?.updateCameraPosition(delta);
   if (system.earthMesh) {
@@ -147,6 +195,15 @@ export function applyFeaturesSection3CameraOrbit(system, features, section3, pro
   if (system.cloudMesh) {
     system.cloudMesh.rotation.x = system.earthMesh?.rotation.x || 0;
     system.cloudMesh.rotation.z = system.earthMesh?.rotation.z || 0;
+  }
+
+  // Smoothly fade feature portal cards when scrolling away from features
+  if (system.cardManager && startName === "features") {
+    const cardProgress = Math.max(0, 1 - p * 2.2);
+    system.cardManager.setProgress(cardProgress);
+    if (system.container) {
+      system.container.dataset.featureCards = cardProgress > 0.05 ? "visible" : "hidden";
+    }
   }
 
   if (system.cityGlowGroup) {
@@ -172,6 +229,7 @@ export function applyScrollLinkedSectionVisuals(
   const p = stagedZoom
     ? getHeroToFeaturesZoomProgress(progress)
     : smootherstep(Math.max(0, Math.min(1, progress)));
+  const globeBlend = stagedZoom ? getStagedProgress(progress, 0.62, 0.96) : p;
   const day = config.LIGHTING.DAY;
   const lightValue = (section, key, fallback) => section.lighting?.[key] ?? fallback;
   const blendLight = (key, fallback) =>
@@ -212,6 +270,8 @@ export function applyScrollLinkedSectionVisuals(
 
   const material = system.dayMaterial;
   if (material) {
+    material.opacity = lerp(hero.surfaceOpacity ?? 1, features.surfaceOpacity ?? 1, globeBlend);
+    material.depthWrite = material.opacity >= 0.98;
     material.clearcoat = lerp(hero.surfaceClearcoat ?? 0, features.surfaceClearcoat ?? 0, p);
     material.specularIntensity = lerp(
       hero.surfaceSpecularIntensity ?? 1,
@@ -251,7 +311,7 @@ export function applyScrollLinkedSectionVisuals(
   const cityGlowMultiplier = lerp(
     hero.cityGlowMultiplier ?? 1,
     features.cityGlowMultiplier ?? 1,
-    p
+    globeBlend
   );
   system.cityGlowGroup?.traverse(object => {
     const glowOpacity = object.material?.uniforms?.glowOpacity;
@@ -264,7 +324,11 @@ export function applyScrollLinkedSectionVisuals(
     "earth-city-light-points-mesh"
   )?.material?.uniforms?.cityPointOpacity;
   if (cityPointOpacity) {
-    cityPointOpacity.value = lerp(hero.cityPointOpacity ?? 0, features.cityPointOpacity ?? 0, p);
+    cityPointOpacity.value = lerp(
+      hero.cityPointOpacity ?? 0,
+      features.cityPointOpacity ?? 0,
+      globeBlend
+    );
   }
 
   const clouds = system.cloudMesh;
@@ -276,7 +340,8 @@ export function applyScrollLinkedSectionVisuals(
         high: clouds.getObjectByName?.("earth-cloud-high"),
         shadow: clouds.getObjectByName?.("earth-cloud-shadow"),
       });
-    const opacity = lerp(hero.cloudOpacity ?? 0, features.cloudOpacity ?? 0, p);
+    const opacity = lerp(hero.cloudOpacity ?? 0, features.cloudOpacity ?? 0, globeBlend);
+    clouds.visible = opacity > 0.001;
     if (parts.low?.material) parts.low.material.opacity = opacity;
     if (parts.high?.material)
       parts.high.material.opacity = opacity * config.CLOUDS.HIGH_OPACITY_FACTOR;
@@ -284,24 +349,35 @@ export function applyScrollLinkedSectionVisuals(
       parts.shadow.material.opacity = lerp(
         hero.cloudShadowOpacity ?? 0,
         features.cloudShadowOpacity ?? 0,
-        p
+        globeBlend
       );
     }
     clouds.userData.targetScaleFactor = lerp(
       hero.cloudScaleFactor ?? 1,
       features.cloudScaleFactor ?? 1,
-      p
+      globeBlend
     );
+  }
+
+  const atmosphere = system.earthMesh?.getObjectByName?.("earth-atmosphere");
+  if (atmosphere?.material?.uniforms?.atmosphereOpacity) {
+    const heroAtmos = hero.atmosphereVisible !== false ? (hero.atmosphereOpacity ?? 0.42) : 0;
+    const featAtmos =
+      features.atmosphereVisible !== false ? (features.atmosphereOpacity ?? 0.42) : 0;
+    const atmosphereOpacity = lerp(heroAtmos, featAtmos, globeBlend);
+    atmosphere.material.uniforms.atmosphereOpacity.value = atmosphereOpacity;
+    atmosphere.visible = atmosphereOpacity > 0.001;
   }
 
   if (system.moonMesh && hero.moon && features.moon) {
     const moon = system.moonMesh;
     moon.position.set(
-      lerp(hero.moon.pos.x, features.moon.pos.x, p),
-      lerp(hero.moon.pos.y, features.moon.pos.y, p),
-      lerp(hero.moon.pos.z, features.moon.pos.z, p)
+      lerp(hero.moon.pos.x, features.moon.pos.x, globeBlend),
+      lerp(hero.moon.pos.y, features.moon.pos.y, globeBlend),
+      lerp(hero.moon.pos.z, features.moon.pos.z, globeBlend)
     );
-    moon.scale.setScalar(lerp(hero.moon.scale, features.moon.scale, p));
+    moon.scale.setScalar(lerp(hero.moon.scale, features.moon.scale, globeBlend));
+    moon.visible = moon.scale.x > 0.001;
     moon.userData.targetPosition?.copy(moon.position);
     moon.userData.targetScale = moon.scale.x;
   }
@@ -315,7 +391,7 @@ export function applyScrollLinkedEarthTransform({
   isMobile,
   progress,
   startLatitude,
-  verticalTurn,
+  endLatitude,
   ambientRotation,
 }) {
   const hero = isMobile && heroConfig.mobileEarth ? heroConfig.mobileEarth : heroConfig.earth;
@@ -324,11 +400,11 @@ export function applyScrollLinkedEarthTransform({
   const scrollProgress = Math.max(0, Math.min(1, progress));
   const rotationProgress = getHeroToFeaturesRotationProgress(scrollProgress);
   const zoomProgress = getHeroToFeaturesZoomProgress(scrollProgress);
-  const positionProgress = 1 - Math.pow(1 - zoomProgress, 2.15);
+  const positionProgress = 1 - Math.pow(1 - zoomProgress, 1.55);
   const verticalRotation = getScrollLinkedVerticalRotation(
     rotationProgress,
     startLatitude,
-    verticalTurn
+    endLatitude
   );
   earth.position.set(
     lerp(hero.pos.x, features.pos.x, positionProgress),

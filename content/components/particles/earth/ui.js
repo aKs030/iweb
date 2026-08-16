@@ -21,6 +21,9 @@ function calculateQualityLevel(fps, currentQualityLevel) {
 }
 
 const QUALITY_ORDER = Object.freeze({ LOW: 0, MEDIUM: 1, HIGH: 2 });
+const QUALITY_SAMPLE_INTERVAL_MS = 2000;
+const QUALITY_WARMUP_MS = 6000;
+const QUALITY_MAX_SAMPLE_GAP_MS = 4000;
 
 function clampQualityLevel(qualityLevel, maximumQualityLevel) {
   return QUALITY_ORDER[qualityLevel] <= QUALITY_ORDER[maximumQualityLevel]
@@ -119,18 +122,38 @@ export class PerformanceMonitor {
     this.maximumQualityLevel = maximumQualityLevel;
     this.pendingQualityLevel = initialQualityLevel;
     this.pendingSamples = 0;
+    this.warmupUntil = this.lastTime + QUALITY_WARMUP_MS;
   }
 
   update() {
-    this.frame++;
     const time = performance.now();
-    // Check every 2 seconds to stabilize readings and avoid ping-pong
-    if (time >= this.lastTime + 2000) {
-      this.fps = (this.frame * 1000) / (time - this.lastTime);
+
+    if (time < this.warmupUntil) {
+      this.frame = 0;
+      this.lastTime = time;
+      return;
+    }
+
+    const elapsed = time - this.lastTime;
+    if (elapsed > QUALITY_MAX_SAMPLE_GAP_MS) {
+      this.resetSamplingWindow();
+      return;
+    }
+
+    this.frame++;
+    if (elapsed >= QUALITY_SAMPLE_INTERVAL_MS) {
+      this.fps = (this.frame * 1000) / elapsed;
       this.lastTime = time;
       this.frame = 0;
       this.adjustQuality();
     }
+  }
+
+  resetSamplingWindow() {
+    this.frame = 0;
+    this.lastTime = performance.now();
+    this.pendingQualityLevel = this.currentQualityLevel;
+    this.pendingSamples = 0;
   }
 
   adjustQuality() {
