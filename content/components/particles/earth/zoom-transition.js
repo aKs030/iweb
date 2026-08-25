@@ -360,12 +360,12 @@ export function applyScrollLinkedSectionVisuals(
   }
 
   const atmosphere = system.earthMesh?.getObjectByName?.("earth-atmosphere");
-  if (atmosphere?.material?.uniforms?.atmosphereOpacity) {
+  if (atmosphere?.userData?.setOpacity) {
     const heroAtmos = hero.atmosphereVisible !== false ? (hero.atmosphereOpacity ?? 0.42) : 0;
     const featAtmos =
       features.atmosphereVisible !== false ? (features.atmosphereOpacity ?? 0.42) : 0;
     const atmosphereOpacity = lerp(heroAtmos, featAtmos, globeBlend);
-    atmosphere.material.uniforms.atmosphereOpacity.value = atmosphereOpacity;
+    atmosphere.userData.setOpacity(atmosphereOpacity);
     atmosphere.visible = atmosphereOpacity > 0.001;
   }
 

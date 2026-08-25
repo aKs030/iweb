@@ -246,6 +246,10 @@ function createAtmosphereLayer(THREE, segments) {
   const innerMaterial = new THREE.ShaderMaterial({
     uniforms: {
       sunDirection: { value: new THREE.Vector3(0.6, 0.2, 0.8) },
+      // Section transitions drive this through the atmosphere group. Keeping it
+      // in the shader lets both scattering shells fade together without a
+      // transparent-group sorting artifact.
+      atmosphereOpacity: { value: 0.52 },
     },
     vertexShader: `
       varying float vFresnel;
@@ -260,17 +264,24 @@ function createAtmosphereLayer(THREE, segments) {
       }`,
     fragmentShader: `
       uniform vec3 sunDirection;
+      uniform float atmosphereOpacity;
       varying float vFresnel;
       varying vec3 vWorldNormal;
       void main() {
-        // Sunset tint: when sun is near the horizon, shift to orange-pink
-        float sunHorizon = dot(normalize(vWorldNormal), normalize(sunDirection));
-        float sunsetFactor = smoothstep(0.05, 0.35, sunHorizon);
-        // Daytime: blue-white haze. Sunset: warm orange-pink
-        vec3 dayColor    = vec3(0.42, 0.70, 1.00);
-        vec3 sunsetColor = vec3(1.00, 0.52, 0.22);
-        vec3 mieColor = mix(sunsetColor, dayColor, sunsetFactor);
-        float alpha = smoothstep(0.05, 0.88, vFresnel) * 0.18;
+        float sunFacing = dot(normalize(vWorldNormal), normalize(sunDirection));
+        float daylight = smoothstep(-0.16, 0.32, sunFacing);
+        float twilight = smoothstep(-0.30, -0.02, sunFacing)
+          * (1.0 - smoothstep(-0.02, 0.20, sunFacing));
+        vec3 nightColor = vec3(0.07, 0.14, 0.32);
+        vec3 dayColor = vec3(0.42, 0.70, 1.00);
+        vec3 sunsetColor = vec3(1.00, 0.48, 0.18);
+        vec3 mieColor = mix(nightColor, dayColor, daylight);
+        mieColor = mix(mieColor, sunsetColor, twilight * 0.86);
+        float lightVisibility = mix(0.24, 1.0, max(daylight, twilight * 0.82));
+        float alpha = smoothstep(0.05, 0.88, vFresnel)
+          * 0.34
+          * atmosphereOpacity
+          * lightVisibility;
         gl_FragColor = vec4(mieColor, alpha);
       }`,
     transparent: true,
@@ -288,20 +299,39 @@ function createAtmosphereLayer(THREE, segments) {
     Math.min(segments, 96)
   );
   const outerMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      sunDirection: { value: new THREE.Vector3(0.6, 0.2, 0.8) },
+      atmosphereOpacity: { value: 0.52 },
+    },
     vertexShader: `
       varying float vFresnel;
+      varying vec3 vWorldNormal;
       void main() {
         vec4 p = modelViewMatrix * vec4(position, 1.0);
         vec3 n = normalize(normalMatrix * normal);
         vec3 v = normalize(-p.xyz);
         vFresnel = pow(1.0 - max(dot(n, v), 0.0), 2.2);
+        vWorldNormal = normalize(mat3(modelMatrix) * normal);
         gl_Position = projectionMatrix * p;
       }`,
     fragmentShader: `
+      uniform vec3 sunDirection;
+      uniform float atmosphereOpacity;
       varying float vFresnel;
+      varying vec3 vWorldNormal;
       void main() {
-        float a = smoothstep(0.10, 0.96, vFresnel) * 0.072;
-        gl_FragColor = vec4(0.22, 0.50, 1.00, a);
+        float sunFacing = dot(normalize(vWorldNormal), normalize(sunDirection));
+        float daylight = smoothstep(-0.20, 0.24, sunFacing);
+        float twilight = smoothstep(-0.32, -0.04, sunFacing)
+          * (1.0 - smoothstep(-0.04, 0.16, sunFacing));
+        vec3 rayleighColor = mix(vec3(0.05, 0.12, 0.35), vec3(0.22, 0.50, 1.00), daylight);
+        rayleighColor = mix(rayleighColor, vec3(0.68, 0.25, 0.12), twilight * 0.44);
+        float lightVisibility = mix(0.18, 1.0, max(daylight, twilight * 0.70));
+        float a = smoothstep(0.10, 0.96, vFresnel)
+          * 0.138
+          * atmosphereOpacity
+          * lightVisibility;
+        gl_FragColor = vec4(rayleighColor, a);
       }`,
     transparent: true,
     depthWrite: false,
@@ -309,6 +339,7 @@ function createAtmosphereLayer(THREE, segments) {
     blending: THREE.AdditiveBlending,
     toneMapped: false,
   });
+  outerMaterial.userData.isSunTracked = true;
 
   const group = new THREE.Group();
   group.name = "earth-atmosphere";
@@ -324,6 +355,15 @@ function createAtmosphereLayer(THREE, segments) {
 
   group.add(innerMesh);
   group.add(outerMesh);
+  group.userData.opacity = 0.52;
+  group.userData.setOpacity = opacity => {
+    const nextOpacity = Math.max(0, Math.min(1, Number(opacity) || 0));
+    group.userData.opacity = nextOpacity;
+    group.traverse(child => {
+      const uniform = child.material?.uniforms?.atmosphereOpacity;
+      if (uniform) uniform.value = nextOpacity;
+    });
+  };
   return group;
 }
 
@@ -439,20 +479,24 @@ function createCityLightsPoints(THREE, cityBuffer, isMobileDevice) {
   const material = new THREE.ShaderMaterial({
     uniforms: {
       cityPointOpacity: { value: 0 },
+      earthSunDirectionWorld: { value: new THREE.Vector3(0, 0, 1) },
     },
     vertexShader: `
       attribute float cityWeight;
       varying float vSurfaceFacing;
       varying float vCityWeight;
+      varying vec3 vCityWorldNormal;
       void main() {
         vCityWeight = cityWeight;
         vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
-        vec3 viewNormal = normalize(normalMatrix * position);
+        vec3 cityNormal = normalize(position);
+        vec3 viewNormal = normalize(normalMatrix * cityNormal);
         vSurfaceFacing = smoothstep(
           0.06,
           0.22,
           dot(viewNormal, normalize(-viewPosition.xyz))
         );
+        vCityWorldNormal = normalize(mat3(modelMatrix) * cityNormal);
         gl_Position = projectionMatrix * viewPosition;
         gl_PointSize = mix(2.0, 5.5, cityWeight)
           * (12.0 / max(-viewPosition.z, 1.0));
@@ -460,15 +504,23 @@ function createCityLightsPoints(THREE, cityBuffer, isMobileDevice) {
     `,
     fragmentShader: `
       uniform float cityPointOpacity;
+      uniform vec3 earthSunDirectionWorld;
       varying float vSurfaceFacing;
       varying float vCityWeight;
+      varying vec3 vCityWorldNormal;
       void main() {
         float distanceToCenter = length(gl_PointCoord - 0.5) * 2.0;
         float core = 1.0 - smoothstep(0.08, 0.42, distanceToCenter);
         float halo = 1.0 - smoothstep(0.18, 1.0, distanceToCenter);
+        float sunFacing = dot(
+          normalize(vCityWorldNormal),
+          normalize(earthSunDirectionWorld)
+        );
+        float nightMask = 1.0 - smoothstep(-0.08, 0.12, sunFacing);
         float alpha = (core + halo * 0.38)
           * cityPointOpacity
           * vSurfaceFacing
+          * nightMask
           * mix(0.68, 1.0, vCityWeight);
         if (cityPointOpacity <= 0.001 || alpha <= 0.002) discard;
         vec3 color = mix(vec3(1.0, 0.36, 0.08), vec3(1.0, 0.78, 0.38), core);
@@ -957,7 +1009,10 @@ function createProceduralTerrainLayer(
     group.add(water);
   }
 
-  const instanceBudget = isMobileDevice ? 15000 : qualityLevel === "MEDIUM" ? 40000 : 120000;
+  // The aerial image is the source of truth for the city footprint. Keep the
+  // added mesh layer sparse enough to suggest real depth instead of turning
+  // roads and parks into a dense, synthetic carpet of boxes.
+  const instanceBudget = isMobileDevice ? 7000 : qualityLevel === "MEDIUM" ? 24000 : 54000;
   const maxCityInstances = Math.floor(instanceBudget * 0.75);
   const maxForestInstances = Math.floor(instanceBudget * 0.25);
 
@@ -1117,11 +1172,11 @@ function createProceduralTerrainLayer(
   treeGeometry.rotateX(Math.PI / 2);
 
   const buildingMaterial = new THREE.MeshStandardMaterial({
-    color: 0xd0ccc8,
-    emissive: 0x1a232c,
-    emissiveIntensity: 0.12,
-    roughness: 0.72,
-    metalness: 0.15,
+    color: 0xbfc4c1,
+    emissive: 0x0a0e10,
+    emissiveIntensity: 0.045,
+    roughness: 0.84,
+    metalness: 0.02,
     normalMap: windowNormalMap,
     normalScale: new THREE.Vector2(0.25, 0.25),
     transparent: true,
@@ -1130,7 +1185,7 @@ function createProceduralTerrainLayer(
   });
 
   const treeMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
+    color: 0x7b9272,
     roughness: 0.9,
     metalness: 0.0,
     transparent: true,
@@ -1283,7 +1338,11 @@ function createProceduralTerrainLayer(
       const heightMu = 0.3 + coreStrength * 0.7;
       const heightSig = 0.4;
       const rawHeight = logNormalHeight(heightMu, heightSig);
-      const heightScale = THREE.MathUtils.clamp(rawHeight, 0.6, coreStrength > 0.5 ? 8.0 : 3.5);
+      const heightScale = THREE.MathUtils.clamp(
+        rawHeight * 0.68,
+        0.48,
+        coreStrength > 0.5 ? 4.8 : 2.4
+      );
 
       const footprintScale = 0.9 + random() * 0.8;
       dummy.scale.set(footprintScale, footprintScale, heightScale);
@@ -1340,8 +1399,8 @@ function createProceduralTerrainLayer(
   group.userData.fadeMaterials = [
     { material: terrainMaterial, baseOpacity: 1 },
     ...(waterMaterial ? [{ material: waterMaterial, baseOpacity: 0.46 }] : []),
-    { material: buildingMaterial, baseOpacity: 1 },
-    { material: treeMaterial, baseOpacity: 1 },
+    { material: buildingMaterial, baseOpacity: 0.68 },
+    { material: treeMaterial, baseOpacity: 0.72 },
   ];
   return group;
 }

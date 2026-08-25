@@ -80,18 +80,23 @@ const SECTION_CONFIGS = {
     mobileEarth: { pos: { x: 0, y: -43.3, z: -1.2 }, scale: 11.5, rotation: -1.9 },
     moon: { pos: { x: -6, y: 1, z: -12 }, scale: 0.36 },
     lighting: {
-      ambientColor: 0x243248,
-      ambientIntensity: 0.38,
-      sunIntensity: 2.75,
-      sunPosition: { x: 12.0, y: 3.5, z: 4.0 },
-      fillColor: 0x80b8ff,
-      fillIntensity: 0.16,
+      // The aerial photograph was captured in clear summer daylight. A higher,
+      // neutral fill keeps its real colour information visible while the low
+      // sun still gives the close-up a sense of scale.
+      ambientColor: 0x3a4b62,
+      ambientIntensity: 0.52,
+      sunIntensity: 2.35,
+      sunPosition: { x: 10.0, y: 5.4, z: 6.8 },
+      fillColor: 0x9cc8ff,
+      fillIntensity: 0.22,
       rimColor: 0x99ccff,
       rimIntensity: 0,
     },
     mode: "day",
-    atmosphereVisible: false,
-    atmosphereOpacity: 0,
+    // A thin blue limb grounds the close-up in a real atmosphere without
+    // obscuring the orthophoto detail behind the headline.
+    atmosphereVisible: true,
+    atmosphereOpacity: 0.28,
     surfaceOpacity: 1,
     terrainRelief: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
     terrainDetailStrength: 0,
@@ -1662,11 +1667,10 @@ class ThreeEarthSystem {
     this._syncCloudVisibility(config);
     const atmosphere = this.earthMesh.getObjectByName?.("earth-atmosphere");
     if (atmosphere) {
-      atmosphere.visible = config.atmosphereVisible !== false;
-      if (atmosphere.material?.uniforms?.atmosphereOpacity) {
-        atmosphere.material.uniforms.atmosphereOpacity.value =
-          config.atmosphereVisible === false ? 0 : (config.atmosphereOpacity ?? 0.42);
-      }
+      const atmosphereOpacity =
+        config.atmosphereVisible === false ? 0 : (config.atmosphereOpacity ?? 0.42);
+      atmosphere.userData.setOpacity?.(atmosphereOpacity);
+      atmosphere.visible = atmosphereOpacity > 0.001;
     }
 
     this.cityGlowGroup?.traverse(object => {
