@@ -1,8 +1,8 @@
 export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 208,
-    SEGMENTS_MOBILE: 112,
+    SEGMENTS: 128,
+    SEGMENTS_MOBILE: 96,
     HERO_DISPLACEMENT_SCALE: 0,
     DEFAULT_DISPLACEMENT_SCALE: 0,
     AMBIENT_ROTATION_SPEED: 0,
@@ -14,7 +14,7 @@ export const CONFIG = {
     HIGH_ALTITUDE: 0.024,
     SHADOW_ALTITUDE: 0.0035,
     SHADOW_OPACITY: 0.018,
-    HIGH_OPACITY_FACTOR: 0.24,
+    HIGH_OPACITY_FACTOR: 0.28,
     ROTATION_SPEED: 0.000065,
     OPACITY: 0.2,
   },
@@ -39,7 +39,7 @@ export const CONFIG = {
   },
   STARS: {
     COUNT: 3600,
-    TWINKLE_SPEED: 0.24,
+    TWINKLE_SPEED: 0.2,
   },
   MOON: {
     RADIUS: 0.95,
@@ -55,7 +55,7 @@ export const CONFIG = {
     FAR: 1000,
     ZOOM_MIN: 8,
     ZOOM_MAX: 18.5,
-    LERP_FACTOR: 0.06,
+    LERP_FACTOR: 0.075,
     PRESETS: {
       hero: {
         x: 0,
@@ -87,7 +87,7 @@ export const CONFIG = {
         lookAt: { x: 0, y: -1.05, z: -1.15 },
       },
     },
-    TRANSITION_DURATION: 2.05,
+    TRANSITION_DURATION: 1.85,
   },
   SHOOTING_STARS: {
     BASE_FREQUENCY: 0.012,

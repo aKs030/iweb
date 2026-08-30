@@ -381,6 +381,19 @@ export function applyScrollLinkedSectionVisuals(
     moon.userData.targetPosition?.copy(moon.position);
     moon.userData.targetScale = moon.scale.x;
   }
+
+  if (system.scene?.fog) {
+    const heroFog = hero.fogDensity ?? 0;
+    const featFog = features.fogDensity ?? 0;
+    system.scene.fog.density = lerp(heroFog, featFog, globeBlend);
+  }
+
+  if (system.starManager?.starField) {
+    system.starManager.starField.visible = globeBlend > 0.35;
+  }
+  if (system.shootingStarManager) {
+    system.shootingStarManager.disabled = globeBlend < 0.65;
+  }
 }
 
 export function applyScrollLinkedEarthTransform({

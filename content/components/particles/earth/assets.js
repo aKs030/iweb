@@ -199,7 +199,7 @@ diffuseColor.rgb = min(
 
 const EARTH_ROUGHNESS_FRAGMENT = `#include <roughnessmap_fragment>
 roughnessFactor = mix(roughnessFactor, 0.26, earthOceanMask);
-float oceanMicroRough = fract(sin(dot(floor(vMapUv * 460.0), vec2(127.1, 311.7))) * 43758.5453);
+float oceanMicroRough = fract(sin(dot(vMapUv * 460.0, vec2(127.1, 311.7))) * 43758.5453);
 roughnessFactor = mix(roughnessFactor, 0.22 + oceanMicroRough * 0.08, earthOceanMask * 0.50);`;
 
 const EARTH_FRESNEL_FRAGMENT = `float viewNDot = clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);
@@ -210,6 +210,10 @@ outgoingLight += diffuseColor.rgb
   * vec3(0.04, 0.06, 0.10)
   * nightHemisphere
   * earthshineFresnel;
+
+// Subtle atmospheric rim on the day side — adds 3D depth to the globe silhouette
+float dayHemisphere = smoothstep(-0.05, 0.3, surfaceSunFacing);
+outgoingLight += vec3(0.12, 0.18, 0.28) * earthshineFresnel * dayHemisphere * 0.15;
 
 #include <opaque_fragment>`;
 
@@ -258,7 +262,7 @@ function createAtmosphereLayer(THREE, segments) {
         vec4 p = modelViewMatrix * vec4(position, 1.0);
         vec3 n = normalize(normalMatrix * normal);
         vec3 v = normalize(-p.xyz);
-        vFresnel = pow(1.0 - max(dot(n, v), 0.0), 3.2);
+        vFresnel = pow(1.0 - max(dot(n, v), 0.0), 3.0);
         vWorldNormal = normalize(mat3(modelMatrix) * normal);
         gl_Position = projectionMatrix * p;
       }`,
@@ -310,7 +314,7 @@ function createAtmosphereLayer(THREE, segments) {
         vec4 p = modelViewMatrix * vec4(position, 1.0);
         vec3 n = normalize(normalMatrix * normal);
         vec3 v = normalize(-p.xyz);
-        vFresnel = pow(1.0 - max(dot(n, v), 0.0), 2.2);
+        vFresnel = pow(1.0 - max(dot(n, v), 0.0), 2.4);
         vWorldNormal = normalize(mat3(modelMatrix) * normal);
         gl_Position = projectionMatrix * p;
       }`,

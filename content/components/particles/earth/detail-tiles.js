@@ -5,7 +5,7 @@ const COLUMNS = 8;
 const ROWS = 4;
 const RETIRE_DELAY_MS = 1600;
 const STARTUP_DELAY_MS = 900;
-const ENABLE_STABILITY_MS = 450;
+const ENABLE_STABILITY_MS = 350;
 const TILE_ENABLE_SCALE = 2.5;
 const TILE_DISABLE_SCALE = 2.0;
 const TILE_RETRY_DELAY_MS = 15000;
@@ -88,7 +88,7 @@ export class EarthDetailTileManager {
       }
     }
 
-    const fade = damping(5.5, delta);
+    const fade = damping(6.0, delta);
     let visibleTiles = 0;
     this.tiles.forEach((tile, key) => {
       const desired = this.desiredKeys.has(key);

@@ -28,15 +28,19 @@ export function setupScene(THREE, container) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  // Golden-hour look: slightly lower exposure protects highlights from a low sun
-  renderer.toneMappingExposure = 1.08;
+  // Golden-hour look: balanced exposure keeps highlights clean while preserving
+  // daylight clarity on the Berlin aerial close-up
+  renderer.toneMappingExposure = 1.15;
 
-  // Cinematic rendering additions
-  renderer.shadowMap.enabled = true;
+  // Shadow maps are expensive (4096px on desktop). Disabled by default and
+  // enabled per-section only when procedural buildings need them.
+  renderer.shadowMap.enabled = false;
   renderer.shadowMap.type = THREE.PCFShadowMap;
 
-  // Very subtle depth cue — aggressive fog flattens the city, so keep density low
-  scene.fog = new THREE.FogExp2(0x060c14, 0.012);
+  // Fog density is controlled per-section in three-earth-system.js.
+  // Starts at 0 — the Hero close-up needs no fog; deeper sections enable it
+  // for depth cueing on the globe view.
+  scene.fog = new THREE.FogExp2(0x060c14, 0);
 
   container.appendChild(renderer.domElement);
 

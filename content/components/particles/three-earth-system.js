@@ -51,9 +51,9 @@ import {
 const log = createLogger("ThreeEarthSystem");
 const WEBGL_RENDER_SECTIONS = new Set(["hero", "features", "section3", "site-footer"]);
 const EARTH_TRANSFORM_DAMPING = Object.freeze({
-  position: 3.2,
-  scale: 4.2,
-  rotation: 3,
+  position: 3.6,
+  scale: 4.6,
+  rotation: 3.4,
   light: 5,
 });
 const EARTH_ZOOM_LOD = Object.freeze({
@@ -84,8 +84,8 @@ const SECTION_CONFIGS = {
       // neutral fill keeps its real colour information visible while the low
       // sun still gives the close-up a sense of scale.
       ambientColor: 0x3a4b62,
-      ambientIntensity: 0.52,
-      sunIntensity: 2.35,
+      ambientIntensity: 0.55,
+      sunIntensity: 2.4,
       sunPosition: { x: 10.0, y: 5.4, z: 6.8 },
       fillColor: 0x9cc8ff,
       fillIntensity: 0.22,
@@ -96,15 +96,15 @@ const SECTION_CONFIGS = {
     // A thin blue limb grounds the close-up in a real atmosphere without
     // obscuring the orthophoto detail behind the headline.
     atmosphereVisible: true,
-    atmosphereOpacity: 0.28,
+    atmosphereOpacity: 0.38,
     surfaceOpacity: 1,
     terrainRelief: CONFIG.EARTH.HERO_DISPLACEMENT_SCALE,
-    terrainDetailStrength: 0,
+    terrainDetailStrength: 0.35,
     oceanGradeStrength: 0.54,
     oceanSaturation: 1.1,
     oceanBrightness: 1.04,
     surfaceClearcoat: 0.04,
-    surfaceSpecularIntensity: 0.15,
+    surfaceSpecularIntensity: 0.2,
     surfaceEmissiveIntensity: CONFIG.EARTH.CITY_LIGHT_INTENSITY,
     surfaceNormalScale: 0.2,
     cityGlowMultiplier: 1,
@@ -114,6 +114,7 @@ const SECTION_CONFIGS = {
     cloudShadowOpacity: 0,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 1,
+    fogDensity: 0,
     cameraOrbit: 0,
     axialTilt: -7,
     latitudeTilt: -12,
@@ -137,7 +138,7 @@ const SECTION_CONFIGS = {
       fillColor: 0x99ccff, // ↑ brighter blue fill
       fillIntensity: 0.18, // ↑ was 0.1 → reduce underexposed areas
       rimColor: 0x99ccff,
-      rimIntensity: 0.12,
+      rimIntensity: 0.16,
     },
     mode: "day",
     atmosphereVisible: true,
@@ -158,6 +159,7 @@ const SECTION_CONFIGS = {
     cloudShadowOpacity: 0.016, // ↑ was 0.014
     cloudScaleFactor: 1.005,
     proceduralTerrainMix: 0,
+    fogDensity: 0.008,
     cameraOrbit: 0,
     axialTilt: -7,
     latitudeTilt: 28.5,
@@ -175,7 +177,7 @@ const SECTION_CONFIGS = {
     lighting: {
       // ── Section 3 – deep night side, vivid city lights ──
       ambientColor: 0x2a3d60, // deeper midnight blue
-      ambientIntensity: 0.42, // was 0.5 → darker to make cities pop more
+      ambientIntensity: 0.38, // was 0.5 → darker to make cities pop more
       sunIntensity: 0.18, // was 0.22 → slightly dimmer crescent sun
       sunPosition: { x: -2.4, y: 3.2, z: 10.2 },
       fillColor: 0x6699dd, // cooler blue fill
@@ -203,6 +205,7 @@ const SECTION_CONFIGS = {
     cloudShadowOpacity: 0.004,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 0,
+    fogDensity: 0.012,
     cameraOrbit: Math.PI * 0.38,
     axialTilt: -7,
     latitudeTilt: 28.5,
@@ -247,6 +250,7 @@ const SECTION_CONFIGS = {
     cloudShadowOpacity: 0.003,
     cloudScaleFactor: 1,
     proceduralTerrainMix: 0,
+    fogDensity: 0.014,
     cameraOrbit: Math.PI * 0.38,
     axialTilt: -7,
     latitudeTilt: 28.5,
@@ -1748,6 +1752,33 @@ class ThreeEarthSystem {
     }
 
     this._setLightTargets(config);
+
+    // ── Per-section visual systems ──
+
+    // Fog: controlled per section — hero close-up needs no fog, globe views do
+    if (this.scene?.fog) {
+      this.scene.fog.density = config.fogDensity ?? 0;
+    }
+
+    // Shadow maps: only needed when procedural buildings cast shadows (not hero)
+    if (this.renderer) {
+      const needsShadows = sectionName !== "hero" && (config.proceduralTerrainMix ?? 0) < 0.9;
+      if (this.renderer.shadowMap.enabled !== needsShadows) {
+        this.renderer.shadowMap.enabled = needsShadows;
+        this.renderer.shadowMap.needsUpdate = true;
+      }
+    }
+
+    // Stars: invisible in hero (daylight Berlin close-up, sky-haze backdrop)
+    const isDay = config.mode === "day" && sectionName === "hero";
+    if (this.starManager?.starField) {
+      this.starManager.starField.visible = !isDay;
+    }
+
+    // Shooting stars: disable in daylight hero section
+    if (this.shootingStarManager) {
+      this.shootingStarManager.disabled = isDay;
+    }
   }
 
   _syncCloudVisibility(config = SECTION_CONFIGS[this.currentSection] || SECTION_CONFIGS.hero) {
@@ -2020,7 +2051,11 @@ class ThreeEarthSystem {
   _detectAndEnsureWebGL() {
     try {
       this.deviceCapabilities = detectDeviceCapabilities(log);
-      Object.assign(CONFIG, getOptimizedConfig(this.deviceCapabilities));
+      const optimized = getOptimizedConfig(this.deviceCapabilities);
+      if (optimized.EARTH) Object.assign(CONFIG.EARTH, optimized.EARTH);
+      if (optimized.STARS) Object.assign(CONFIG.STARS, optimized.STARS);
+      if (optimized.PERFORMANCE) Object.assign(CONFIG.PERFORMANCE, optimized.PERFORMANCE);
+      if (optimized.CLOUDS) Object.assign(CONFIG.CLOUDS, optimized.CLOUDS);
     } catch (err) {
       log.debug("Device detection failed", err);
     }

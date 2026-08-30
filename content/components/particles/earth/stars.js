@@ -101,7 +101,7 @@ export class StarManager {
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
           float shimmer = 0.88 + 0.12 * sin(time * twinkleSpeed + phase);
           vAlpha = brightness * shimmer;
-          gl_PointSize = clamp(size * (280.0 / -mvPosition.z), 0.8, 5.6);
+          gl_PointSize = clamp(size * (280.0 / -mvPosition.z), 1.0, 5.0);
           gl_Position = projectionMatrix * mvPosition;
         }
       `,
@@ -214,7 +214,7 @@ export class ShootingStarManager {
       const spawnZ = -10 - Math.random() * 18;
 
       // Realistic meteor entry angle (streaking diagonally downward)
-      const speed = 0.55 + Math.random() * 0.45;
+      const speed = 0.6 + Math.random() * 0.5;
       const angle = -Math.PI * 0.22 + (Math.random() - 0.5) * 0.35;
       const velocity = new this.THREE.Vector3(
         Math.cos(angle) * speed,
@@ -259,15 +259,15 @@ export class ShootingStarManager {
 
       star.mesh.position.addScaledVector(star.velocity, timeScale);
 
-      // Smooth fade-in during the first 25% of life, peak at 1.0, fade-out after 65%
+      // Smooth fade-in during the first 20% of life, peak at 1.0, fade-out after 70%
       const lifeProgress = star.age / star.lifetime;
       let currentOpacity;
-      if (lifeProgress < 0.25) {
-        currentOpacity = lifeProgress / 0.25;
-      } else if (lifeProgress < 0.65) {
+      if (lifeProgress < 0.2) {
+        currentOpacity = lifeProgress / 0.2;
+      } else if (lifeProgress < 0.7) {
         currentOpacity = 1.0;
       } else {
-        currentOpacity = Math.max(0, 1.0 - (lifeProgress - 0.65) / 0.35);
+        currentOpacity = Math.max(0, 1.0 - (lifeProgress - 0.7) / 0.3);
       }
       star.mesh.material.opacity = currentOpacity * 0.92;
 
